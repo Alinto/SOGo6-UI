@@ -1,0 +1,40 @@
+FROM debian:12
+
+ENV DEBIAN_FRONTEND=noninteractive
+ARG USERNAME=vscode
+ARG WORKSPACE=/SOGo6
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+ARG NODE_VERSION=22
+
+RUN apt-get update && apt-get install -y \
+    sudo \
+    git \
+    openssh-client \
+    curl \
+    procps
+
+RUN groupadd --system --gid "${GROUP_ID}" "${USERNAME}" && \
+    useradd --system --create-home --uid "${USER_ID}" --gid "${GROUP_ID}" "${USERNAME}" && \
+    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > "/etc/sudoers.d/${USERNAME}" && \
+    chmod 0440 "/etc/sudoers.d/${USERNAME}"
+
+RUN mkdir -p ${WORKSPACE} && chown -R ${USERNAME}:${USERNAME} ${WORKSPACE}
+
+COPY --chown=${USERNAME}:${USERNAME} .devcontainer/container-entrypoint.sh /container-entrypoint
+COPY --chown=${USERNAME}:${USERNAME} .devcontainer/files/bashrc /home/${USERNAME}/.bashrc
+
+ENV PATH="/home/vscode/.local/bin:$PATH"
+
+RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash - && \
+apt-get install -y nodejs
+
+RUN npm install -g npm@latest
+
+WORKDIR ${WORKSPACE}
+
+COPY ./package.json ./package-lock.json ./
+
+RUN npm install
+
+USER ${USERNAME}

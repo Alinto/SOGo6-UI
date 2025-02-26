@@ -1,0 +1,37 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/docker-existing-dockerfile
+{
+	"name": "SOGo6",
+	"build": {
+		"context": "..",
+		"dockerfile": "Dockerfile.devcontainer",
+		"args": {
+			"WORKSPACE": "SOGo6",
+			"USER_ID": "1000",
+			"GROUP_ID": "1000",
+			"USERNAME": "vscode",
+			"NODE_VERSION": "22"
+		}
+	},
+	"workspaceFolder": "/SOGo6",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/SOGo6,type=bind",
+	"runArgs": [
+		"--network=host"
+	],
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"orta.vscode-jest",
+				"dbaeumer.vscode-eslint",
+				"mechatroner.rainbow-csv",
+				"ms-vsliveshare.vsliveshare",
+				"pulkitgangwar.nextjs-snippets",
+				"esbenp.prettier-vscode",
+				"bradlc.vscode-tailwindcss",
+				"eamodio.gitlens",
+				"ms-azuretools.vscode-docker"
+			]
+		}
+	},
+	"postAttachCommand": "/container-entrypoint"
+}

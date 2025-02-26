@@ -1,0 +1,66 @@
+export EDITOR=code
+
+# Colors
+bold=$(tput bold)
+normal=$(tput sgr0)
+cyan=$(tput setaf 6)
+yellow=$(tput setaf 3)
+magenta=$(tput setaf 5)
+blue=$(tput setaf 4)
+green=$(tput setaf 2)
+white=$(tput setaf 7)
+black=$(tput setaf 0)
+
+# Background colors
+bg_cyan=$(tput setab 6)
+bg_yellow=$(tput setab 3)
+bg_magenta=$(tput setab 5)
+bg_blue=$(tput setab 4)
+bg_green=$(tput setab 2)
+bg_white=$(tput setab 7)
+bg_black=$(tput setab 0)
+
+print_sogo_ascii() {
+	echo "${bold}${green}"
+	echo "  _____   ____    _____           _   _           _   "
+	echo " / ____| / __ \  / ____|         | \ | |         | |  "
+	echo "| (___  | |  | ||  |  __  ___    |  \| | _____  _| |_ "
+	echo " \\___ \\ | |  | ||  | |_ |/ _ \\   | . \` |/ _ \\ \\/ / __|"
+	echo " ____) || |__| ||  |__| | (_) |  | |\\  |  __/>  <| |_ "
+	echo "|_____/  \____/  \______|\___/   |_| \_|\___/_/\_\\__|"
+	echo "${normal}"
+}
+
+# Function to display the prompt
+set_bash_prompt() {
+    # Display rounded left border
+    PS1="${cyan}${normal}"
+    # Display date with seconds
+    PS1+="${bg_cyan}\$(date +'%H:%M:%S') ${normal}${bg_blue}${cyan}${normal}"
+
+    # Display current directory
+    PS1+="${bg_blue}${white} \w ${normal}${bg_magenta}${blue}${normal}"
+
+    # Display git branch and status
+    PS1+="\$(if git rev-parse --git-dir > /dev/null 2>&1; then \
+        branch=\$(git rev-parse --abbrev-ref HEAD); \
+        if git status | grep -q 'amend'; then \
+            commit_hash=\$(git rev-parse --short HEAD); \
+            echo \"${bg_magenta}${white}${bold} \${branch} (amending \${commit_hash}) ${normal}${magenta}${normal}\"; \
+        elif git status | grep -q 'rebase'; then \
+            commit_hash=\$(git rev-parse --short HEAD); \
+            echo \"${bg_magenta}${white}${bold} \${branch} (rebasing \${commit_hash}) ${normal}${magenta}${normal}\"; \
+        elif git status | grep -q 'both modified'; then \
+            echo \"${bg_magenta}${white}${bold} \${branch} ${yellow}⚠️  (conflict) ${normal}${magenta}${normal}\"; \
+        else \
+            echo \"${bg_magenta}${white}${bold} \${branch} ${normal}${magenta}${normal}\"; \
+        fi; \
+    fi)"
+
+    PS1+=" \$${normal} "
+}
+
+# Set the prompt
+PROMPT_COMMAND=set_bash_prompt
+
+print_sogo_ascii
