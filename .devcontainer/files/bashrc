@@ -1,4 +1,4 @@
-export EDITOR=code
+# export EDITOR=code
 
 # Colors
 bold=$(tput bold)

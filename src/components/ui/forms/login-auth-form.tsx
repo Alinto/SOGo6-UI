@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch";
 import { PasswordInput } from "@/components/ui/input-password";
 
 /* TRANSLATIONS_TODO */
-export function LoginPasswordForm({
+export function LoginAuthForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<"form">) {
@@ -14,7 +14,7 @@ export function LoginPasswordForm({
       <div className="grid gap-6">
         <div className="grid gap-2">
           <Label htmlFor="password">Password</Label>
-          <PasswordInput id="password" placeholder="m@example.com" required />
+          <PasswordInput id="password" placeholder="" required />
         </div>
         <Button type="submit" className="w-full">
           Login

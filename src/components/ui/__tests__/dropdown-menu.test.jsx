@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 describe("DropdownMenu component", () => {
-  test("renders DropdownMenuTrigger correctly", () => {
+  it("renders DropdownMenuTrigger correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -32,7 +32,7 @@ describe("DropdownMenu component", () => {
     expect(triggerElement).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuItem correctly", () => {
+  it("renders DropdownMenuItem correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -41,6 +41,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",
@@ -49,7 +50,7 @@ describe("DropdownMenu component", () => {
     expect(menuItem).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuCheckboxItem correctly", () => {
+  it("renders DropdownMenuCheckboxItem correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -60,6 +61,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",
@@ -68,7 +70,7 @@ describe("DropdownMenu component", () => {
     expect(checkboxItem).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuRadioItem correctly", () => {
+  it("renders DropdownMenuRadioItem correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -79,6 +81,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",
@@ -87,7 +90,7 @@ describe("DropdownMenu component", () => {
     expect(radioItem).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuLabel correctly", () => {
+  it("renders DropdownMenuLabel correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -96,6 +99,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",
@@ -104,7 +108,7 @@ describe("DropdownMenu component", () => {
     expect(label).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuSeparator correctly", () => {
+  it("renders DropdownMenuSeparator correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -113,6 +117,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",
@@ -121,7 +126,7 @@ describe("DropdownMenu component", () => {
     expect(separator).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuShortcut correctly", async () => {
+  it("renders DropdownMenuShortcut correctly", async () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -132,6 +137,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",
@@ -140,7 +146,7 @@ describe("DropdownMenu component", () => {
     expect(shortcut).toBeInTheDocument();
   });
 
-  test("renders DropdownMenuSub and DropdownMenuSubContent correctly", () => {
+  it("renders DropdownMenuSub and DropdownMenuSubContent correctly", () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -154,6 +160,7 @@ describe("DropdownMenu component", () => {
         </DropdownMenuContent>
       </DropdownMenu>
     );
+    /* WORKAROUND TO OPEN DROPDOWN */
     fireEvent.keyDown(screen.getByRole("button"), {
       key: "ArrowDown",
       code: "ArrowDown",

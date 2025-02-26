@@ -6,19 +6,19 @@ import { Switch } from "@/components/ui/switch";
 // filepath: /SOGo6/src/components/ui/switch.test.tsx
 
 describe("Switch component", () => {
-  test("renders correctly", () => {
+  it("renders correctly", () => {
     render(<Switch />);
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toBeInTheDocument();
   });
 
-  test("has correct initial state", () => {
+  it("has correct initial state", () => {
     render(<Switch />);
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toHaveAttribute("data-state", "unchecked");
   });
 
-  test("toggles state on click", () => {
+  it("toggles state on click", () => {
     render(<Switch />);
     const switchElement = screen.getByRole("switch");
     fireEvent.click(switchElement);
@@ -27,13 +27,13 @@ describe("Switch component", () => {
     expect(switchElement).toHaveAttribute("data-state", "unchecked");
   });
 
-  test("applies custom className", () => {
+  it("applies custom className", () => {
     render(<Switch className="custom-class" />);
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toHaveClass("custom-class");
   });
 
-  test("is disabled when disabled prop is passed", () => {
+  it("is disabled when disabled prop is passed", () => {
     render(<Switch disabled />);
     const switchElement = screen.getByRole("switch");
     expect(switchElement).toBeDisabled();

@@ -1,6 +1,6 @@
 "use client";
-import { LoginPasswordForm } from "@/components/ui/forms/login-password-form";
+import { LoginAuthForm } from "@/components/ui/forms/login-auth-form";
 
 export default function LoginPage() {
-  return <LoginPasswordForm />;
+  return <LoginAuthForm />;
 }
