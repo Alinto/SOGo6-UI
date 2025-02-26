@@ -2,14 +2,17 @@ import { render, screen } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import { Button } from "@/components/ui/button";
 
-// filepath: /SOGo6/src/components/ui/button.test.tsx
-
 describe("Button component", () => {
   it("renders with default props", () => {
     render(<Button>Default Button</Button>);
     const button = screen.getByRole("button", { name: /default button/i });
     expect(button).toBeInTheDocument();
     expect(button).toHaveClass("bg-primary text-primary-foreground");
+  });
+
+  it("matches the snapshot", () => {
+    const { asFragment } = render(<Button />);
+    expect(asFragment()).toMatchSnapshot();
   });
 
   it("renders with destructive variant", () => {
@@ -67,7 +70,7 @@ describe("Button component", () => {
     render(<Button size="icon">Icon Button</Button>);
     const button = screen.getByRole("button", { name: /icon button/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveClass("h-10 w-10");
+    expect(button).toHaveClass("h-9 w-9");
   });
 
   it("renders as a child component", () => {
@@ -85,5 +88,32 @@ describe("Button component", () => {
     const button = screen.getByRole("button", { name: /disabled button/i });
     expect(button).toBeInTheDocument();
     expect(button).toBeDisabled();
+  });
+
+  it("renders as a different component when asChild is true", () => {
+    render(
+      <Button asChild>
+        <a href="/test">Click me</a>
+      </Button>
+    );
+    const linkElement = screen.getByRole("link");
+    const button = screen.queryByRole("button");
+    expect(button).not.toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument();
+    expect(linkElement.tagName).toBe("A");
+    expect(linkElement).toHaveAttribute("href", "/test");
+  });
+  it("renders button component when asChild is false", () => {
+    render(
+      <Button asChild={false}>
+        <a href="/test">Click me</a>
+      </Button>
+    );
+    const linkElement = screen.getByRole("link");
+    const button = screen.queryByRole("button");
+    expect(button).toBeInTheDocument();
+    expect(linkElement).toBeInTheDocument();
+    expect(linkElement.tagName).toBe("A");
+    expect(linkElement).toHaveAttribute("href", "/test");
   });
 });

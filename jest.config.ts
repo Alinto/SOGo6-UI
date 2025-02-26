@@ -5,8 +5,8 @@
 
 import type { Config } from "jest";
 import nextJest from "next/jest.js";
+
 const createJestConfig = nextJest({
-  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
   dir: "./",
 });
 const config: Config = {
@@ -15,6 +15,12 @@ const config: Config = {
   coverageProvider: "v8",
   coverageDirectory: "coverage",
   testEnvironment: "jsdom",
+  transform: {
+    "^.+\\.(ts|tsx)?$": "ts-jest",
+    "^.+\\.(js|jsx)$": "babel-jest",
+  },
+  // coverageReporters: ["text", "json"],
+  workerThreads: true,
 };
 
 export default createJestConfig(config);

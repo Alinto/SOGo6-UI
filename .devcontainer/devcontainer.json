@@ -31,7 +31,8 @@
 				"eamodio.gitlens",
 				"ms-azuretools.vscode-docker",
 				"pkief.material-icon-theme",
-				"unifiedjs.vscode-mdx"
+				"unifiedjs.vscode-mdx",
+				"ryanluker.vscode-coverage-gutters"
 			]
 		}
 	},

@@ -11,16 +11,21 @@ const PasswordInput = (props: React.ComponentPropsWithoutRef<"input">) => {
       <Input
         type={showPassword ? "text" : "password"}
         className="pr-10"
+        role="textbox"
         {...props}
       />
       <Button
         type="button"
-        className="absolute right-0 top-0"
         size={"icon"}
         variant="ghost"
+        className="absolute right-0 top-0"
         onClick={() => setShowPassword(!showPassword)}
       >
-        {showPassword ? <EyeClosed size={60} /> : <EyeIcon size={60} />}
+        {showPassword ? (
+          <EyeClosed data-testid="eye-closed-icon" size={24} />
+        ) : (
+          <EyeIcon data-testid="eye-icon" size={24} />
+        )}
       </Button>
     </div>
   );
