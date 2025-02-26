@@ -11,6 +11,16 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      keyframes: {
+        horizontalTranslate: {
+          "0%": { transform: "translateX(50vw)" },
+          "20%": { transform: "translateX(50vw)" },
+          "100%": { transform: "translateX(0)" },
+        },
+      },
+      animation: {
+        horizontalTranslate: "horizontalTranslate 2s ease-in-out forwards",
+      },
       colors: {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",

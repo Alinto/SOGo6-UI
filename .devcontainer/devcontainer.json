@@ -29,7 +29,9 @@
 				"esbenp.prettier-vscode",
 				"bradlc.vscode-tailwindcss",
 				"eamodio.gitlens",
-				"ms-azuretools.vscode-docker"
+				"ms-azuretools.vscode-docker",
+				"pkief.material-icon-theme",
+				"unifiedjs.vscode-mdx"
 			]
 		}
 	},
