@@ -32,12 +32,14 @@
 				"ms-azuretools.vscode-docker",
 				"pkief.material-icon-theme",
 				"unifiedjs.vscode-mdx",
-				"ryanluker.vscode-coverage-gutters"
+				"ryanluker.vscode-coverage-gutters",
+				"lokalise.i18n-ally"
 			]
 		}
 	},
 	"containerEnv": {
-		"TZ": "Europe/Paris"
+		"TZ": "Europe/Paris",
+		"NODE_ENV": "development"
 	},
 	"postAttachCommand": "/container-entrypoint"
 }

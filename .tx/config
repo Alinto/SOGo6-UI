@@ -1,0 +1,12 @@
+[main]
+host = https://app.transifex.com
+
+[o:fafenbackcom:p:test_fafenback:r:profile]
+file_filter            = src/messages/<lang>/profile.json
+source_file            = src/messages/en/profile.json
+type                   = STRUCTURED_JSON
+minimum_perc           = 0
+resource_name          = Profile
+replace_edited_strings = false
+keep_translations      = false
+
