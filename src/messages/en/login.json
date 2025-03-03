@@ -1,0 +1,56 @@
+{
+    "Login": {
+        "email_label": {
+            "string": "Email",
+            "context": "Label for the email field"
+        },
+        "email_placeholder": {
+            "string": "Enter your email",
+            "context": "Placeholder for the email field"
+        },
+        "password_label": {
+            "string": "Password",
+            "context": "Label for the password field"
+        },
+        "password_placeholder": {
+            "string": "Enter your password",
+            "context": "Placeholder for the password field"
+        },
+        "login_button": {
+            "string": "Login",
+            "context": "Button to submit the login form"
+        },
+        "signup_description": {
+            "string": "Don't have an account?",
+            "context": "Description to register a new user"
+        },
+        "signup": {
+            "string": "Sign up",
+            "context": "Link to register a new user"
+        },
+        "remember_me": {
+            "string": "Remember me",
+            "context": "Checkbox to remember the user"
+        },
+        "forgot_password": {
+            "string": "Forgot password?",
+            "context": "Link to reset the password"
+        },
+        "register": {
+            "string": "Register",
+            "context": "Link to register a new user"
+        },
+        "error": {
+            "string": "Invalid email or password",
+            "context": "Error message when the user enters invalid credentials"
+        },
+        "success": {
+            "string": "You have successfully logged in",
+            "context": "Success message when the user logs in"
+        },
+        "title": {
+            "string": "Login",
+            "context": "Title of the login page"
+        }
+    }
+}

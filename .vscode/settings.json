@@ -1,4 +1,12 @@
 {
     "terminal.integrated.defaultLocation": "view",
-    "workbench.startupEditor": "terminal"
+    "workbench.startupEditor": "terminal",
+    "i18n-ally.localesPaths": [
+        "./messages",
+        "./messages/fr",
+        "./messages/en",
+        "./messages/es",
+        "./messages/de"
+    ],
+    "i18n-ally.keystyle": "nested"
 }
