@@ -2,6 +2,19 @@
   "extends": [
     "next/core-web-vitals",
     "next/typescript",
-    "plugin:storybook/recommended"
-  ]
+    "plugin:storybook/recommended",
+    "prettier"
+  ],
+  "rules": {
+    "react/jsx-no-literals": [
+      "error",
+      {
+        "noStrings": true,
+        "ignoreProps": true,
+        "ignore": [
+          "*.test.*"
+        ]
+      }
+    ]
+  }
 }

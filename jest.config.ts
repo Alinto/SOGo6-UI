@@ -3,24 +3,25 @@
  * https://jestjs.io/docs/configuration
  */
 
-import type { Config } from "jest";
-import nextJest from "next/jest.js";
+import type { Config } from 'jest'
+import nextJest from 'next/jest.js'
 
 const createJestConfig = nextJest({
-  dir: "./",
-});
+  dir: './',
+})
 const config: Config = {
   clearMocks: true,
   collectCoverage: true,
-  coverageProvider: "v8",
-  coverageDirectory: "coverage",
-  testEnvironment: "jsdom",
+  coverageProvider: 'v8',
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
+  coverageDirectory: 'coverage',
+  testEnvironment: 'jsdom',
   transform: {
-    "^.+\\.(ts|tsx)?$": "ts-jest",
-    "^.+\\.(js|jsx)$": "babel-jest",
+    '^.+\\.(ts|tsx)?$': 'ts-jest',
+    '^.+\\.(js|jsx)$': 'babel-jest',
   },
   // coverageReporters: ["text", "json"],
   workerThreads: true,
-};
+}
 
-export default createJestConfig(config);
+export default createJestConfig(config)
