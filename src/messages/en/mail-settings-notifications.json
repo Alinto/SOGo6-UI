@@ -1,0 +1,34 @@
+{
+    "Mail_Settings_Notifications": {
+        "title": {
+            "string": "Notifications"
+        },
+        "notifications": {
+            "enabled": {
+                "string": "Enabled"
+            },
+            "emails": {
+                "label": {
+                    "string": "Email addresses"
+                },
+                "placeholder": {
+                    "string": "Enter email addresses"
+                },
+                "invalid": {
+                    "string": "Invalid email address"
+                }
+            },
+            "message": {
+                "label": {
+                    "string": "Notification message sent"
+                },
+                "placeholder": {
+                    "string": "Enter message"
+                },
+                "required": {
+                    "string": "Message is required"
+                }
+            }
+        }
+    }
+}

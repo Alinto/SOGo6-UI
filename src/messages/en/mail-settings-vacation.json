@@ -1,0 +1,94 @@
+{
+    "Mail_Settings_Vacation": {
+        "title": {
+            "string": "Vacation"
+        },
+        "save": {
+            "string": "Save"
+        },
+        "auto_reply": {
+            "enable": {
+                "string": "Enable vacation auto reply"
+            },
+            "subject": {
+                "label": {
+                    "string": "Auto reply subject"
+                },
+                "description": {
+                    "string": "Leave blank to use default subject. You can write {subject} to insert the original subject."
+                }
+            },
+            "message": {
+                "string": "Auto reply message"
+            },
+            "interval": {
+                "label": {
+                    "string": "Days between responses"
+                }
+            },
+            "constraints": {
+                "title": {
+                    "string": "Activation constraints"
+                },
+                "description": {
+                    "string": " Customize day and hour ranges independently and optionally combine them with specific weekdays to tailor your vacation filters to your preferences."
+                },
+                "enable": {
+                    "days": {
+                        "string": "Enable auto reply on these days"
+                    },
+                    "hours": {
+                        "string": "Enable auto reply between these hours"
+                    },
+                    "range": {
+                        "string": "Enable auto reply between these days:"
+                    }
+                },
+                "weekdays": {
+                    "monday": {
+                        "string": "Monday"
+                    },
+                    "tuesday": {
+                        "string": "Tuesday"
+                    },
+                    "wednesday": {
+                        "string": "Wednesday"
+                    },
+                    "thursday": {
+                        "string": "Thursday"
+                    },
+                    "friday": {
+                        "string": "Friday"
+                    },
+                    "saturday": {
+                        "string": "Saturday"
+                    },
+                    "sunday": {
+                        "string": "Sunday"
+                    }
+                }
+            },
+            "response": {
+                "to_mailling_list": {
+                    "string": "Do not send responses to mailing lists"
+                },
+                "send_always": {
+                    "label": {
+                        "string": "Always send vacation message response"
+                    },
+                    "description": {
+                        "string": "The vacation message is sent prior to apply your filters."
+                    }
+                },
+                "discard": {
+                    "label": {
+                        "string": "Discard incoming mails during vacation"
+                    },
+                    "description": {
+                        "string": "The vacation message is sent but incoming messages are not delivered to your inbox."
+                    }
+                }
+            }
+        }
+    }
+}

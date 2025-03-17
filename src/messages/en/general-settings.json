@@ -1,0 +1,65 @@
+{
+    "General_Settings": {
+        "title": {
+            "string": "General Settings"
+        },
+        "labels": {
+            "language": {
+                "string": "Language"
+            },
+            "timezone": {
+                "string": "Timezone"
+            },
+            "short_date_style": {
+                "string": "Short Date Style"
+            },
+            "long_date_style": {
+                "string": "Long Date Style"
+            },
+            "time_style": {
+                "string": "Time Style"
+            },
+            "default_view": {
+                "string": "Default View"
+            },
+            "refresh_frequency": {
+                "string": "Refresh Frequency"
+            },
+            "enable_notifications": {
+                "string": "Enable Notifications"
+            },
+            "animation_level": {
+                "string": "Animation Level"
+            }
+        },
+        "descriptions": {
+            "language": {
+                "string": "The language used in the app."
+            },
+            "timezone": {
+                "string": "The time zone you are in."
+            },
+            "short_date_style": {
+                "string": "How dates are displayed in the app."
+            },
+            "long_date_style": {
+                "string": "How dates are displayed in the app."
+            },
+            "time_style": {
+                "string": "How time is displayed in the app."
+            },
+            "default_view": {
+                "string": "The default view when you open the app."
+            },
+            "refresh_frequency": {
+                "string": " How often the app should check for new emails, calendar events, and more."
+            },
+            "enable_notifications": {
+                "string": "Receive notifications for new emails, calendar events, and more."
+            },
+            "animation_level": {
+                "string": "Select the animation level you want to use."
+            }
+        }
+    }
+}

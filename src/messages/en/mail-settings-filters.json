@@ -1,0 +1,133 @@
+{
+    "Mail_Settings_Filters": {
+        "title": {
+            "string": "Mail Filters"
+        },
+        "form": {
+            "cancel": {
+                "string": "Cancel"
+            },
+            "placeholder": {
+                "string": "Filter name"
+            },
+            "save": {
+                "string": "Save"
+            },
+            "create": {
+                "string": "Create a new filter"
+            },
+            "edit": {
+                "string": "Edit filter: {name}"
+            },
+            "add": {
+                "condition": {
+                    "string": "Add a condition"
+                },
+                "action": {
+                    "string": "Add an action"
+                }
+            }
+        },
+        "operators": {
+            "title": {
+                "string": "For incoming messages that"
+            },
+            "all": {
+                "string": "Match all messages"
+            },
+            "or": {
+                "string": "Match any of the following rules"
+            },
+            "and": {
+                "string": "Match all the following rules"
+            }
+        },
+        "conditions": {
+            "title": {
+                "string": "Match the following conditions"
+            },
+            "is": {
+                "string": "Is"
+            },
+            "is_not": {
+                "string": "Is not"
+            },
+            "contains": {
+                "string": "Contains"
+            },
+            "not_contain": {
+                "string": "Does not contain"
+            },
+            "match": {
+                "string": "Match"
+            },
+            "not_match": {
+                "string": "Does not match"
+            },
+            "match_regex": {
+                "string": "Match regex"
+            },
+            "not_match_regex": {
+                "string": "Does not match regex"
+            },
+            "is_under": {
+                "string": "Is under"
+            },
+            "is_over": {
+                "string": "Is over"
+            }
+        },
+        "rules": {
+            "body": {
+                "string": "Body"
+            },
+            "from": {
+                "string": "From"
+            },
+            "subject": {
+                "string": "Subject"
+            },
+            "to": {
+                "string": "To"
+            },
+            "cc": {
+                "string": "CC"
+            },
+            "to_or_cc": {
+                "string": "To or CC"
+            },
+            "header": {
+                "string": "Header"
+            },
+            "size": {
+                "string": "Size (Kb)"
+            }
+        },
+        "actions": {
+            "title": {
+                "string": "Perform the following actions"
+            },
+            "move": {
+                "string": "File the message in"
+            },
+            "stop": {
+                "string": "Stop processing filter rules"
+            },
+            "reject": {
+                "string": "Send a reject message"
+            },
+            "discard": {
+                "string": "Discard the message"
+            },
+            "forward": {
+                "string": "Forward the message to"
+            },
+            "flag": {
+                "string": "Flag the message with"
+            },
+            "keep": {
+                "string": "Keep the message"
+            }
+        }
+    }
+}

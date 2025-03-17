@@ -1,0 +1,90 @@
+{
+    "Nav_User_Settings": {
+        "administration": {
+            "title": {
+                "string": "Administration",
+                "context": "Section title for the settings sidebar"
+            },
+            "panel": {
+                "string": "Panel",
+                "context": "Link to the administration panel in the settings sidebar"
+            }
+        },
+        "account": {
+            "title": {
+                "string": "Account",
+                "context": "Section title for the settings sidebar"
+            },
+            "profile": {
+                "string": "Profile",
+                "context": "Link to the account profile in the settings sidebar"
+            },
+            "security": {
+                "string": "Security",
+                "context": "Link to the account security in the settings sidebar"
+            }
+        },
+        "settings": {
+            "title": {
+                "string": "Settings",
+                "context": "Section title for the settings sidebar"
+            },
+            "general": {
+                "string": "General",
+                "context": "Link to the general settings in the settings sidebar"
+            },
+            "address_books": {
+                "string": "Address books",
+                "context": "Link to the settings address books in the settings sidebar"
+            },
+            "calendars": {
+                "title": {
+                    "string": "Calendars",
+                    "context": "Section title for the settings sidebar"
+                },
+                "general": {
+                    "string": "General",
+                    "context": "Link to the general calendars settings in the settings sidebar"
+                },
+                "categories": {
+                    "string": "Categories",
+                    "context": "Link to the categories calendars settings in the settings sidebar"
+                },
+                "invitations": {
+                    "string": "Invitations",
+                    "context": "Link to the invitations calendars settings in the settings sidebar"
+                }
+            },
+            "email": {
+                "title": {
+                    "string": "Email",
+                    "context": "Section title for the settings sidebar"
+                },
+                "general": {
+                    "string": "General",
+                    "context": "Link to the general email settings in the settings sidebar"
+                },
+                "labels": {
+                    "string": "Labels",
+                    "context": "Link to the labels email settings in the settings sidebar"
+                },
+                "filters": {
+                    "string": "Filters",
+                    "context": "Link to the filters email settings in the settings sidebar"
+                },
+                "vacation": {
+                    "string": "Vacation",
+                    "context": "Link to the vacation email settings in the settings sidebar"
+                },
+                "imap_accounts": {
+                    "string": "IMAP accounts",
+                    "context": "Link to the IMAP accounts email settings in the settings sidebar"
+                },
+                "forward": {
+                    "string": "Forward",
+                    "context": "Link to the forward email settings in the settings sidebar"
+                }
+            }
+        }
+    }
+}

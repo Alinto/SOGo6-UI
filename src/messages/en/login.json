@@ -1,32 +1,34 @@
 {
     "Login": {
-        "email_label": {
-            "string": "Email",
-            "context": "Label for the email field"
+        "email": {
+            "label": {
+                "string": "Email",
+                "context": "Label for the email field"
+            },
+            "placeholder": {
+                "string": "Enter your email",
+                "context": "Placeholder for the email field"
+            }
         },
-        "email_placeholder": {
-            "string": "Enter your email",
-            "context": "Placeholder for the email field"
-        },
-        "password_label": {
-            "string": "Password",
-            "context": "Label for the password field"
-        },
-        "password_placeholder": {
-            "string": "Enter your password",
-            "context": "Placeholder for the password field"
-        },
-        "login_button": {
-            "string": "Login",
-            "context": "Button to submit the login form"
-        },
-        "signup_description": {
-            "string": "Don't have an account?",
-            "context": "Description to register a new user"
+        "password": {
+            "label": {
+                "string": "Password",
+                "context": "Label for the password field"
+            },
+            "placeholder": {
+                "string": "Enter your password",
+                "context": "Placeholder for the password field"
+            }
         },
         "signup": {
-            "string": "Sign up",
-            "context": "Link to register a new user"
+            "title": {
+                "string": "Sign up",
+                "context": "Link to register a new user"
+            },
+            "description": {
+                "string": "Don't have an account?",
+                "context": "Description to register a new user"
+            }
         },
         "remember_me": {
             "string": "Remember me",
