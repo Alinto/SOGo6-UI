@@ -1,29 +1,28 @@
 type NestedJson = {
-  [key: string]: any;
-};
+  [key: string]: any
+}
 
 export function transformJson(json: NestedJson): NestedJson {
-  const result: NestedJson = {};
+  const result: NestedJson = {}
 
   for (const key in json) {
     if (json.hasOwnProperty(key)) {
-      const value = json[key];
+      const value = json[key]
 
       if (
-        typeof value === "object" &&
+        typeof value === 'object' &&
         value !== null &&
         !Array.isArray(value)
       ) {
-        if (value.hasOwnProperty("string")) {
-          result[key] = value.string;
+        if (value.hasOwnProperty('string')) {
+          result[key] = value.string
         } else {
-          result[key] = transformJson(value);
+          result[key] = transformJson(value)
         }
       } else {
-        result[key] = value;
+        result[key] = value
       }
     }
   }
-
-  return result;
+  return result
 }
