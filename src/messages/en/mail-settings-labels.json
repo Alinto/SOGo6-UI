@@ -1,0 +1,24 @@
+{
+    "Mail_Settings_Labels": {
+        "title": {
+            "string": "Mail Labels",
+            "context": "Title of the Mail Labels page"
+        },
+        "label": {
+            "string": "Label",
+            "context": ""
+        },
+        "color": {
+            "string": "Color",
+            "context": ""
+        },
+        "imap_label": {
+            "string": "IMAP Label",
+            "context": ""
+        },
+        "create": {
+            "string": "Create",
+            "context": "Create a new label"
+        }
+    }
+}

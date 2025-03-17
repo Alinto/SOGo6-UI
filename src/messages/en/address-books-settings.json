@@ -1,0 +1,18 @@
+{
+    "Address_Books_Settings": {
+        "title": {
+            "string": "Address Books Categories"
+        },
+        "create": {
+            "string": "Create"
+        },
+        "accessibility": {
+            "icon": {
+                "delete": {
+                    "string": "Delete {name}",
+                    "context": "Accessibility message for the delete icon"
+                }
+            }
+        }
+    }
+}

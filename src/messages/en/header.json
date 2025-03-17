@@ -1,0 +1,68 @@
+{
+    "Header": {
+        "theme": {
+            "title": {
+                "string": "Theme",
+                "context": "Section title for the header dropdown"
+            },
+            "dark": {
+                "string": "Dark",
+                "context": "Dark theme switcher in the header"
+            },
+            "light": {
+                "string": "Light",
+                "context": "Light theme switcher in the header"
+            },
+            "auto": {
+                "string": "Auto",
+                "context": "Auto theme switcher in the header"
+            }
+        },
+        "admin": {
+            "panel": {
+                "string": "Administrator Panel",
+                "context": "Title of the admin panel in the header dropdown"
+            }
+        },
+        "account": {
+            "section": {
+                "string": "Account",
+                "context": "Section title for the header dropdown"
+            },
+            "profile": {
+                "string": "Profile",
+                "context": "Link to the account profile in the header dropdown"
+            },
+            "security": {
+                "string": "Security",
+                "context": "Link to the account security in the header dropdown"
+            }
+        },
+        "logout": {
+            "string": "Logout",
+            "context": "Link to logout in the header dropdown"
+        },
+        "settings": {
+            "title": {
+                "string": "Settings",
+                "context": "Section title for the header dropdown"
+            },
+            "general": {
+                "string": "General",
+                "context": "Link to the general settings in the header dropdown"
+            },
+            "agenda": {
+                "string": "Agenda",
+                "context": "Link to the agenda settings in the header dropdown"
+            },
+            "address_books": {
+                "string": "Address books",
+                "context": "Link to the address books settings in the header dropdown"
+            },
+            "email": {
+                "string": "Email",
+                "context": "Link to the emails settings in the header dropdown"
+            }
+        }
+    }
+}

@@ -1,0 +1,152 @@
+{
+    "Mail_Settings": {
+        "title": {
+            "string": "Mail general settings",
+            "context": "Title for general mail settings form"
+        },
+        "save": {
+            "string": "Save",
+            "context": "Button to save the mail settings"
+        },
+        "display_subscribed_mailboxes_only": {
+            "string": "Show subscribed mailboxes only",
+            "context": "Checkbox to show subscribed mailboxes only"
+        },
+        "EAS": {
+            "string": "Synchronize only default mail folders (EAS)",
+            "context": "Checkbox to synchronize only default mail folders"
+        },
+        "fetch_count_of_unseen_messages": {
+            "string": "Fetch count of unseen messages for all mailboxes",
+            "context": "Checkbox to fetch count of unseen messages for all mailboxes"
+        },
+        "sort_messages_by_threads": {
+            "string": "Sort messages by threads",
+            "context": "Checkbox to sort messages by threads"
+        },
+        "show_recipients_or_sender_full_email": {
+            "string": "Show recipients or sender full email in mailboxes",
+            "context": "Checkbox to show recipients or sender full email in mailboxes"
+        },
+        "hide_attachments_for_inline_images": {
+            "string": "Hide attachments for inline images",
+            "context": "Checkbox to hide attachments for inline images"
+        },
+        "automatically_mark_messages_as_read": {
+            "string": "Automatically mark messages as read",
+            "context": "Checkbox to automatically mark messages as read"
+        },
+        "immediately_on_display": {
+            "string": "Immediately on display",
+            "context": "Checkbox to mark messages as read immediately on display"
+        },
+        "after_displaying_for_seconds": {
+            "string": "After displaying for XXXX seconds",
+            "context": "Checkbox to mark messages as read after displaying for seconds"
+        },
+        "forward_messages": {
+            "title": {
+                "string": "Forward messages",
+                "context": "Dropdown label for forward messages"
+            },
+            "as_attachment": {
+                "string": "As attachment",
+                "context": "Checkbox to forward messages as attachment"
+            },
+            "as_inline": {
+                "string": "As inline",
+                "context": "Checkbox to forward messages as inline"
+            }
+        },
+        "start_reply": {
+            "title": {
+                "string": "When replying to a message",
+                "context": "Dropdown label to know where to start in the mail when replying"
+            },
+            "to_above": {
+                "string": "Start my reply above the quote",
+                "context": "Checkbox to start replying at the bottom"
+            },
+            "to_below": {
+                "string": "Start my reply below the quote",
+                "context": "Checkbox to start replying at the top"
+            }
+        },
+        "place_signature": {
+            "title": {
+                "string": "and place the signature",
+                "context": "Dropdown label to know where to place the signature"
+            },
+            "above": {
+                "string": "above the quote",
+                "context": "Checkbox to start replying at the bottom"
+            },
+            "below": {
+                "string": "below the quote",
+                "context": "Checkbox to start replying at the top"
+            }
+        },
+        "sign_on": {
+            "new": {
+                "string": "Insert signature on new message",
+                "context": ""
+            },
+            "reply": {
+                "string": "Insert signature on reply message",
+                "context": ""
+            },
+            "forward": {
+                "string": "Insert signature on forward message",
+                "context": ""
+            }
+        },
+        "compose_in": {
+            "string": "Compose messages in",
+            "context": "Dropdown label to know where to compose messages, HTML or Plain text"
+        },
+        "default_font_size": {
+            "title": {
+                "string": "Default font size",
+                "context": "Dropdown label to know the default font size"
+            },
+            "sm": {
+                "string": "Small",
+                "context": "Small font size"
+            },
+            "md": {
+                "string": "Medium",
+                "context": "Medium font size"
+            },
+            "lg": {
+                "string": "Large",
+                "context": "Large font size"
+            },
+            "xl": {
+                "string": "Extra large",
+                "context": "Extra large font size"
+            }
+        },
+        "display_remote_images": {
+            "string": "Display remote inline images",
+            "context": "Checkbox to set display remote inline images to true or false"
+        },
+        "compose": {
+            "title": {
+                "string": "Default compose opening behavior",
+                "context": "Dropdown label to know where to open compose in"
+            },
+            "always_ask": {
+                "string": "Always ask opening compose in new window or inside webmail",
+                "context": "Dropdown label to know where to open compose in"
+            },
+            "in_new_window": {
+                "string": "Open compose in new window",
+                "context": "Dropdown label to know where to open compose in"
+            },
+            "inside_webmail": {
+                "string": "Open compose inside webmail",
+                "context": "Dropdown label to know where to open compose in"
+            }
+        }
+    }
+}
