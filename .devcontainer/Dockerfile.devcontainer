@@ -2,7 +2,7 @@ FROM debian:12
 
 ENV DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=vscode
-ARG WORKSPACE=/SOGo6
+ARG WORKSPACE=/SOGo
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 ARG NODE_VERSION=22
@@ -40,5 +40,7 @@ WORKDIR ${WORKSPACE}
 COPY ./package.json ./package-lock.json ./
 
 RUN npm install
+
+RUN git config --global --get core.editor || git config --global core.editor "nano"
 
 USER ${USERNAME}
