@@ -1,0 +1,24 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Collapsible Component matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    data-state="closed"
+  >
+    <button
+      aria-controls="radix-:r4:"
+      aria-expanded="false"
+      data-state="closed"
+      type="button"
+    >
+      Toggle Content
+    </button>
+    <div
+      data-state="closed"
+      hidden=""
+      id="radix-:r4:"
+      style=""
+    />
+  </div>
+</DocumentFragment>
+`;

@@ -1,5 +1,5 @@
-import React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import React from 'react'
 
 import {
   DropdownMenu,
@@ -8,7 +8,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu'
 import {
   BookA,
   CalendarCog,
@@ -17,57 +17,73 @@ import {
   LogOut,
   Mail,
   UserRoundCog,
-} from "lucide-react";
+} from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { ThemeSwitcher } from '../theme-switcher'
 
 const HeaderDropdown: React.FC = () => {
+  const t = useTranslations('Header')
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:cursor-pointer" asChild>
-        <div className="flex items-center pl-4 gap-4 space-x-2">
+        <div
+          data-testid="header-dropdown-trigger"
+          className="flex items-center pl-4 gap-4 space-x-2"
+        >
           <Avatar>
             <AvatarImage src="/images/account-avatar.svg" />
             <AvatarFallback>HF</AvatarFallback>
           </Avatar>
-          <div className="text-background">
+          <div className="text-background dark:text-foreground">
             <div>Henry Fafenback</div>
             <div className="block text-sm">sbarre@alinto.eu</div>
           </div>
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuCheckboxItem>
-          <Cog className="pr-2" /> Admin panel
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuLabel>Account</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('theme.title')}</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <ThemeSwitcher />
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel>{t('account.section')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem>
           <CircleUserRound className="pr-2" />
-          Profile
+          {t('account.profile')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
           <UserRoundCog className="pr-2" />
-          Preferences
+          {t('account.security')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>Settings</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('settings.title')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuCheckboxItem>
+          <UserRoundCog className="pr-2" />
+          {t('settings.general')}
+        </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
           <CalendarCog className="pr-2" />
-          Agenda
+          {t('settings.agenda')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
-          <BookA className="pr-2" /> Addresses Book
+          <BookA className="pr-2" /> {t('settings.address_books')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
-          <Mail className="pr-2" /> Email
+          <Mail className="pr-2" /> {t('settings.email')}
+        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem>
+          <Cog className="pr-2" />
+          {t('admin.panel')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem>
-          <LogOut className="pr-2" /> Logout
+          <LogOut className="pr-2" />
+          {t('logout')}
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  );
-};
+  )
+}
 
-export default HeaderDropdown;
+export default HeaderDropdown

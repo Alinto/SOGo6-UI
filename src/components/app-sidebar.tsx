@@ -3,12 +3,16 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-} from "@/components/ui/sidebar";
-import { Calendar, Contact, Mail, Settings } from "lucide-react";
-import { Nav } from "@/components/nav-preferences";
-import Image from "next/image";
+} from '@/components/ui/sidebar'
 
-export function AppSidebar() {
+import Image from 'next/image'
+import React from 'react'
+
+export function AppSidebar({
+  children,
+}: {
+  children: React.ReactNode
+}): JSX.Element {
   return (
     <Sidebar>
       <SidebarHeader className="flex h-20">
@@ -21,33 +25,8 @@ export function AppSidebar() {
           />
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <Nav
-          sections={[
-            {
-              name: "general",
-              url: "/preferences/general",
-              icon: Settings,
-            },
-            {
-              name: "agenda",
-              url: "/preferences/agenda",
-              icon: Calendar,
-            },
-            {
-              name: "address_book",
-              url: "/preferences/address_book",
-              icon: Contact,
-            },
-            {
-              name: "email",
-              url: "/preferences/email",
-              icon: Mail,
-            },
-          ]}
-        />
-      </SidebarContent>
+      <SidebarContent className="pt-5 pl-3">{children}</SidebarContent>
       <SidebarFooter />
     </Sidebar>
-  );
+  )
 }

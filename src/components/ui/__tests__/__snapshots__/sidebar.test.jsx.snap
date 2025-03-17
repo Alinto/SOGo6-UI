@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Sidebar Components matches snapshot for SidebarMenuSubItem 1`] = `
+<DocumentFragment>
+  <div
+    class="group/sidebar-wrapper flex min-h-svh w-full has-[[data-variant=inset]]:bg-sidebar"
+    style="--sidebar-width: 17rem; --sidebar-width-icon: 3rem;"
+  >
+    <div
+      class="group peer hidden text-sidebar-foreground md:block"
+      data-collapsible=""
+      data-side="left"
+      data-state="expanded"
+      data-variant="sidebar"
+    >
+      <div
+        class="relative h-svh w-[--sidebar-width] bg-transparent transition-[width] duration-200 ease-linear group-data-[collapsible=offcanvas]:w-0 group-data-[side=right]:rotate-180 group-data-[collapsible=icon]:w-[--sidebar-width-icon]"
+      />
+      <div
+        class="fixed inset-y-0 z-10 hidden h-svh w-[--sidebar-width] transition-[left,right,width] duration-200 ease-linear md:flex left-0 group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] group-data-[collapsible=icon]:w-[--sidebar-width-icon] group-data-[side=left]:border-r group-data-[side=right]:border-l"
+      >
+        <div
+          class="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+          data-sidebar="sidebar"
+        >
+          <ul
+            class="flex w-full min-w-0 flex-col gap-1"
+            data-sidebar="menu"
+          >
+            <ul
+              class="mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l border-sidebar-border px-2.5 py-0.5 group-data-[collapsible=icon]:hidden"
+              data-sidebar="menu-sub"
+            >
+              <span>
+                Sub Item
+              </span>
+            </ul>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

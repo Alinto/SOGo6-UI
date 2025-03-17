@@ -1,17 +1,16 @@
-import React from "react";
-import { render, screen } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import {
   Tooltip,
-  TooltipTrigger,
   TooltipContent,
   TooltipProvider,
-} from "@/components/ui/tooltip";
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import '@testing-library/jest-dom'
+import { render, screen } from '@testing-library/react'
 
-// filepath: /SOGo6/src/components/ui/tooltip.test.tsx
+// filepath: /SOGo/src/components/ui/tooltip.test.tsx
 
-describe("Tooltip component", () => {
-  it("renders TooltipProvider without crashing", () => {
+describe('Tooltip component', () => {
+  it('renders TooltipProvider without crashing', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -19,11 +18,11 @@ describe("Tooltip component", () => {
           <TooltipContent>Tooltip content</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-    expect(screen.getByText("Hover me")).toBeInTheDocument();
-  });
+    )
+    expect(screen.getByText('Hover me')).toBeInTheDocument()
+  })
 
-  it("renders TooltipTrigger without crashing", () => {
+  it('renders TooltipTrigger without crashing', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -31,11 +30,11 @@ describe("Tooltip component", () => {
           <TooltipContent>Tooltip content</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-    expect(screen.getByText("Hover me")).toBeInTheDocument();
-  });
+    )
+    expect(screen.getByText('Hover me')).toBeInTheDocument()
+  })
 
-  it("renders TooltipContent without crashing", () => {
+  it('renders TooltipContent without crashing', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -43,13 +42,13 @@ describe("Tooltip component", () => {
           <TooltipContent>Tooltip content</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-    const trigger = screen.getByText("Hover me");
-    trigger.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
-    expect(screen.getByText("Tooltip content")).toBeInTheDocument();
-  });
+    )
+    const trigger = screen.getByText('Hover me')
+    trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    expect(screen.getByText('Tooltip content')).toBeInTheDocument()
+  })
 
-  it("applies default classes to TooltipContent", () => {
+  it('applies default classes to TooltipContent', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -57,16 +56,16 @@ describe("Tooltip component", () => {
           <TooltipContent>Tooltip content</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-    const trigger = screen.getByText("Hover me");
-    trigger.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
-    const tooltipContent = screen.getByText("Tooltip content");
+    )
+    const trigger = screen.getByText('Hover me')
+    trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    const tooltipContent = screen.getByText('Tooltip content')
     expect(tooltipContent).toHaveClass(
-      "z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95"
-    );
-  });
+      'z-50 overflow-hidden rounded-md bg-primary px-3 py-1.5 text-xs text-primary-foreground animate-in fade-in-0 zoom-in-95'
+    )
+  })
 
-  it("applies additional classes to TooltipContent", () => {
+  it('applies additional classes to TooltipContent', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -76,14 +75,14 @@ describe("Tooltip component", () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-    const trigger = screen.getByText("Hover me");
-    trigger.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
-    const tooltipContent = screen.getByText("Tooltip content");
-    expect(tooltipContent).toHaveClass("extra-class");
-  });
+    )
+    const trigger = screen.getByText('Hover me')
+    trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    const tooltipContent = screen.getByText('Tooltip content')
+    expect(tooltipContent).toHaveClass('extra-class')
+  })
 
-  it("passes additional props to TooltipContent", () => {
+  it('passes additional props to TooltipContent', () => {
     render(
       <TooltipProvider>
         <Tooltip>
@@ -93,10 +92,10 @@ describe("Tooltip component", () => {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-    );
-    const trigger = screen.getByText("Hover me");
-    trigger.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
-    const tooltipContent = screen.getByTestId("tooltip-content");
-    expect(tooltipContent).toBeInTheDocument();
-  });
-});
+    )
+    const trigger = screen.getByText('Hover me')
+    trigger.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }))
+    const tooltipContent = screen.getByTestId('tooltip-content')
+    expect(tooltipContent).toBeInTheDocument()
+  })
+})
