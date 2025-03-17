@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Select Component matches snapshot 1`] = `
+<DocumentFragment>
+  <button
+    aria-autocomplete="none"
+    aria-controls="radix-:r1:"
+    aria-expanded="false"
+    class="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1"
+    data-placeholder=""
+    data-state="closed"
+    dir="ltr"
+    role="combobox"
+    type="button"
+  >
+    Trigger
+    <svg
+      aria-hidden="true"
+      class="lucide lucide-chevron-down h-4 w-4 opacity-50"
+      fill="none"
+      height="24"
+      stroke="currentColor"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      viewBox="0 0 24 24"
+      width="24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="m6 9 6 6 6-6"
+      />
+    </svg>
+  </button>
+</DocumentFragment>
+`;

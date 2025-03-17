@@ -1,0 +1,9 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`QRCode renders the QRCode component with the correct text and options 1`] = `
+<div
+  data-options="{"errorCorrectionLevel":"M","margin":3,"scale":4,"width":200,"color":{"dark":"#010599FF","light":"#FFBF60FF"}}"
+  data-testid="qrcode-canvas"
+  data-text="https://example.com"
+/>
+`;

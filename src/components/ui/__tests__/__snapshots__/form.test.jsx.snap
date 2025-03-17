@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Form components matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="space-y-2"
+  />
+  <label
+    class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+    for="undefined-form-item"
+  >
+    Label
+  </label>
+  <p
+    class="text-[0.8rem] text-muted-foreground"
+    id="undefined-form-item-description"
+  >
+    Description
+  </p>
+  <p
+    class="text-[0.8rem] font-medium text-destructive"
+    id="undefined-form-item-message"
+  >
+    Message
+  </p>
+</DocumentFragment>
+`;

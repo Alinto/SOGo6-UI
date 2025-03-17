@@ -1,25 +1,24 @@
-import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
-import "@testing-library/jest-dom";
 import {
-  // filepath: /SOGo6/src/components/ui/dropdown-menu.test.tsx
+  // filepath: /SOGo/src/components/ui/dropdown-menu.test.tsx
   DropdownMenu,
-  DropdownMenuTrigger,
+  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuCheckboxItem,
-  DropdownMenuRadioItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-} from "@/components/ui/dropdown-menu";
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import '@testing-library/jest-dom'
+import { fireEvent, render, screen } from '@testing-library/react'
 
-describe("DropdownMenu component", () => {
-  it("renders DropdownMenuTrigger correctly", () => {
+describe('DropdownMenu component', () => {
+  it('renders DropdownMenuTrigger correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -27,12 +26,12 @@ describe("DropdownMenu component", () => {
           <DropdownMenuItem>Item 1</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
-    const triggerElement = screen.getByText("Open Menu");
-    expect(triggerElement).toBeInTheDocument();
-  });
+    )
+    const triggerElement = screen.getByText('Open Menu')
+    expect(triggerElement).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuItem correctly", () => {
+  it('renders DropdownMenuItem correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -40,17 +39,17 @@ describe("DropdownMenu component", () => {
           <DropdownMenuItem>Item 1</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    const menuItem = screen.getByText("Item 1");
-    expect(menuItem).toBeInTheDocument();
-  });
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    const menuItem = screen.getByText('Item 1')
+    expect(menuItem).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuCheckboxItem correctly", () => {
+  it('renders DropdownMenuCheckboxItem correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -60,17 +59,17 @@ describe("DropdownMenu component", () => {
           </DropdownMenuCheckboxItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    const checkboxItem = screen.getByText("Checkbox Item");
-    expect(checkboxItem).toBeInTheDocument();
-  });
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    const checkboxItem = screen.getByText('Checkbox Item')
+    expect(checkboxItem).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuRadioItem correctly", () => {
+  it('renders DropdownMenuRadioItem correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -80,17 +79,17 @@ describe("DropdownMenu component", () => {
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    const radioItem = screen.getByText("Radio Item");
-    expect(radioItem).toBeInTheDocument();
-  });
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    const radioItem = screen.getByText('Radio Item')
+    expect(radioItem).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuLabel correctly", () => {
+  it('renders DropdownMenuLabel correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -98,17 +97,17 @@ describe("DropdownMenu component", () => {
           <DropdownMenuLabel>Label</DropdownMenuLabel>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    const label = screen.getByText("Label");
-    expect(label).toBeInTheDocument();
-  });
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    const label = screen.getByText('Label')
+    expect(label).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuSeparator correctly", () => {
+  it('renders DropdownMenuSeparator correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -116,17 +115,17 @@ describe("DropdownMenu component", () => {
           <DropdownMenuSeparator />
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    const separator = screen.getByRole("separator");
-    expect(separator).toBeInTheDocument();
-  });
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    const separator = screen.getByRole('separator')
+    expect(separator).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuShortcut correctly", async () => {
+  it('renders DropdownMenuShortcut correctly', async () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -136,17 +135,17 @@ describe("DropdownMenu component", () => {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    const shortcut = screen.getByText("Ctrl+S");
-    expect(shortcut).toBeInTheDocument();
-  });
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    const shortcut = screen.getByText('Ctrl+S')
+    expect(shortcut).toBeInTheDocument()
+  })
 
-  it("renders DropdownMenuSub and DropdownMenuSubContent correctly", () => {
+  it('renders DropdownMenuSub and DropdownMenuSubContent correctly', () => {
     render(
       <DropdownMenu>
         <DropdownMenuTrigger>Open Menu</DropdownMenuTrigger>
@@ -159,14 +158,14 @@ describe("DropdownMenu component", () => {
           </DropdownMenuSub>
         </DropdownMenuContent>
       </DropdownMenu>
-    );
+    )
     /* WORKAROUND TO OPEN DROPDOWN */
-    fireEvent.keyDown(screen.getByRole("button"), {
-      key: "ArrowDown",
-      code: "ArrowDown",
-    });
-    fireEvent.click(screen.getByText("Sub Menu"));
-    const subItem = screen.getByText("Sub Item 1");
-    expect(subItem).toBeInTheDocument();
-  });
-});
+    fireEvent.keyDown(screen.getByRole('button'), {
+      key: 'ArrowDown',
+      code: 'ArrowDown',
+    })
+    fireEvent.click(screen.getByText('Sub Menu'))
+    const subItem = screen.getByText('Sub Item 1')
+    expect(subItem).toBeInTheDocument()
+  })
+})

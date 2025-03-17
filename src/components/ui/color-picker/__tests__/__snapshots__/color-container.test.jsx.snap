@@ -1,0 +1,44 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ColorContainer Component matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="relative"
+    id="color-container"
+  >
+    <button
+      class="-z-0 text-sm font-medium rounded-full relative transition-colors duration-75 text-slate-500"
+      style="color: red;"
+      type="button"
+      variant="ghost"
+      whiletap="[object Object]"
+    >
+      <svg
+        class="lucide lucide-paint-bucket"
+        fill="none"
+        height="24"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        width="24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="m19 11-8-8-8.6 8.6a2 2 0 0 0 0 2.8l5.2 5.2c.8.8 2 .8 2.8 0L19 11Z"
+        />
+        <path
+          d="m5 2 5 5"
+        />
+        <path
+          d="M2 13h15"
+        />
+        <path
+          d="M22 20a2 2 0 1 1-4 0c0-1.6 1.7-2.4 2-4 .3 1.6 2 2.4 2 4Z"
+        />
+      </svg>
+    </button>
+  </div>
+</DocumentFragment>
+`;

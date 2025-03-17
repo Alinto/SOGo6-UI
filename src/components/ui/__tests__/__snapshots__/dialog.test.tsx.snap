@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DialogOverlay Component matches the snapshot 1`] = `
+<DocumentFragment>
+  <button
+    aria-controls="radix-:r3:"
+    aria-expanded="true"
+    aria-haspopup="dialog"
+    data-state="open"
+    type="button"
+  >
+    Open Dialog
+  </button>
+</DocumentFragment>
+`;
