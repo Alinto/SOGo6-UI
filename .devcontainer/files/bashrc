@@ -1,4 +1,6 @@
 # export EDITOR=code
+# export LINES=""
+# export COLUMNS="80"
 
 # Colors
 bold=$(tput bold)
@@ -21,43 +23,76 @@ bg_white=$(tput setab 7)
 bg_black=$(tput setab 0)
 
 print_sogo_ascii() {
-	echo "${bold}${green}"
-	echo "  _____   ____    _____           _   _           _   "
-	echo " / ____| / __ \  / ____|         | \ | |         | |  "
-	echo "| (___  | |  | ||  |  __  ___    |  \| | _____  _| |_ "
-	echo " \\___ \\ | |  | ||  | |_ |/ _ \\   | . \` |/ _ \\ \\/ / __|"
-	echo " ____) || |__| ||  |__| | (_) |  | |\\  |  __/>  <| |_ "
-	echo "|_____/  \____/  \______|\___/   |_| \_|\___/_/\_\\__|"
-	echo "${normal}"
+    echo "${bold}${green}"
+    echo "  _____   ____    _____           _   _           _   "
+    echo " / ____| / __ \  / ____|         | \ | |         | |  "
+    echo "| (___  | |  | ||  |  __  ___    |  \| | _____  _| |_ "
+    echo " \\___ \\ | |  | ||  | |_ |/ _ \\   | . \` |/ _ \\ \\/ / __|"
+    echo " ____) || |__| ||  |__| | (_) |  | |\\  |  __/>  <| |_ "
+    echo "|_____/  \____/  \______|\___/   |_| \_|\___/_/\_\\__|"
+    echo "${normal}"
 }
+
+# get current branch in git repo
+function parse_git_branch() {
+	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+	if [ ! "${BRANCH}" == "" ]
+	then
+		STAT=`parse_git_dirty`
+		echo "${BRANCH}${STAT}"
+	else
+		echo ""
+	fi
+}
+
+
+function parse_git_dirty {
+	status=`git status 2>&1 | tee`
+	dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+	untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+	ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+	newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+	renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+	deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+	bits=''
+	if [ "${renamed}" == "0" ]; then
+		bits=">${bits}"
+	fi
+	if [ "${ahead}" == "0" ]; then
+		bits="*${bits}"
+	fi
+	if [ "${newfile}" == "0" ]; then
+		bits="+${bits}"
+	fi
+	if [ "${untracked}" == "0" ]; then
+		bits="?${bits}"
+	fi
+	if [ "${deleted}" == "0" ]; then
+		bits="x${bits}"
+	fi
+	if [ "${dirty}" == "0" ]; then
+		bits="!${bits}"
+	fi
+	if [ ! "${bits}" == "" ]; then
+		echo " ${bits}"
+	else
+		echo ""
+	fi
+}
+
 
 # Function to display the prompt
 set_bash_prompt() {
     # Display rounded left border
-    PS1="${cyan}${normal}"
+    PS1="\[${cyan}\]\[${normal}\]"
     # Display date with seconds
-    PS1+="${bg_cyan}\$(date +'%H:%M:%S') ${normal}${bg_blue}${cyan}${normal}"
-
-    # Display current directory
-    PS1+="${bg_blue}${white} \w ${normal}${bg_magenta}${blue}${normal}"
+    PS1+="\[${bg_cyan}\]\$(date +'%H:%M:%S') \[${normal}\]\[${bg_magenta}\]\[${cyan}\]\[${normal}\]"
 
     # Display git branch and status
-    PS1+="\$(if git rev-parse --git-dir > /dev/null 2>&1; then \
-        branch=\$(git rev-parse --abbrev-ref HEAD); \
-        if git status | grep -q 'amend'; then \
-            commit_hash=\$(git rev-parse --short HEAD); \
-            echo \"${bg_magenta}${white}${bold} \${branch} (amending \${commit_hash}) ${normal}${magenta}${normal}\"; \
-        elif git status | grep -q 'rebase'; then \
-            commit_hash=\$(git rev-parse --short HEAD); \
-            echo \"${bg_magenta}${white}${bold} \${branch} (rebasing \${commit_hash}) ${normal}${magenta}${normal}\"; \
-        elif git status | grep -q 'both modified'; then \
-            echo \"${bg_magenta}${white}${bold} \${branch} ${yellow}⚠️  (conflict) ${normal}${magenta}${normal}\"; \
-        else \
-            echo \"${bg_magenta}${white}${bold} \${branch} ${normal}${magenta}${normal}\"; \
-        fi; \
-    fi)"
 
-    PS1+=" \$${normal} "
+    PS1+="\[${bg_magenta}\]\[${white}\]\[${bold}\]\`parse_git_branch\`\[${normal}\]\[${magenta}\]\[${normal}\]"
+    PS1+=" \$\[${normal}\] "
+
 }
 
 # Set the prompt
