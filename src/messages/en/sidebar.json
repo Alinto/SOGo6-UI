@@ -60,6 +60,10 @@
                     "string": "Email",
                     "context": "Section title for the settings sidebar"
                 },
+                "notifications": {
+                    "string": "Notifications",
+                    "context": "Link to the notifications settings in the settings sidebar"
+                },
                 "general": {
                     "string": "General",
                     "context": "Link to the general email settings in the settings sidebar"

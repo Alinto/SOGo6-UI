@@ -1,15 +1,8 @@
-import { useTranslations } from 'next-intl'
+import GeneralSettings from '@/features/user-settings/general'
 import React from 'react'
-import GeneralForm from './_form/general-form'
 
-const ProfilPage: React.FC = () => {
-  const t = useTranslations('General_Settings')
-  return (
-    <>
-      <h2 className="text-2xl">{t('title.string')}</h2>
-      <GeneralForm />
-    </>
-  )
+const Page: React.FC = () => {
+  return <GeneralSettings />
 }
 
-export default ProfilPage
+export default Page

@@ -1,15 +1,8 @@
-import { useTranslations } from 'next-intl'
+import AddressBooksSettings from '@/features/user-settings/address-books'
 import React from 'react'
-import AddressBooksForm from './_form/address-books-form'
 
-const AddressBooksPage: React.FC = () => {
-  const t = useTranslations('Address_Books_Settings')
-  return (
-    <div className="grid grid-cols-1 gap-4">
-      <h2 className="text-2xl">{t('title.string')}</h2>
-      <AddressBooksForm />
-    </div>
-  )
+const Page: React.FC = () => {
+  return <AddressBooksSettings />
 }
 
-export default AddressBooksPage
+export default Page

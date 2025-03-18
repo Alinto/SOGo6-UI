@@ -1,6 +1,6 @@
 import React from 'react'
 
-const ForwardPage: React.FC = () => {
+const Page: React.FC = () => {
   return (
     <div>
       <h1>Mail Forward Settings</h1>
@@ -9,4 +9,4 @@ const ForwardPage: React.FC = () => {
   )
 }
 
-export default ForwardPage
+export default Page

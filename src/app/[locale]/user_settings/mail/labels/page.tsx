@@ -1,15 +1,8 @@
-import { useTranslations } from 'next-intl'
+import MailLabelsSettings from '@/features/user-settings/mail/labels'
 import React from 'react'
-import LabelsForm from './_form/labels-form'
 
-const ForwardPage: React.FC = () => {
-  const t = useTranslations('Mail_Settings_Labels')
-  return (
-    <div className="grid grid-cols-1 gap-4">
-      <h2 className="text-2xl">{t('title.string')}</h2>
-      <LabelsForm />
-    </div>
-  )
+const Page: React.FC = () => {
+  return <MailLabelsSettings />
 }
 
-export default ForwardPage
+export default Page

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 // import localFont from "next/font/local";
 import { ThemeProvider } from '@/components/theme-provider'
+import StoreProvider from '@/lib/redux/store-provider'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 
@@ -41,7 +42,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <StoreProvider>{children}</StoreProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
