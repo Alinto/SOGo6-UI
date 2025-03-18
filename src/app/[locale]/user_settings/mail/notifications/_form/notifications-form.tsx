@@ -51,7 +51,7 @@ const NotificationsForm: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('notifications.enabled')}</FormLabel>
+                  <FormLabel>{t('notifications.enabled.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -66,7 +66,7 @@ const NotificationsForm: React.FC = () => {
               render={({ field }) => (
                 <FormItem className="space-x-3 space-y-0 p-4">
                   <FormLabel className="text-muted-foreground">
-                    {t('notifications.emails.label')}
+                    {t('notifications.emails.label.string')}
                   </FormLabel>
                   <FormControl>
                     <InputWithTags
@@ -84,7 +84,7 @@ const NotificationsForm: React.FC = () => {
                           value,
                         })
                       }}
-                      placeholder={t('notifications.emails.placeholder')}
+                      placeholder={t('notifications.emails.placeholder.string')}
                       errors={errors}
                     />
                   </FormControl>
@@ -97,12 +97,14 @@ const NotificationsForm: React.FC = () => {
               render={({ field }) => (
                 <FormItem className="space-x-3 space-y-0 p-4">
                   <FormLabel className="text-muted-foreground">
-                    {t('notifications.message.label')}
+                    {t('notifications.message.label.string')}
                   </FormLabel>
                   <FormControl>
                     <InputWithError
                       {...field}
-                      placeholder={t('notifications.message.placeholder')}
+                      placeholder={t(
+                        'notifications.message.placeholder.string'
+                      )}
                       errors={errors}
                       errorName="message"
                     />

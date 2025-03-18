@@ -5,16 +5,13 @@
             "context": "Title of the Mail Labels page"
         },
         "label": {
-            "string": "Label",
-            "context": ""
+            "string": "Label"
         },
         "color": {
-            "string": "Color",
-            "context": ""
+            "string": "Color"
         },
         "imap_label": {
-            "string": "IMAP Label",
-            "context": ""
+            "string": "IMAP Label"
         },
         "create": {
             "string": "Create",

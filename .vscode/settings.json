@@ -1,12 +1,13 @@
 {
     "terminal.integrated.defaultLocation": "view",
     "workbench.startupEditor": "terminal",
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
     "i18n-ally.localesPaths": [
-        "./messages",
-        "./messages/fr",
-        "./messages/en",
-        "./messages/es",
-        "./messages/de"
+        "src/messages",
     ],
     "i18n-ally.keystyle": "nested"
 }

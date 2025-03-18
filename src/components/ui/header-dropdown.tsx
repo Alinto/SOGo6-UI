@@ -41,45 +41,45 @@ const HeaderDropdown: React.FC = () => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>{t('theme.title')}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('theme.title.string')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ThemeSwitcher />
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>{t('account.section')}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('account.section.string')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem>
           <CircleUserRound className="pr-2" />
-          {t('account.profile')}
+          {t('account.profile.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
           <UserRoundCog className="pr-2" />
-          {t('account.security')}
+          {t('account.security.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel>{t('settings.title')}</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('settings.title.string')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem>
           <UserRoundCog className="pr-2" />
-          {t('settings.general')}
+          {t('settings.general.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
           <CalendarCog className="pr-2" />
-          {t('settings.agenda')}
+          {t('settings.agenda.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
-          <BookA className="pr-2" /> {t('settings.address_books')}
+          <BookA className="pr-2" /> {t('settings.address_books.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
-          <Mail className="pr-2" /> {t('settings.email')}
+          <Mail className="pr-2" /> {t('settings.email.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>
           <Cog className="pr-2" />
-          {t('admin.panel')}
+          {t('admin.panel.string')}
         </DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
         <DropdownMenuCheckboxItem>
           <LogOut className="pr-2" />
-          {t('logout')}
+          {t('logout.string')}
         </DropdownMenuCheckboxItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -70,7 +70,7 @@ export function HoursRangePickerForm({
                   {field.value ? (
                     format(field.value, 'HH:mm')
                   ) : (
-                    <span>{t('pick.single')}</span>
+                    <span>{t('pick.single.string')}</span>
                   )}
                   <Clock className="ml-auto h-4 w-4 opacity-50" />
                 </Button>

@@ -6,7 +6,7 @@ const ProfilPage: React.FC = () => {
   const t = useTranslations('General_Settings')
   return (
     <>
-      <h2 className="text-2xl">{t('title')}</h2>
+      <h2 className="text-2xl">{t('title.string')}</h2>
       <GeneralForm />
     </>
   )

@@ -49,8 +49,10 @@ const TotpForm: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('totp.title')}</FormLabel>
-                  <FormDescription>{t('totp.description')}</FormDescription>
+                  <FormLabel>{t('totp.title.string')}</FormLabel>
+                  <FormDescription>
+                    {t('totp.description.string')}
+                  </FormDescription>
                 </div>
               </FormItem>
             )}
@@ -61,17 +63,17 @@ const TotpForm: React.FC = () => {
             <QRCode text="https://github.com/Alinto/" />
             <div className="m-auto ml-3">
               <div>
-                <Label>{t('totp.verification_code.title')}</Label>
+                <Label>{t('totp.verification_code.title.string')}</Label>
                 <Input />
                 <FormDescription>
-                  {t('totp.verification_code.description')}
+                  {t('totp.verification_code.description.string')}
                 </FormDescription>
               </div>
             </div>
           </div>
         ) : null}
         <div className="flex justify-end">
-          <Button className="text-background">{t('totp.save')}</Button>
+          <Button className="text-background">{t('totp.save.string')}</Button>
         </div>
       </form>
     </Form>

@@ -88,16 +88,13 @@
         },
         "sign_on": {
             "new": {
-                "string": "Insert signature on new message",
-                "context": ""
+                "string": "Insert signature on new message"
             },
             "reply": {
-                "string": "Insert signature on reply message",
-                "context": ""
+                "string": "Insert signature on reply message"
             },
             "forward": {
-                "string": "Insert signature on forward message",
-                "context": ""
+                "string": "Insert signature on forward message"
             }
         },
         "compose_in": {

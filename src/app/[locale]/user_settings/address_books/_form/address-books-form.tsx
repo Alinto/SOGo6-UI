@@ -42,7 +42,7 @@ const LabelsForm: React.FC = () => {
             })
           }}
         >
-          {t('create')}
+          {t('create.string')}
         </Button>
         <div className="grid gap-4 lg:grid-cols-2">
           {fields.map((label, i) => (
@@ -60,7 +60,9 @@ const LabelsForm: React.FC = () => {
               />
               <Button onClick={() => remove(i)} size="icon" variant={'ghost'}>
                 <AccessibleIcon
-                  label={t('accessibility.icon.delete', { name: label.label })}
+                  label={t('accessibility.icon.delete.string', {
+                    name: label.label,
+                  })}
                 >
                   <Trash2 className="text-primary" />
                 </AccessibleIcon>

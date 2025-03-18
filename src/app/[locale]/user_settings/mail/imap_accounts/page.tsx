@@ -4,7 +4,7 @@ const IMAPAccountPage: React.FC = () => {
   const t = useTranslations('Mail_Settings_IMAP_Accounts')
   return (
     <div className="grid grid-cols-1 gap-4">
-      <h2 className="text-2xl">{t('title')}</h2>
+      <h2 className="text-2xl">{t('title.string')}</h2>
       {/* <LabelsForm /> */}
     </div>
   )

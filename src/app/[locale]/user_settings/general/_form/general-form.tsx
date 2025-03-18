@@ -42,7 +42,7 @@ export function GenetalForm() {
               name="language"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.language')}</FormLabel>
+                  <FormLabel>{t('labels.language.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -52,7 +52,7 @@ export function GenetalForm() {
                     ]}
                   />
                   <FormDescription>
-                    {t('descriptions.language')}
+                    {t('descriptions.language.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -62,7 +62,7 @@ export function GenetalForm() {
               name="timezone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.timezone')}</FormLabel>
+                  <FormLabel>{t('labels.timezone.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -72,7 +72,7 @@ export function GenetalForm() {
                     ]}
                   />
                   <FormDescription>
-                    {t('descriptions.timezone')}
+                    {t('descriptions.timezone.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -84,7 +84,7 @@ export function GenetalForm() {
               name="shortDateStyle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.short_date_style')}</FormLabel>
+                  <FormLabel>{t('labels.short_date_style.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -94,7 +94,7 @@ export function GenetalForm() {
                     ]}
                   />
                   <FormDescription>
-                    {t('descriptions.short_date_style')}
+                    {t('descriptions.short_date_style.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -104,7 +104,7 @@ export function GenetalForm() {
               name="longDateStyle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.long_date_style')}</FormLabel>
+                  <FormLabel>{t('labels.long_date_style.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -121,7 +121,7 @@ export function GenetalForm() {
                   />
                   <FormMessage />
                   <FormDescription>
-                    {t('descriptions.long_date_style')}
+                    {t('descriptions.long_date_style.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -131,7 +131,7 @@ export function GenetalForm() {
               name="timeStyle"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.time_style')}</FormLabel>
+                  <FormLabel>{t('labels.time_style.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -147,7 +147,7 @@ export function GenetalForm() {
                     ]}
                   />
                   <FormDescription>
-                    {t('descriptions.time_style')}
+                    {t('descriptions.time_style.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -159,7 +159,7 @@ export function GenetalForm() {
               name="defaultView"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.default_view')}</FormLabel>
+                  <FormLabel>{t('labels.default_view.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -170,7 +170,7 @@ export function GenetalForm() {
                     ]}
                   />
                   <FormDescription>
-                    {t('descriptions.default_view')}
+                    {t('descriptions.default_view.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -180,7 +180,7 @@ export function GenetalForm() {
               name="refreshFrequency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.refresh_frequency')}</FormLabel>
+                  <FormLabel>{t('labels.refresh_frequency.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -191,7 +191,7 @@ export function GenetalForm() {
                     ]}
                   />
                   <FormDescription>
-                    {t('descriptions.refresh_frequency')}
+                    {t('descriptions.refresh_frequency.string')}
                   </FormDescription>
                 </FormItem>
               )}
@@ -210,9 +210,11 @@ export function GenetalForm() {
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
-                    <FormLabel>{t('labels.enable_notifications')}</FormLabel>
+                    <FormLabel>
+                      {t('labels.enable_notifications.string')}
+                    </FormLabel>
                     <FormDescription>
-                      {t('descriptions.enable_notifications')}
+                      {t('descriptions.enable_notifications.string')}
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -223,7 +225,7 @@ export function GenetalForm() {
               name="animationLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('labels.animation_level')}</FormLabel>
+                  <FormLabel>{t('labels.animation_level.string')}</FormLabel>
                   <RadioGroupForm
                     horizontal
                     onValueChange={field.onChange}

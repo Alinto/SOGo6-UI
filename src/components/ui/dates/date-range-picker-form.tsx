@@ -59,7 +59,9 @@ export function DatePickerWithRangeForm({
                     )
                   ) : (
                     <span>
-                      {mode === 'range' ? t('pick.range') : t('pick.single')}
+                      {mode === 'range'
+                        ? t('pick.range.string')
+                        : t('pick.single.string')}
                     </span>
                   )}
                   <CalendarDays className="ml-auto h-4 w-4 opacity-50" />

@@ -19,7 +19,7 @@ export function ThemeSwitcher() {
         onClick={() => setTheme('dark')}
       >
         <Moon />
-        {t('theme.dark')}
+        {t('theme.dark.string')}
       </Toggle>
       <Toggle
         aria-label="Light"
@@ -28,7 +28,7 @@ export function ThemeSwitcher() {
         onClick={() => setTheme('light')}
       >
         <Sun />
-        {t('theme.light')}
+        {t('theme.light.string')}
       </Toggle>
       <Toggle
         aria-label="System"
@@ -37,7 +37,7 @@ export function ThemeSwitcher() {
         onClick={() => setTheme('system')}
       >
         <ComputerIcon />
-        {t('theme.auto')}
+        {t('theme.auto.string')}
       </Toggle>
     </>
   )

@@ -47,7 +47,7 @@ const MailGeneralSettings: React.FC = () => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    {t('display_subscribed_mailboxes_only')}
+                    {t('display_subscribed_mailboxes_only.string')}
                   </FormLabel>
                 </div>
               </FormItem>
@@ -67,7 +67,7 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('EAS')}</FormLabel>
+                  <FormLabel>{t('EAS.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -86,7 +86,9 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('fetch_count_of_unseen_messages')}</FormLabel>
+                  <FormLabel>
+                    {t('fetch_count_of_unseen_messages.string')}
+                  </FormLabel>
                 </div>
               </FormItem>
             )}
@@ -105,7 +107,7 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('sort_messages_by_threads')}</FormLabel>
+                  <FormLabel>{t('sort_messages_by_threads.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -125,7 +127,7 @@ const MailGeneralSettings: React.FC = () => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    {t('show_recipients_or_sender_full_email')}
+                    {t('show_recipients_or_sender_full_email.string')}
                   </FormLabel>
                 </div>
               </FormItem>
@@ -146,7 +148,7 @@ const MailGeneralSettings: React.FC = () => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    {t('hide_attachments_for_inline_images')}
+                    {t('hide_attachments_for_inline_images.string')}
                   </FormLabel>
                 </div>
               </FormItem>
@@ -167,7 +169,7 @@ const MailGeneralSettings: React.FC = () => {
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>
-                    {t('automatically_mark_messages_as_read')}
+                    {t('automatically_mark_messages_as_read.string')}
                   </FormLabel>
                 </div>
               </FormItem>
@@ -185,8 +187,11 @@ const MailGeneralSettings: React.FC = () => {
                     disabled={!autoMarkAsRead}
                     value={field.value}
                     options={[
-                      { value: '0', label: t('immediately_on_display') },
-                      { value: '5', label: t('after_displaying_for_seconds') },
+                      { value: '0', label: t('immediately_on_display.string') },
+                      {
+                        value: '5',
+                        label: t('after_displaying_for_seconds.string'),
+                      },
                     ]}
                   />
                 </FormItem>
@@ -200,16 +205,19 @@ const MailGeneralSettings: React.FC = () => {
             name="composeOpening"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('compose.title')}</FormLabel>
+                <FormLabel>{t('compose.title.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'ask', label: t('compose.always_ask') },
-                    { value: 'window', label: t('compose.in_new_window') },
+                    { value: 'ask', label: t('compose.always_ask.string') },
+                    {
+                      value: 'window',
+                      label: t('compose.in_new_window.string'),
+                    },
                     {
                       value: 'webmail',
-                      label: t('compose.inside_webmail'),
+                      label: t('compose.inside_webmail.string'),
                     },
                   ]}
                 />
@@ -223,15 +231,18 @@ const MailGeneralSettings: React.FC = () => {
             name="forwardMessages"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('forward_messages.title')}</FormLabel>
+                <FormLabel>{t('forward_messages.title.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'inline', label: t('forward_messages.as_inline') },
+                    {
+                      value: 'inline',
+                      label: t('forward_messages.as_inline.string'),
+                    },
                     {
                       value: 'asAttachments',
-                      label: t('forward_messages.as_attachment'),
+                      label: t('forward_messages.as_attachment.string'),
                     },
                   ]}
                 />
@@ -245,15 +256,15 @@ const MailGeneralSettings: React.FC = () => {
             name="startReply"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('start_reply.title')}</FormLabel>
+                <FormLabel>{t('start_reply.title.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'above', label: t('start_reply.to_above') },
+                    { value: 'above', label: t('start_reply.to_above.string') },
                     {
                       value: 'below',
-                      label: t('start_reply.to_below'),
+                      label: t('start_reply.to_below.string'),
                     },
                   ]}
                 />
@@ -265,15 +276,18 @@ const MailGeneralSettings: React.FC = () => {
             name="placeSignature"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('place_signature.title')}</FormLabel>
+                <FormLabel>{t('place_signature.title.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'above', label: t('place_signature.above') },
+                    {
+                      value: 'above',
+                      label: t('place_signature.above.string'),
+                    },
                     {
                       value: 'below',
-                      label: t('place_signature.below'),
+                      label: t('place_signature.below.string'),
                     },
                   ]}
                 />
@@ -294,7 +308,7 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('sign_on.new')}</FormLabel>
+                  <FormLabel>{t('sign_on.new.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -311,7 +325,7 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('sign_on.reply')}</FormLabel>
+                  <FormLabel>{t('sign_on.reply.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -328,7 +342,7 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('sign_on.forward')}</FormLabel>
+                  <FormLabel>{t('sign_on.forward.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -340,7 +354,7 @@ const MailGeneralSettings: React.FC = () => {
             name="composeIn"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('start_reply_to')}</FormLabel>
+                <FormLabel>{t('start_reply_to.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
@@ -360,23 +374,23 @@ const MailGeneralSettings: React.FC = () => {
             name="defaultFontSize"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('default_font_size.title')}</FormLabel>
+                <FormLabel>{t('default_font_size.title.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'sm', label: t('default_font_size.sm') },
+                    { value: 'sm', label: t('default_font_size.sm.string') },
                     {
                       value: 'md',
-                      label: t('default_font_size.md'),
+                      label: t('default_font_size.md.string'),
                     },
                     {
                       value: 'lg',
-                      label: t('default_font_size.lg'),
+                      label: t('default_font_size.lg.string'),
                     },
                     {
                       value: 'xl',
-                      label: t('default_font_size.xl'),
+                      label: t('default_font_size.xl.string'),
                     },
                   ]}
                 />
@@ -397,7 +411,7 @@ const MailGeneralSettings: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('display_remote_images')}</FormLabel>
+                  <FormLabel>{t('display_remote_images.string')}</FormLabel>
                 </div>
               </FormItem>
             )}

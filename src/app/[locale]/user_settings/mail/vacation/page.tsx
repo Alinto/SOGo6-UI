@@ -7,7 +7,7 @@ const VacationPage: React.FC = () => {
 
   return (
     <div>
-      <h2 className="text-2xl">{t('title')}</h2>
+      <h2 className="text-2xl">{t('title.string')}</h2>
       <VacationForm />
     </div>
   )

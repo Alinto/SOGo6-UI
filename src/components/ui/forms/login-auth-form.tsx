@@ -15,19 +15,19 @@ export function LoginAuthForm({
     <form className={cn('flex flex-col gap-6', className)} {...props}>
       <div className="grid gap-6">
         <div className="grid gap-2">
-          <Label htmlFor="password">{t('password.label')}</Label>
+          <Label htmlFor="password">{t('password.label.string')}</Label>
           <PasswordInput
             id="password"
-            placeholder={t('password.placeholder')}
+            placeholder={t('password.placeholder.string')}
             required
           />
         </div>
         <Button type="submit" className="w-full">
-          {t('login')}
+          {t('login.string')}
         </Button>
         <div className="flex items-center space-x-2">
           <Switch id="airplane-mode" />
-          <Label htmlFor="airplane-mode">{t('remember_me')}</Label>
+          <Label htmlFor="airplane-mode">{t('remember_me.string')}</Label>
         </div>
       </div>
     </form>

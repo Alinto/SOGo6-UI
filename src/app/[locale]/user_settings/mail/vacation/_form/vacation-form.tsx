@@ -56,7 +56,7 @@ const VacationForm: React.FC = () => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('auto_reply.enable')}</FormLabel>
+                  <FormLabel>{t('auto_reply.enable.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -69,15 +69,15 @@ const VacationForm: React.FC = () => {
               name="subject"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('auto_reply.subject.label')}</FormLabel>
+                  <FormLabel>{t('auto_reply.subject.label.string')}</FormLabel>
                   <FormControl>
                     <Input
                       {...field}
-                      placeholder={t('auto_reply.subject.label')}
+                      placeholder={t('auto_reply.subject.label.string')}
                     />
                   </FormControl>
                   <FormDescription>
-                    {t('auto_reply.subject.description', {
+                    {t('auto_reply.subject.description.string', {
                       subject: '${subject}',
                     })}
                   </FormDescription>
@@ -89,9 +89,12 @@ const VacationForm: React.FC = () => {
               name="message"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('auto_reply.message')}</FormLabel>
+                  <FormLabel>{t('auto_reply.message.string')}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={t('auto_reply.message')} />
+                    <Input
+                      {...field}
+                      placeholder={t('auto_reply.message.string')}
+                    />
                   </FormControl>
                 </FormItem>
               )}
@@ -114,7 +117,7 @@ const VacationForm: React.FC = () => {
               name="response.interval"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('auto_reply.interval.label')}</FormLabel>
+                  <FormLabel>{t('auto_reply.interval.label.string')}</FormLabel>
                   <SelectForm
                     onValueChange={field.onChange}
                     value={field.value}
@@ -146,7 +149,7 @@ const VacationForm: React.FC = () => {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      {t('auto_reply.response.to_mailling_list')}
+                      {t('auto_reply.response.to_mailling_list.string')}
                     </FormLabel>
                   </div>
                 </FormItem>
@@ -165,10 +168,10 @@ const VacationForm: React.FC = () => {
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel>
-                      {t('auto_reply.response.send_always.label')}
+                      {t('auto_reply.response.send_always.label.string')}
                     </FormLabel>
                     <FormDescription>
-                      {t('auto_reply.response.send_always.description')}
+                      {t('auto_reply.response.send_always.description.string')}
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -188,10 +191,10 @@ const VacationForm: React.FC = () => {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        {t('auto_reply.response.discard.label')}
+                        {t('auto_reply.response.discard.label.string')}
                       </FormLabel>
                       <FormDescription>
-                        {t('auto_reply.response.discard.description')}
+                        {t('auto_reply.response.discard.description.string')}
                       </FormDescription>
                     </div>
                   </FormItem>
@@ -200,10 +203,10 @@ const VacationForm: React.FC = () => {
             />
             <Separator className="my-2" />
             <h3 className="text-lg font-semibold">
-              {t('auto_reply.constraints.title')}
+              {t('auto_reply.constraints.title.string')}
             </h3>
             <p>
-              {t('auto_reply.constraints.description', {
+              {t('auto_reply.constraints.description.string', {
                 subject: '${subject}',
               })}
             </p>
@@ -222,7 +225,7 @@ const VacationForm: React.FC = () => {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          {t('auto_reply.constraints.enable.range')}
+                          {t('auto_reply.constraints.enable.range.string')}
                         </FormLabel>
                       </div>
                     </FormItem>
@@ -248,7 +251,7 @@ const VacationForm: React.FC = () => {
                       </FormControl>
                       <div className="space-y-1 leading-none">
                         <FormLabel>
-                          {t('auto_reply.constraints.enable.hours')}
+                          {t('auto_reply.constraints.enable.hours.string')}
                         </FormLabel>
                       </div>
                     </FormItem>
@@ -273,7 +276,7 @@ const VacationForm: React.FC = () => {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        {t('auto_reply.constraints.enable.days')}
+                        {t('auto_reply.constraints.enable.days.string')}
                       </FormLabel>
                     </div>
                   </FormItem>
@@ -303,7 +306,7 @@ const VacationForm: React.FC = () => {
                               })
                             }
                           >
-                            {t('auto_reply.constraints.weekdays.monday')}
+                            {t('auto_reply.constraints.weekdays.monday.string')}
                           </Button>
                           <Button
                             type="button"
@@ -319,7 +322,9 @@ const VacationForm: React.FC = () => {
                               })
                             }
                           >
-                            {t('auto_reply.constraints.weekdays.tuesday')}
+                            {t(
+                              'auto_reply.constraints.weekdays.tuesday.string'
+                            )}
                           </Button>
                           <Button
                             type="button"
@@ -352,7 +357,9 @@ const VacationForm: React.FC = () => {
                               })
                             }
                           >
-                            {t('auto_reply.constraints.weekdays.thursday')}
+                            {t(
+                              'auto_reply.constraints.weekdays.thursday.string'
+                            )}
                           </Button>
                           <Button
                             type="button"
@@ -369,7 +376,7 @@ const VacationForm: React.FC = () => {
                             }
                           >
                             {' '}
-                            {t('auto_reply.constraints.weekdays.friday')}
+                            {t('auto_reply.constraints.weekdays.friday.string')}
                           </Button>
                           <Button
                             type="button"
@@ -385,7 +392,9 @@ const VacationForm: React.FC = () => {
                               })
                             }
                           >
-                            {t('auto_reply.constraints.weekdays.saturday')}
+                            {t(
+                              'auto_reply.constraints.weekdays.saturday.string'
+                            )}
                           </Button>
                           <Button
                             type="button"
@@ -401,7 +410,7 @@ const VacationForm: React.FC = () => {
                               })
                             }
                           >
-                            {t('auto_reply.constraints.weekdays.sunday')}
+                            {t('auto_reply.constraints.weekdays.sunday.string')}
                           </Button>
                         </div>
                       </FormControl>

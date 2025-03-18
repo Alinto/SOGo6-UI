@@ -49,7 +49,7 @@ const LabelsForm: React.FC = () => {
             })
           }}
         >
-          {t('create')}
+          {t('create.string')}
         </Button>
         <div className="grid gap-4 lg:grid-cols-2">
           {fields.map((label, i) => (
@@ -71,7 +71,7 @@ const LabelsForm: React.FC = () => {
                 name={`labels.${i}.label`}
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>{t('label')}</FormLabel>
+                    <FormLabel>{t('label.string')}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
@@ -83,7 +83,7 @@ const LabelsForm: React.FC = () => {
                 name={`labels.${i}.IMAPLabel`}
                 render={({ field }) => (
                   <FormItem className="flex-1">
-                    <FormLabel>{t('imap_label')}</FormLabel>
+                    <FormLabel>{t('imap_label.string')}</FormLabel>
                     <FormControl>
                       <Input {...field} />
                     </FormControl>

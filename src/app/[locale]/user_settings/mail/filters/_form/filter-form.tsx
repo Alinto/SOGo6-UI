@@ -123,13 +123,13 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
           <form className="p-4" onSubmit={form.handleSubmit(onSubmit)}>
             <DialogHeader>
               {filter ? (
-                <DialogTitle>{t('form.edit', { name })}</DialogTitle>
+                <DialogTitle>{t('form.edit.string', { name })}</DialogTitle>
               ) : (
-                <DialogTitle>{t('form.create')}</DialogTitle>
+                <DialogTitle>{t('form.create.string')}</DialogTitle>
               )}
             </DialogHeader>
             <div className="flex flex-col">
-              {t('operators.title')}
+              {t('operators.title.string')}
               <FormField
                 control={form.control}
                 name="operator"
@@ -147,7 +147,7 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
             <DialogHeader className="py-3">
               <div className="flex">
                 <DialogTitle className="my-auto">
-                  {t('conditions.title')}
+                  {t('conditions.title.string')}
                 </DialogTitle>
                 <Button
                   onClick={() =>
@@ -222,7 +222,7 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
             <DialogHeader className="py-3">
               <div className="flex">
                 <DialogTitle className="my-auto">
-                  {t('actions.title')}
+                  {t('actions.title.string')}
                 </DialogTitle>
                 <Button
                   onClick={() =>
@@ -283,8 +283,8 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
               </div>
             ))}
             <DialogFooter>
-              <Button>{t('form.cancel')}</Button>
-              <Button type="submit">{t('form.save')}</Button>
+              <Button>{t('form.cancel.string')}</Button>
+              <Button type="submit">{t('form.save.string')}</Button>
             </DialogFooter>
           </form>
         </Form>

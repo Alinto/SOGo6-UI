@@ -14,11 +14,11 @@ export function LoginForm({
     <form className={cn('flex flex-col gap-6', className)} {...props}>
       <div className="grid gap-6">
         <div className="grid gap-2">
-          <Label htmlFor="email">{t('email.label')}</Label>
+          <Label htmlFor="email">{t('email.label.string')}</Label>
           <Input
             id="email"
             type="email"
-            placeholder={t('email.placeholder')}
+            placeholder={t('email.placeholder.string')}
             required
           />
         </div>
@@ -27,9 +27,9 @@ export function LoginForm({
         </div>
       </div>
       <div className="text-center text-sm">
-        {t('signup.description')}
+        {t('signup.description.string')}
         <a href="/register" className="underline underline-offset-4">
-          {t('signup.title')}
+          {t('signup.title.string')}
         </a>
       </div>
     </form>

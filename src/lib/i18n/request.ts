@@ -1,4 +1,3 @@
-import { transformJson } from '@/lib/i18n/utils'
 import { routing } from '@/middleware'
 import deepmerge from 'deepmerge'
 import fs from 'fs'
@@ -11,9 +10,9 @@ export const createDefaultMessages = async () => {
   const defaultMessages = {}
   for (const file of defaultFileList) {
     const msgs = await import(`@/messages/${routing.defaultLocale}/${file}`)
-    const newMessages = transformJson({
+    const newMessages = {
       ...msgs.default,
-    })
+    }
     Object.assign(defaultMessages, newMessages)
   }
   return defaultMessages
@@ -24,9 +23,9 @@ export const createMessages = async (locale: string) => {
   const messages = {}
   for (const file of fileList) {
     const msgs = await import(`@/messages/${locale}/${file}`)
-    const newMessages = transformJson({
+    const newMessages = {
       ...msgs.default,
-    })
+    }
     Object.assign(messages, newMessages)
   }
   return messages
