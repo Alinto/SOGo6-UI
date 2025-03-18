@@ -10,10 +10,7 @@
       "error",
       {
         "noStrings": true,
-        "ignoreProps": true,
-        "ignore": [
-          "*.test.*"
-        ]
+        "ignoreProps": true
       }
     ]
   }
