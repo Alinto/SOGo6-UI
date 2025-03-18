@@ -1,3 +1,5 @@
+'use client'
+
 import ProfileForm from './form/profile-form'
 
 const ProfilePage = () => {

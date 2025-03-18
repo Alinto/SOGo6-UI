@@ -87,6 +87,10 @@ const navItems = [
             title: 'settings.email.forward.string',
             url: '/user_settings/mail/forward',
           },
+          {
+            title: 'settings.email.notifications.string',
+            url: '/user_settings/mail/notifications',
+          },
         ],
       },
     ],

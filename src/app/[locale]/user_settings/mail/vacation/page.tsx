@@ -1,16 +1,8 @@
-import { useTranslations } from 'next-intl'
+import MailVacationSettings from '@/features/user-settings/mail/vacation'
 import React from 'react'
-import VacationForm from './_form/vacation-form'
 
-const VacationPage: React.FC = () => {
-  const t = useTranslations('Mail_Settings_Vacation')
-
-  return (
-    <div>
-      <h2 className="text-2xl">{t('title.string')}</h2>
-      <VacationForm />
-    </div>
-  )
+const Page: React.FC = () => {
+  return <MailVacationSettings />
 }
 
-export default VacationPage
+export default Page
