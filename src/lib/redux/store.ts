@@ -1,9 +1,10 @@
+// import authReducer from '@/features/auth/auth-slice'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
 import { listenerMiddleware } from './listener-middleware'
 import { createReducerManager, ReducerManager } from './reducer-manager'
-
 const staticReducers = {
+  // auth: authReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
 }
 export const reducerManager = createReducerManager(staticReducers)

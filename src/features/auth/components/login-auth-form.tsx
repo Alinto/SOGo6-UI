@@ -5,7 +5,6 @@ import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 
-/* TRANSLATIONS_TODO */
 export function LoginAuthForm({
   className,
   ...props

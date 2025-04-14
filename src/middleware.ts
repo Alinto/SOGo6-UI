@@ -33,7 +33,11 @@ export default async function handler(req: NextRequest) {
   // Check if the pathname matches the locale regex
   if (!localeRegex.test(req.nextUrl.pathname)) {
     // Redirect to the default locale
-    const url = new URL(`/${defaultLocale}${req.nextUrl.pathname}`, req.url)
+    const queryParams = req.nextUrl.search
+    const url = new URL(
+      `/${defaultLocale}${req.nextUrl.pathname}${queryParams}`,
+      req.url
+    )
     return NextResponse.redirect(url)
   }
 

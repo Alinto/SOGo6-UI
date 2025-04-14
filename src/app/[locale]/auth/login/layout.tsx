@@ -1,5 +1,7 @@
-import Image from "next/image";
-import React from "react";
+'use client'
+
+import Image from 'next/image'
+import React from 'react'
 
 const LoginLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
@@ -17,7 +19,7 @@ const LoginLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         <div className="w-full max-w-xs">{children}</div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default LoginLayout;
+export default LoginLayout

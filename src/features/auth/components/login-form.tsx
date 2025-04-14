@@ -1,5 +1,8 @@
+'use client'
+
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -10,13 +13,23 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<'form'>) {
   const t = useTranslations('Login')
+  const { push } = useRouter()
   return (
-    <form className={cn('flex flex-col gap-6', className)} {...props}>
+    <form
+      className={cn('flex flex-col gap-6', className)}
+      {...props}
+      onSubmit={async (e) => {
+        e.preventDefault()
+        const email = (e.target as HTMLFormElement).email.value
+        push({ pathname: '/auth/login/pwd', query: { email } })
+      }}
+    >
       <div className="grid gap-6">
         <div className="grid gap-2">
           <Label htmlFor="email">{t('email.label.string')}</Label>
           <Input
             id="email"
+            name="email"
             type="email"
             placeholder={t('email.placeholder.string')}
             required

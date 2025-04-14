@@ -7,6 +7,7 @@ const nextConfig = {
         // your project has ESLint errors.
         ignoreDuringBuilds: true,
     },
+    reactStrictMode: false, // Disable because of trigger several components remounts
     typescript: {
         // !! WARN !!
         // Dangerously allow production builds to successfully complete even if
