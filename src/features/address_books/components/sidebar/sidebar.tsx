@@ -6,12 +6,12 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuButton,
 } from '@/components/ui/sidebar'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
+import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
 const Sidebar: React.FC = () => {
@@ -32,9 +32,14 @@ const Sidebar: React.FC = () => {
         <SidebarGroupContent>
           <SidebarMenu>
             {personals.map((book) => (
-              <SidebarMenuButton className="h-10" key={book.id}>
-                {book.name}
-              </SidebarMenuButton>
+              <SidebarItem
+                key={book.id}
+                icon="contact-2"
+                isDefault={book.default}
+                id={book.id}
+                name={book.name}
+                onClick={() => {}}
+              />
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
@@ -53,9 +58,15 @@ const Sidebar: React.FC = () => {
         </SidebarGroupAction>
         <SidebarMenu>
           {subscriptions.map((book) => (
-            <SidebarMenuButton className="h-10" key={book.id}>
-              {book.name}
-            </SidebarMenuButton>
+            <SidebarItem
+              key={book.id}
+              icon="contact-2"
+              isDefault={book.default}
+              importAction={false}
+              id={book.id}
+              name={book.name}
+              onClick={() => {}}
+            />
           ))}
         </SidebarMenu>
       </SidebarGroup>
@@ -63,9 +74,14 @@ const Sidebar: React.FC = () => {
         <SidebarGroupLabel>{t('sidebar.globals.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {globals.map((book) => (
-            <SidebarMenuButton className="h-10" key={book.id}>
-              {book.name}
-            </SidebarMenuButton>
+            <SidebarItem
+              key={book.id}
+              icon="globe"
+              name={book.name}
+              id={book.id}
+              onClick={() => {}}
+              disableActions
+            />
           ))}
         </SidebarMenu>
       </SidebarGroup>

@@ -21,6 +21,7 @@ const data = {
       description: 'Work address book',
       type: 'personal',
       id: 'work',
+      default: true,
     },
     {
       name: 'Personal',
