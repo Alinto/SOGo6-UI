@@ -18,6 +18,32 @@
             },
             "add_subscriptions": {
                 "string": "Add subscriptions"
+            },
+            "options": {
+                "properties": {
+                    "string": "Properties"
+                },
+                "delete": {
+                    "string": "Delete"
+                },
+                "rename": {
+                    "string": "Rename"
+                },
+                "link": {
+                    "string": "Link to this address book"
+                },
+                "sharing": {
+                    "string": "Sharing"
+                },
+                "import": {
+                    "string": "Import"
+                },
+                "export": {
+                    "string": "Export"
+                },
+                "ios_download": {
+                    "string": "Download iOS - MacOS configuration profile"
+                }
             }
         }
     }

@@ -5,6 +5,7 @@ export interface AddressBook {
   description: string
   type: AddressBookType
   id: string
+  default?: boolean
 }
 
 export interface AddressBooks {
