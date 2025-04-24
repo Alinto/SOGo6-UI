@@ -2,15 +2,14 @@
 
 import {
   SidebarGroup,
-  SidebarGroupAction,
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
 } from '@/components/ui/sidebar'
-import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
+import AddAddressBook from './forms/add'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -25,10 +24,7 @@ const Sidebar: React.FC = () => {
     <>
       <SidebarGroup>
         <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
-        <SidebarGroupAction title={t('sidebar.add_personnal.string')}>
-          <Plus />
-          <span className="sr-only">{t('sidebar.add_personnal.string')}</span>
-        </SidebarGroupAction>
+        <AddAddressBook type={'personals'} />
         <SidebarGroupContent>
           <SidebarMenu>
             {personals.map((book) => (
@@ -48,14 +44,7 @@ const Sidebar: React.FC = () => {
         <SidebarGroupLabel>
           {t('sidebar.subscriptions.string')}
         </SidebarGroupLabel>
-        <SidebarGroupAction title={t('sidebar.add_subscriptions.string')}>
-          <Plus />
-          <span className="sr-only">
-            <SidebarGroupLabel>
-              {t('sidebar.add_subscriptions.string')}
-            </SidebarGroupLabel>
-          </span>
-        </SidebarGroupAction>
+        <AddAddressBook type={'subscriptions'} />
         <SidebarMenu>
           {subscriptions.map((book) => (
             <SidebarItem

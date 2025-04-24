@@ -10,7 +10,7 @@
             "personals": {
                 "string": "Address books"
             },
-            "add_personnal": {
+            "add_personal": {
                 "string": "Add address book"
             },
             "subscriptions": {
@@ -19,18 +19,64 @@
             "add_subscriptions": {
                 "string": "Add subscriptions"
             },
+            "label_name": {
+                "string": "Name"
+            },
             "options": {
-                "properties": {
-                    "string": "Properties"
+                "edit": {
+                    "default": {
+                        "string": "Edit"
+                    },
+                    "title": {
+                        "string": "Edit address book {name}"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "save": {
+                        "string": "Save"
+                    },
+                    "labels": {
+                        "name": {
+                            "string": "Name"
+                        },
+                        "sync": {
+                            "string": "Synchronize"
+                        }
+                    }
+                },
+                "link": {
+                    "default": {
+                        "string": "Edit"
+                    },
+                    "title": {
+                        "string": "Link to {name}"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "save": {
+                        "string": "Save"
+                    },
+                    "labels": {
+                        "name": {
+                            "string": "CardDAV URL"
+                        }
+                    }
                 },
                 "delete": {
-                    "string": "Delete"
+                    "default": {
+                        "string": "Delete"
+                    },
+                    "title": {
+                        "string": "Are you sure you want to delete address book {name}?"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
                 },
                 "rename": {
                     "string": "Rename"
-                },
-                "link": {
-                    "string": "Link to this address book"
                 },
                 "sharing": {
                     "string": "Sharing"
