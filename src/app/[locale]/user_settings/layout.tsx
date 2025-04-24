@@ -8,7 +8,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar>
-        <NavBar items={nav} translationsKey="Nav_User_Settings" />
+        <NavBar items={nav} translationsKey="Nav_Settings" />
       </AppSidebar>
       <SidebarInset>
         <AppHeader />
