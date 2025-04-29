@@ -44,6 +44,7 @@ interface FilterEditFormProps {
 
 const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
   const t = useTranslations('Mail_Settings_Filters')
+  const formT = useTranslations('Form')
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: filter || defaultValues,
@@ -283,8 +284,8 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
               </div>
             ))}
             <DialogFooter>
-              <Button>{t('form.cancel.string')}</Button>
-              <Button type="submit">{t('form.save.string')}</Button>
+              <Button>{formT('cancel.string')}</Button>
+              <Button type="submit">{formT('save.string')}</Button>
             </DialogFooter>
           </form>
         </Form>

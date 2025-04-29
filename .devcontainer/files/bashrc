@@ -98,4 +98,11 @@ set_bash_prompt() {
 # Set the prompt
 PROMPT_COMMAND=set_bash_prompt
 
+
+
+# export TX_TOKEN = "1/xxxxxxxxxxxxxxxx"
+# export TX_SECRET = "1/xxxxxxxxxxxxxxxxxxx"
+
+
+
 print_sogo_ascii
