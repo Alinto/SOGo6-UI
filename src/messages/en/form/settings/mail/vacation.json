@@ -3,9 +3,6 @@
         "title": {
             "string": "Vacation"
         },
-        "save": {
-            "string": "Save"
-        },
         "auto_reply": {
             "enable": {
                 "string": "Enable vacation auto reply"
