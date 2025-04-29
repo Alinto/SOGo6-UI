@@ -1,0 +1,96 @@
+{
+    "Address_Books": {
+        "title": {
+            "string": "Address Books"
+        },
+        "sidebar": {
+            "globals": {
+                "string": "Global address books"
+            },
+            "personals": {
+                "string": "Address books"
+            },
+            "add_personal": {
+                "string": "Add address book"
+            },
+            "subscriptions": {
+                "string": "Subscriptions"
+            },
+            "add_subscriptions": {
+                "string": "Add subscriptions"
+            },
+            "label_name": {
+                "string": "Name"
+            },
+            "options": {
+                "edit": {
+                    "default": {
+                        "string": "Edit"
+                    },
+                    "title": {
+                        "string": "Edit address book {name}"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "save": {
+                        "string": "Save"
+                    },
+                    "labels": {
+                        "name": {
+                            "string": "Name"
+                        },
+                        "sync": {
+                            "string": "Synchronize"
+                        }
+                    }
+                },
+                "link": {
+                    "default": {
+                        "string": "Edit"
+                    },
+                    "title": {
+                        "string": "Link to {name}"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "save": {
+                        "string": "Save"
+                    },
+                    "labels": {
+                        "name": {
+                            "string": "CardDAV URL"
+                        }
+                    }
+                },
+                "delete": {
+                    "default": {
+                        "string": "Delete"
+                    },
+                    "title": {
+                        "string": "Are you sure you want to delete address book {name}?"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
+                },
+                "rename": {
+                    "string": "Rename"
+                },
+                "sharing": {
+                    "string": "Sharing"
+                },
+                "import": {
+                    "string": "Import"
+                },
+                "export": {
+                    "string": "Export"
+                },
+                "ios_download": {
+                    "string": "Download iOS - MacOS configuration profile"
+                }
+            }
+        }
+    }
+}

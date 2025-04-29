@@ -66,7 +66,7 @@ function RecursiveNavItem({ item, translationsKey }: RecursiveNavItemProps) {
   )
 }
 
-export function NavSettings({
+export function NavBar({
   items,
   translationsKey,
 }: {

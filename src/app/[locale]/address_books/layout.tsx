@@ -1,14 +1,13 @@
 import AppHeader from '@/components/app-header'
 import { AppSidebar } from '@/components/app-sidebar'
-import { NavBar } from '@/components/nav-bar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import nav from './nav'
+import Sidebar from '@/features/address_books/components/sidebar/sidebar'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar>
-        <NavBar items={nav} translationsKey="Nav_Settings" />
+        <Sidebar />
       </AppSidebar>
       <SidebarInset>
         <AppHeader />
