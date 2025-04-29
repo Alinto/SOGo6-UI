@@ -4,10 +4,6 @@
             "string": "Mail general settings",
             "context": "Title for general mail settings form"
         },
-        "save": {
-            "string": "Save",
-            "context": "Button to save the mail settings"
-        },
         "display_subscribed_mailboxes_only": {
             "string": "Show subscribed mailboxes only",
             "context": "Checkbox to show subscribed mailboxes only"

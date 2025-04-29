@@ -1,0 +1,41 @@
+{
+    "Form": {
+        "save": {
+            "default": {
+                "string": "Save",
+                "description": "Click to save the form data."
+            }
+        },
+        "cancel": {
+            "default": {
+                "string": "Cancel",
+                "description": "Click to cancel the form submission."
+            }
+        },
+        "reset": {
+            "default": {
+                "string": "Reset",
+                "description": "Click to reset the form fields to their default values."
+            }
+        },
+        "submit": {
+            "default": {
+                "string": "Submit",
+                "description": "Click to submit the form."
+            }
+        },
+        "create": {
+            "default": {
+                "string": "Create",
+                "description": "Click to create a new item."
+            },
+            "specific": {
+                "string": "Create {item}",
+                "description": "Click to create a new item."
+            }
+        },
+        "enabled": {
+            "string": "Enabled"
+        }
+    }
+}

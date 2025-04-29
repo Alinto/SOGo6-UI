@@ -4,17 +4,8 @@
             "string": "Mail Filters"
         },
         "form": {
-            "cancel": {
-                "string": "Cancel"
-            },
             "placeholder": {
                 "string": "Filter name"
-            },
-            "save": {
-                "string": "Save"
-            },
-            "create": {
-                "string": "Create a new filter"
             },
             "edit": {
                 "string": "Edit filter: {name}"
@@ -36,7 +27,9 @@
                 "string": "Match all messages"
             },
             "or": {
-                "string": "Match any of the following rules"
+                "string": "Match any of the following rules",
+                "context": "test context",
+                "developer_comment": "This is the string that will be used in the UI to indicate that any of the rules should match."
             },
             "and": {
                 "string": "Match all the following rules"

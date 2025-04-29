@@ -21,6 +21,8 @@ import { defaultValues, schema } from './totp-schema'
 
 const TotpForm: React.FC = () => {
   const t = useTranslations('Account_Security')
+  const formT = useTranslations('Form')
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues,
@@ -73,7 +75,7 @@ const TotpForm: React.FC = () => {
           </div>
         ) : null}
         <div className="flex justify-end">
-          <Button className="text-background">{t('totp.save.string')}</Button>
+          <Button className="text-background">{formT('save.string')}</Button>
         </div>
       </form>
     </Form>

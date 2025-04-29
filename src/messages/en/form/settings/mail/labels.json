@@ -12,10 +12,6 @@
         },
         "imap_label": {
             "string": "IMAP Label"
-        },
-        "create": {
-            "string": "Create",
-            "context": "Create a new label"
         }
     }
 }

@@ -42,14 +42,6 @@
             "string": "Register",
             "context": "Link to register a new user"
         },
-        "error": {
-            "string": "Invalid email or password",
-            "context": "Error message when the user enters invalid credentials"
-        },
-        "success": {
-            "string": "You have successfully logged in",
-            "context": "Success message when the user logs in"
-        },
         "title": {
             "string": "Login",
             "context": "Title of the login page"

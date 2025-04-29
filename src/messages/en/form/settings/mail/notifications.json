@@ -4,18 +4,12 @@
             "string": "Notifications"
         },
         "notifications": {
-            "enabled": {
-                "string": "Enabled"
-            },
             "emails": {
                 "label": {
                     "string": "Email addresses"
                 },
                 "placeholder": {
                     "string": "Enter email addresses"
-                },
-                "invalid": {
-                    "string": "Invalid email address"
                 }
             },
             "message": {
