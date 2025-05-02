@@ -15,7 +15,7 @@ export default async function RootLayout({
       <AppSidebar>{sidebars}</AppSidebar>
       <SidebarInset>
         <AppHeader />
-        <div className="rounded-tl-lg bg-secondary flex flex-1 flex-col gap-4 p-4 pt-2">
+        <div className="bg-secondary flex flex-1 flex-col gap-4 rounded-tl-lg p-4 pt-2">
           {children}
         </div>
       </SidebarInset>

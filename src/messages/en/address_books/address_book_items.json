@@ -1,0 +1,31 @@
+{
+    "Address_Book_Item": {
+        "title": {
+            "string": "Address Book Item"
+        },
+        "label_name": {
+            "string": "Name"
+        },
+        "label_email": {
+            "string": "Email"
+        },
+        "label_phone": {
+            "string": "Phone"
+        },
+        "label_address": {
+            "string": "Address"
+        },
+        "label_website": {
+            "string": "Website"
+        },
+        "label_notes": {
+            "string": "Notes"
+        },
+        "label_tags": {
+            "string": "Tags"
+        },
+        "label_custom_fields": {
+            "string": "Custom Fields"
+        }
+    }
+}
