@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HeaderDate component matches snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="flex items-center h-full"
+  >
+    <div
+      class="flex flex-col items-start"
+    >
+      <span
+        class="text-white text-sm"
+      >
+        FRIDAY
+      </span>
+      <span
+        class="text-white text-sm"
+      >
+        MAY
+      </span>
+      <span
+        class="text-white text-sm"
+      >
+        2025
+      </span>
+    </div>
+    <div
+      class="flex-grow flex justify-end items-center h-full"
+    >
+      <span
+        class="text-white text-6xl ml-4 font-thin"
+      >
+        02
+      </span>
+    </div>
+  </div>
+</DocumentFragment>
+`;
