@@ -12,9 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AppSidebar>
       <SidebarInset>
         <AppHeader />
-        <div className="flex flex-1 mt-20 flex-col gap-4 p-4 pt-2">
-          {children}
-        </div>
+        <div className="flex flex-1 mt-20 flex-col gap-4">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )
