@@ -18,7 +18,7 @@ describe('FixedButton Component', () => {
     render(<FixedButton>Click Me</FixedButton>)
     const button = screen.getByText('Click Me')
     expect(button).toHaveClass(
-      'fixed bottom-20 right-12 p-3 rounded-full shadow-lg focus:outline-none focus:ring-2'
+      'fixed bottom-20 right-12 p-3 rounded-full shadow-lg focus:outline-hidden focus:ring-2'
     )
   })
 

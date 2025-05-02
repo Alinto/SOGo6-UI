@@ -12,7 +12,7 @@ describe('Checkbox component', () => {
   it('renders Checkbox component', () => {
     const { container } = render(<Checkbox />)
     expect(container.firstChild).toHaveClass(
-      'peer h-5 w-5 shrink-0 rounded-sm border border-primary shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
+      'peer h-5 w-5 shrink-0 rounded-sm border border-primary shadow-sm focus-visible:outline-hidden focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50'
     )
   })
 
