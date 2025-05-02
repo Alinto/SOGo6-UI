@@ -28,7 +28,7 @@ const PasswordForm: React.FC = () => {
   return (
     <Form {...form}>
       <form
-        className="border rounded-md shadow p-4"
+        className="border rounded-md shadow-sm p-4"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <h3 className="text-lg">Change your password</h3>

@@ -70,7 +70,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
           />
         </div>
         {enabled ? (
-          <div className="grid grid-cols-1 gap-4 p-4 shadow border rounded">
+          <div className="grid grid-cols-1 gap-4 p-4 shadow-sm border rounded">
             <FormField
               control={form.control}
               name="subject"

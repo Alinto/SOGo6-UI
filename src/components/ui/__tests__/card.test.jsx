@@ -44,7 +44,7 @@ describe('Card components', () => {
   it('renders Card component', () => {
     const { container } = render(<Card />)
     expect(container.firstChild).toHaveClass(
-      'rounded-xl border bg-card text-card-foreground shadow'
+      'rounded-xl border bg-card text-card-foreground shadow-sm'
     )
   })
 
