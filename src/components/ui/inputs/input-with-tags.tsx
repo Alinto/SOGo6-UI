@@ -5,11 +5,11 @@ import InputWithError from './input-with-error'
 
 interface InputWithTagsProps {
   tags: { id: string; value: string }[]
-  remove: (index: number) => void
-  handleAdd: (value: string) => void
+  remove: (_index: number) => void
+  handleAdd: (_value: string) => void
   placeholder: string
   value: string
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  onChange: (_e: React.ChangeEvent<HTMLInputElement>) => void
   errors?: FieldErrors
   name: string
 }

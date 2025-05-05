@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/theme-provider'
 import StoreProvider from '@/lib/redux/store-provider'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
+import React from 'react'
 
 // import { ModeToggle } from "@/components/theme-switcher";
 

@@ -10,7 +10,7 @@ import React from 'react'
 
 interface SelectFormProps {
   options: { value: string; label: string }[]
-  onValueChange: (value: string) => void
+  onValueChange: (_value: string) => void
   value: string
 }
 

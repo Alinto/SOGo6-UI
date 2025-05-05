@@ -1,6 +1,7 @@
 import { Calendar } from '@/components/ui/calendar'
 import { Card } from '@/components/ui/card'
 import type { Meta, StoryObj } from '@storybook/react'
+import React from 'react'
 import { DayPicker } from 'react-day-picker'
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>

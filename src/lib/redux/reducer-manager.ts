@@ -8,9 +8,9 @@ import {
 export interface ReducerManager {
   getReducerMap: () => ReducersMapObject
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  reduce: (state: any, action: Action) => any
-  add: (key: string, reducer: Reducer) => void
-  remove: (key: string) => void
+  reduce: (_state: any, _action: Action) => any
+  add: (_key: string, _reducer: Reducer) => void
+  remove: (_key: string) => void
 }
 
 export function createReducerManager(
