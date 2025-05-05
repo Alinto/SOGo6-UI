@@ -8,13 +8,14 @@ import {
 } from '@/components/ui/dialog'
 import { InputWithLabel } from '@/components/ui/input'
 import { useTranslations } from 'next-intl'
+import React from 'react'
 
 interface EditFormProps {
   name: string
   id: string
 }
 
-const EditForm: React.FC<EditFormProps> = ({ name, id }) => {
+const EditForm: React.FC<EditFormProps> = ({ name }) => {
   const t = useTranslations('Address_Books')
 
   return (

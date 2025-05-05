@@ -2,6 +2,7 @@ import AppHeader from '@/components/app-header'
 import { AppSidebar } from '@/components/app-sidebar'
 import { NavBar } from '@/components/nav-bar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import React from 'react'
 import nav from './nav'
 
 export default function Layout({ children }: { children: React.ReactNode }) {

@@ -1,3 +1,4 @@
+import type { DragEndEvent } from '@dnd-kit/core'
 import {
   closestCenter,
   DndContext,
@@ -11,6 +12,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import React from 'react'
 import { type UseFieldArrayMove } from 'react-hook-form'
 
 interface SortableContainerProps {
@@ -43,12 +45,12 @@ function SortableContainer({
     </DndContext>
   )
 
-  function handleDragEnd(event) {
+  function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
 
-    if (active.id !== over.id) {
-      const oldIndex = items.indexOf(active.id)
-      const newIndex = items.indexOf(over.id)
+    if (over && active.id !== over.id) {
+      const oldIndex = items.indexOf(active.id as string)
+      const newIndex = items.indexOf(over.id as string)
       setItem(oldIndex, newIndex)
     }
   }

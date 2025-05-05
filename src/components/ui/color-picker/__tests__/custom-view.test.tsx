@@ -1,6 +1,7 @@
 import ColorPicker from '@/components/ui/color-picker/custom-view'
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
+
 jest.mock('lucide-react', () => ({
   HashIcon: jest.fn(() => <svg />),
   Save: jest.fn(() => 'Save'),

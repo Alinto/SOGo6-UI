@@ -5,7 +5,7 @@ import React from 'react'
 
 interface RadioGroupFormProps {
   options: { value: string; label: string }[]
-  onValueChange: (value: string) => void
+  onValueChange: (_value: string) => void
   value: string
   disabled?: boolean
   horizontal?: boolean

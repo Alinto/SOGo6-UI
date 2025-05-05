@@ -6,7 +6,7 @@ import ColorPicker from './custom-view'
 import PresetView from './preset-view'
 
 interface ColorPanelProps {
-  setColor: (color: string) => void
+  setColor: (_color: string) => void
 }
 
 const ColorPanel: React.FC<ColorPanelProps> = ({ setColor }) => {

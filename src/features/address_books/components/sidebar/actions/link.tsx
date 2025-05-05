@@ -8,13 +8,14 @@ import {
 } from '@/components/ui/dialog'
 import { InputWithLabel } from '@/components/ui/input'
 import { useTranslations } from 'next-intl'
+import React from 'react'
 
 interface LinkActionProps {
   name: string
   id: string
 }
 
-const LinkAction: React.FC<LinkActionProps> = ({ name, id }) => {
+const LinkAction: React.FC<LinkActionProps> = ({ name }) => {
   const t = useTranslations('Address_Books')
 
   return (

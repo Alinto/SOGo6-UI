@@ -3,7 +3,7 @@ import React from 'react'
 import { Button } from '../button'
 
 interface PresetViewProps {
-  setColor: (color: string) => void
+  setColor: (_color: string) => void
 }
 
 export const colors: string[] = [

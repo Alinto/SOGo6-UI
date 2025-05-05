@@ -12,7 +12,7 @@ export function AppSidebar({
   children,
 }: {
   children: React.ReactNode
-}): JSX.Element {
+}): React.JSX.Element {
   return (
     <Sidebar>
       <SidebarHeader className="flex h-20">

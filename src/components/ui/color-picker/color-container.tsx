@@ -7,7 +7,7 @@ import ColorPanel from './color-panel'
 
 interface ColorContainerProps {
   initialColor?: string
-  onColorChange: (color: string) => void
+  onColorChange: (_color: string) => void
   className?: string
   containerId: string
 }

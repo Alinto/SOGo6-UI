@@ -6,8 +6,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { useTranslations } from 'next-intl'
+import React from 'react'
 
-const DeleteAction: React.FC<{ name: string; id: string }> = ({ name, id }) => {
+const DeleteAction: React.FC<{ name: string; id: string }> = ({ name }) => {
   const t = useTranslations('Address_Books')
   return (
     <>

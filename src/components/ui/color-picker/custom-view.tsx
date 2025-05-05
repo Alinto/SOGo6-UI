@@ -14,7 +14,7 @@ type ClassValue =
   | null
   | boolean
   | undefined
-type ClassDictionary = Record<string, any>
+type ClassDictionary = Record<string, unknown>
 type ClassArray = ClassValue[]
 function clsx(...inputs: ClassValue[]): string {
   return inputs.filter(Boolean).join(' ')
