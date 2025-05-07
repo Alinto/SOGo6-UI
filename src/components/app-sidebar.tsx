@@ -15,7 +15,7 @@ export function AppSidebar({
 }): React.JSX.Element {
   return (
     <Sidebar>
-      <SidebarHeader className="flex h-20">
+      <SidebarHeader className="flex z-50 h-20">
         <div className="flex justify-center pl-4 pt-3 gap-4 space-x-2">
           <Image
             alt="App Logo"

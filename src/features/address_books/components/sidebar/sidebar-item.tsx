@@ -48,6 +48,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   downloadAction = true,
 }) => {
   const [type, setType] = React.useState('')
+  const formT = useTranslations('Form')
   const t = useTranslations('Address_Books')
   return (
     <SidebarMenuItem>
@@ -71,7 +72,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               {editAction && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('edit')}>
-                    <span>{t('sidebar.options.edit.default.string')}</span>
+                    <span>{formT('edit.default.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
@@ -79,7 +80,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               {!isDefault && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('delete')}>
-                    <span>{t('sidebar.options.delete.default.string')}</span>
+                    <span>{formT('delete.default.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
@@ -87,7 +88,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               {linkAction && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('link')}>
-                    <span>{t('sidebar.options.link.string')}</span>
+                    <span>{t('sidebar.options.link.title.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
