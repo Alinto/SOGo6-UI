@@ -1,5 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useRouter } from '@/lib/i18n/navigation'
+import { useParams } from 'next/navigation'
 import React, { useState } from 'react'
 import { VCard } from '../address-books-types'
 
@@ -14,19 +16,21 @@ const ListItem: React.FC<ListItemProps> = ({
   isSelected,
   onHandleCheckboxClick,
 }) => {
-  const { firstName, lastName } = data
+  const { push } = useRouter()
+  const { book_id } = useParams()
+  const { firstName, lastName, id } = data
   const [isHovered, setIsHovered] = useState(false)
   const isSelectedClass = isSelected ? 'bg-primary/20 rounded-full' : ''
 
   return (
     <div
-      className={`flex flex-row items-center my-1 gap-2 p-2 hover:rounded-full hover:bg-primary/50 cursor-pointer ${
+      className={`flex flex-row items-center my-1 gap-2 p-2 hover:rounded-full hover:bg-primary/50 ${
         isSelectedClass
       }`}
-      onMouseEnter={() => setIsHovered(true)} // Show checkbox on hover
+      onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={() => {
-        console.log('Item clicked:', data)
+        push(`/address_books/${book_id}/${id}`)
       }}
     >
       {(isHovered || isSelected) && (
@@ -40,15 +44,13 @@ const ListItem: React.FC<ListItemProps> = ({
           />
         </span>
       )}
-      {!isHovered && !isSelected && (
-        <Avatar>
-          <AvatarImage src="/images/account-avatar.svg" />
-          <AvatarFallback>
-            {firstName[0].toUpperCase()}
-            {lastName[0].toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      )}
+      <Avatar className={!isHovered && !isSelected ? '' : 'hidden'}>
+        <AvatarImage src="/images/account-avatar.svg" />
+        <AvatarFallback>
+          {firstName[0].toUpperCase()}
+          {lastName[0].toUpperCase()}
+        </AvatarFallback>
+      </Avatar>
       <div className="flex-1">
         {firstName} {lastName}
       </div>

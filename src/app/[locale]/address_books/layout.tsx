@@ -40,14 +40,15 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <AppHeader />
           <div className="flex flex-1 flex-col gap-4">{children}</div>
         </SidebarInset>
-        {ReactDOM.createPortal(
-          <DragOverlay modifiers={[snapCenterToCursor]}>
-            <div className="w-10 h-10">
-              <Contact2 className="w-6 h-6 text-gray-500" />
-            </div>
-          </DragOverlay>,
-          document.body // Render the overlay in the body
-        )}
+        {typeof window !== 'undefined' &&
+          ReactDOM.createPortal(
+            <DragOverlay modifiers={[snapCenterToCursor]}>
+              <div className="w-10 h-10">
+                <Contact2 className="w-7 h-7 text-gray-700" />
+              </div>
+            </DragOverlay>,
+            document.body
+          )}
       </DndContext>
     </SidebarProvider>
   )

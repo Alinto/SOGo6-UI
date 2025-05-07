@@ -6,14 +6,14 @@
         "label_name": {
             "string": "Name"
         },
-        "label_email": {
-            "string": "Email"
+        "label_emails": {
+            "string": "Email addresses"
         },
-        "label_phone": {
+        "label_phones": {
             "string": "Phone"
         },
-        "label_address": {
-            "string": "Address"
+        "label_addresses": {
+            "string": "Addresses"
         },
         "label_website": {
             "string": "Website"
