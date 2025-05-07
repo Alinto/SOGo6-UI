@@ -1,3 +1,4 @@
+import Draggable from '@/components/dnd/draggable'
 import { ListFilter } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
@@ -47,11 +48,13 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
         {items.length > 0 &&
           items.map((item) => (
             <li key={item.id}>
-              <ListItem
-                data={item}
-                onHandleCheckboxClick={handleCheckboxClick}
-                isSelected={selectedItems.includes(item)}
-              />
+              <Draggable id={item.id}>
+                <ListItem
+                  data={item}
+                  onHandleCheckboxClick={handleCheckboxClick}
+                  isSelected={selectedItems.includes(item)}
+                />
+              </Draggable>
             </li>
           ))}
       </ul>
