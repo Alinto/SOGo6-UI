@@ -4,10 +4,7 @@ import AddressBookListSkeleton from './skeleton'
 
 const ListSkeleton: React.FC = () => {
   return (
-    <div
-      role="list-skeleton"
-      className="flex flex-col w-full md:w-1/2 lg:w-2/5 p-4 rounded"
-    >
+    <div role="list-skeleton" className="flex w-full flex-col rounded p-4">
       <div
         role="header-skeleton"
         className="flex flex-row items-center justify-between text-gray-500"

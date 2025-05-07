@@ -12,6 +12,17 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: (id) => `address_books/${id}`,
       providesTags: (result, error, id) => [{ type: 'address_books', id }],
     }),
+    getVCard: builder.query<VCard[], { book_id: string; id: string }>({
+      query: ({ book_id, id }) => `address_books/${book_id}/${id}`,
+      providesTags: (result, error, { id }) => [{ type: 'vcard', id }],
+    }),
+    updateVCard: builder.mutation<VCard, Partial<VCard> & { book_id: string }>({
+      query: ({ ...patch }) => ({
+        url: `address_books/${patch.book_id}/${patch.id}`,
+        method: 'PATCH',
+        body: patch,
+      }),
+    }),
     addVCardToAddressBook: builder.mutation<void, { id: string; vCard: VCard }>(
       {
         query: ({ id, vCard }) => ({
@@ -54,4 +65,6 @@ export const {
   useGetAddressBooksQuery,
   useUpdateAddressBookMutation,
   useGetAddressBookVCardsQuery,
+  useGetVCardQuery,
+  useUpdateVCardMutation,
 } = injectedEndpoints

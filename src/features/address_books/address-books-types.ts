@@ -27,6 +27,7 @@ export interface VCard {
   organization?: string
   department?: string
   jobTitle?: string
+  photo?: string
   note?: string
   categories?: string[]
   urls?: string[]

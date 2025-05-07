@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { useRouter } from '@/lib/i18n/navigation'
 import { MoreVertical } from 'lucide-react'
 import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
@@ -50,11 +51,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const [type, setType] = React.useState('')
   const formT = useTranslations('Form')
   const t = useTranslations('Address_Books')
+  const { push } = useRouter()
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
-        onClick={() => console.log(`push to /address_books/${id}`)}
+        onClick={() => push(`/address_books/${id}`)}
         tooltip={name}
       >
         {icon && <DynamicIcon name={icon} />}

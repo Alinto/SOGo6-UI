@@ -9,14 +9,8 @@ import {
 import { NavItems } from '@/types'
 import { useTranslations } from 'next-intl'
 
-function RecursiveNav({
-  items,
-  translationsKey,
-}: {
-  items: NavItems[]
-  translationsKey: string
-}) {
-  const t = useTranslations(translationsKey)
+function RecursiveNav({ items }: { items: NavItems[] }) {
+  const t = useTranslations('User_Settings')
 
   return (
     <>
@@ -29,17 +23,14 @@ function RecursiveNav({
           >
             <NavigationMenuList className="flex flex-col">
               <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent hover:bg-transparent focus:bg-transparent dark:focus:bg-transparent data-[state=open]:bg-transparent">
+                <NavigationMenuTrigger className="bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent dark:focus:bg-transparent">
                   {section.icon && <section.icon className="mr-2" />}
                   {!section.icon && t(section.title)}
                 </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-inherit z-50">
+                <NavigationMenuContent className="z-50 bg-inherit">
                   <NavigationMenu viewport>
                     <NavigationMenuList className="relative flex flex-col">
-                      <RecursiveNav
-                        items={section.items}
-                        translationsKey={translationsKey}
-                      />
+                      <RecursiveNav items={section.items} />
                     </NavigationMenuList>
                   </NavigationMenu>
                 </NavigationMenuContent>
@@ -70,17 +61,11 @@ function RecursiveNav({
   )
 }
 
-function CollapsedNavMenu({
-  items,
-  translationsKey,
-}: {
-  items: NavItems[]
-  translationsKey: string
-}) {
+function CollapsedNavMenu({ items }: { items: NavItems[] }) {
   const flattedItems = items.flatMap((section) =>
     section.items ? section.items : section
   )
-  return <RecursiveNav items={flattedItems} translationsKey={translationsKey} />
+  return <RecursiveNav items={flattedItems} />
 }
 
 export default CollapsedNavMenu

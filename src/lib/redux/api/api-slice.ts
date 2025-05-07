@@ -10,6 +10,7 @@ const tagTypes = [
   'mail_notifications_settings',
   'mail_vacation_settings',
   'address_books',
+  'vcard',
 ] as const
 
 // Define our single API slice object

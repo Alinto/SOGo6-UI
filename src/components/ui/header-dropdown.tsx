@@ -3,13 +3,14 @@ import React from 'react'
 
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useRouter } from '@/lib/i18n/navigation'
 import {
   BookA,
   CalendarCog,
@@ -27,6 +28,7 @@ const HeaderDropdown: React.FC = () => {
   const t = useTranslations('Header')
   const isMobile = useIsMobile()
   const { theme } = useTheme()
+  const { push } = useRouter()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:cursor-pointer" asChild>
@@ -47,48 +49,77 @@ const HeaderDropdown: React.FC = () => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>
-          {t('theme.title.string', { name: theme })}
+        <DropdownMenuLabel className="flex items-center justify-between">
+          <span className="text-foreground dark:text-foreground">
+            {t('theme.title.string')}
+          </span>
+          <span className="text-muted-foreground text-right">
+            {t(`theme.${theme}.string`)}
+          </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ThemeSwitcher />
         <DropdownMenuSeparator />
         <DropdownMenuLabel>{t('account.section.string')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/user_settings/profile')}
+        >
           <CircleUserRound className="pr-2" />
           {t('account.profile.string')}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/user_settings/security')}
+        >
           <UserRoundCog className="pr-2" />
           {t('account.security.string')}
-        </DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>{t('settings.title.string')}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/user_settings/general')}
+        >
           <UserRoundCog className="pr-2" />
           {t('settings.general.string')}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/user_settings/calendar')}
+        >
           <CalendarCog className="pr-2" />
           {t('settings.agenda.string')}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/user_settings/address_books')}
+        >
           <BookA className="pr-2" /> {t('settings.address_books.string')}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/user_settings/mail')}
+        >
           <Mail className="pr-2" /> {t('settings.email.string')}
-        </DropdownMenuCheckboxItem>
-        <DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/admin/panel')}
+        >
           <Cog className="pr-2" />
           {t('admin.panel.string')}
-        </DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onClick={() => push('/logout')}
+        >
           <LogOut className="pr-2" />
           {t('logout.string')}
-        </DropdownMenuCheckboxItem>
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )

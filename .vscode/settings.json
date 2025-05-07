@@ -3,6 +3,7 @@
     "workbench.startupEditor": "terminal",
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "jest.runMode": "on-demand",
     "editor.codeActionsOnSave": {
         "source.fixAll.eslint": "explicit"
     },

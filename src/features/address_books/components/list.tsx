@@ -27,12 +27,12 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
     return <AddressBookListSkeleton />
   }
   return (
-    <div className="flex flex-col w-full md:w-1/2 lg:w-2/5 p-4 rounded">
+    <div className="flex w-full flex-col rounded p-4">
       <div className="flex flex-row items-center justify-between text-gray-500">
         <span>
           {t('list.contacts_number.string', { number: items.length })}
         </span>
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center justify-between">
           <ListFilter />
           <span className="ml-2 text-gray-400">
             {t('list.filters.name.string')}
@@ -41,7 +41,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
       </div>
       <ul className="mt-4">
         {items.length === 0 && (
-          <li className="mt-3 h-14 text-gray-600 rounded-full bg-secondary text-center flex items-center justify-center">
+          <li className="bg-secondary mt-3 flex h-14 items-center justify-center rounded-full text-center text-gray-600">
             {t('list.no_items.string')}
           </li>
         )}

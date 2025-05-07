@@ -2,7 +2,7 @@
     "Header": {
         "theme": {
             "title": {
-                "string": "Theme: {name}",
+                "string": "Theme",
                 "context": "Section title for the header dropdown"
             },
             "dark": {
@@ -29,7 +29,7 @@
                 "string": "Deuteranopia",
                 "context": "Deuteranopia theme switcher in the header"
             },
-            "auto": {
+            "system": {
                 "string": "Auto",
                 "context": "Auto theme switcher in the header"
             }
