@@ -22,7 +22,7 @@ const Sidebar: React.FC = () => {
   const { globals = [], personals = [], subscriptions = [] } = data || {}
   return (
     <>
-      <SidebarGroup>
+      <SidebarGroup className="px-0">
         <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
         <AddAddressBook type={'personals'} />
         <SidebarGroupContent>
@@ -40,7 +40,7 @@ const Sidebar: React.FC = () => {
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
-      <SidebarGroup>
+      <SidebarGroup className="px-0">
         <SidebarGroupLabel>
           {t('sidebar.subscriptions.string')}
         </SidebarGroupLabel>
@@ -59,7 +59,7 @@ const Sidebar: React.FC = () => {
           ))}
         </SidebarMenu>
       </SidebarGroup>
-      <SidebarGroup>
+      <SidebarGroup className="px-0">
         <SidebarGroupLabel>{t('sidebar.globals.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {globals.map((book) => (
