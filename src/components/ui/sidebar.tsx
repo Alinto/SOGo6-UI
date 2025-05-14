@@ -2,7 +2,7 @@
 
 import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
-import { PanelLeft } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, Menu } from 'lucide-react'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
+import Image from 'next/image'
 
 const SIDEBAR_COOKIE_NAME = 'sidebar_state'
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -241,7 +242,7 @@ const Sidebar = React.forwardRef<
             // Adjust the padding for floating and inset variants.
             variant === 'floating' || variant === 'inset'
               ? 'p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]'
-              : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-r group-data-[side=right]:border-l',
+              : 'group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=right]:border-l',
             className
           )}
           {...props}
@@ -263,8 +264,13 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar } = useSidebar()
+  const isMobile = useIsMobile()
+  const { toggleSidebar, open, openMobile } = useSidebar()
 
+  let icon = open ? <ChevronsLeft /> : <ChevronsRight />
+  if (isMobile) {
+    icon = openMobile ? <ChevronsLeft /> : <Menu />
+  }
   return (
     <Button
       ref={ref}
@@ -278,7 +284,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <PanelLeft />
+      {icon}
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -354,6 +360,7 @@ const SidebarHeader = React.forwardRef<
   HTMLDivElement,
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => {
+  const { open } = useSidebar()
   return (
     <div
       ref={ref}
@@ -363,7 +370,16 @@ const SidebarHeader = React.forwardRef<
         className
       )}
       {...props}
-    />
+    >
+      <div className="flex justify-center items-center gap-4">
+        <Image
+          alt="App Logo"
+          src={open ? '/images/sogo-full-alt.png' : '/images/sogo-compact.svg'}
+          width={open ? 100 : 50}
+          height={open ? 50 : 25}
+        />
+      </div>
+    </div>
   )
 })
 SidebarHeader.displayName = 'SidebarHeader'
@@ -515,7 +531,7 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = 'SidebarMenuItem'
 
 const sidebarMenuButtonVariants = cva(
-  'peer/menu-button flex w-full items-center gap-1 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:shrink-0',
+  'peer/menu-button flex w-full items-center gap-1 overflow-hidden rounded-md p-2 text-left text-sm outline-hidden ring-sidebar-ring transition-[width,height,padding] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:p-1! [&>span:last-child]:truncate [&>svg]:shrink-0',
   {
     variants: {
       variant: {

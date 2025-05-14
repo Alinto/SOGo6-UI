@@ -26,7 +26,7 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 180 25% 40%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
@@ -53,8 +53,8 @@
     --radius: 0.5rem;
     --header-background: 180, 25%, 40%;
     --header-foreground: 240 5.3% 26.1%;
-    --sidebar-background: 0, 0%, 88%;
-    --sidebar-header-background: 178, 21%, 49%;
+    --sidebar-background: 180, 25%, 40%;
+    --sidebar-header-background: 180, 25%, 40%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
     --sidebar-primary-foreground: 0 0% 98%;

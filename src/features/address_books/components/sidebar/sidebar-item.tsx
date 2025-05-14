@@ -52,12 +52,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        className="h-10"
+        className="h-10 align-middle group-data-[collapsible=icon]:rounded-none group-data-[collapsible=icon]:justify-center"
         onClick={() => console.log(`push to /address_books/${id}`)}
-        title={name}
+        tooltip={name}
       >
-        {icon && <DynamicIcon name={icon} className="mr-2" />}
-        <span className="truncate">{name}</span>
+        {icon && <DynamicIcon name={icon} />}
+        <span className="truncate group-data-[collapsible=icon]:hidden">
+          {name}
+        </span>
       </SidebarMenuButton>
       {!disableActions && (
         <Dialog>

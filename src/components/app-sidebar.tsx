@@ -3,9 +3,9 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarTrigger,
 } from '@/components/ui/sidebar'
 
-import Image from 'next/image'
 import React from 'react'
 
 export function AppSidebar({
@@ -14,19 +14,12 @@ export function AppSidebar({
   children: React.ReactNode
 }): React.JSX.Element {
   return (
-    <Sidebar>
-      <SidebarHeader className="flex h-20">
-        <div className="flex justify-center pl-4 pt-3 gap-4 space-x-2">
-          <Image
-            alt="App Logo"
-            src="/images/sogo-full-alt.png"
-            width={100}
-            height={50}
-          />
-        </div>
-      </SidebarHeader>
-      <SidebarContent className="pt-5 pl-3">{children}</SidebarContent>
-      <SidebarFooter />
+    <Sidebar collapsible="icon">
+      <SidebarHeader className="flex h-20 rounded-br-2xl" />
+      <SidebarContent className="">{children}</SidebarContent>
+      <SidebarFooter className="flex justify-end p-0">
+        <SidebarTrigger className="ml-auto h-10 w-15 mb-2 rounded-r-none" />
+      </SidebarFooter>
     </Sidebar>
   )
 }
