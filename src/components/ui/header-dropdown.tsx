@@ -9,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useIsMobile } from '@/hooks/use-mobile'
 import {
   BookA,
   CalendarCog,
@@ -23,6 +24,7 @@ import { ThemeSwitcher } from '../theme-switcher'
 
 const HeaderDropdown: React.FC = () => {
   const t = useTranslations('Header')
+  const isMobile = useIsMobile()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:cursor-pointer" asChild>
@@ -34,10 +36,12 @@ const HeaderDropdown: React.FC = () => {
             <AvatarImage src="/images/account-avatar.svg" />
             <AvatarFallback>HF</AvatarFallback>
           </Avatar>
-          <div className="text-background dark:text-foreground">
-            <div>Henry Fafenback</div>
-            <div className="block text-sm">sbarre@alinto.eu</div>
-          </div>
+          {!isMobile && (
+            <div className="text-foreground dark:text-foreground">
+              <div>Henry Fafenback</div>
+              <div className="block text-sm">sbarre@alinto.eu</div>
+            </div>
+          )}
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">

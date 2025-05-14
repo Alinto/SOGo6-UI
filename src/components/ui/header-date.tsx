@@ -33,15 +33,19 @@ const HeaderDate: React.FC = () => {
   }, [currentLocale])
 
   const { dayName, month, year, dayNumber } = dateDetails
+  if (year === 0) {
+    return null // or a loading state
+  }
   return (
     <div className="flex items-center h-full">
       <div className="flex flex-col items-start">
         <span className="text-white text-sm">{dayName}</span>
-        <span className="text-white text-sm">{month}</span>
-        <span className="text-white text-sm">{year}</span>
+        <span className="text-white text-sm">
+          {month} {year}
+        </span>
       </div>
       <div className="flex-grow flex justify-end items-center h-full">
-        <span className="text-white text-6xl ml-4 font-thin">{dayNumber}</span>
+        <span className="text-white text-5xl ml-4 font-thin">{dayNumber}</span>
       </div>
     </div>
   )

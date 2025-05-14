@@ -74,7 +74,7 @@ export function NavBar({
   translationsKey: string
 }) {
   return (
-    <SidebarGroup>
+    <SidebarGroup className="group-data-[collapsible=icon]:visible">
       <SidebarMenu>
         {items.map((item) => (
           <RecursiveNavItem
