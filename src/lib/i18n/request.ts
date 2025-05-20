@@ -9,6 +9,9 @@ const getAllFiles = (
   dirPath: string,
   arrayOfFiles: string[] = []
 ): string[] => {
+  if (!fs.existsSync(dirPath)) {
+    return arrayOfFiles
+  }
   const files = fs.readdirSync(dirPath)
 
   files.forEach((file) => {
@@ -64,12 +67,15 @@ export default getRequestConfig(async ({ requestLocale }) => {
   let locale = await requestLocale
 
   // Ensure that a valid locale is used
-  if (!locale || !routing.locales.includes(locale as any)) {
+  if (!locale || !routing.locales.includes(locale as string)) {
     locale = routing.defaultLocale
   }
 
   const defaultMessages = await createDefaultMessages()
-  const messages = await createMessages(locale)
+  let messages = {}
+  if (locale !== routing.defaultLocale) {
+    messages = await createMessages(locale)
+  }
 
   return {
     locale,

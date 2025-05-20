@@ -1,5 +1,5 @@
-import PasswordForm from './form/password-form'
-import TotpForm from './form/totp-form'
+import PasswordForm from '@/features/user-settings/security/form/password-form'
+import TotpForm from '@/features/user-settings/security/form/totp-form'
 
 const ProfilePage = () => {
   return (

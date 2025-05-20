@@ -7,6 +7,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+import CollapsedNavMenu from '@/features/user-settings/sidebar/collapsed-sidebar'
 import { Link } from '@/lib/i18n/navigation'
 import { NavItems } from '@/types'
 import { ChevronRight } from 'lucide-react'
@@ -74,16 +75,23 @@ export function NavBar({
   translationsKey: string
 }) {
   return (
-    <SidebarGroup className="group-data-[collapsible=icon]:visible">
-      <SidebarMenu>
-        {items.map((item) => (
-          <RecursiveNavItem
-            key={item.title}
-            item={item}
-            translationsKey={translationsKey}
-          />
-        ))}
-      </SidebarMenu>
-    </SidebarGroup>
+    <div>
+      <SidebarGroup className="group-data-[collapsible=icon]:hidden">
+        <SidebarMenu>
+          {items.map((item) => (
+            <RecursiveNavItem
+              key={item.title}
+              item={item}
+              translationsKey={translationsKey}
+            />
+          ))}
+        </SidebarMenu>
+      </SidebarGroup>
+      <SidebarGroup className="hidden group-data-[collapsible=icon]:block">
+        <SidebarMenu>
+          <CollapsedNavMenu items={items} translationsKey={translationsKey} />
+        </SidebarMenu>
+      </SidebarGroup>
+    </div>
   )
 }
