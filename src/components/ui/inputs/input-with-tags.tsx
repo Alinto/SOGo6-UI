@@ -24,7 +24,7 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
   ...props
 }) => {
   return (
-    <div className="input-with-tag border-b-1 rounded-md p-2 flex flex-wrap">
+    <div className="input-with-tag flex flex-wrap rounded-md border-b-1 p-2">
       {tags.map((tag, i) => (
         <Tag
           key={tag.id}
@@ -33,7 +33,7 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
           action={() => remove(i)}
         />
       ))}
-      <div className="flex-1 min-w-96">
+      <div className="min-w-96 flex-1">
         <InputWithError
           onKeyDown={(e) => {
             if (e.key === 'Enter' && e.currentTarget.value.length) {

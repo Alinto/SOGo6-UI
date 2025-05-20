@@ -16,7 +16,7 @@ const InputWithIcon = (
         type="button"
         size={'icon'}
         variant="ghost"
-        className="absolute right-0 top-0"
+        className="absolute top-0 right-0"
         onClick={onActionClick}
       >
         {ActionComponent}

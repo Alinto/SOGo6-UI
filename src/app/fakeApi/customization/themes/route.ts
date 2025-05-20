@@ -1,31 +1,7 @@
-@import 'tailwindcss';
+import { NextResponse } from 'next/server'
 
-@config '../../tailwind.config.ts';
-
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
-@layer base {
-  *,
-  ::after,
-  ::before,
-  ::backdrop,
-  ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
-  }
-}
-
-@utility text-balance {
-  text-wrap: balance;
-}
-
-@layer base {
-  :root {
+const data = `
+:root {
     --background: 180 25% 40%;
     --foreground: 0 0% 3.9%;
     --card: 0 0% 100%;
@@ -70,7 +46,7 @@
     --card-foreground: 0 0% 98%;
     --popover: 0 0% 3.9%;
     --popover-foreground: 0 0% 98%;
-    --primary: 114 40% 49%;
+    --primary: 180 25% 40%;
     --primary-foreground: 0 0% 9%;
     --secondary: 0 0% 14.9%;
     --secondary-foreground: 0 0% 98%;
@@ -146,9 +122,6 @@
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 13% 40%;
     --sidebar-ring: 220 80% 60%;
-    font-family: 'OpenDyslexic', Arial, sans-serif !important;
-    letter-spacing: 0.05em;
-    word-spacing: 0.1em;
   }
   .tritanopia {
     /* Backgrounds and foregrounds: high contrast, avoid blue/yellow confusion */
@@ -318,46 +291,12 @@
     --sidebar-border: 220 13% 40%;
     --sidebar-ring: 220 80% 60%;
   }
+`
+
+export async function GET() {
+  return NextResponse.json(data)
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}
-
-@custom-variant dyslexia (&:where(.dyslexia, .dyslexia *));
-@custom-variant tritanopia (&:where(.tritanopia, .tritanopia *));
-@custom-variant deuteranopia (&:where(.deuteranopia, .deuteranopia *));
-@custom-variant protanopia (&:where(.protanopia, .protanopia *));
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Italic.otf') format('opentype');
-  font-weight: normal;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Bold.otf') format('opentype');
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-BoldItalic.otf') format('opentype');
-  font-weight: bold;
-  font-style: italic;
+export async function OPTIONS() {
+  return NextResponse.json({ allow: ['GET'] }, { status: 200 })
 }

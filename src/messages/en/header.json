@@ -2,7 +2,7 @@
     "Header": {
         "theme": {
             "title": {
-                "string": "Theme",
+                "string": "Theme: {name}",
                 "context": "Section title for the header dropdown"
             },
             "dark": {
@@ -12,6 +12,22 @@
             "light": {
                 "string": "Light",
                 "context": "Light theme switcher in the header"
+            },
+            "dyslexia": {
+                "string": "Dyslexia",
+                "context": "Dyslexia theme switcher in the header"
+            },
+            "tritanopia": {
+                "string": "Tritanopia",
+                "context": "Tritanopia theme switcher in the header"
+            },
+            "protanopia": {
+                "string": "Protanopia",
+                "context": "Protanopia theme switcher in the header"
+            },
+            "deuteranopia": {
+                "string": "Deuteranopia",
+                "context": "Deuteranopia theme switcher in the header"
             },
             "auto": {
                 "string": "Auto",

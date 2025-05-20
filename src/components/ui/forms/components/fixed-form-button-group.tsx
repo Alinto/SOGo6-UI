@@ -15,9 +15,9 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
   disableSubmit,
 }) => {
   return (
-    <div className="fixed bottom-20 right-12 gap-4 flex justify-end pt-6">
+    <div className="fixed right-12 bottom-20 flex justify-end gap-4 pt-6">
       <Button
-        className="p-7 rounded-full shadow-lg"
+        className="rounded-full p-7 shadow-lg"
         size={'icon'}
         type="button"
         disabled={disableReset}
@@ -28,7 +28,7 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
         </AccessibleIcon>
       </Button>
       <Button
-        className="p-7 rounded-full shadow-lg"
+        className="rounded-full p-7 shadow-lg"
         size={'icon'}
         type="submit"
         disabled={disableSubmit}

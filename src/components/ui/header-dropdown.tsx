@@ -20,17 +20,19 @@ import {
   UserRoundCog,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useTheme } from 'next-themes'
 import { ThemeSwitcher } from '../theme-switcher'
 
 const HeaderDropdown: React.FC = () => {
   const t = useTranslations('Header')
   const isMobile = useIsMobile()
+  const { theme } = useTheme()
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:cursor-pointer" asChild>
         <div
           data-testid="header-dropdown-trigger"
-          className="flex items-center pl-4 gap-4 space-x-2"
+          className="flex items-center gap-4 space-x-2 pl-4"
         >
           <Avatar>
             <AvatarImage src="/images/account-avatar.svg" />
@@ -45,7 +47,9 @@ const HeaderDropdown: React.FC = () => {
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>{t('theme.title.string')}</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {t('theme.title.string', { name: theme })}
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <ThemeSwitcher />
         <DropdownMenuSeparator />

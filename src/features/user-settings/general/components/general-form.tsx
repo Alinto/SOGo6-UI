@@ -84,7 +84,7 @@ export function GeneralSettingsForm({ data, update }: Props) {
               )}
             />
           </div>
-          <div className="grid lg:grid-cols-3 gap-4 lg:space-x-10">
+          <div className="grid gap-4 lg:grid-cols-3 lg:space-x-10">
             <FormField
               control={form.control}
               name="shortDateStyle"
@@ -208,7 +208,7 @@ export function GeneralSettingsForm({ data, update }: Props) {
               control={form.control}
               name="enableNotifications"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-2">
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-2">
                   <FormControl>
                     <Checkbox
                       checked={field.value}

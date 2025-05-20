@@ -27,7 +27,7 @@ const RadioGroupForm: React.FC<RadioGroupFormProps> = ({
       {options.map((option) => (
         <FormItem
           key={option.value}
-          className="flex items-center space-x-3 space-y-0"
+          className="flex items-center space-y-0 space-x-3"
         >
           <FormControl>
             <RadioGroupItem disabled={disabled} value={option.value} />

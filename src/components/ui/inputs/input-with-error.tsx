@@ -22,7 +22,7 @@ const InputWithError: React.FC<
       <Input
         className={cn(
           'flex',
-          errors && errors[errorName] && 'border border-destructive',
+          errors && errors[errorName] && 'border-destructive border',
           className
         )}
         {...props}
@@ -31,7 +31,7 @@ const InputWithError: React.FC<
         errors={errors}
         name={errorName}
         render={({ message }) => (
-          <div className="text-sm text-destructive">{t(message)}</div>
+          <div className="text-destructive text-sm">{t(message)}</div>
         )}
       />
     </>

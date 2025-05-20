@@ -27,7 +27,7 @@ export function AppSidebar({
         {children}
       </SidebarContent>
       <SidebarFooter className="flex justify-end p-0">
-        <SidebarTrigger className="ml-auto h-10 w-15 mb-2 rounded-r-none" />
+        <SidebarTrigger className="mb-2 ml-auto h-10 w-15 rounded-r-none" />
       </SidebarFooter>
     </Sidebar>
   )

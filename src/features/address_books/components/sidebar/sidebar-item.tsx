@@ -52,7 +52,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        className="h-10 align-middle group-data-[collapsible=icon]:rounded-none group-data-[collapsible=icon]:justify-center"
+        className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
         onClick={() => console.log(`push to /address_books/${id}`)}
         tooltip={name}
       >

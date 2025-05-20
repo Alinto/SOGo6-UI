@@ -275,7 +275,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             '--thumb-ring-color': '#666666',
           } as React.CSSProperties
         }
-        className="z-30 flex w-full max-w-[300px] select-none flex-col items-center gap-3 overscroll-none rounded-2xl border border-zinc-200 bg-white p-4 shadow-md dark:border-zinc-700 dark:bg-zinc-900"
+        className="z-30 flex w-full max-w-[300px] flex-col items-center gap-3 overscroll-none rounded-2xl border border-zinc-200 bg-white p-4 shadow-md select-none dark:border-zinc-700 dark:bg-zinc-900"
       >
         <DraggableColorCanvas
           {...color}
@@ -318,7 +318,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
           }}
         />
         <div className="relative h-fit w-full">
-          <div className="absolute inset-y-0 left-0 flex h-full items-center px-2 mt-[30px]">
+          <div className="absolute inset-y-0 left-0 mt-[30px] flex h-full items-center px-2">
             <HashIcon className="size-4 text-zinc-600" />
           </div>
         </div>
@@ -340,7 +340,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
               // 10px for the padding on the color badge, 28px for the color badge
               'pr-[38px]',
               // bg & text
-              'bg-black/[2.5%] text-zinc-700 dark:bg-white/[2.5%]  dark:text-zinc-200',
+              'bg-black/[2.5%] text-zinc-700 dark:bg-white/[2.5%] dark:text-zinc-200',
               // borders & backgrounds
               'border-zinc-200 dark:border-zinc-700',
               // hover classes
@@ -350,7 +350,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
               'focus:border-zinc-300 focus:ring-zinc-300',
               'dark:focus:border-zinc-600 dark:focus:ring-zinc-600',
               // selection styles
-              'selection:bg-black/20  selection:text-black',
+              'selection:bg-black/20 selection:text-black',
               'dark:selection:bg-white/30 dark:selection:text-white'
             )}
             value={color.hex}

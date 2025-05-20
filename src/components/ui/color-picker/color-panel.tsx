@@ -13,7 +13,7 @@ const ColorPanel: React.FC<ColorPanelProps> = ({ setColor }) => {
   return (
     <>
       <Tabs defaultValue="preset">
-        <TabsList className="flex justify-center items-center">
+        <TabsList className="flex items-center justify-center">
           <TabsTrigger value="preset">Preset</TabsTrigger>
           <TabsTrigger value="custom">Custom</TabsTrigger>
         </TabsList>

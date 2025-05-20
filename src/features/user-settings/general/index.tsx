@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import React from 'react'
 import GeneralSettingsForm from './components/general-form'
 
+import { ThemeProvider } from '@/components/theme-provider'
 import {
   useGetGeneralSettingsQuery,
   useUpdateGeneralSettingsMutation,
@@ -19,6 +20,7 @@ const GeneralSettings: React.FC = () => {
   return (
     <div className="grid grid-cols-1 gap-4">
       <h2 className="text-2xl">{t('title.string')}</h2>
+      <ThemeProvider />
       {isFetching ? (
         'LOADING'
       ) : (

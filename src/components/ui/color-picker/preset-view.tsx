@@ -46,7 +46,7 @@ export const colors: string[] = [
 
 const PresetView: React.FC<PresetViewProps> = ({ setColor }) => {
   return (
-    <div className="flex gap-3 flex-wrap justify-center my-4">
+    <div className="my-4 flex flex-wrap justify-center gap-3">
       {colors.map((color, index) => (
         <Button
           key={index}
@@ -54,13 +54,13 @@ const PresetView: React.FC<PresetViewProps> = ({ setColor }) => {
           size="icon"
           variant={'ghost'}
           className={cn(
-            'relative flex justify-center items-center',
+            'relative flex items-center justify-center',
             `hover:bg-opacity-10`
           )}
           onClick={() => setColor(color)}
         >
           <div
-            className="w-7 h-7 border-none rounded-full z-10"
+            className="z-10 h-7 w-7 rounded-full border-none"
             style={{ backgroundColor: color }}
           />
         </Button>

@@ -1,7 +1,12 @@
 import { cn } from '@/lib/utils'
 import React from 'react'
 
-const FixedButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
+interface FixedButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  className?: string
+}
+
+const FixedButton: React.FC<FixedButtonProps> = ({
   children,
   className,
   ...props
@@ -9,7 +14,7 @@ const FixedButton: React.FC<React.ButtonHTMLAttributes<HTMLButtonElement>> = ({
   return (
     <button
       className={cn(
-        `fixed bottom-20 bg-primary text-background hover:text-primary hover:bg-transparent right-12 p-3 rounded-full shadow-lg`,
+        `bg-primary text-background hover:text-primary fixed right-12 bottom-20 rounded-full p-3 shadow-lg hover:bg-transparent`,
         className
       )}
       {...props}

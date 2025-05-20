@@ -1,8 +1,8 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  darkMode: ['class'],
-  safelist: ['dark', 'dyslexia', 'tritanopia', 'deuteranopia', 'protanopia'],
+  // darkMode: ['class'],
+  // safelist: ['dark', 'dyslexia', 'tritanopia', 'deuteranopia', 'protanopia'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -11,6 +11,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Geist Sans"', 'Arial', 'sans-serif'],
+        dyslexia: ['"OpenDyslexic"', 'Arial', 'sans-serif'],
+      },
       keyframes: {
         horizontalTranslate: {
           '0%': {

@@ -20,9 +20,5 @@ export const apiSlice = createApi({
   // All of our requests will have URLs starting with '/fakeApi'
   baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
   // The "endpoints" represent operations and requests for this server
-  endpoints: (builder) => ({
-    getCustomStyle: builder.query<CSSStyleSheet, string>({
-      query: () => `custom-styles`,
-    }),
-  }), // Initial empty endpoints
+  endpoints: () => ({}),
 })

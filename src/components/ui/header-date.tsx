@@ -37,15 +37,15 @@ const HeaderDate: React.FC = () => {
     return null // or a loading state
   }
   return (
-    <div className="flex items-center h-full">
+    <div className="flex h-full items-center">
       <div className="flex flex-col items-start">
-        <span className="text-white text-sm">{dayName}</span>
-        <span className="text-white text-sm">
+        <span className="text-sm text-white">{dayName}</span>
+        <span className="text-sm text-white">
           {month} {year}
         </span>
       </div>
-      <div className="flex-grow flex justify-end items-center h-full">
-        <span className="text-white text-5xl ml-4 font-thin">{dayNumber}</span>
+      <div className="flex h-full flex-grow items-center justify-end">
+        <span className="ml-4 text-5xl font-thin text-white">{dayNumber}</span>
       </div>
     </div>
   )

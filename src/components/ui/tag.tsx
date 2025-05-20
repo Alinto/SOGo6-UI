@@ -14,7 +14,7 @@ const Tag: React.FC<TagProps> = ({ value, action, icon, className }) => {
   return (
     <div
       className={cn(
-        'tag rounded-full h-9 bg-gray-100 text-sm flex items-center pl-4 space-x-1',
+        'tag flex h-9 items-center space-x-1 rounded-full bg-gray-100 pl-4 text-sm',
         !icon ? 'pr-4' : '',
         className
       )}

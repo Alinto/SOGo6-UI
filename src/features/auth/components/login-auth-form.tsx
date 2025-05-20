@@ -4,6 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
+import React from 'react'
 
 export function LoginAuthForm({
   className,

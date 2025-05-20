@@ -3,8 +3,6 @@ import './globals.css'
 // import localFont from "next/font/local";
 import { ThemeProvider } from '@/components/theme-provider'
 import StoreProvider from '@/lib/redux/store-provider'
-import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
 import React from 'react'
 
 // import { ModeToggle } from "@/components/theme-switcher";
@@ -28,26 +26,25 @@ export default async function RootLayout({
   params: Promise<{ locale: string }>
 }>) {
   const { locale } = await params
-  // Providing all messages to the client
-  // side is the easiest way to get started
-  const messages = await getMessages()
-
   return (
     <html suppressHydrationWarning lang={locale}>
-      <body
-        className={`antialiased`}
-        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <NextIntlClientProvider locale={locale} messages={messages}>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <StoreProvider>{children}</StoreProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
+      <body className={`antialiased`}>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          themes={[
+            'light',
+            'dark',
+            'dyslexia',
+            'tritanopia',
+            'deuteranopia',
+            'protanopia',
+            'system',
+          ]}
+          enableSystem
+        >
+          <StoreProvider>{children}</StoreProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

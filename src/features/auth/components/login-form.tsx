@@ -6,6 +6,7 @@ import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import React from 'react'
 
 /* TRANSLATIONS_TODO */
 export function LoginForm({
@@ -35,7 +36,7 @@ export function LoginForm({
             required
           />
         </div>
-        <div className="grid gap-2 justify-end">
+        <div className="grid justify-end gap-2">
           <ArrowRight className="text-foreground" size={30} />
         </div>
       </div>
