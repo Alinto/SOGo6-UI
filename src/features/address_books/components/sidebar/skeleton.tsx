@@ -19,8 +19,8 @@ const SidebarSkeleton: React.FC = () => {
           <Plus />
         </SidebarGroupAction>
         <SidebarGroupContent>
-          <Skeleton className="h-10 w-auto" />
-          <Skeleton className="h-10 mt-2 w-auto" />
+          <Skeleton className="h-10 w-auto bg-secondary/10" />
+          <Skeleton className="h-10 mt-2 w-auto bg-secondary/10" />
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup>
@@ -31,13 +31,13 @@ const SidebarSkeleton: React.FC = () => {
           <Plus />
         </SidebarGroupAction>
         <SidebarGroupContent>
-          <Skeleton className="h-10 w-auto" />
+          <Skeleton className="h-10 w-auto bg-secondary/10" />
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup>
         <SidebarGroupLabel>{t('sidebar.globals.string')}</SidebarGroupLabel>
         <SidebarGroupContent>
-          <Skeleton className="h-10 w-auto" />
+          <Skeleton className="h-10 w-auto bg-secondary/10" />
         </SidebarGroupContent>
       </SidebarGroup>
     </>

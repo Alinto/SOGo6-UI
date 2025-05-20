@@ -3,6 +3,7 @@ import {
   Contact,
   Mail,
   Settings,
+  SettingsIcon,
   ShieldUser,
   User,
   UserCog,
@@ -12,6 +13,7 @@ const navItems = [
   {
     title: 'account.title.string',
     isActive: true,
+    collapsedIcon: User,
     items: [
       {
         title: 'account.profile.string',
@@ -28,11 +30,13 @@ const navItems = [
   {
     title: 'settings.title.string',
     isActive: true,
+    collapsedIcon: SettingsIcon,
     items: [
       {
         title: 'settings.general.string',
         url: '/user_settings/general',
         icon: UserCog,
+        collapsedIcon: UserCog,
       },
       {
         title: 'settings.address_books.string',
@@ -42,11 +46,12 @@ const navItems = [
       {
         title: 'settings.calendars.title.string',
         icon: Calendar,
+        collapsedIcon: Calendar,
         isActive: true,
         items: [
           {
             title: 'settings.calendars.general.string',
-            url: '/user_settings/calendars/general',
+            url: '/user_settings/calendars/genreral',
           },
           {
             title: 'settings.calendars.categories.string',
@@ -61,6 +66,7 @@ const navItems = [
       {
         title: 'settings.email.title.string',
         icon: Mail,
+        collapsedIcon: Mail,
         isActive: true,
         items: [
           {

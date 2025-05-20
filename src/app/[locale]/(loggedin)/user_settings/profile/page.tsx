@@ -1,6 +1,6 @@
 'use client'
 
-import ProfileForm from './form/profile-form'
+import ProfileForm from '@/features/user-settings/profile/form/profile-form'
 
 const ProfilePage = () => {
   return (
