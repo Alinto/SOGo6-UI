@@ -3,6 +3,20 @@
         "title": {
             "string": "Address Books"
         },
+        "list": {
+            "contacts_number": {
+                "string": "{number, plural, one {# contact} other {# contacts}}",
+                "context": "Displays the number of contacts in an address book."
+            },
+            "filters": {
+                "name": {
+                    "string": "Name"
+                }
+            },
+            "no_items": {
+                "string": "No contact found."
+            }
+        },
         "sidebar": {
             "globals": {
                 "string": "Global address books"
@@ -30,12 +44,6 @@
                     "title": {
                         "string": "Edit address book {name}"
                     },
-                    "cancel": {
-                        "string": "Cancel"
-                    },
-                    "save": {
-                        "string": "Save"
-                    },
                     "labels": {
                         "name": {
                             "string": "Name"
@@ -50,13 +58,7 @@
                         "string": "Edit"
                     },
                     "title": {
-                        "string": "Link to {name}"
-                    },
-                    "cancel": {
-                        "string": "Cancel"
-                    },
-                    "save": {
-                        "string": "Save"
+                        "string": "Links"
                     },
                     "labels": {
                         "name": {
@@ -65,14 +67,8 @@
                     }
                 },
                 "delete": {
-                    "default": {
-                        "string": "Delete"
-                    },
                     "title": {
                         "string": "Are you sure you want to delete address book {name}?"
-                    },
-                    "cancel": {
-                        "string": "Cancel"
                     }
                 },
                 "rename": {

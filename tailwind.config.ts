@@ -1,8 +1,6 @@
 import type { Config } from 'tailwindcss'
 
 const config: Config = {
-  // darkMode: ['class'],
-  // safelist: ['dark', 'dyslexia', 'tritanopia', 'deuteranopia', 'protanopia'],
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',

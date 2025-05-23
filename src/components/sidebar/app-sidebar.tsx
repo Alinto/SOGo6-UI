@@ -7,12 +7,9 @@ import {
 } from '@/components/ui/sidebar'
 
 import React from 'react'
+import SidebarsContent from './app-sidebar-content'
 
-export function AppSidebar({
-  children,
-}: {
-  children: React.ReactNode
-}): React.JSX.Element {
+export function AppSidebar(): React.JSX.Element {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex h-29 rounded-br-2xl" />
@@ -24,7 +21,7 @@ export function AppSidebar({
           scrollbarGutter: 'stable',
         }}
       >
-        {children}
+        <SidebarsContent />
       </SidebarContent>
       <SidebarFooter className="flex justify-end p-0">
         <SidebarTrigger className="mb-2 ml-auto h-10 w-15 rounded-r-none" />

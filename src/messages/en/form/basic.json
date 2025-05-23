@@ -6,6 +6,26 @@
                 "description": "Click to save the form data."
             }
         },
+        "delete": {
+            "default": {
+                "string": "Delete",
+                "description": "Click to delete the selected item."
+            },
+            "specific": {
+                "string": "Delete {item}",
+                "description": "Click to delete the selected item."
+            }
+        },
+        "edit": {
+            "default": {
+                "string": "Edit",
+                "description": "Click to edit the selected item."
+            },
+            "specific": {
+                "string": "Edit {item}",
+                "description": "Click to edit the selected item."
+            }
+        },
         "cancel": {
             "default": {
                 "string": "Cancel",

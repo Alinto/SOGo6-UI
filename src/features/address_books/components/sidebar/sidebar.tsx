@@ -1,5 +1,6 @@
 'use client'
 
+import Droppable from '@/components/dnd/droppable'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -28,14 +29,15 @@ const Sidebar: React.FC = () => {
         <SidebarGroupContent>
           <SidebarMenu>
             {personals.map((book) => (
-              <SidebarItem
-                key={book.id}
-                icon="contact-2"
-                isDefault={book.default}
-                id={book.id}
-                name={book.name}
-                onClick={() => {}}
-              />
+              <Droppable key={book.id} id={book.id}>
+                <SidebarItem
+                  icon="contact-2"
+                  isDefault={book.default}
+                  id={book.id}
+                  name={book.name}
+                  onClick={() => {}}
+                />
+              </Droppable>
             ))}
           </SidebarMenu>
         </SidebarGroupContent>

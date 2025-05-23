@@ -1,5 +1,10 @@
 // 'use client'
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@/components/ui/collapsible'
+import {
   SidebarGroup,
   SidebarMenu,
   SidebarMenuButton,
@@ -7,24 +12,19 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import CollapsedNavMenu from '@/features/user-settings/sidebar/collapsed-sidebar'
 import { Link } from '@/lib/i18n/navigation'
 import { NavItems } from '@/types'
 import { ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from './ui/collapsible'
+import CollapsedNavMenu from './collapsed-sidebar'
+import items from './content'
 
 interface RecursiveNavItemProps {
   item: NavItems
-  translationsKey: string
 }
 
-function RecursiveNavItem({ item, translationsKey }: RecursiveNavItemProps) {
-  const t = useTranslations(translationsKey)
+function RecursiveNavItem({ item }: RecursiveNavItemProps) {
+  const t = useTranslations('User_Settings')
 
   return (
     <Collapsible
@@ -53,10 +53,7 @@ function RecursiveNavItem({ item, translationsKey }: RecursiveNavItemProps) {
                     </SidebarMenuButton>
                   </Link>
                 ) : (
-                  <RecursiveNavItem
-                    item={subItem}
-                    translationsKey={translationsKey}
-                  />
+                  <RecursiveNavItem item={subItem} />
                 )}
               </SidebarMenuSubItem>
             ))}
@@ -67,31 +64,23 @@ function RecursiveNavItem({ item, translationsKey }: RecursiveNavItemProps) {
   )
 }
 
-export function NavBar({
-  items,
-  translationsKey,
-}: {
-  items: NavItems[]
-  translationsKey: string
-}) {
+export function Sidebar() {
   return (
     <div>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
         <SidebarMenu>
           {items.map((item) => (
-            <RecursiveNavItem
-              key={item.title}
-              item={item}
-              translationsKey={translationsKey}
-            />
+            <RecursiveNavItem key={item.title} item={item} />
           ))}
         </SidebarMenu>
       </SidebarGroup>
       <SidebarGroup className="hidden group-data-[collapsible=icon]:block">
         <SidebarMenu>
-          <CollapsedNavMenu items={items} translationsKey={translationsKey} />
+          <CollapsedNavMenu items={items} />
         </SidebarMenu>
       </SidebarGroup>
     </div>
   )
 }
+
+export default Sidebar
