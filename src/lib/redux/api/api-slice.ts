@@ -11,6 +11,7 @@ const tagTypes = [
   'mail_vacation_settings',
   'address_books',
   'vcard',
+  'mail/folders',
 ] as const
 
 // Define our single API slice object

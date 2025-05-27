@@ -14,7 +14,7 @@ export function AppSidebar(): React.JSX.Element {
     <Sidebar collapsible="icon">
       <SidebarHeader className="flex h-29 rounded-br-2xl" />
       <SidebarContent
-        className="group-data-[state=collapsed]:overflow-visible"
+        className="mt-2 group-data-[state=collapsed]:overflow-visible"
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: '#d1d5db transparent',

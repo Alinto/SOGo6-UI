@@ -1,0 +1,52 @@
+{
+    "Mails": {
+        "options": {
+            "rename": {
+                "string": "Rename"
+            },
+            "mark_as_read": {
+                "string": "Mark as read"
+            },
+            "new_subfolder": {
+                "string": "New subfolder"
+            },
+            "sharing": {
+                "string": "Sharing"
+            }
+        },
+        "new_folder": {
+            "string": "New folder",
+            "description": "Create a new folder in the mail sidebar"
+        },
+        "new_message": {
+            "string": "New message",
+            "description": "Create a new message in the mail sidebar"
+        },
+        "folders": {
+            "inbox": {
+                "string": "Inbox",
+                "description": "Your inbox where you receive new messages"
+            },
+            "sent": {
+                "string": "Sent",
+                "description": "Messages you have sent"
+            },
+            "drafts": {
+                "string": "Drafts",
+                "description": "Messages you have saved as drafts"
+            },
+            "trash": {
+                "string": "Junk",
+                "description": "Deleted messages that can be restored or permanently deleted"
+            },
+            "junk": {
+                "string": "Junk",
+                "description": "Messages identified as spam"
+            },
+            "archive": {
+                "string": "Archive",
+                "description": "Messages you have archived for later reference"
+            }
+        }
+    }
+}
