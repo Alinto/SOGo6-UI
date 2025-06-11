@@ -41,7 +41,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
       </div>
       <ul className="mt-4">
         {items.length === 0 && (
-          <li className="bg-secondary mt-3 flex h-14 items-center justify-center rounded-full text-center text-gray-600">
+          <li className="mt-3 flex h-14 items-center justify-center rounded-full text-center text-gray-600">
             {t('list.no_items.string')}
           </li>
         )}

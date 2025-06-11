@@ -45,7 +45,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="displaySubscribeMailboxesOnly"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -64,28 +64,9 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
         <div>
           <FormField
             control={form.control}
-            name="EAS"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>{t('EAS.string')}</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
-        <div>
-          <FormField
-            control={form.control}
             name="countAllUnseen"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -106,7 +87,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="sortByThreads"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -125,7 +106,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="displayFullEmails"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -146,7 +127,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="hideInlineAttachments"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -167,7 +148,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="autoMarkAsRead"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -307,7 +288,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="signOnNew"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -324,7 +305,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="signOnReply"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -341,7 +322,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="signOnForward"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -410,7 +391,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="displayRemoteImages"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}

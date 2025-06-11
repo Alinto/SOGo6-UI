@@ -1,6 +1,8 @@
 # Use the official Node.js 22 image as the base image
 FROM node:22-alpine
 
+ENV NODE_ENV=production
+
 # Set the working directory
 WORKDIR /app
 

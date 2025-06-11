@@ -12,6 +12,9 @@ const tagTypes = [
   'address_books',
   'vcard',
   'mail/folders',
+  'folder/messages',
+  'preferences',
+  'mails/folders',
 ] as const
 
 // Define our single API slice object

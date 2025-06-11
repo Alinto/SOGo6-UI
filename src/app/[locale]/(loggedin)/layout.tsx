@@ -36,9 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <SidebarInset>
           <AppHeader />
-          <div className="bg-secondary flex flex-1 flex-col gap-4 rounded-tl-lg p-4 pt-2">
-            {children}
-          </div>
+          <div className="gap-4 overflow-hidden border-1">{children}</div>
         </SidebarInset>
         {typeof window !== 'undefined' &&
           ReactDOM.createPortal(

@@ -41,7 +41,7 @@ const HeaderDropdown: React.FC = () => {
             <AvatarFallback>HF</AvatarFallback>
           </Avatar>
           {!isMobile && (
-            <div className="text-foreground dark:text-foreground">
+            <div className="text-sidebar-accent-foreground dark:text-foreground text-sm">
               <div>Henry Fafenback</div>
               <div className="block text-sm">sbarre@alinto.eu</div>
             </div>
@@ -88,7 +88,7 @@ const HeaderDropdown: React.FC = () => {
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/user_settings/calendar')}
+          onClick={() => push('/user_settings/calendar/general')}
         >
           <CalendarCog className="pr-2" />
           {t('settings.agenda.string')}
@@ -101,7 +101,7 @@ const HeaderDropdown: React.FC = () => {
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/user_settings/mail')}
+          onClick={() => push('/user_settings/mail/general')}
         >
           <Mail className="pr-2" /> {t('settings.email.string')}
         </DropdownMenuItem>

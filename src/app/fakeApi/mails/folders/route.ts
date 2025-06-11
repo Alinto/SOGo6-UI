@@ -1,168 +1,9 @@
 import { ImapFolder } from '@/features/mails/mails-types'
 import { NextResponse } from 'next/server'
 
-const data = [
-  {
-    name: 'INBOX',
-    path: 'INBOX',
-    unseen: 3,
-    messages: 150,
-    flags: ['\\HasNoChildren', '\\Inbox'],
-    delimiter: '/',
-    readOnly: true,
-    selectable: true,
-  },
-  {
-    name: 'Sent',
-    path: 'Sent',
-    unseen: 0,
-    messages: 150,
-    flags: ['\\HasNoChildren', '\\Sent'],
-    delimiter: '/',
-    readOnly: true,
-    selectable: false,
-  },
-  {
-    name: 'Drafts',
-    path: 'Drafts',
-    unseen: 0,
-    messages: 150,
-    flags: ['\\HasNoChildren', '\\Drafts'],
-    delimiter: '/',
-    readOnly: true,
-    selectable: false,
-  },
-  {
-    name: 'Trash',
-    path: 'Trash',
-    unseen: 0,
-    messages: 150,
-    flags: ['\\HasNoChildren', '\\Trash'],
-    delimiter: '/',
-    readOnly: true,
-    selectable: false,
-  },
-  {
-    name: 'Junk',
-    path: 'Junk',
-    unseen: 0,
-    messages: 150,
-    flags: ['\\HasNoChildren', '\\Junk'],
-    delimiter: '/',
-    readOnly: true,
-    selectable: false,
-  },
-  {
-    name: 'Archive',
-    path: 'Archive',
-    unseen: 0,
-    messages: 150,
-    flags: ['\\HasNoChildren', '\\Archive'],
-    delimiter: '/',
-    readOnly: true,
-    selectable: false,
-  },
-  {
-    name: 'Projects',
-    path: 'Projects',
-    unseen: 0,
-    messages: 0,
-    flags: ['\\HasChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: '2024',
-    path: 'Projects/2024',
-    unseen: 1,
-    messages: 20,
-    flags: ['\\HasChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: 'Frontend',
-    path: 'Projects/2024/Frontend',
-    unseen: 0,
-    messages: 5,
-    flags: ['\\HasChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: 'React',
-    path: 'Projects/2024/Frontend/React',
-    unseen: 0,
-    messages: 2,
-    flags: ['\\HasNoChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: 'Backend',
-    path: 'Projects/2024/Backend',
-    unseen: 0,
-    messages: 3,
-    flags: ['\\HasNoChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: '2023',
-    path: 'Projects/2023',
-    unseen: 0,
-    messages: 10,
-    flags: ['\\HasNoChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: 'Personal',
-    path: 'Personal',
-    unseen: 0,
-    messages: 0,
-    flags: ['\\HasChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: 'Receipts',
-    path: 'Personal/Receipts',
-    unseen: 1,
-    messages: 12,
-    flags: ['\\HasNoChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: 'Travel',
-    path: 'Personal/Travel',
-    unseen: 0,
-    messages: 5,
-    flags: ['\\HasChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-  {
-    name: '2024',
-    path: 'Personal/Travel/2024',
-    unseen: 0,
-    messages: 2,
-    flags: ['\\HasNoChildren'],
-    delimiter: '/',
-    readOnly: false,
-    selectable: true,
-  },
-]
+import folders from './folders.json'
+
+const data = folders as ImapFolder[]
 
 function nestFolders(flatFolders: ImapFolder[]) {
   const folderMap: Record<string, ImapFolder> = {}
@@ -175,6 +16,17 @@ function nestFolders(flatFolders: ImapFolder[]) {
       folder.subfolders = []
     }
     folderMap[folder.path] = folder
+  })
+
+  // Sort folders: special folders first, then alphabetically by name
+  const specialOrder = ['INBOX', 'Drafts', 'Sent', 'Trash', 'Junk', 'Archive']
+  flatFolders.sort((a, b) => {
+    const aIdx = specialOrder.indexOf(a.name)
+    const bIdx = specialOrder.indexOf(b.name)
+    if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
+    if (aIdx !== -1) return -1
+    if (bIdx !== -1) return 1
+    return a.name.localeCompare(b.name)
   })
 
   // Then, assign subfolders to their parent
