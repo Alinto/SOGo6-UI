@@ -1,5 +1,5 @@
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
-import { Calendar, Contact2, Mail, Settings } from 'lucide-react'
+import { Calendar, Contact2, Mail } from 'lucide-react'
 import React from 'react'
 import { Toggle } from '../toggle'
 
@@ -13,16 +13,14 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
   const pathname = usePathname()
   const firstPathPart = pathname.split('/')[1] || ''
   let page = ''
+
   if (firstPathPart === 'address_books') {
     page = 'address_books'
   }
   if (firstPathPart === 'calendars') {
     page = 'calendars'
   }
-  if (firstPathPart === 'settings') {
-    page = 'settings'
-  }
-  if (!isNaN(Number(firstPathPart))) {
+  if (firstPathPart === 'u') {
     page = 'mail'
   }
 
@@ -33,7 +31,7 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
         className="cursor-pointer"
         aria-label="Mail"
         size={'lg'}
-        onClick={() => push('/0/inbox')}
+        onClick={() => push('/u/0/INBOX')}
         pressed={page === 'mail'}
       >
         <Mail className="h-7 w-7" />
@@ -55,15 +53,6 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
         onClick={() => push('/calendars')}
       >
         <Calendar className="h-7 w-7" />
-      </Toggle>
-      <Toggle
-        className="cursor-pointer"
-        aria-label="Settings"
-        size={'lg'}
-        pressed={page === 'settings'}
-        onClick={() => push('/settings')}
-      >
-        <Settings className="h-7 w-7" />
       </Toggle>
     </div>
   )

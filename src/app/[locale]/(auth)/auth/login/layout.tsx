@@ -5,8 +5,8 @@ import React from 'react'
 
 const LoginLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="grid min-h-svh bg-background lg:grid-cols-2 lg:items-center">
-      <div className="flex flex-1 bg-background sm:justify-center lg:justify-end p-6 md:p-10 lg:h-80 z-50 lg:animate-horizontalTranslate">
+    <div className="bg-background grid min-h-svh lg:grid-cols-2 lg:items-center">
+      <div className="bg-background lg:animate-horizontalTranslate z-50 flex flex-1 p-6 sm:justify-center md:p-10 lg:h-80 lg:justify-end">
         <Image
           alt="SOGo"
           src="/images/sogo-full.svg"
@@ -15,7 +15,7 @@ const LoginLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           priority
         />
       </div>
-      <div className="flex flex-1 bg-primary sm:justify-center lg:items-center lg:justify-start p-6 sm:p-10 lg:h-80">
+      <div className="bg-primary flex flex-1 p-6 sm:justify-center sm:p-10 lg:h-80 lg:items-center lg:justify-start">
         <div className="w-full max-w-xs">{children}</div>
       </div>
     </div>

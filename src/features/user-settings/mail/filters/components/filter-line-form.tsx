@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import CheckboxToggle from '@/components/ui/checkbox-toggle'
 import { FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Trash2 } from 'lucide-react'
@@ -57,9 +57,9 @@ const FilterLineForm: React.FC<FilterLineFormProps> = ({
         control={control}
         name={`filters.${index}.enabled`}
         render={({ field }) => (
-          <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+          <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
             <FormControl>
-              <Checkbox
+              <CheckboxToggle
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />

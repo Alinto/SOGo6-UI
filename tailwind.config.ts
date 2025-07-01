@@ -72,18 +72,21 @@ const config: Config = {
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
+          'background-secondary': 'hsl(var(--sidebar-background-secondary))',
           foreground: 'hsl(var(--sidebar-foreground))',
+          'foreground-secondary': 'hsl(var(--sidebar-foreground-secondary))',
+          'muted-foreground-secondary':
+            'hsl(var(--sidebar-muted-foreground-secondary))',
           primary: 'hsl(var(--sidebar-primary))',
-          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
           accent: 'hsl(var(--sidebar-accent))',
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
-          'header-background': 'hsl(var(--sidebar-header-background))',
         },
         header: {
           DEFAULT: 'hsl(var(--header-background))',
           foreground: 'hsl(var(--header-foreground))',
+          'muted-foreground': 'hsl(var(--header-muted-foreground))',
         },
       },
       borderRadius: {

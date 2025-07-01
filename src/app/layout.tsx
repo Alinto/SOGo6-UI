@@ -28,7 +28,7 @@ export default async function RootLayout({
   const { locale } = await params
   return (
     <html suppressHydrationWarning lang={locale}>
-      <body className={`antialiased`}>
+      <body className="overflow-hidden antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

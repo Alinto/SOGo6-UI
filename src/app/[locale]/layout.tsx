@@ -17,11 +17,9 @@ export default async function RootLayout({
   const messages = await getMessages()
 
   return (
-    <div>
-      <NextIntlClientProvider locale={locale} messages={messages}>
-        <ThemesLoader />
-        {children}
-      </NextIntlClientProvider>
-    </div>
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <ThemesLoader />
+      {children}
+    </NextIntlClientProvider>
   )
 }

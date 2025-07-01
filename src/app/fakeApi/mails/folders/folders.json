@@ -1,0 +1,71 @@
+[
+  {
+    "name": "INBOX",
+    "path": "INBOX",
+    "unseen": 2,
+    "messages": 65,
+    "flags": [
+      "\\HasNoChildren"
+    ],
+    "delimiter": "/",
+    "readOnly": true,
+    "selectable": true,
+    "default": true
+  },
+  {
+    "name": "Drafts",
+    "path": "Drafts",
+    "unseen": 7,
+    "messages": 54,
+    "flags": [
+      "\\HasNoChildren",
+      "\\Drafts"
+    ],
+    "delimiter": "/",
+    "readOnly": true,
+    "selectable": false,
+    "default": true
+  },
+  {
+    "name": "Sent",
+    "path": "Sent",
+    "unseen": 19,
+    "messages": 64,
+    "flags": [
+      "\\HasNoChildren",
+      "\\Sent"
+    ],
+    "delimiter": "/",
+    "readOnly": true,
+    "selectable": true,
+    "default": true
+  },
+  {
+    "name": "Trash",
+    "path": "Trash",
+    "unseen": 8,
+    "messages": 31,
+    "flags": [
+      "\\HasNoChildren",
+      "\\Trash"
+    ],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": false,
+    "default": true
+  },
+  {
+    "name": "Archive",
+    "path": "Archive",
+    "unseen": 7,
+    "messages": 86,
+    "flags": [
+      "\\HasNoChildren",
+      "\\UnMarked"
+    ],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": false,
+    "default": true
+  }
+]

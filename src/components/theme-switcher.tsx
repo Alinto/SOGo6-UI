@@ -20,7 +20,7 @@ export function ThemeSwitcher() {
       <div className="flex items-center justify-center gap-2">
         <Collapsible>
           <Toggle
-            aria-label="Dark"
+            aria-label={t('theme.dark.string')}
             size={'sm'}
             pressed={theme === 'dark'}
             onClick={() => setTheme('dark')}
@@ -29,7 +29,7 @@ export function ThemeSwitcher() {
             <Moon className="h-4 w-4" />
           </Toggle>
           <Toggle
-            aria-label="Light"
+            aria-label={t('theme.light.string')}
             size={'sm'}
             pressed={theme === 'light'}
             onClick={() => setTheme('light')}
@@ -38,11 +38,11 @@ export function ThemeSwitcher() {
             <Sun className="h-4 w-4" />
           </Toggle>
           <Toggle
-            aria-label="System"
+            aria-label={t('theme.system.string')}
             size={'sm'}
             pressed={theme === 'system'}
             onClick={() => setTheme('system')}
-            title={t('theme.auto.string')}
+            title={t('theme.system.string')}
           >
             <ComputerIcon className="h-4 w-4" />
           </Toggle>
@@ -51,34 +51,38 @@ export function ThemeSwitcher() {
           </CollapsibleTrigger>
           <CollapsibleContent className="flex flex-col gap-2">
             <Toggle
-              aria-label="Dyslexia"
+              aria-label={t('theme.dyslexia.string')}
               size={'sm'}
               pressed={theme === 'dyslexia'}
               onClick={() => setTheme('dyslexia')}
+              title={t('theme.dyslexia.string')}
             >
               {t('theme.dyslexia.string')}
             </Toggle>
             <Toggle
-              aria-label="Tritanopia"
+              aria-label={t('theme.tritanopia.string')}
               size={'sm'}
               pressed={theme === 'tritanopia'}
               onClick={() => setTheme('tritanopia')}
+              title={t('theme.tritanopia.string')}
             >
               {t('theme.tritanopia.string')}
             </Toggle>
             <Toggle
-              aria-label="Deuteranopia"
+              aria-label={t('theme.deuteranopia.string')}
               size={'sm'}
               pressed={theme === 'deuteranopia'}
               onClick={() => setTheme('deuteranopia')}
+              title={t('theme.deuteranopia.string')}
             >
               {t('theme.deuteranopia.string')}
             </Toggle>
             <Toggle
-              aria-label="Protanopia"
+              aria-label={t('theme.protanopia.string')}
               size={'sm'}
               pressed={theme === 'protanopia'}
               onClick={() => setTheme('protanopia')}
+              title={t('theme.protanopia.string')}
             >
               {t('theme.protanopia.string')}
             </Toggle>

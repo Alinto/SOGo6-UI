@@ -1,0 +1,11 @@
+.compose_editor {
+  [role='application'] {
+    height: 96%;
+    [role='presentation']:nth-of-type(2) {
+      height: 96%;
+      [role='textbox'] {
+        height: 95%;
+      }
+    }
+  }
+}
