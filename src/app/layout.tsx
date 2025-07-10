@@ -16,6 +16,11 @@ import React from 'react'
 export const metadata: Metadata = {
   title: 'SOGo',
   description: 'SOGo Webmail',
+  icons: {
+    icon: '/images/sogo-compact.svg',
+    shortcut: '/images/sogo-compact.svg',
+    apple: '/images/sogo-compact.svg',
+  },
 }
 
 export default async function RootLayout({

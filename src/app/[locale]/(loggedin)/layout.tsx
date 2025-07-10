@@ -36,7 +36,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <SidebarInset>
           <AppHeader />
-          <div className="gap-4 overflow-hidden border-1">{children}</div>
+          <div className="h-[calc(100vh-48px)] gap-4 overflow-hidden border-1">
+            {children}
+          </div>
         </SidebarInset>
         {typeof window !== 'undefined' &&
           ReactDOM.createPortal(

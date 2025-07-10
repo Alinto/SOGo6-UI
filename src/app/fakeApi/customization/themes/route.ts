@@ -49,7 +49,7 @@ const data = `
     --sidebar-ring: 180 60% 45%;
 
     --header-background: 0 0% 100%;
-    --header-foreground: 270 60% 60%
+    --header-foreground: 270 60% 60%;
     --header-muted-foreground: 270 60% 60%;
 
   }
@@ -94,6 +94,10 @@ const data = `
     --sidebar-accent-foreground: 220 10% 96%;
     --sidebar-border: 220 10% 22%;
     --sidebar-ring: 180 60% 45%;
+
+    --header-background: 220 15% 12%;
+    --header-foreground: 220 10% 96%;
+    --header-muted-foreground: 270 60% 60%;
   }
   .dyslexia {
     --background: 210 20% 93%; /* very light blue-gray */
