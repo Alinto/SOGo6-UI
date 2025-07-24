@@ -45,3 +45,29 @@ export type RightActionsType = { icon: JSX.Element; title: string }[]
 export type MailHeaderFullProps = MailHeaderProps & {
   date: number
 }
+
+export type ImapAttachmentPart = {
+  partId: string
+  name: string
+  contentType: string
+  size: number
+  downloadUri: string
+  displayUri: string
+}
+
+export type AttachmentNameProps = {
+  name: string
+  maxLength?: number
+  className?: string
+}
+
+export type MailAttachmentProps = {
+  part: ImapAttachmentPart
+  className?: string
+}
+
+export type ImapAttachments = {
+  parts?: ImapAttachmentPart[]
+  zipUri?: string
+  count: number
+}

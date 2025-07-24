@@ -18,3 +18,14 @@ export function formatMailTime(date: number) {
     })
     .replace(',', '')
 }
+
+export function formatSize(size: number) {
+  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} Mo`
+  if (size >= 1024) return `${(size / 1024).toFixed(1)} Ko`
+  return `${size} o`
+}
+
+export function getFileExtension(filename: string) {
+  const match = filename.match(/\.([a-zA-Z0-9]+)$/)
+  return match ? match[1] : ''
+}
