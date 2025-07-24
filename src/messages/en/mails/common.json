@@ -115,7 +115,7 @@
         },
         "unsubscribe-dialog": {
           "message": {
-            "string": "Do you want to unsubscribe from this mailing list?",
+            "string": "Do you want to unsubscribe from this mailing list ({email})?",
             "description": "Message in the unsubscribe dialog"
           },
           "confirm": {

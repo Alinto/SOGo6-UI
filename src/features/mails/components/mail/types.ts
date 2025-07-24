@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { type JSX } from 'react'
+
 export interface MailSubjectProps {
   subject: string
 }
@@ -18,4 +19,29 @@ export type MailReturnButtonProps = {
   folderPath: string
   tooltip?: string
   className?: string
+}
+
+export type EmailContact = {
+  name?: string
+  email: string
+}
+
+export type MailHeaderProps = {
+  from: EmailContact
+  to: EmailContact[]
+  cc?: EmailContact[]
+  showUnsubscribeButton?: boolean
+}
+
+export type UnsubscribeDialogProps = {
+  open: boolean
+  onOpenChange: (_open: boolean) => void
+  senderName?: string
+  senderEmail?: string
+}
+
+export type RightActionsType = { icon: JSX.Element; title: string }[]
+
+export type MailHeaderFullProps = MailHeaderProps & {
+  date: number
 }

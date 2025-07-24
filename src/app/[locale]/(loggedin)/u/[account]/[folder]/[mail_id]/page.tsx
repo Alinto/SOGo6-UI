@@ -1,8 +1,10 @@
 'use client'
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
+import MailHeader from '@/features/mails/components/mail/mail-header'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
+import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import {
@@ -36,6 +38,19 @@ const MailPage: React.FC = () => {
   if (isLoading) return <MailDetailSkeleton />
   if (isError || !data) return null
 
+  const {
+    from: fromRaw,
+    to: toRaw,
+    cc: ccRaw,
+    isMailingList,
+    date,
+    subject,
+  } = data
+
+  const from = parseEmailContact(fromRaw)
+  const to = toRaw.map(parseEmailContact)
+  const cc = ccRaw ? ccRaw.map(parseEmailContact) : []
+
   const mainActions = [
     { icon: <Archive size={18} />, title: t('archive.string') },
     { icon: <Trash2 size={18} />, title: t('delete.string') },
@@ -59,7 +74,16 @@ const MailPage: React.FC = () => {
           <MailActionsBar actions={navigationActions} />
         </div>
       </div>
-      <MailSubject subject={data.subject} />
+      <MailSubject subject={subject} />
+      <div className="h-screen w-full rounded-lg border p-4 shadow sm:p-6">
+        <MailHeader
+          from={from}
+          to={to}
+          cc={cc}
+          showUnsubscribeButton={!!isMailingList}
+          date={date}
+        />
+      </div>
     </div>
   )
 }
