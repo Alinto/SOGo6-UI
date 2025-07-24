@@ -1,26 +1,17 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
-import AddressBookListSkeleton from '../skeleton'
+import { render } from '@testing-library/react'
+import MailDetailSkeleton from '../skeleton'
 
-// filepath: src/features/address_books/components/skeletons/skeleton.test.tsx
-
-describe('AddressBookListSkeleton Component', () => {
-  it('renders the AddressBookListSkeleton component', () => {
-    render(<AddressBookListSkeleton />)
-    const skeleton = screen.getByRole('item-skeleton')
+describe('MailDetailSkeleton Component', () => {
+  it('renders the MailDetailSkeleton component', () => {
+    render(<MailDetailSkeleton />)
+    const skeleton = document.querySelector('.w-full.p-0.sm\\:p-0')
     expect(skeleton).toBeInTheDocument()
   })
 
-  it('applies the correct class name to the Skeleton component', () => {
-    render(<AddressBookListSkeleton />)
-    const skeleton = screen.getByRole('item-skeleton')
-    expect(skeleton).toHaveClass(
-      'flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full'
-    )
-  })
-
-  it('matches the snapshot', () => {
-    const { asFragment } = render(<AddressBookListSkeleton />)
-    expect(asFragment()).toMatchSnapshot()
+  it('renders the correct number of action skeletons', () => {
+    render(<MailDetailSkeleton />)
+    const actionSkeletons = document.querySelectorAll('.h-8.w-8.rounded-full')
+    expect(actionSkeletons.length).toBe(7)
   })
 })
