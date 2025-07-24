@@ -1,85 +1,191 @@
 {
-    "Mails_Common": {
-        "compose": {
-            "reply": {
-                "string": "Reply",
-                "description": "Reply to the current message"
-            },
-            "reply_all": {
-                "string": "Reply all",
-                "description": "Reply to all recipients of the current message"
-            },
-            "forward": {
-                "string": "Forward",
-                "description": "Forward the current message to another recipient"
-            },
-            "send": {
-                "string": "Send",
-                "description": "Send the composed message"
-            },
-            "save_draft": {
-                "string": "Save draft",
-                "description": "Save the composed message as a draft"
-            },
-            "cancel": {
-                "string": "Cancel",
-                "description": "Cancel composing the message"
-            }
+  "Mails_Common": {
+    "compose": {
+      "reply": {
+        "string": "Reply",
+        "description": "Reply to the current message"
+      },
+      "reply_all": {
+        "string": "Reply all",
+        "description": "Reply to all recipients of the current message"
+      },
+      "forward": {
+        "string": "Forward",
+        "description": "Forward the current message to another recipient"
+      },
+      "send": {
+        "string": "Send",
+        "description": "Send the composed message"
+      },
+      "save_draft": {
+        "string": "Save draft",
+        "description": "Save the composed message as a draft"
+      },
+      "cancel": {
+        "string": "Cancel",
+        "description": "Cancel composing the message"
+      }
+    },
+    "list": {
+      "messages_number": {
+        "string": "{number, plural, one {# message} other {# messages}}",
+        "context": "Displays the number of messages in an mail folder."
+      },
+      "sort": {
+        "date": {
+          "ascending": {
+            "string": "Newest first"
+          },
+          "descending": {
+            "string": "Older first"
+          }
         },
-        "list": {
-            "messages_number": {
-                "string": "{number, plural, one {# message} other {# messages}}",
-                "context": "Displays the number of messages in an mail folder."
-            },
-            "sort": {
-                "date": {
-                    "ascending": {
-                        "string": "Newest first"
-                    },
-                    "descending": {
-                        "string": "Older first"
-                    }
-                },
-                "size": {
-                    "ascending": {
-                        "string": "Smallest first"
-                    },
-                    "descending": {
-                        "string": "Largest first"
-                    }
-                }
-            },
-            "pagination": {
-                "previous": {
-                    "string": "Previous page"
-                },
-                "next": {
-                    "string": "Next page"
-                }
-            },
-            "filter": {
-                "name": {
-                    "string": "Name"
-                },
-                "all": {
-                    "string": "All"
-                },
-                "unread": {
-                    "string": "Unread"
-                },
-                "read": {
-                    "string": "Read"
-                },
-                "starred": {
-                    "string": "Starred"
-                },
-                "attachments": {
-                    "string": "Attachments"
-                }
-            },
-            "no_items": {
-                "string": "No message found."
-            }
+        "size": {
+          "ascending": {
+            "string": "Smallest first"
+          },
+          "descending": {
+            "string": "Largest first"
+          }
         }
+      },
+      "pagination": {
+        "previous": {
+          "string": "Previous page"
+        },
+        "next": {
+          "string": "Next page"
+        }
+      },
+      "filter": {
+        "name": {
+          "string": "Name"
+        },
+        "all": {
+          "string": "All"
+        },
+        "unread": {
+          "string": "Unread"
+        },
+        "read": {
+          "string": "Read"
+        },
+        "starred": {
+          "string": "Starred"
+        },
+        "attachments": {
+          "string": "Attachments"
+        }
+      },
+      "no_items": {
+        "string": "No message found."
+      }
+    },
+    "mail_display": {
+      "content": {
+        "download_attachment": {
+          "string": "Download",
+          "description": "Download the attached file"
+        },
+        "download_all_attachments": {
+          "string": "Download all attachments",
+          "description": "Download all attached files"
+        },
+        "external_images_warning": {
+          "string": "This message contains external images.",
+          "description": "Warning: This message contains external images"
+        }
+      },
+      "header": {
+        "from": {
+          "string": "From",
+          "description": "From"
+        },
+        "to": {
+          "string": "To",
+          "description": "To"
+        },
+        "cc": {
+          "string": "Cc",
+          "description": "Cc"
+        },
+        "unsubscribe": {
+          "string": "Unsubscribe",
+          "description": "Unsubscribe from the mailing list"
+        },
+        "unsubscribe-dialog": {
+          "message": {
+            "string": "Do you want to unsubscribe from this mailing list?",
+            "description": "Message in the unsubscribe dialog"
+          },
+          "confirm": {
+            "string": "Unsubscribe",
+            "description": "Confirm the unsubscription"
+          },
+          "cancel": {
+            "string": "Cancel",
+            "description": "Cancel the unsubscription"
+          }
+        },
+        "contacts-badge": {
+          "popover-add-to-addressbook": {
+            "string": "Add to address book",
+            "description": "Add the contact to the address book"
+          },
+          "popover-write-new-message": {
+            "string": "Write new message",
+            "description": "Write a new message to the contact"
+          }
+        }
+      },
+      "attachments": {
+        "string": "Display full name",
+        "description": "Display full name"
+      },
+      "action-bar": {
+        "reply": {
+          "string": "Reply",
+          "description": "Reply to the current message"
+        },
+        "reply_all": {
+          "string": "Reply all",
+          "description": "Reply to all recipients of the current message"
+        },
+        "forward": {
+          "string": "Forward",
+          "description": "Forward the current message to another recipient"
+        },
+        "return": {
+          "string": "Return to search results",
+          "description": "Return to search results"
+        },
+        "archive": {
+          "string": "Archive",
+          "description": "Archive"
+        },
+        "delete": {
+          "string": "Delete",
+          "description": "Delete the current message"
+        },
+        "report_spam": {
+          "string": "Mark as spam",
+          "description": "Mark as spam"
+        },
+        "mark_unread": {
+          "string": "Mark as unread",
+          "description": "Mark as unread"
+        },
+        "label": { "string": "Label", "description": "Label" },
+        "more": { "string": "More actions", "description": "More actions" },
+        "next-mail": {
+          "string": "Next mail",
+          "description": "Next mail"
+        },
+        "previous-mail": {
+          "string": "Previous mail",
+          "description": "Previous mail"
+        }
+      }
     }
+  }
 }

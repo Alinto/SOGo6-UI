@@ -1,36 +1,49 @@
 import { Skeleton } from '@/components/ui/skeleton'
-import React from 'react'
-import AddressBookListSkeleton from './skeleton'
 
-const ListSkeleton: React.FC = () => {
+const ROWS = 16
+
+export default function MailListSkeleton() {
   return (
-    <div role="list-skeleton" className="flex w-full flex-col rounded p-4">
-      <div
-        role="header-skeleton"
-        className="flex flex-row items-center justify-between text-gray-500"
-      >
-        <Skeleton role="header-item-skeleton" className="h-6 w-1/8" />
-        <Skeleton role="header-item-skeleton" className="h-6 w-1/8" />
+    <div className="flex h-full w-full flex-col">
+      {/* Header skeleton */}
+      <div className="bg-background flex items-center gap-2 border-b px-6 py-3">
+        {/* Checkbox */}
+        <Skeleton className="h-5 w-5 rounded-sm" />
+        {/* Folder name */}
+        <Skeleton className="h-5 w-32" />
+        {/* Nb messages */}
+        <Skeleton className="h-5 w-16" />
+        {/* Spacer */}
+        <div className="flex-1" />
+        {/* Filters & actions */}
+        <Skeleton className="h-8 w-32 rounded-md" />
+        <Skeleton className="h-8 w-8 rounded-md" />
+        <Skeleton className="h-8 w-16 rounded-md" />
       </div>
-      <ul className="mt-4">
-        <li>
-          <AddressBookListSkeleton />
-        </li>
-        <li>
-          <AddressBookListSkeleton />
-        </li>
-        <li>
-          <AddressBookListSkeleton />
-        </li>
-        <li>
-          <AddressBookListSkeleton />
-        </li>
-        <li>
-          <AddressBookListSkeleton />
-        </li>
-      </ul>
+      {/* Rows skeleton */}
+      <div className="flex flex-col">
+        {Array.from({ length: ROWS }).map((_, i) => (
+          <div
+            key={i}
+            className={`flex items-center px-6 py-3 ${
+              i % 2 === 0 ? 'bg-muted/40' : ''
+            }`}
+          >
+            {/* Avatar/Initial */}
+            <Skeleton className="mr-4 h-8 w-8 rounded-full" />
+            {/* Expéditeur */}
+            <Skeleton className="h-5 w-32 rounded" />
+            {/* Sujet */}
+            <Skeleton className="ml-4 h-5 w-64 rounded" />
+            {/* Attachments */}
+            <Skeleton className="ml-4 h-5 w-5 rounded" />
+            {/* Spacer */}
+            <div className="flex-1" />
+            {/* Date */}
+            <Skeleton className="ml-4 h-5 w-16 rounded" />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
-
-export default ListSkeleton
