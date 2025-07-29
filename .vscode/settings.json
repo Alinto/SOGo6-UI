@@ -10,5 +10,17 @@
     "i18n-ally.localesPaths": [
         "src/messages",
     ],
-    "i18n-ally.keystyle": "nested"
+    "i18n-ally.keystyle": "nested",
+    // Debugging settings
+    "debug.console.fontSize": 14,
+    "debug.console.fontFamily": "Consolas, 'Courier New', monospace",
+    "debug.inlineValues": "on",
+    "debug.showBreakpointsInOverviewRuler": true,
+    "debug.terminal.clearBeforeReusing": true,
+    // TypeScript debugging
+    "typescript.preferences.includePackageJsonAutoImports": "on",
+    "typescript.suggest.autoImports": true,
+    // Source map settings for better debugging
+    "javascript.preferences.includePackageJsonAutoImports": "on",
+    "javascript.suggest.autoImports": true
 }
