@@ -1,5 +1,5 @@
 import { SidebarMenuButton } from '@/components/ui/sidebar'
-import { useRouter } from '@/lib/i18n/navigation'
+import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
@@ -11,6 +11,7 @@ const ComposeOpener: React.FC = () => {
   const searchParams = useSearchParams()
   const isOpen = !!searchParams.get('compose')
   const { push } = useRouter()
+  const pathname = usePathname()
 
   return (
     <>
@@ -18,8 +19,9 @@ const ComposeOpener: React.FC = () => {
         onClick={() => {
           const params = new URLSearchParams(searchParams.toString())
           params.set('compose', 'true')
+          console.log('Opening compose modal', params)
           const query = params.toString()
-          push(query ? `?${query}` : '')
+          push(query ? `${pathname}?${query}` : pathname)
         }}
         className="h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
       >
@@ -35,7 +37,7 @@ const ComposeOpener: React.FC = () => {
           const params = new URLSearchParams(searchParams.toString())
           params.delete('compose')
           const query = params.toString()
-          push(query ? `?${query}` : '')
+          push(query ? `${pathname}?${query}` : pathname)
         }}
       />
     </>

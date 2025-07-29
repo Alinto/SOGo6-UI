@@ -1,166 +1,27 @@
 // components/custom-editor.js
 'use client' // Required only in App Router.
 
-import { CKEditor } from '@ckeditor/ckeditor5-react'
-import {
-  Alignment,
-  AutoImage,
-  AutoLink,
-  Autoformat,
-  Base64UploadAdapter,
-  BlockQuote,
-  Bold,
-  ClassicEditor,
-  CloudServices,
-  Code,
-  CodeBlock,
-  Essentials,
-  FontBackgroundColor,
-  FontColor,
-  FontFamily,
-  FontSize,
-  GeneralHtmlSupport,
-  Heading,
-  Highlight,
-  HtmlEmbed,
-  Image,
-  ImageCaption,
-  ImageInsert,
-  ImageResize,
-  ImageStyle,
-  ImageToolbar,
-  ImageUpload,
-  Indent,
-  IndentBlock,
-  Italic,
-  Link,
-  List,
-  MediaEmbed,
-  Paragraph,
-  PasteFromOffice,
-  RemoveFormat,
-  SelectAll,
-  SourceEditing,
-  SpecialCharacters,
-  SpecialCharactersEssentials,
-  SpecialCharactersMathematical,
-  Strikethrough,
-  Subscript,
-  Superscript,
-  Table,
-  TableProperties,
-  TableToolbar,
-  TextTransformation,
-  Underline,
-  Undo,
-} from 'ckeditor5'
+import { createLazyImport } from '@/components/lazy-components'
 
-import 'ckeditor5/ckeditor5.css'
-import { useLocale } from 'next-intl'
+// Loading component for the editor
+const EditorLoader = () => {
+  return (
+    <div className="flex min-h-[200px] items-center justify-center rounded-lg border p-8">
+      <div className="text-center">
+        <div className="border-primary mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2"></div>
+      </div>
+    </div>
+  )
+}
+
+// Lazy load the entire CKEditor component
+const LazyCustomEditor = createLazyImport(
+  () => import('@/features/mails/components/compose/editor-core'),
+  <EditorLoader />
+)
 
 const CustomEditor = () => {
-  const locale = useLocale()
-  return (
-    <CKEditor
-      editor={ClassicEditor}
-      config={{
-        licenseKey: 'GPL',
-        plugins: [
-          Alignment,
-          AutoImage,
-          AutoLink,
-          Autoformat,
-          Base64UploadAdapter,
-          BlockQuote,
-          Bold,
-          CloudServices,
-          Code,
-          CodeBlock,
-          Essentials,
-          FontBackgroundColor,
-          FontColor,
-          FontFamily,
-          FontSize,
-          GeneralHtmlSupport,
-          Heading,
-          Highlight,
-          HtmlEmbed,
-          Image,
-          ImageCaption,
-          ImageInsert,
-          ImageResize,
-          ImageStyle,
-          ImageToolbar,
-          ImageUpload,
-          Indent,
-          IndentBlock,
-          Italic,
-          Link,
-          List,
-          MediaEmbed,
-          Paragraph,
-          PasteFromOffice,
-          RemoveFormat,
-          SelectAll,
-          SourceEditing,
-          SpecialCharacters,
-          SpecialCharactersEssentials,
-          SpecialCharactersMathematical,
-          Strikethrough,
-          Subscript,
-          Superscript,
-          Table,
-          TableProperties,
-          TableToolbar,
-          TextTransformation,
-          Underline,
-          Undo,
-          // Add more plugins for email composing
-          // e.g., underline, link, list, blockQuote, image, table, etc.
-          // import them at the top as needed
-        ],
-        image: {
-          toolbar: [
-            'imageTextAlternative',
-            'toggleImageCaption',
-            'imageStyle:inline',
-            'imageStyle:block',
-            'imageStyle:side',
-          ],
-        },
-        table: {
-          contentToolbar: [
-            'tableColumn',
-            'tableRow',
-            'mergeTableCells',
-            'tableProperties',
-          ],
-        },
-        language: locale,
-        toolbar: {
-          items: [
-            'heading',
-            '|',
-            'bold',
-            'italic',
-            'link',
-            'bulletedList',
-            'numberedList',
-            '|',
-            'outdent',
-            'indent',
-            '|',
-            'imageUpload',
-            'blockQuote',
-            'insertTable',
-            'mediaEmbed',
-            'undo',
-            'redo',
-          ],
-        },
-      }}
-    />
-  )
+  return <LazyCustomEditor />
 }
 
 export default CustomEditor

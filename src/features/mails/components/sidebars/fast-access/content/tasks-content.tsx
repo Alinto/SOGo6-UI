@@ -1,8 +1,25 @@
-import { BasicCalendar } from '@/app/[locale]/(loggedin)/u/[account]/[folder]/for_demo'
 import { Progress } from '@/components/ui/progress'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import { useLocale } from 'next-intl'
 import React from 'react'
+
+import { Calendar } from '@/components/ui/calendar-lazy'
+import { cn } from '@/lib/utils'
+
+export function BasicCalendar({ className }: { className?: string }) {
+  const [date, setDate] = React.useState<Date | undefined>(
+    new Date(2025, 6, 10)
+  )
+  return (
+    <Calendar
+      mode="single"
+      defaultMonth={date}
+      selected={date}
+      onSelect={setDate}
+      className={cn('rounded-lg border shadow-sm', className)}
+    />
+  )
+}
 
 const tasks = [
   {

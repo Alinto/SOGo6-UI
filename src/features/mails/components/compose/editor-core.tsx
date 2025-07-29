@@ -1,0 +1,166 @@
+'use client'
+
+import { CKEditor } from '@ckeditor/ckeditor5-react'
+import {
+  Alignment,
+  AutoImage,
+  AutoLink,
+  Autoformat,
+  Base64UploadAdapter,
+  BlockQuote,
+  Bold,
+  ClassicEditor,
+  CloudServices,
+  Code,
+  CodeBlock,
+  Essentials,
+  FontBackgroundColor,
+  FontColor,
+  FontFamily,
+  FontSize,
+  GeneralHtmlSupport,
+  Heading,
+  Highlight,
+  HtmlEmbed,
+  Image,
+  ImageCaption,
+  ImageInsert,
+  ImageResize,
+  ImageStyle,
+  ImageToolbar,
+  ImageUpload,
+  Indent,
+  IndentBlock,
+  Italic,
+  Link,
+  List,
+  MediaEmbed,
+  Paragraph,
+  PasteFromOffice,
+  RemoveFormat,
+  SelectAll,
+  SourceEditing,
+  SpecialCharacters,
+  SpecialCharactersEssentials,
+  SpecialCharactersMathematical,
+  Strikethrough,
+  Subscript,
+  Superscript,
+  Table,
+  TableProperties,
+  TableToolbar,
+  TextTransformation,
+  Underline,
+  Undo,
+} from 'ckeditor5'
+
+import 'ckeditor5/ckeditor5.css'
+import { useLocale } from 'next-intl'
+
+export const CustomEditorCore = () => {
+  const locale = useLocale()
+  return (
+    <CKEditor
+      editor={ClassicEditor}
+      config={{
+        licenseKey: 'GPL',
+        plugins: [
+          Alignment,
+          AutoImage,
+          AutoLink,
+          Autoformat,
+          Base64UploadAdapter,
+          BlockQuote,
+          Bold,
+          CloudServices,
+          Code,
+          CodeBlock,
+          Essentials,
+          FontBackgroundColor,
+          FontColor,
+          FontFamily,
+          FontSize,
+          GeneralHtmlSupport,
+          Heading,
+          Highlight,
+          HtmlEmbed,
+          Image,
+          ImageCaption,
+          ImageInsert,
+          ImageResize,
+          ImageStyle,
+          ImageToolbar,
+          ImageUpload,
+          Indent,
+          IndentBlock,
+          Italic,
+          Link,
+          List,
+          MediaEmbed,
+          Paragraph,
+          PasteFromOffice,
+          RemoveFormat,
+          SelectAll,
+          SourceEditing,
+          SpecialCharacters,
+          SpecialCharactersEssentials,
+          SpecialCharactersMathematical,
+          Strikethrough,
+          Subscript,
+          Superscript,
+          Table,
+          TableProperties,
+          TableToolbar,
+          TextTransformation,
+          Underline,
+          Undo,
+          // Add more plugins for email composing
+          // e.g., underline, link, list, blockQuote, image, table, etc.
+          // import them at the top as needed
+        ],
+        image: {
+          toolbar: [
+            'imageTextAlternative',
+            'toggleImageCaption',
+            'imageStyle:inline',
+            'imageStyle:block',
+            'imageStyle:side',
+          ],
+        },
+        table: {
+          contentToolbar: [
+            'tableColumn',
+            'tableRow',
+            'mergeTableCells',
+            'tableProperties',
+          ],
+        },
+        language: locale,
+        toolbar: {
+          items: [
+            'heading',
+            '|',
+            'bold',
+            'italic',
+            'link',
+            'bulletedList',
+            'numberedList',
+            '|',
+            'outdent',
+            'indent',
+            '|',
+            'imageUpload',
+            'blockQuote',
+            'insertTable',
+            'mediaEmbed',
+            'undo',
+            'redo',
+          ],
+        },
+      }}
+    />
+  )
+}
+
+// Default export for lazy loading
+export default CustomEditorCore

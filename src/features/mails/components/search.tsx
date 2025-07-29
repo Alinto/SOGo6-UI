@@ -20,10 +20,15 @@ export function Search() {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Input
-          className="placeholder:text-header-muted-foreground"
-          placeholder="Search in your messages."
-        />
+        <div className="relative">
+          <Input
+            className="placeholder:text-transparent"
+            placeholder="Search in your messages."
+          />
+          <div className="pointer-events-none absolute inset-0 flex items-center px-3 text-sm text-gray-500">
+            Search in your messages.
+          </div>
+        </div>
       </PopoverTrigger>
       <PopoverContent
         side="top"
@@ -61,7 +66,14 @@ export function Search() {
             <CollapsibleTrigger asChild>
               <Button variant="outline">More options</Button>
             </CollapsibleTrigger>
-            <CollapsibleContent>
+            <CollapsibleContent
+              style={{
+                scrollbarWidth: 'thin',
+                scrollbarColor: '#d1d5db transparent',
+                scrollbarGutter: 'stable',
+              }}
+              className="max-h-[40vh] overflow-y-auto pr-2"
+            >
               <SearchMoreOptions />
             </CollapsibleContent>
           </Collapsible>

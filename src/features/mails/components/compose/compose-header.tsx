@@ -3,7 +3,11 @@ import { Input } from '@/components/ui/input'
 import { Paperclip, User, X } from 'lucide-react'
 import React from 'react'
 
-const ComposeHeader: React.FC = ({ onClose }) => {
+interface ComposeHeaderProps {
+  onClose: () => void
+}
+
+const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
   const [showCc, setShowCc] = React.useState(false)
   const [showBcc, setShowBcc] = React.useState(false)
   return (
@@ -18,7 +22,7 @@ const ComposeHeader: React.FC = ({ onClose }) => {
             variant="ghost"
             size="icon"
             className="h-6 w-6 p-4"
-            onClick={() => onClose(false)}
+            onClick={onClose}
           >
             <X className="text-muted-foreground h-6 w-6" />
             <span className="sr-only">Close</span>

@@ -14,7 +14,7 @@ import styles from './compose.module.css'
 
 interface ModalComposeProps {
   open: boolean
-  onClose: (open: boolean) => void
+  onClose: () => void
 }
 
 export const ModalCompose: React.FC<ModalComposeProps> = ({
