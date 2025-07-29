@@ -8,3 +8,117 @@ exports[`AddressBookListSkeleton Component matches the snapshot 1`] = `
   />
 </DocumentFragment>
 `;
+
+exports[`MailDetailSkeleton Component matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="w-full p-0 sm:p-0"
+  >
+    <div
+      class="mb-6 flex items-center gap-2 px-6 pt-4"
+    >
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="bg-primary/10 animate-pulse h-8 w-8 rounded-full"
+      />
+      <div
+        class="ml-auto flex items-center gap-2"
+      >
+        <div
+          class="bg-primary/10 animate-pulse h-8 w-10 rounded"
+        />
+        <div
+          class="bg-primary/10 animate-pulse h-8 w-10 rounded"
+        />
+      </div>
+    </div>
+    <div
+      class="bg-primary/10 animate-pulse rounded-md mb-5 ml-6 h-7 w-1/4"
+    />
+    <div
+      class="bg-muted/50 mb-6 flex w-full flex-col rounded-lg px-8 py-6 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <div
+        class="flex flex-row items-start gap-4"
+      >
+        <div
+          class="bg-primary/10 animate-pulse h-12 w-12 rounded-full"
+        />
+        <div
+          class="flex flex-col justify-center gap-2"
+        >
+          <div
+            class="flex items-center gap-4"
+          >
+            <div
+              class="bg-primary/10 animate-pulse h-5 w-12 rounded"
+            />
+             
+            <div
+              class="bg-primary/10 animate-pulse rounded-md h-5 w-48"
+            />
+             
+          </div>
+          <div
+            class="flex items-center gap-4"
+          >
+            <div
+              class="bg-primary/10 animate-pulse h-5 w-12 rounded"
+            />
+             
+            <div
+              class="bg-primary/10 animate-pulse rounded-md h-5 w-48"
+            />
+             
+          </div>
+        </div>
+      </div>
+      <div
+        class="mt-3 flex flex-row items-center gap-4 sm:mt-0"
+      >
+        <div
+          class="bg-primary/10 animate-pulse h-4 w-24 rounded"
+        />
+         
+        <div
+          class="bg-primary/10 animate-pulse h-9 w-10 rounded"
+        />
+        <div
+          class="bg-primary/10 animate-pulse h-9 w-10 rounded"
+        />
+        <div
+          class="bg-primary/10 animate-pulse h-9 w-10 rounded"
+        />
+      </div>
+    </div>
+    <div
+      class="mt-4 w-full rounded-lg px-8"
+    >
+      <div
+        class="bg-primary/10 animate-pulse rounded-md mb-2 h-5 w-1/2"
+      />
+       
+      <div
+        class="bg-primary/10 animate-pulse h-[320px] w-full rounded-lg"
+      />
+    </div>
+  </div>
+</DocumentFragment>
+`;

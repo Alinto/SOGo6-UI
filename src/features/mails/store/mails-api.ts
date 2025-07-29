@@ -1,6 +1,10 @@
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
-import type { ImapFolder, ImapMessagesAPIResponse } from '../mails-types'
+import type {
+  ImapFolder,
+  ImapMessages,
+  ImapMessagesAPIResponse,
+} from '../mails-types'
 
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
@@ -28,9 +32,19 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         { type: 'folder/messages', folder },
       ],
     }),
+    getMail: builder.query<ImapMessages, { folder: string; mailId: string }>({
+      query: ({ folder, mailId }) =>
+        `/mails/folders/${encodeURIComponent(folder)}/messages/${encodeURIComponent(mailId)}`,
+      providesTags: (result, error, { mailId }) => [
+        { type: 'mail', id: mailId },
+      ],
+    }),
   }),
   overrideExisting: false,
 })
 
-export const { useGetFoldersQuery, useGetFolderMessagesQuery } =
-  injectedEndpoints
+export const {
+  useGetFoldersQuery,
+  useGetFolderMessagesQuery,
+  useGetMailQuery,
+} = injectedEndpoints

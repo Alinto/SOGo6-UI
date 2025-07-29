@@ -1,7 +1,7 @@
 'use client'
 
 import MessagesList from '@/features/mails/components/list'
-import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
+import MailListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
 import { useParams } from 'next/navigation'
 import React from 'react'
@@ -25,7 +25,7 @@ const Page: React.FC<PageProps> = () => {
       <div
         className={`${mail_id ? 'hidden lg:flex' : 'flex'} w-full lg:w-1/2 xl:w-1/2 2xl:w-1/3`}
       >
-        <ListSkeleton />
+        <MailListSkeleton />
       </div>
     )
   }
