@@ -49,7 +49,7 @@ export interface ImapMessages {
   important: boolean
   date: number
   subject: string
-  is_mailing_list: boolean
+  isMailingList: boolean
   from: string
   to: string[]
   cc: string[]
