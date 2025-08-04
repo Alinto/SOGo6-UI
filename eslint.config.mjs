@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import jestPlugin from "eslint-plugin-jest";
+import customRules from "./config/eslint-rules/index.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,7 +21,6 @@ export default defineConfig([{
         "next",
         "next/core-web-vitals",
         "next/typescript",
-        "plugin:storybook/recommended",
         "plugin:react-hooks/recommended",
         "plugin:react/recommended",
         "eslint:recommended",
@@ -28,6 +28,7 @@ export default defineConfig([{
     ),
     plugins: {
         jest: jestPlugin,
+        "custom": customRules
     },
     languageOptions: {
         globals: jestPlugin.environments.globals.globals,
@@ -39,6 +40,7 @@ export default defineConfig([{
         }],
         "react/jsx-uses-react": "off",
         "react/react-in-jsx-scope": "off",
-        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }]
+        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+        "custom/translation-string-location": "error"
     },
 }]);

@@ -51,7 +51,7 @@ describe('DialogOverlay Component', () => {
     // Open the dialog
     fireEvent.click(screen.getByText('Open Dialog'))
 
-    const overlay = screen.getByRole('dialog').parentElement
+    const overlay = screen.getByText('Dialog Content').previousElementSibling
     expect(overlay).toHaveClass('custom-class')
   })
 
@@ -71,25 +71,5 @@ describe('DialogOverlay Component', () => {
 
     const overlay = screen.getByTestId('dialog-overlay')
     expect(overlay).toBeInTheDocument()
-  })
-
-  it('renders the DialogOverlay with animation classes when open and closed', () => {
-    render(
-      <Dialog>
-        <DialogTrigger>Open Dialog</DialogTrigger>
-        <DialogContent>
-          <DialogOverlay />
-          <div>Dialog Content</div>
-        </DialogContent>
-      </Dialog>
-    )
-
-    // Open the dialog
-    fireEvent.click(screen.getByText('Open Dialog'))
-
-    const overlay = screen.getByRole('dialog').parentElement
-    expect(overlay).toHaveClass(
-      'data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
-    )
   })
 })

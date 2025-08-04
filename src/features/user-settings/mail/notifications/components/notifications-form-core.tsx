@@ -7,7 +7,7 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/components/fixed-form-button-group'
+import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import InputWithError from '@/components/ui/inputs/input-with-error'
 import InputWithTags from '@/components/ui/inputs/input-with-tags'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -50,7 +50,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="enabled"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -71,7 +71,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
               control={form.control}
               name="email"
               render={({ field }) => (
-                <FormItem className="space-x-3 space-y-0 p-4">
+                <FormItem className="space-y-0 space-x-3 p-4">
                   <FormLabel className="text-muted-foreground">
                     {t('notifications.emails.label.string')}
                   </FormLabel>
@@ -102,7 +102,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
               control={form.control}
               name="message"
               render={({ field }) => (
-                <FormItem className="space-x-3 space-y-0 p-4">
+                <FormItem className="space-y-0 space-x-3 p-4">
                   <FormLabel className="text-muted-foreground">
                     {t('notifications.message.label.string')}
                   </FormLabel>

@@ -3,7 +3,7 @@
 exports[`ListSkeleton Component matches the snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="flex flex-col w-full md:w-1/2 lg:w-2/5 p-4 rounded"
+    class="flex w-full flex-col rounded p-4"
     role="list-skeleton"
   >
     <div
@@ -11,11 +11,11 @@ exports[`ListSkeleton Component matches the snapshot 1`] = `
       role="header-skeleton"
     >
       <div
-        class="animate-pulse rounded-md bg-primary/10 h-6 w-1/8"
+        class="bg-primary/10 animate-pulse rounded-md h-6 w-1/8"
         role="header-item-skeleton"
       />
       <div
-        class="animate-pulse rounded-md bg-primary/10 h-6 w-1/8"
+        class="bg-primary/10 animate-pulse rounded-md h-6 w-1/8"
         role="header-item-skeleton"
       />
     </div>
@@ -24,31 +24,31 @@ exports[`ListSkeleton Component matches the snapshot 1`] = `
     >
       <li>
         <div
-          class="animate-pulse bg-primary/10 flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
           role="item-skeleton"
         />
       </li>
       <li>
         <div
-          class="animate-pulse bg-primary/10 flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
           role="item-skeleton"
         />
       </li>
       <li>
         <div
-          class="animate-pulse bg-primary/10 flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
           role="item-skeleton"
         />
       </li>
       <li>
         <div
-          class="animate-pulse bg-primary/10 flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
           role="item-skeleton"
         />
       </li>
       <li>
         <div
-          class="animate-pulse bg-primary/10 flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
           role="item-skeleton"
         />
       </li>

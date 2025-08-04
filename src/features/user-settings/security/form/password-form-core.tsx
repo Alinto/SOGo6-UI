@@ -7,7 +7,7 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import { PasswordInput } from '@/components/ui/input-password'
+import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Separator } from '@/components/ui/separator'
 import { zodResolver } from '@hookform/resolvers/zod'
 import React from 'react'
@@ -28,11 +28,11 @@ const PasswordForm: React.FC = () => {
   return (
     <Form {...form}>
       <form
-        className="border rounded-md shadow-sm p-4"
+        className="rounded-md border p-4 shadow-sm"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <h3 className="text-lg">Change your password</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-sm">
           Make sure to use a strong password to protect your account.
         </p>
         <Separator className="my-4" />

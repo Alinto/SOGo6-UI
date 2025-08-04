@@ -1,0 +1,11 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FixedButton Component matches the snapshot 1`] = `
+<DocumentFragment>
+  <button
+    class="bg-primary text-background hover:text-primary fixed right-12 bottom-20 rounded-full p-3 shadow-lg hover:bg-transparent"
+  >
+    Click Me
+  </button>
+</DocumentFragment>
+`;

@@ -7,9 +7,9 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/components/fixed-form-button-group'
-import RadioGroupForm from '@/components/ui/forms/components/radio-group-form'
-import SelectForm from '@/components/ui/forms/components/select-form'
+import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
+import RadioGroupForm from '@/components/ui/forms/radio-group-form'
+import SelectForm from '@/components/ui/forms/select-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import React from 'react'

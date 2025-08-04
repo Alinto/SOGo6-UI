@@ -1,0 +1,29 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RadioGroupItem component matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="grid gap-2"
+    role="radiogroup"
+  >
+    <button
+      aria-checked="false"
+      class="border-primary text-primary focus-visible:ring-ring aspect-square h-4 w-4 rounded-full border shadow-sm focus:outline-hidden focus-visible:ring-1 disabled:cursor-not-allowed disabled:opacity-50"
+      role="radio"
+      type="button"
+      value="test"
+    >
+      <span
+        class="flex items-center justify-center"
+      >
+        <svg
+          class="fill-primary h-3.5 w-3.5"
+          data-testid="circle-icon"
+        >
+          <circle />
+        </svg>
+      </span>
+    </button>
+  </div>
+</DocumentFragment>
+`;

@@ -3,7 +3,7 @@ import { HashIcon, Save } from 'lucide-react'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '../button'
 import { Input } from '../input'
-import { InputWithIcon } from '../input-with-icon'
+import { InputWithIcon } from '../inputs/input-with-icon'
 
 type ClassValue =
   | ClassArray

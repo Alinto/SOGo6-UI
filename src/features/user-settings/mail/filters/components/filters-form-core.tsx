@@ -2,7 +2,7 @@
 import SortableContainer from '@/components/dnd/sortable-container'
 import SortableItem from '@/components/dnd/sortable-item'
 import { Form } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/components/fixed-form-button-group'
+import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import { zodResolver } from '@hookform/resolvers/zod'
 import React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'

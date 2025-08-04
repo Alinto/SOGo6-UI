@@ -1,0 +1,106 @@
+import { fireEvent, render, screen } from '@testing-library/react'
+import React from 'react'
+
+import Tag from '../tag'
+
+// Mock the dependencies with inline implementations
+jest.mock('@/lib/utils', () => ({
+  cn: jest.fn((...classes) => classes.filter(Boolean).join(' ')),
+}))
+
+jest.mock('lucide-react/dynamic', () => ({
+  DynamicIcon: ({ name, ...props }: any) => (
+    <span data-testid={`dynamic-icon-${name}`} {...props}>
+      {name}-icon
+    </span>
+  ),
+}))
+
+jest.mock('../button', () => ({
+  Button: React.forwardRef<HTMLButtonElement, any>(
+    ({ children, ...props }, ref) => (
+      <button ref={ref} data-testid="button" {...props}>
+        {children}
+      </button>
+    )
+  ),
+}))
+
+describe('Tag', () => {
+  // Group related tests together for better organization
+  describe('Basic Rendering', () => {
+    it('renders with basic value prop', () => {
+      render(<Tag value="test-tag" />)
+      expect(screen.getByText('test-tag')).toBeInTheDocument()
+    })
+
+    it('applies custom className when provided', () => {
+      const customClass = 'custom-tag-class'
+      render(<Tag value="test" className={customClass} />)
+
+      // The cn function should be called with the custom class
+      const mockCn = require('@/lib/utils').cn as jest.Mock
+      expect(mockCn).toHaveBeenCalledWith(
+        expect.stringContaining('tag flex h-9'),
+        expect.any(String),
+        customClass
+      )
+    })
+
+    it('handles empty value prop', () => {
+      const { container } = render(<Tag value="" />)
+
+      // Check that the component renders without crashing
+      const tagElement = container.querySelector('.tag')
+      expect(tagElement).toBeInTheDocument()
+    })
+  })
+
+  describe('Icon Functionality', () => {
+    it('renders with icon when provided', () => {
+      render(<Tag value="test" icon="user" />)
+      expect(screen.getByTestId('dynamic-icon-user')).toBeInTheDocument()
+      expect(screen.getByText('user-icon')).toBeInTheDocument()
+    })
+
+    it('renders without icon when not provided', () => {
+      render(<Tag value="test" />)
+      expect(screen.queryByTestId(/dynamic-icon/)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Action Button Behavior', () => {
+    it('renders icon button when both icon and action are provided', () => {
+      const mockAction = jest.fn()
+      render(<Tag value="test" icon="user" action={mockAction} />)
+
+      expect(screen.getByTestId('dynamic-icon-user')).toBeInTheDocument()
+      expect(screen.getByTestId('button')).toBeInTheDocument()
+    })
+
+    it('calls action function when icon button is clicked', () => {
+      const mockAction = jest.fn()
+      render(<Tag value="test" icon="user" action={mockAction} />)
+
+      fireEvent.click(screen.getByTestId('button'))
+      expect(mockAction).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not render button when only action is provided without icon', () => {
+      const mockAction = jest.fn()
+      render(<Tag value="test" action={mockAction} />)
+
+      expect(screen.queryByTestId('button')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Utility Functions', () => {
+    it('uses cn utility for combining classes', () => {
+      const mockCn = require('@/lib/utils').cn as jest.Mock
+      mockCn.mockReturnValue('combined-classes')
+
+      render(<Tag value="test" className="custom-class" />)
+      expect(mockCn).toHaveBeenCalled()
+    })
+  })
+})

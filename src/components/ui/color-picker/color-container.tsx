@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { PaintBucket } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
-import MotionButton from '../buttons/motion-button'
+import { Button } from '../button'
 import ColorBox from './color-box'
 import ColorPanel from './color-panel'
 
@@ -43,19 +43,18 @@ const ColorContainer: React.FC<ColorContainerProps> = ({
       ref={containerRef}
       className={cn('relative', className)}
     >
-      <MotionButton
+      <Button
         type="button"
         onClick={() => setOpen(!open)}
-        whileTap={{ scale: 0.97 }}
         variant={'ghost'}
         style={{ color: initialColor }}
         className={cn(
-          '-z-0 text-sm font-medium rounded-full relative transition-colors duration-75',
+          'relative -z-0 rounded-full text-sm font-medium transition-colors duration-75',
           open ? 'text-slate-300' : 'text-slate-500'
         )}
       >
         <PaintBucket />
-      </MotionButton>
+      </Button>
       {open && (
         <ColorBox>
           <ColorPanel setColor={onColorChange} />

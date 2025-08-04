@@ -1,7 +1,7 @@
 'use client'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/components/fixed-form-button-group'
+import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon'

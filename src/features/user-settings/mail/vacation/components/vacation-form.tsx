@@ -11,8 +11,8 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/components/fixed-form-button-group'
-import SelectForm from '@/components/ui/forms/components/select-form'
+import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
+import SelectForm from '@/components/ui/forms/select-form'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
@@ -55,7 +55,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
             control={form.control}
             name="enabled"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -70,7 +70,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
           />
         </div>
         {enabled ? (
-          <div className="grid grid-cols-1 gap-4 p-4 shadow-sm border rounded">
+          <div className="grid grid-cols-1 gap-4 rounded border p-4 shadow-sm">
             <FormField
               control={form.control}
               name="subject"
@@ -147,7 +147,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
               control={form.control}
               name="response.toMaillingList"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -166,7 +166,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
               control={form.control}
               name="response.sendAlways"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
@@ -189,7 +189,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
               name="response.discardMails"
               render={({ field }) => (
                 <>
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -223,7 +223,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                 name="constraints.enableDates"
                 render={({ field }) => (
                   <>
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
@@ -249,7 +249,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                 name="constraints.enableHours"
                 render={({ field }) => (
                   <>
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
@@ -274,7 +274,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
               name="constraints.enableDays"
               render={({ field }) => (
                 <>
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                  <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -296,15 +296,15 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                 name="constraints.days"
                 render={({ field }) => (
                   <>
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+                    <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                       <FormControl>
-                        <div className="grid grid-cols-3 lg:grid-cols-7 gap-2">
+                        <div className="grid grid-cols-3 gap-2 lg:grid-cols-7">
                           <Button
                             type="button"
                             className={cn(
                               field.value.monday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({
@@ -320,7 +320,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                             className={cn(
                               field.value.tuesday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({
@@ -338,7 +338,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                             className={cn(
                               field.value.wednesday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({
@@ -355,7 +355,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                             className={cn(
                               field.value.thursday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({
@@ -373,7 +373,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                             className={cn(
                               field.value.friday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({
@@ -390,7 +390,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                             className={cn(
                               field.value.saturday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({
@@ -408,7 +408,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                             className={cn(
                               field.value.sunday
                                 ? 'bg-primary'
-                                : 'bg-gray-300 text-muted-foreground'
+                                : 'text-muted-foreground bg-gray-300'
                             )}
                             onClick={() =>
                               field.onChange({

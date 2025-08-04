@@ -8,6 +8,7 @@ import {
   User,
   UserCog,
 } from 'lucide-react'
+import translationMapping from './translation-mapping'
 
 const navItems = [
   {
@@ -16,35 +17,35 @@ const navItems = [
     collapsedIcon: User,
     items: [
       {
-        title: 'account.profile.string',
+        title: translationMapping.profile,
         url: '/user_settings/profile',
         icon: User,
       },
       {
-        title: 'account.security.string',
+        title: translationMapping.security,
         url: '/user_settings/security',
         icon: ShieldUser,
       },
     ],
   },
   {
-    title: 'settings.title.string',
+    title: translationMapping.settings_title,
     isActive: true,
     collapsedIcon: SettingsIcon,
     items: [
       {
-        title: 'settings.general.string',
+        title: translationMapping.settings_general,
         url: '/user_settings/general',
         icon: UserCog,
         collapsedIcon: UserCog,
       },
       {
-        title: 'settings.address_books.string',
+        title: translationMapping.settings_address_books,
         url: '/user_settings/address_books',
         icon: Contact,
       },
       {
-        title: 'settings.calendars.title.string',
+        title: translationMapping.settings_calendars_title,
         icon: Calendar,
         collapsedIcon: Calendar,
         isActive: true,

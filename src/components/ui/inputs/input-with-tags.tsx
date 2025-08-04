@@ -3,13 +3,11 @@ import { FieldErrors } from 'react-hook-form'
 import Tag from '../tag'
 import InputWithError from './input-with-error'
 
-interface InputWithTagsProps {
+interface InputWithTagsProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
   tags: { id: string; value: string }[]
   remove: (_index: number) => void
   handleAdd: (_value: string) => void
-  placeholder: string
-  value: string
-  onChange: (_e: React.ChangeEvent<HTMLInputElement>) => void
   errors?: FieldErrors
   name: string
 }
@@ -18,7 +16,6 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
   tags,
   remove,
   handleAdd,
-  placeholder,
   errors,
   name,
   ...props
@@ -44,7 +41,6 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
           }}
           errors={errors}
           errorName={name}
-          placeholder={placeholder}
           {...props}
         />
       </div>

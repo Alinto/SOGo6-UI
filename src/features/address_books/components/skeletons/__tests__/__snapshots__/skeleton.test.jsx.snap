@@ -3,7 +3,7 @@
 exports[`AddressBookListSkeleton Component matches the snapshot 1`] = `
 <DocumentFragment>
   <div
-    class="animate-pulse bg-primary/10 flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+    class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
     role="item-skeleton"
   />
 </DocumentFragment>

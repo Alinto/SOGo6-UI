@@ -8,7 +8,7 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/components/fixed-form-button-group'
+import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash2 } from 'lucide-react'

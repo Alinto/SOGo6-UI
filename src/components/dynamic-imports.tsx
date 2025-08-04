@@ -10,22 +10,22 @@ import { ComponentLoader } from './lazy-components'
  */
 
 // Working examples with existing components
-export const DynamicButton = dynamic(
-  () =>
-    import('@/components/ui/button').then((mod) => ({ default: mod.Button })),
-  {
-    loading: () => <ComponentLoader />,
-    ssr: true,
-  }
-)
+// export const DynamicButton = dynamic(
+//   () =>
+//     import('@/components/ui/button').then((mod) => ({ default: mod.Button })),
+//   {
+//     loading: () => <ComponentLoader />,
+//     ssr: true,
+//   }
+// )
 
-export const DynamicCard = dynamic(
-  () => import('@/components/ui/card').then((mod) => ({ default: mod.Card })),
-  {
-    loading: () => <ComponentLoader />,
-    ssr: true,
-  }
-)
+// export const DynamicCard = dynamic(
+//   () => import('@/components/ui/card').then((mod) => ({ default: mod.Card })),
+//   {
+//     loading: () => <ComponentLoader />,
+//     ssr: true,
+//   }
+// )
 
 /**
  * Development Build Optimization Strategies:

@@ -1,0 +1,58 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`ListSkeleton Component matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="flex w-full flex-col rounded p-4"
+    role="list-skeleton"
+  >
+    <div
+      class="flex flex-row items-center justify-between text-gray-500"
+      role="header-skeleton"
+    >
+      <div
+        class="bg-primary/10 animate-pulse rounded-md h-6 w-1/8"
+        role="header-item-skeleton"
+      />
+      <div
+        class="bg-primary/10 animate-pulse rounded-md h-6 w-1/8"
+        role="header-item-skeleton"
+      />
+    </div>
+    <ul
+      class="mt-4"
+    >
+      <li>
+        <div
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          role="item-skeleton"
+        />
+      </li>
+      <li>
+        <div
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          role="item-skeleton"
+        />
+      </li>
+      <li>
+        <div
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          role="item-skeleton"
+        />
+      </li>
+      <li>
+        <div
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          role="item-skeleton"
+        />
+      </li>
+      <li>
+        <div
+          class="bg-primary/10 animate-pulse flex h-14 flex-row items-center my-1 gap-2 p-2 rounded-full"
+          role="item-skeleton"
+        />
+      </li>
+    </ul>
+  </div>
+</DocumentFragment>
+`;

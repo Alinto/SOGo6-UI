@@ -1,0 +1,36 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HeaderDropdown component matches snapshot 1`] = `
+<DocumentFragment>
+  <div>
+    <div
+      class="hover:cursor-pointer"
+      data-testid="header-dropdown-trigger"
+    >
+      <div
+        class="avatar"
+      >
+        <img
+          alt="avatar"
+          src="/images/account-avatar.svg"
+        />
+        <span>
+          HF
+        </span>
+      </div>
+      <div
+        class="text-sidebar-accent-foreground dark:text-foreground text-sm"
+      >
+        <div>
+          Henry Fafenback
+        </div>
+        <div
+          class="block text-sm"
+        >
+          sbarre@alinto.eu
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
