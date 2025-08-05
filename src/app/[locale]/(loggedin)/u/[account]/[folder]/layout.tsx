@@ -25,8 +25,6 @@ export default function Layout({
     string | undefined
   >(undefined)
 
-  console.log('Layout Type:', fastAccessContentName, sidebarOpen)
-
   if (layoutType === 'classic') {
     return (
       <SidebarProvider name="right-mail-sidebar" width="2.5rem" defaultOpen>

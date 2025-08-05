@@ -2,6 +2,10 @@ import createMiddleware from 'next-intl/middleware'
 import { defineRouting } from 'next-intl/routing'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const config = {
+  matcher: ['/((?!_next|fakeApi|.*\\..*).*)'],
+}
+
 export function getLocales() {
   return ['en', 'de', 'fr', 'es']
 }
@@ -42,7 +46,4 @@ export default async function handler(req: NextRequest) {
   }
 
   return res
-}
-export const config = {
-  matcher: ['/((?!_next|fakeApi|.*\\..*).*)'],
 }

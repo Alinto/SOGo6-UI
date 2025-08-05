@@ -1,5 +1,6 @@
 // import localFont from "next/font/local";
-import { ThemesLoader } from '@/features/themes/themes-loader'
+import { ThemesClient } from '@/features/themes/themes-client'
+import { getThemesServer } from '@/features/themes/themes-server'
 import { NextIntlClientProvider } from 'next-intl'
 import { getMessages } from 'next-intl/server'
 import React from 'react'
@@ -16,9 +17,12 @@ export default async function RootLayout({
   // side is the easiest way to get started
   const messages = await getMessages()
 
+  // Fetch themes on the server side
+  const themes = await getThemesServer()
+
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
-      <ThemesLoader />
+      <ThemesClient themes={themes} />
       {children}
     </NextIntlClientProvider>
   )
