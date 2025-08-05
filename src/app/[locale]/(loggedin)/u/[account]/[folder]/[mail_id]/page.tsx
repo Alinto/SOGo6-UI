@@ -1,6 +1,7 @@
 'use client'
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
+import MailContent from '@/features/mails/components/mail/mail-content'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
@@ -83,6 +84,7 @@ const MailPage: React.FC = () => {
           showUnsubscribeButton={!!isMailingList}
           date={date}
         />
+        <MailContent body={data.body} attachments={data.attachments} />
       </div>
     </div>
   )

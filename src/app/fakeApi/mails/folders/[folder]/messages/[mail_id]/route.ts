@@ -16,7 +16,7 @@ const messagesByFolder: Record<string, ImapMessages[]> = {
           },
           {
             partId: '1.3',
-            name: 'Capture d’écran du 2025-07-03 17-04-52.png',
+            name: 'image_name.png',
             contentType: 'image/png',
             size: 110208,
             downloadUri: '/attachments/1.3?dl=true',

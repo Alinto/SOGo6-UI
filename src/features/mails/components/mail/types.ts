@@ -71,3 +71,12 @@ export type ImapAttachments = {
   zipUri?: string
   count: number
 }
+
+export type MailContentProps = {
+  body: string
+  attachments?: ImapAttachments
+}
+
+export type MailShowImageProps = {
+  onShowImages: () => void
+}
