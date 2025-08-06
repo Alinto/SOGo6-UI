@@ -1,7 +1,8 @@
 {
-    "General_Settings": {
+    "US_GENERAL": {
         "title": {
-            "string": "General Settings"
+            "string": "General Settings",
+            "context": "Title for the general settings page"
         },
         "labels": {
             "language": {
@@ -56,9 +57,6 @@
             },
             "enable_notifications": {
                 "string": "Receive notifications for new emails, calendar events, and more."
-            },
-            "animation_level": {
-                "string": "Select the animation level you want to use."
             }
         }
     }

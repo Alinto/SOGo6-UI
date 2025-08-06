@@ -1,8 +1,7 @@
-/**
- * Custom ESLint rules for translation management
- */
-module.exports = {
+import nextIntlTranslationKey from './next-intl-translation-key.js';
+
+export default {
     rules: {
-        "translation-string-location": require("./translation-string-location")
-    }
+        'next-intl-translation-key': nextIntlTranslationKey,
+    },
 };

@@ -1,0 +1,62 @@
+{
+    "ADDRESS_BOOKS_SIDEBAR": {
+        "globals": {
+            "string": "Global address books"
+        },
+        "personals": {
+            "string": "Address books"
+        },
+        "add_personal": {
+            "string": "Add address book"
+        },
+        "subscriptions": {
+            "string": "Subscriptions"
+        },
+        "add_subscriptions": {
+            "string": "Add subscriptions"
+        },
+        "name": {
+            "string": "Name",
+            "context": "Label for the name field in the address book sidebar."
+        },
+        "options": {
+            "edit": {
+                "title": {
+                    "string": "Edit address book {name}"
+                },
+                "labels": {
+                    "name": {
+                        "string": "Name"
+                    }
+                }
+            },
+            "link": {
+                "title": {
+                    "string": "Links"
+                },
+                "labels": {
+                    "name": {
+                        "string": "CardDAV URL"
+                    }
+                }
+            },
+            "delete": {
+                "title": {
+                    "string": "Are you sure you want to delete address book {name}?"
+                }
+            },
+            "sharing": {
+                "string": "Sharing"
+            },
+            "import": {
+                "string": "Import"
+            },
+            "export": {
+                "string": "Export"
+            },
+            "ios_download": {
+                "string": "Download iOS - MacOS configuration profile"
+            }
+        }
+    }
+}

@@ -15,7 +15,10 @@
     "test:ui": "jest src/components/ui --coverage=false",
     "test:changed": "jest --onlyChanged --coverage=false",
     "test:related": "jest --findRelatedTests",
-    "check:translations": "node scripts/check-translation-keys.js"
+    "check:translations": "node scripts/check-translation-keys.js",
+    "check:translations:missing": "node scripts/check-translation-keys.js --only-missing",
+    "check:translations:quiet": "node scripts/check-translation-keys.js --quiet",
+    "check:translations:file": "node scripts/check-translation-keys.js --file"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-react": "11.0.0",

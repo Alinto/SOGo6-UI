@@ -24,7 +24,7 @@ interface RecursiveNavItemProps {
 }
 
 function RecursiveNavItem({ item }: RecursiveNavItemProps) {
-  const t = useTranslations('User_Settings')
+  const t = useTranslations()
 
   return (
     <Collapsible

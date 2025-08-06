@@ -1,10 +1,8 @@
 {
-    "Address_Books_Settings": {
+    "US_ADDRESS_BOOKS": {
         "title": {
-            "string": "Address Books Categories"
-        },
-        "create": {
-            "string": "Create"
+            "string": "Address Books",
+            "context": "Title for the address books settings page"
         },
         "accessibility": {
             "icon": {

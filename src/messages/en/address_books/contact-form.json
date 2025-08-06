@@ -1,0 +1,20 @@
+{
+    "CONTACT_FORM": {
+        "emails": {
+            "string": "Email addresses",
+            "context": "Label for the email addresses section in the contact form."
+        },
+        "addresses": {
+            "string": "Addresses",
+            "context": "Label for the addresses section in the contact form."
+        },
+        "notes": {
+            "string": "Notes",
+            "context": "Label for the notes section in the contact form."
+        },
+        "contact_information": {
+            "string": "Contact Information",
+            "context": "Label for the contact information section in the contact form."
+        }
+    }
+}

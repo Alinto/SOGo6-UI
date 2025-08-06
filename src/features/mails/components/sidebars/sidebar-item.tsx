@@ -60,7 +60,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   ...props
 }) => {
   const [type, setType] = React.useState('')
-  const t = useTranslations('Mails')
+  const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
   return (
     <>
@@ -110,17 +110,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             align={isMobile ? 'end' : 'start'}
           >
             <DropdownMenuItem onClick={() => setType('edit')}>
-              <span>{t('options.rename.string')}</span>
+              <span>{t('folders.actions.rename.string')}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setType('delete')}>
-              <span>{t('options.mark_as_read.string')}</span>
+              <span>{t('folders.actions.mark_as_read.string')}</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => setType('link')}>
-              <span>{t('options.new_subfolder.string')}</span>
+              <span>{t('folders.actions.new_subfolder.string')}</span>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setType('sharing')}>
-              <span>{t('options.sharing.string')}</span>
+              <span>{t('folders.actions.sharing.string')}</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

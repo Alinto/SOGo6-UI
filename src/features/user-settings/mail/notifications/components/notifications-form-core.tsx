@@ -25,7 +25,8 @@ interface Props {
 }
 
 const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
-  const t = useTranslations('Mail_Settings_Notifications')
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('US_MAIL_NOTIFICATIONS')
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: data,
@@ -58,7 +59,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>{t('notifications.enabled.string')}</FormLabel>
+                  <FormLabel>{formT('enabled.string')}</FormLabel>
                 </div>
               </FormItem>
             )}
@@ -73,7 +74,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
               render={({ field }) => (
                 <FormItem className="space-y-0 space-x-3 p-4">
                   <FormLabel className="text-muted-foreground">
-                    {t('notifications.emails.label.string')}
+                    {t('labels.email.string')}
                   </FormLabel>
                   <FormControl>
                     <InputWithTags
@@ -91,7 +92,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
                           value,
                         })
                       }}
-                      placeholder={t('notifications.emails.placeholder.string')}
+                      placeholder={t('placeholders.email.string')}
                       errors={errors}
                     />
                   </FormControl>
@@ -104,14 +105,12 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
               render={({ field }) => (
                 <FormItem className="space-y-0 space-x-3 p-4">
                   <FormLabel className="text-muted-foreground">
-                    {t('notifications.message.label.string')}
+                    {t('labels.message.string')}
                   </FormLabel>
                   <FormControl>
                     <InputWithError
                       {...field}
-                      placeholder={t(
-                        'notifications.message.placeholder.string'
-                      )}
+                      placeholder={t('placeholders.message.string')}
                       errors={errors}
                       errorName="message"
                     />

@@ -9,7 +9,7 @@ import {
 } from './store/mail-notifications-settings-api'
 
 const MailNotificationsSettings: React.FC = () => {
-  const t = useTranslations()
+  const t = useTranslations('US_MAIL_NOTIFICATIONS')
   const { data, error, isFetching } = useGetMailNotificationsSettingsQuery()
   const [updateData] = useUpdateMailNotificationsSettingsMutation()
   if (error) {
@@ -17,9 +17,7 @@ const MailNotificationsSettings: React.FC = () => {
   }
   return (
     <div className="grid grid-cols-1 gap-4">
-      <h2 className="text-2xl">
-        {t('Mail_Settings_Notifications.title.string')}
-      </h2>
+      <h2 className="text-2xl">{t('title.string')}</h2>
       {isFetching ? (
         'LOADING'
       ) : (

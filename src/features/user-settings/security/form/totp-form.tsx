@@ -20,8 +20,8 @@ import { z } from 'zod'
 import { defaultValues, schema } from './totp-schema'
 
 const TotpForm: React.FC = () => {
-  const t = useTranslations('Account_Security')
-  const formT = useTranslations('Form')
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('US_SECURITY')
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -35,7 +35,7 @@ const TotpForm: React.FC = () => {
   return (
     <Form {...form}>
       <form
-        className="border rounded-md shadow-sm p-4"
+        className="rounded-md border p-4 shadow-sm"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <div>
@@ -43,7 +43,7 @@ const TotpForm: React.FC = () => {
             control={form.control}
             name="totp"
             render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4">
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -75,7 +75,9 @@ const TotpForm: React.FC = () => {
           </div>
         ) : null}
         <div className="flex justify-end">
-          <Button className="text-background">{formT('save.string')}</Button>
+          <Button className="text-background">
+            {formT('save.default.string')}
+          </Button>
         </div>
       </form>
     </Form>

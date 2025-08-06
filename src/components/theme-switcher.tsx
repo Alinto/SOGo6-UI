@@ -13,7 +13,7 @@ import { Toggle } from './ui/toggle'
 
 export function ThemeSwitcher() {
   const { setTheme, theme } = useTheme()
-  const t = useTranslations('Header')
+  const t = useTranslations('HEADER')
 
   return (
     <>

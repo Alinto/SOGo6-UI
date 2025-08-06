@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function GeneralSettingsForm({ data, update }: Props) {
-  const t = useTranslations('General_Settings')
+  const t = useTranslations('US_GENERAL')
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),

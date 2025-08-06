@@ -25,7 +25,7 @@ interface Props {
 }
 
 const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
-  const t = useTranslations('Mail_Settings')
+  const t = useTranslations('US_MAIL_GENERAL')
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: data,
@@ -175,7 +175,10 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
                     disabled={!autoMarkAsRead}
                     value={field.value}
                     options={[
-                      { value: '0', label: t('immediately_on_display.string') },
+                      {
+                        value: '0',
+                        label: t('immediately_on_display.string'),
+                      },
                       {
                         value: '5',
                         label: t('after_displaying_for_seconds.string'),
@@ -198,7 +201,10 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'ask', label: t('compose.always_ask.string') },
+                    {
+                      value: 'ask',
+                      label: t('compose.always_ask.string'),
+                    },
                     {
                       value: 'window',
                       label: t('compose.in_new_window.string'),
@@ -249,7 +255,10 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'above', label: t('start_reply.to_above.string') },
+                    {
+                      value: 'above',
+                      label: t('start_reply.to_above.string'),
+                    },
                     {
                       value: 'below',
                       label: t('start_reply.to_below.string'),
@@ -367,7 +376,10 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
                   onValueChange={field.onChange}
                   value={field.value}
                   options={[
-                    { value: 'sm', label: t('default_font_size.sm.string') },
+                    {
+                      value: 'sm',
+                      label: t('default_font_size.sm.string'),
+                    },
                     {
                       value: 'md',
                       label: t('default_font_size.md.string'),

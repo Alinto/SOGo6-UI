@@ -1,8 +1,0 @@
-{
-    "Form_Success": {
-        "default": {
-            "string": "Form submitted successfully",
-            "description": "Message displayed when the form is submitted successfully."
-        }
-    }
-}

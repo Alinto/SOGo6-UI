@@ -16,24 +16,26 @@ interface LinkActionProps {
 }
 
 const LinkAction: React.FC<LinkActionProps> = ({ name }) => {
-  const t = useTranslations('Address_Books')
-
+  const tCommons = useTranslations('COMMONS')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{t('sidebar.options.link.title.string')}</DialogTitle>
+        <DialogTitle>{t('options.link.title.string')}</DialogTitle>
       </DialogHeader>
       <DialogDescription>
         <InputWithLabel
           type="text"
-          label={t('sidebar.options.link.labels.name.string', { name })}
+          label={t('options.link.labels.name.string', {
+            name,
+          })}
           className="w-full"
         />
       </DialogDescription>
       <DialogFooter className="sm:justify-start">
         <DialogClose asChild>
           <Button type="button" variant="secondary">
-            Close
+            {tCommons('close.string')}
           </Button>
         </DialogClose>
       </DialogFooter>

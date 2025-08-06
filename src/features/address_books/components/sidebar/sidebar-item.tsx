@@ -49,8 +49,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   downloadAction = true,
 }) => {
   const [type, setType] = React.useState('')
-  const formT = useTranslations('Form')
-  const t = useTranslations('Address_Books')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const formT = useTranslations('FORM_COMMONS')
   const { push } = useRouter()
   return (
     <SidebarMenuItem>
@@ -92,7 +92,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               {linkAction && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('link')}>
-                    <span>{t('sidebar.options.link.title.string')}</span>
+                    <span>{t('options.link.title.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
@@ -100,7 +100,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               {sharingAction && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('sharing')}>
-                    <span>{t('sidebar.options.sharing.string')}</span>
+                    <span>{t('options.sharing.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
@@ -108,18 +108,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               {importAction && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('import')}>
-                    <span>{t('sidebar.options.import.string')}</span>
+                    <span>{t('options.import.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
               {exportAction && (
                 <DropdownMenuItem>
-                  <span>{t('sidebar.options.export.string')}</span>
+                  <span>{t('options.export.string')}</span>
                 </DropdownMenuItem>
               )}
               {downloadAction && (
                 <DropdownMenuItem>
-                  <span>{t('sidebar.options.ios_download.string')}</span>
+                  <span>{t('options.ios_download.string')}</span>
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

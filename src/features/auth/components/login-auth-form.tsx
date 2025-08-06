@@ -10,7 +10,7 @@ export function LoginAuthForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'form'>) {
-  const t = useTranslations('Login')
+  const t = useTranslations('AUTH')
   return (
     <form className={cn('flex flex-col gap-6', className)} {...props}>
       <div className="grid gap-6">

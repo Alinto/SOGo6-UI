@@ -11,12 +11,14 @@ type NotificationsMailSettingsSchema = ZodObject<{
 const schema = z.object({
   enabled: z.boolean(),
   emails: z.array(z.object({ value: z.string().email() })),
-  message: z.string().nonempty({ message: 'required.common.string' }),
+  message: z
+    .string()
+    .nonempty({ message: 'FORM_ERRORS.required.default.string' }),
   email: z
     .string()
     .min(0)
     .email({
-      message: 'invalid.email.string',
+      message: 'FORM_ERRORS.invalid.email.string',
     })
     .or(z.literal('')),
 }) satisfies NotificationsMailSettingsSchema

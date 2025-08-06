@@ -1,5 +1,4 @@
 import { IconName } from 'lucide-react/dynamic'
-import translationMapping from './translation-mapping'
 
 const iconSelector = (path: string, defaultIcon?: IconName): IconName => {
   if (path === 'INBOX') return 'inbox'
@@ -12,12 +11,18 @@ const iconSelector = (path: string, defaultIcon?: IconName): IconName => {
   return 'folder'
 }
 const nameSelector = (name: string): string | undefined => {
-  if (name === 'INBOX') return translationMapping.INBOX
-  if (name === 'Sent') return translationMapping.Sent
-  if (name === 'Drafts') return translationMapping.Drafts
-  if (name === 'Trash') return translationMapping.Trash
-  if (name === 'Junk') return translationMapping.Junk
-  if (name === 'Archive') return translationMapping.Archive
+  if (name.toLocaleLowerCase() === 'inbox')
+    return 'MAILS_COMMONS.folders.inbox.string'
+  if (name.toLocaleLowerCase() === 'sent')
+    return 'MAILS_COMMONS.folders.sent.string'
+  if (name.toLocaleLowerCase() === 'drafts')
+    return 'MAILS_COMMONS.folders.drafts.string'
+  if (name.toLocaleLowerCase() === 'trash')
+    return 'MAILS_COMMONS.folders.trash.string'
+  if (name.toLocaleLowerCase() === 'junk')
+    return 'MAILS_COMMONS.folders.junk.string'
+  if (name.toLocaleLowerCase() === 'archive')
+    return 'MAILS_COMMONS.folders.archive.string'
   return undefined
 }
 

@@ -9,7 +9,7 @@ import {
 } from './store/mail-vacation-settings-api'
 
 const MailVacationSettings: React.FC = () => {
-  const t = useTranslations('Mail_Settings_Vacation')
+  const t = useTranslations('US_MAIL_VACATIONS')
   const { data, error, isFetching } = useGetMailVacationSettingsQuery()
   const [updateData] = useUpdateMailVacationSettingsMutation()
   if (error) {

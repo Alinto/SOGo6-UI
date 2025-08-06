@@ -1,14 +1,11 @@
 {
-    "Mail_Settings_Labels": {
+    "US_MAIL_LABELS": {
         "title": {
             "string": "Mail Labels",
-            "context": "Title of the Mail Labels page"
+            "context": "Title for the mail labels settings page"
         },
         "label": {
             "string": "Label"
-        },
-        "color": {
-            "string": "Color"
         },
         "imap_label": {
             "string": "IMAP Label"

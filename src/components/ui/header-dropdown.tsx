@@ -25,7 +25,7 @@ import { useTheme } from 'next-themes'
 import { ThemeSwitcher } from '../theme-switcher'
 
 const HeaderDropdown: React.FC = () => {
-  const t = useTranslations('Header')
+  const t = useTranslations('HEADER')
   const isMobile = useIsMobile()
   const { theme } = useTheme()
   const { push } = useRouter()

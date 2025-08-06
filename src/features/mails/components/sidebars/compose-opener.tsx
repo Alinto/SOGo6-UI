@@ -7,7 +7,7 @@ import React from 'react'
 import { ModalCompose } from '../compose/modal-compose'
 
 const ComposeOpener: React.FC = () => {
-  const t = useTranslations('Mails')
+  const t = useTranslations('COMPOSE')
   const searchParams = useSearchParams()
   const isOpen = !!searchParams.get('compose')
   const { push } = useRouter()
@@ -19,7 +19,6 @@ const ComposeOpener: React.FC = () => {
         onClick={() => {
           const params = new URLSearchParams(searchParams.toString())
           params.set('compose', 'true')
-          console.log('Opening compose modal', params)
           const query = params.toString()
           push(query ? `${pathname}?${query}` : pathname)
         }}

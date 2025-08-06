@@ -1,16 +1,16 @@
 {
-    "Mail_Settings": {
+    "US_MAIL_GENERAL": {
         "title": {
-            "string": "Mail general settings",
-            "context": "Title for general mail settings form"
+            "string": "Mail General Settings",
+            "context": "Title for the mail general settings page"
+        },
+        "start_reply_to": {
+            "string": "Start reply to",
+            "context": "Dropdown label to know where to start replying"
         },
         "display_subscribed_mailboxes_only": {
             "string": "Show subscribed mailboxes only",
             "context": "Checkbox to show subscribed mailboxes only"
-        },
-        "EAS": {
-            "string": "Synchronize only default mail folders (EAS)",
-            "context": "Checkbox to synchronize only default mail folders"
         },
         "fetch_count_of_unseen_messages": {
             "string": "Fetch count of unseen messages for all mailboxes",
@@ -92,10 +92,6 @@
             "forward": {
                 "string": "Insert signature on forward message"
             }
-        },
-        "compose_in": {
-            "string": "Compose messages in",
-            "context": "Dropdown label to know where to compose messages, HTML or Plain text"
         },
         "default_font_size": {
             "title": {

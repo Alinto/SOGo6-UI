@@ -10,7 +10,7 @@ import {
 } from './store/mail-filters-settings-api'
 
 const MailFiltersSettings: React.FC = () => {
-  const t = useTranslations('Mail_Settings_Filters')
+  const t = useTranslations('US_MAIL_FILTERS')
   const { data, error, isFetching } = useGetMailFiltersSettingsQuery()
   const [updateData] = useUpdateMailFiltersSettingsMutation()
   if (error) {

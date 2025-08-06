@@ -9,7 +9,7 @@ import {
 } from './store/mail-labels-settings-api'
 
 const MailLabelsSettings: React.FC = () => {
-  const t = useTranslations('Mail_Settings_Labels')
+  const t = useTranslations('US_MAIL_LABELS')
   const { data, error, isFetching } = useGetMailLabelsSettingsQuery()
   const [updateData] = useUpdateMailLabelsSettingsMutation()
   if (error) {

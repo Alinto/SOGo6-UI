@@ -16,7 +16,7 @@ import SidebarSkeleton from './skeleton'
 
 const Sidebar: React.FC = () => {
   const { data, isFetching } = useGetAddressBooksQuery()
-  const t = useTranslations('Address_Books')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   if (isFetching) {
     return <SidebarSkeleton />
   }
@@ -24,7 +24,7 @@ const Sidebar: React.FC = () => {
   return (
     <>
       <SidebarGroup className="px-0">
-        <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
+        <SidebarGroupLabel>{t('personals.string')}</SidebarGroupLabel>
         <AddAddressBook type={'personals'} />
         <SidebarGroupContent>
           <SidebarMenu>
@@ -43,9 +43,7 @@ const Sidebar: React.FC = () => {
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup className="px-0">
-        <SidebarGroupLabel>
-          {t('sidebar.subscriptions.string')}
-        </SidebarGroupLabel>
+        <SidebarGroupLabel>{t('subscriptions.string')}</SidebarGroupLabel>
         <AddAddressBook type={'subscriptions'} />
         <SidebarMenu>
           {subscriptions.map((book) => (
@@ -62,7 +60,7 @@ const Sidebar: React.FC = () => {
         </SidebarMenu>
       </SidebarGroup>
       <SidebarGroup className="px-0">
-        <SidebarGroupLabel>{t('sidebar.globals.string')}</SidebarGroupLabel>
+        <SidebarGroupLabel>{t('globals.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {globals.map((book) => (
             <SidebarItem

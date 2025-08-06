@@ -3,7 +3,8 @@
 import { format } from 'date-fns'
 
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
+
+import { Calendar } from '@/components/ui/calendar-lazy'
 import {
   FormControl,
   FormField,
@@ -30,7 +31,7 @@ export function DatePickerWithRangeForm({
   name,
   mode = 'range',
 }: DatePickerWithRangeFormProps) {
-  const t = useTranslations('Calendar')
+  const t = useTranslations('CALENDAR')
   return (
     <FormField
       control={form.control}

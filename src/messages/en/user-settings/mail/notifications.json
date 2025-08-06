@@ -1,0 +1,23 @@
+{
+    "US_MAIL_NOTIFICATIONS": {
+        "title": {
+            "string": "Mail Notifications"
+        },
+        "labels": {
+            "email": {
+                "string": "Email addresses"
+            },
+            "message": {
+                "string": "Message Notifications"
+            }
+        },
+        "placeholders": {
+            "email": {
+                "string": "Enter email addresses"
+            },
+            "message": {
+                "string": "Enter message"
+            }
+        }
+    }
+}

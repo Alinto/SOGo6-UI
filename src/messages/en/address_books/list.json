@@ -1,0 +1,16 @@
+{
+    "ADDRESS_BOOKS_LIST": {
+        "contacts_number": {
+            "string": "{number, plural, one {# contact} other {# contacts}}",
+            "context": "Displays the number of contacts in an address book."
+        },
+        "filters": {
+            "name": {
+                "string": "Name"
+            }
+        },
+        "no_items": {
+            "string": "No contact found."
+        }
+    }
+}

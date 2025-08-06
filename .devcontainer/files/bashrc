@@ -33,6 +33,11 @@ print_sogo_ascii() {
     echo "${normal}"
 }
 
+check_package_json_dependencies() {
+	echo "${bold}${green}Checking package.json dependencies..."
+	ncu
+}
+
 # get current branch in git repo
 function parse_git_branch() {
 	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
@@ -103,6 +108,5 @@ PROMPT_COMMAND=set_bash_prompt
 # export TX_TOKEN = "1/xxxxxxxxxxxxxxxx"
 # export TX_SECRET = "1/xxxxxxxxxxxxxxxxxxx"
 
-
-
 print_sogo_ascii
+check_package_json_dependencies

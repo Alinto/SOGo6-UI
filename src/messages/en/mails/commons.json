@@ -1,28 +1,24 @@
 {
-    "Mails": {
-        "options": {
-            "rename": {
-                "string": "Rename"
-            },
-            "mark_as_read": {
-                "string": "Mark as read"
-            },
-            "new_subfolder": {
-                "string": "New subfolder"
-            },
-            "sharing": {
-                "string": "Sharing"
-            }
-        },
-        "new_folder": {
-            "string": "New folder",
-            "description": "Create a new folder in the mail sidebar"
-        },
-        "new_message": {
-            "string": "New message",
-            "description": "Create a new message in the mail sidebar"
-        },
+    "MAILS_COMMONS": {
         "folders": {
+            "actions": {
+                "new_subfolder": {
+                    "string": "New Subfolder",
+                    "description": "Button to create a new subfolder in the current folder"
+                },
+                "rename": {
+                    "string": "Rename",
+                    "description": "Button to rename the current folder"
+                },
+                "mark_as_read": {
+                    "string": "Mark as Read",
+                    "description": "Button to mark the current folder as read"
+                },
+                "sharing": {
+                    "string": "Sharing",
+                    "description": "Button to share the current folder"
+                }
+            },
             "inbox": {
                 "string": "Inbox",
                 "description": "Your inbox where you receive new messages"

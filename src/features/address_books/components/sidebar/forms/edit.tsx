@@ -16,24 +16,31 @@ interface EditFormProps {
 }
 
 const EditForm: React.FC<EditFormProps> = ({ name }) => {
-  const t = useTranslations('Address_Books')
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>{t('sidebar.options.edit.title.string')}</DialogTitle>
+        <DialogTitle>
+          {t('options.edit.title.string', {
+            name,
+          })}
+        </DialogTitle>
       </DialogHeader>
       <DialogDescription>
         <InputWithLabel
           type="text"
-          label={t('sidebar.options.edit.labels.name.string', { name })}
+          label={t('options.edit.labels.name.string', {
+            name,
+          })}
           className="w-full"
         />
       </DialogDescription>
       <DialogFooter className="sm:justify-start">
         <DialogClose asChild>
           <Button type="button" variant="secondary">
-            Close
+            {formT('cancel.default.string')}
           </Button>
         </DialogClose>
       </DialogFooter>

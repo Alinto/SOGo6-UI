@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import React from 'react'
 
 const ListFilter: React.FC = () => {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_LIST')
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const { push } = useRouter()
@@ -26,37 +26,37 @@ const ListFilter: React.FC = () => {
           }
         }}
       >
-        <ToggleGroupItem value="all" aria-label={t('list.filter.all.string')}>
-          {t('list.filter.all.string')}
+        <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>
+          {t('filter.all.string')}
         </ToggleGroupItem>
         <ToggleGroupItem
           value="read"
           aria-pressed={true}
-          aria-label={t('list.filter.read.string')}
+          aria-label={t('filter.read.string')}
           className="w-auto flex-none"
         >
-          {t('list.filter.read.string')}
+          {t('filter.read.string')}
         </ToggleGroupItem>
         <ToggleGroupItem
           value="unread"
-          aria-label={t('list.filter.unread.string')}
+          aria-label={t('filter.unread.string')}
           className="w-auto flex-none"
         >
-          {t('list.filter.unread.string')}
+          {t('filter.unread.string')}
         </ToggleGroupItem>
         <ToggleGroupItem
           value="starred"
-          aria-label={t('list.filter.starred.string')}
+          aria-label={t('filter.starred.string')}
           className="w-auto flex-none"
         >
-          {t('list.filter.starred.string')}
+          {t('filter.starred.string')}
         </ToggleGroupItem>
         <ToggleGroupItem
           value="attachments"
-          aria-label={t('list.filter.attachments.string')}
+          aria-label={t('filter.attachments.string')}
           className="w-auto flex-none"
         >
-          {t('list.filter.attachments.string')}
+          {t('filter.attachments.string')}
         </ToggleGroupItem>
       </ToggleGroup>
     </div>

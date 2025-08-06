@@ -20,7 +20,8 @@ interface Props {
 }
 
 const LabelsForm: React.FC<Props> = ({ data, update }) => {
-  const t = useTranslations('Address_Books_Settings')
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('US_ADDRESS_BOOKS')
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -50,7 +51,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             })
           }}
         >
-          {t('create.string')}
+          {formT('create.default.string')}
         </Button>
         <div className="grid gap-4 lg:grid-cols-2">
           {fields.map((label, i) => (

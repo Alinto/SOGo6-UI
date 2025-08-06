@@ -9,22 +9,25 @@ import { useTranslations } from 'next-intl'
 import React from 'react'
 
 const DeleteAction: React.FC<{ name: string; id: string }> = ({ name }) => {
-  const t = useTranslations('Address_Books')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const formT = useTranslations('FORM_COMMONS')
   return (
     <>
       <DialogHeader>
         <DialogTitle>
-          {t('sidebar.options.delete.modal.title.string', { name })}
+          {t('options.delete.title.string', {
+            name,
+          })}
         </DialogTitle>
       </DialogHeader>
       <DialogFooter className="sm:justify-space-between">
         <DialogClose asChild>
           <Button type="button" variant="secondary">
-            {t('sidebar.options.delete.modal.cancel.string')}
+            {formT('cancel.default.string')}
           </Button>
         </DialogClose>
         <Button type="button" variant="destructive">
-          {t('sidebar.options.delete.default.string')}
+          {formT('delete.default.string')}
         </Button>
       </DialogFooter>
     </>

@@ -10,7 +10,7 @@ import { NavItems } from '@/types'
 import { useTranslations } from 'next-intl'
 
 function RecursiveNav({ items }: { items: NavItems[] }) {
-  const t = useTranslations('User_Settings')
+  const t = useTranslations()
 
   return (
     <>

@@ -31,7 +31,7 @@ interface Props {
 }
 
 const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
-  const t = useTranslations('Mail_Settings_Vacation')
+  const t = useTranslations('US_MAIL_VACATIONS')
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues: data,
@@ -111,9 +111,9 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
               name="emails"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('auto_reply.message')}</FormLabel>
+                  <FormLabel>{t('US_MAIL_VACATIONS.auto_reply.message')}</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder={t('auto_reply.message')} />
+                    <Input {...field} placeholder={t('US_MAIL_VACATIONS.auto_reply.message')} />
                   </FormControl>
                 </FormItem>
               )}
@@ -347,8 +347,9 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                               })
                             }
                           >
-                            {' '}
-                            {t('auto_reply.constraints.weekdays.wednesday')}
+                            {t(
+                              'auto_reply.constraints.weekdays.wednesday.string'
+                            )}
                           </Button>
                           <Button
                             type="button"
@@ -382,7 +383,6 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                               })
                             }
                           >
-                            {' '}
                             {t('auto_reply.constraints.weekdays.friday.string')}
                           </Button>
                           <Button

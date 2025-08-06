@@ -16,7 +16,7 @@ interface InputWithErrorProps {
 const InputWithError: React.FC<
   InputWithErrorProps & React.InputHTMLAttributes<HTMLInputElement>
 > = ({ errors, errorName, className, ...props }) => {
-  const t = useTranslations('Form_Errors')
+  const t = useTranslations()
   return (
     <>
       <Input

@@ -1,5 +1,5 @@
 {
-    "Form": {
+    "FORM_COMMONS": {
         "save": {
             "default": {
                 "string": "Save",
@@ -10,19 +10,11 @@
             "default": {
                 "string": "Delete",
                 "description": "Click to delete the selected item."
-            },
-            "specific": {
-                "string": "Delete {item}",
-                "description": "Click to delete the selected item."
             }
         },
         "edit": {
             "default": {
                 "string": "Edit",
-                "description": "Click to edit the selected item."
-            },
-            "specific": {
-                "string": "Edit {item}",
                 "description": "Click to edit the selected item."
             }
         },
@@ -32,25 +24,9 @@
                 "description": "Click to cancel the form submission."
             }
         },
-        "reset": {
-            "default": {
-                "string": "Reset",
-                "description": "Click to reset the form fields to their default values."
-            }
-        },
-        "submit": {
-            "default": {
-                "string": "Submit",
-                "description": "Click to submit the form."
-            }
-        },
         "create": {
             "default": {
                 "string": "Create",
-                "description": "Click to create a new item."
-            },
-            "specific": {
-                "string": "Create {item}",
                 "description": "Click to create a new item."
             }
         },

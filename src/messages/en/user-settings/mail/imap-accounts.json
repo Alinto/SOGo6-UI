@@ -1,0 +1,8 @@
+{
+    "US_MAIL_IMAP_ACCOUNTS": {
+        "title": {
+            "string": "IMAP Accounts",
+            "context": "Title for the IMAP accounts settings page"
+        }
+    }
+}

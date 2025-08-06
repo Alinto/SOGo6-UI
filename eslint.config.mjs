@@ -41,6 +41,6 @@ export default defineConfig([{
         "react/jsx-uses-react": "off",
         "react/react-in-jsx-scope": "off",
         "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-        "custom/translation-string-location": "error"
+        "custom/next-intl-translation-key": "error"
     },
 }]);

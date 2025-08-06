@@ -1,14 +1,11 @@
 {
-    "Form_Errors": {
+    "FORM_ERRORS": {
         "required": {
-            "common": {
+            "default": {
                 "string": "This field is required"
             }
         },
         "invalid": {
-            "common": {
-                "string": "Invalid value"
-            },
             "email": {
                 "string": "Invalid email address"
             }

@@ -16,22 +16,22 @@ import { useTranslations } from 'next-intl'
 
 const sortList: { label: string; value: string; icon: IconName }[] = [
   {
-    label: 'list.sort.date.ascending.string',
+    label: 'MAILS_LIST.sort.date.ascending.string',
     value: 't_asc',
     icon: 'clock-arrow-down',
   },
   {
-    label: 'list.sort.date.descending.string',
+    label: 'MAILS_LIST.sort.date.descending.string',
     value: 't_desc',
     icon: 'clock-arrow-up',
   },
   {
-    label: 'list.sort.size.ascending.string',
+    label: 'MAILS_LIST.sort.size.ascending.string',
     value: 's_asc',
     icon: 'arrow-down-narrow-wide',
   },
   {
-    label: 'list.sort.size.descending.string',
+    label: 'MAILS_LIST.sort.size.descending.string',
     value: 's_desc',
     icon: 'arrow-down-wide-narrow',
   },
@@ -40,7 +40,7 @@ const sortList: { label: string; value: string; icon: IconName }[] = [
 const ListSort: React.FC = () => {
   const { push } = useRouter()
   const params = useSearchParams()
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations()
   const sort = params.get('sort') || 't_asc'
 
   const onSortChange = (value: string) => {

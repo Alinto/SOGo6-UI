@@ -10,7 +10,7 @@ import {
 } from './store/address-books-api'
 
 const AddressBooksSettings: React.FC = () => {
-  const t = useTranslations('Address_Books_Settings')
+  const t = useTranslations('US_ADDRESS_BOOKS')
   const { data, error, isFetching } = useGetAddressBooksSettingsQuery()
   const [updateAddressBooks] = useUpdateAddressBooksSettingsMutation()
   if (error) {

@@ -10,11 +10,11 @@ import { useTranslations } from 'next-intl'
 import React from 'react'
 
 const SidebarSkeleton: React.FC = () => {
-  const t = useTranslations('Address_Books')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   return (
     <>
       <SidebarGroup>
-        <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
+        <SidebarGroupLabel>{t('personals.string')}</SidebarGroupLabel>
         <SidebarGroupAction title="Add Project">
           <Plus />
         </SidebarGroupAction>
@@ -24,9 +24,7 @@ const SidebarSkeleton: React.FC = () => {
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup>
-        <SidebarGroupLabel>
-          {t('sidebar.subscriptions.string')}
-        </SidebarGroupLabel>
+        <SidebarGroupLabel>{t('subscriptions.string')}</SidebarGroupLabel>
         <SidebarGroupAction title="Add Project">
           <Plus />
         </SidebarGroupAction>
@@ -35,7 +33,7 @@ const SidebarSkeleton: React.FC = () => {
         </SidebarGroupContent>
       </SidebarGroup>
       <SidebarGroup>
-        <SidebarGroupLabel>{t('sidebar.globals.string')}</SidebarGroupLabel>
+        <SidebarGroupLabel>{t('globals.string')}</SidebarGroupLabel>
         <SidebarGroupContent>
           <Skeleton className="bg-secondary/10 h-10 w-auto" />
         </SidebarGroupContent>

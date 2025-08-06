@@ -1,7 +1,8 @@
 {
-    "Mail_Settings_Vacation": {
+    "US_MAIL_VACATIONS": {
         "title": {
-            "string": "Vacation"
+            "string": "Vacation Settings",
+            "context": "Title for the vacation settings page"
         },
         "auto_reply": {
             "enable": {
@@ -54,11 +55,11 @@
                     "thursday": {
                         "string": "Thursday"
                     },
-                    "friday": {
-                        "string": "Friday"
-                    },
                     "saturday": {
                         "string": "Saturday"
+                    },
+                    "friday": {
+                        "string": "Friday"
                     },
                     "sunday": {
                         "string": "Sunday"

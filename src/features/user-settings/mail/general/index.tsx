@@ -9,7 +9,7 @@ import {
 } from './store/mail-general-settings-api'
 
 const MailGeneralSettings: React.FC = () => {
-  const t = useTranslations('Mail_Settings')
+  const t = useTranslations('US_MAIL_GENERAL')
   const { data, error, isFetching } = useGetMailGeneralSettingsQuery()
   const [updateData] = useUpdateMailGeneralSettingsMutation()
   if (error) {

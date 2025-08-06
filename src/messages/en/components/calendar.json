@@ -1,5 +1,5 @@
 {
-    "Calendar": {
+    "CALENDAR": {
         "pick": {
             "range": {
                 "string": "Select a date range...",

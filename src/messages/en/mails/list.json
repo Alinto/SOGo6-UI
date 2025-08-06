@@ -1,0 +1,54 @@
+{
+    "MAILS_LIST": {
+        "messages_number": {
+            "string": "{number, plural, one {# message} other {# messages}}",
+            "context": "Displays the number of messages in an mail folder."
+        },
+        "sort": {
+            "date": {
+                "ascending": {
+                    "string": "Newest first"
+                },
+                "descending": {
+                    "string": "Older first"
+                }
+            },
+            "size": {
+                "ascending": {
+                    "string": "Smallest first"
+                },
+                "descending": {
+                    "string": "Largest first"
+                }
+            }
+        },
+        "pagination": {
+            "previous": {
+                "string": "Previous page"
+            },
+            "next": {
+                "string": "Next page"
+            }
+        },
+        "filter": {
+            "all": {
+                "string": "All"
+            },
+            "unread": {
+                "string": "Unread"
+            },
+            "read": {
+                "string": "Read"
+            },
+            "starred": {
+                "string": "Starred"
+            },
+            "attachments": {
+                "string": "Attachments"
+            }
+        },
+        "no_items": {
+            "string": "No message found."
+        }
+    }
+}

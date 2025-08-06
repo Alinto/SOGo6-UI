@@ -33,11 +33,10 @@ const MessagesList: React.FC<MessagesListProps> = ({
   isLoading,
   type,
 }) => {
-  const t = useTranslations('Mails_Common')
-  const tMails = useTranslations('Mails')
+  const t = useTranslations('MAILS_LIST')
 
   const { folder } = useParams()
-  const folderName = nameSelector(folder)
+
   const [selectedItems, setSelectedItems] = React.useState<ImapMessagesList[]>(
     []
   )
@@ -56,12 +55,13 @@ const MessagesList: React.FC<MessagesListProps> = ({
         <div className="ml-2.5 flex flex-row items-center gap-4">
           <Checkbox />
           <span className="text-lg font-semibold">
-            {folderName
-              ? tMails(folderName)
-              : decodeURIComponent(folder as string)}
+            {t(
+              nameSelector(folder as string) ??
+                decodeURIComponent(folder as string)
+            )}
           </span>
           <span className="">
-            {t('list.messages_number.string', { number: total })}
+            {t('messages_number.string', { number: total })}
           </span>
         </div>
         <div className="flex flex-row items-center justify-between gap-2">
@@ -85,7 +85,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
       >
         {items.length === 0 && (
           <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
-            {t('list.no_items.string')}
+            {t('no_items.string')}
           </li>
         )}
         {items.length > 0 &&

@@ -11,7 +11,7 @@ import {
 } from './store/general-settings-api'
 
 const GeneralSettings: React.FC = () => {
-  const t = useTranslations('General_Settings')
+  const t = useTranslations('US_GENERAL')
   const { data, error, isFetching } = useGetGeneralSettingsQuery()
   const [updateData] = useUpdateGeneralSettingsMutation()
   if (error) {

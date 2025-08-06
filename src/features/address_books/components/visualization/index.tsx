@@ -17,7 +17,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
       ? `${firstName} ${lastName} - ${organization} - ${jobTitle}`
       : `${firstName} ${lastName}`
 
-  const t = useTranslations('Address_Book_Item')
+  const t = useTranslations('CONTACT_FORM')
 
   return (
     <Card className="h-full w-full">
@@ -44,7 +44,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
       </CardHeader>
       <CardContent>
         <Separator className="my-4" />
-        <h3 className="text-lg font-semibold">{t('label_emails.string')}</h3>
+        <h3 className="text-lg font-semibold">{t('emails.string')}</h3>
         <div className="grid grid-cols-3 gap-4">
           {data.emails.length &&
             data.emails.map((email, index) => (
@@ -52,7 +52,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
             ))}
         </div>
         <Separator className="my-4" />
-        <h3 className="text-lg font-semibold">{t('label_addresses.string')}</h3>
+        <h3 className="text-lg font-semibold">{t('addresses.string')}</h3>
         <div className="grid grid-cols-3 gap-4">
           {data.addresses.length &&
             data.emails.map((email, index) => (
@@ -60,12 +60,12 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
             ))}
         </div>
         <h3 className="text-lg font-semibold">
-          {t('label_contact_information.string')}
+          {t('contact_information.string')}
         </h3>
         <p className="text-gray-500">{data.email}</p>
         <p className="text-gray-500">{data.phoneNumbers}</p>
         <p className="text-gray-500">{data.addresses}</p>
-        <h3 className="text-lg font-semibold">{t('label_notes.string')}</h3>
+        <h3 className="text-lg font-semibold">{t('notes.string')}</h3>
         <p className="text-gray-500">{data.note}</p>
       </CardContent>
     </Card>

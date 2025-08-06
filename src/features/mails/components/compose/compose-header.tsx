@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Paperclip, User, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 
 interface ComposeHeaderProps {
@@ -10,6 +11,8 @@ interface ComposeHeaderProps {
 const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
   const [showCc, setShowCc] = React.useState(false)
   const [showBcc, setShowBcc] = React.useState(false)
+  const tCommons = useTranslations('COMMONS')
+  const t = useTranslations('COMPOSE')
   return (
     <>
       <div className="flex justify-between gap-2">
@@ -25,7 +28,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
             onClick={onClose}
           >
             <X className="text-muted-foreground h-6 w-6" />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{tCommons('close.string')}</span>
           </Button>
         </div>
       </div>
@@ -41,7 +44,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
             size={'sm'}
             onClick={() => setShowCc((prev) => !prev)}
           >
-            Cc
+            {t('cc.string')}
           </Button>
           <Button
             variant="outline"
@@ -49,23 +52,23 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
             size={'sm'}
             onClick={() => setShowBcc((prev) => !prev)}
           >
-            Bcc
+            {t('bcc.string')}
           </Button>
         </div>
       </div>
       {showCc && (
         <div className="mt-2 flex w-full items-center">
-          <Input placeholder="Cc" className="w-full" />
+          <Input className="w-full" />
         </div>
       )}
       {showBcc && (
         <div className="mt-2 flex w-full items-center">
-          <Input placeholder="Bcc" className="w-full" />
+          <Input className="w-full" />
         </div>
       )}
       <div className="mt-2 flex w-full items-center">
         <Input
-          placeholder="Subject"
+          placeholder={t('subject.string')}
           className="w-full rounded-tr-none rounded-br-none border-r-0"
         />
         <div className="flex items-center">

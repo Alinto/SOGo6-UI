@@ -29,7 +29,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
   const { push } = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_LIST')
   const handlePrev = () => {
     if (currentPage > 1) {
       const params = new URLSearchParams(searchParams.toString())
@@ -65,7 +65,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
         size={'icon'}
         onClick={handlePrev}
         disabled={!hasPreviousPage || currentPage === 1}
-        aria-label={t('list.pagination.previous.string')}
+        aria-label={t('pagination.previous.string')}
         aria-disabled={currentPage === 1}
       >
         <ChevronLeft />
@@ -109,7 +109,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
         size={'icon'}
         variant={'outline'}
         onClick={handleNext}
-        aria-label={t('list.pagination.next.string')}
+        aria-label={t('pagination.next.string')}
         disabled={!hasNextPage || currentPage === totalPages}
       >
         <ChevronRight />

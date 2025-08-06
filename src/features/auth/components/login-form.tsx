@@ -2,18 +2,17 @@
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useRouter } from '@/lib/i18n/navigation'
+import { Link, useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 
-/* TRANSLATIONS_TODO */
 export function LoginForm({
   className,
   ...props
 }: React.ComponentPropsWithoutRef<'form'>) {
-  const t = useTranslations('Login')
+  const t = useTranslations('AUTH')
   const { push } = useRouter()
   return (
     <form
@@ -42,9 +41,9 @@ export function LoginForm({
       </div>
       <div className="text-center text-sm">
         {t('signup.description.string')}
-        <a href="/register" className="underline underline-offset-4">
+        <Link href="/register" className="underline underline-offset-4">
           {t('signup.title.string')}
-        </a>
+        </Link>
       </div>
     </form>
   )

@@ -20,20 +20,19 @@ interface AddAddressBookProps {
 }
 
 const AddAddressBook: React.FC<AddAddressBookProps> = ({ type }) => {
-  const t = useTranslations('Address_Books')
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   const title =
     type === 'personals'
-      ? t('sidebar.add_personal.string')
-      : t('sidebar.add_subscriptions.string')
+      ? t('add_personal.string')
+      : t('add_subscriptions.string')
 
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <SidebarGroupAction title={t('sidebar.add_subscriptions.string')}>
+        <SidebarGroupAction title={t('add_subscriptions.string')}>
           <Plus />
-          <span className="sr-only">
-            {t('sidebar.add_subscriptions.string')}
-          </span>
+          <span className="sr-only">{t('add_subscriptions.string')}</span>
         </SidebarGroupAction>
       </DialogTrigger>
       <DialogContent>
@@ -43,16 +42,16 @@ const AddAddressBook: React.FC<AddAddressBookProps> = ({ type }) => {
         <DialogDescription />
         <InputWithLabel
           type="text"
-          label={t('sidebar.label_name.string')}
+          label={t('name.string')}
           className="w-full"
         />
         <DialogFooter className="sm:justify-space-between">
           <DialogClose asChild>
             <Button type="button" variant="secondary">
-              Close
+              {formT('cancel.default.string')}
             </Button>
           </DialogClose>
-          <Button type="button">Save</Button>
+          <Button type="button">{formT('save.default.string')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

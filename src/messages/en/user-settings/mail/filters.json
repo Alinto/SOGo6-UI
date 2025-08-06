@@ -1,22 +1,16 @@
 {
-    "Mail_Settings_Filters": {
+    "US_MAIL_FILTERS": {
         "title": {
-            "string": "Mail Filters"
+            "string": "Mail Filters",
+            "context": "Title for the mail filters settings page"
         },
         "form": {
-            "placeholder": {
-                "string": "Filter name"
-            },
             "edit": {
                 "string": "Edit filter: {name}"
             },
-            "add": {
-                "condition": {
-                    "string": "Add a condition"
-                },
-                "action": {
-                    "string": "Add an action"
-                }
+            "create": {
+                "string": "Create filter",
+                "description": "Create a new filter for incoming messages."
             }
         },
         "operators": {
