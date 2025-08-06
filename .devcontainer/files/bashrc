@@ -34,7 +34,7 @@ print_sogo_ascii() {
 }
 
 check_package_json_dependencies() {
-	echo "${bold}${green}Checking package.json dependencies..."
+	echo "${bold}${green}Checking package.json dependencies...${normal}"
 	ncu
 }
 
