@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import js from "@eslint/js";
 import { FlatCompat } from "@eslint/eslintrc";
 import jestPlugin from "eslint-plugin-jest";
-import customRules from "./config/eslint-rules/index.js";
+import nextIntlTranslationKey from "./config/eslint-rules/next-intl-translation-key.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -28,7 +28,11 @@ export default defineConfig([{
     ),
     plugins: {
         jest: jestPlugin,
-        "custom": customRules
+        "custom": {
+            rules: {
+                "next-intl-translation-key": nextIntlTranslationKey
+            }
+        }
     },
     languageOptions: {
         globals: jestPlugin.environments.globals.globals,

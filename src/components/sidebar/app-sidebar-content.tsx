@@ -2,7 +2,7 @@
 
 import Sidebar from '@/features/address_books/components/sidebar/sidebar'
 import MailSidebar from '@/features/mails/components/sidebars/sidebar'
-import UserSettingsSidebar from '@/features/user-settings/components/sidebar/sidebar-content'
+import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 
 import { usePathname } from '@/lib/i18n/navigation'
 

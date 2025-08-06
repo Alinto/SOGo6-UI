@@ -22,5 +22,17 @@
     "typescript.suggest.autoImports": true,
     // Source map settings for better debugging
     "javascript.preferences.includePackageJsonAutoImports": "on",
-    "javascript.suggest.autoImports": true
+    "javascript.suggest.autoImports": true,
+    "eslint.probe": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ]
 }
