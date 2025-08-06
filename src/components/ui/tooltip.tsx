@@ -5,6 +5,13 @@ import * as React from 'react'
 
 import { cn } from '@/lib/utils'
 
+type TooltipWrapperProps = {
+  children: React.ReactNode
+  content: React.ReactNode
+  side?: 'top' | 'bottom' | 'left' | 'right'
+  asChild?: boolean
+}
+
 const TooltipProvider = TooltipPrimitive.Provider
 
 const Tooltip = TooltipPrimitive.Root
@@ -29,4 +36,24 @@ const TooltipContent = React.forwardRef<
 ))
 TooltipContent.displayName = TooltipPrimitive.Content.displayName
 
-export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger }
+const TooltipWrapper: React.FC<TooltipWrapperProps> = ({
+  children,
+  content,
+  side = 'top',
+  asChild = true,
+}) => {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild={asChild}>{children}</TooltipTrigger>
+      <TooltipContent side={side}>{content}</TooltipContent>
+    </Tooltip>
+  )
+}
+
+export {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipWrapper,
+}
