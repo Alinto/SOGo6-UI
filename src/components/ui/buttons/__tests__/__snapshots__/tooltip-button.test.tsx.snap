@@ -1,0 +1,45 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`TooltipButton Basic Rendering matches snapshot with tooltip 1`] = `
+<DocumentFragment>
+  <div
+    data-testid="tooltip-provider"
+  >
+    <div
+      data-testid="tooltip-root"
+    >
+      <div
+        data-testid="tooltip-trigger"
+      >
+        <button
+          class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/70 h-10 px-4 py-2"
+        >
+          Test Button
+        </button>
+      </div>
+      <div
+        data-testid="tooltip-portal"
+      >
+        <div
+          class="bg-primary text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 overflow-hidden rounded-md px-3 py-1.5 text-xs"
+          data-side="bottom"
+          data-side-offset="4"
+          data-testid="tooltip-content"
+        >
+          Test tooltip
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;
+
+exports[`TooltipButton Basic Rendering matches snapshot without tooltip 1`] = `
+<DocumentFragment>
+  <button
+    class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 bg-primary text-primary-foreground hover:bg-primary/70 h-10 px-4 py-2"
+  >
+    Test Button
+  </button>
+</DocumentFragment>
+`;

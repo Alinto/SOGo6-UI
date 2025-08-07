@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Collapsible Component matches the snapshot 1`] = `
 <DocumentFragment>
@@ -6,7 +6,7 @@ exports[`Collapsible Component matches the snapshot 1`] = `
     data-state="closed"
   >
     <button
-      aria-controls="radix-:r4:"
+      aria-controls="radix-«r4»"
       aria-expanded="false"
       data-state="closed"
       type="button"
@@ -16,7 +16,7 @@ exports[`Collapsible Component matches the snapshot 1`] = `
     <div
       data-state="closed"
       hidden=""
-      id="radix-:r4:"
+      id="radix-«r4»"
       style=""
     />
   </div>

@@ -1,0 +1,37 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Avatar components Avatar component matches snapshot 1`] = `
+<DocumentFragment>
+  <span
+    class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full"
+  />
+</DocumentFragment>
+`;
+
+exports[`Avatar components AvatarFallback component matches snapshot 1`] = `
+<DocumentFragment>
+  <span
+    class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full"
+  >
+    <span
+      class="bg-muted flex h-full w-full items-center justify-center rounded-full"
+    >
+      JD
+    </span>
+  </span>
+</DocumentFragment>
+`;
+
+exports[`Avatar components Complete Avatar integration matches snapshot for complete avatar 1`] = `
+<DocumentFragment>
+  <span
+    class="relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full"
+  >
+    <span
+      class="bg-muted flex h-full w-full items-center justify-center rounded-full"
+    >
+      CA
+    </span>
+  </span>
+</DocumentFragment>
+`;

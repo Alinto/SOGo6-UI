@@ -1,9 +1,9 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Popover Component matches snapshot 1`] = `
 <DocumentFragment>
   <button
-    aria-controls="radix-:r1:"
+    aria-controls="radix-«r1»"
     aria-expanded="false"
     aria-haspopup="dialog"
     data-state="closed"

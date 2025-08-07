@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`ScrollArea component Rendering matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="relative overflow-hidden"
+    data-testid="scroll-area-root"
+  >
+    <div
+      class="h-full w-full rounded-[inherit]"
+      data-testid="scroll-area-viewport"
+    >
+      <div>
+        Content
+      </div>
+    </div>
+    <div
+      class="flex touch-none transition-colors select-none h-full w-2.5 border-l border-l-transparent p-[1px]"
+      data-orientation="vertical"
+      data-testid="scroll-area-scrollbar-vertical"
+    >
+      <div
+        class="bg-border relative flex-1 rounded-full"
+        data-testid="scroll-area-thumb"
+      />
+    </div>
+    <div
+      data-testid="scroll-area-corner"
+    />
+  </div>
+</DocumentFragment>
+`;
+
+exports[`ScrollBar component Rendering matches the snapshot 1`] = `
+<DocumentFragment>
+  <div
+    class="flex touch-none transition-colors select-none h-full w-2.5 border-l border-l-transparent p-[1px]"
+    data-orientation="vertical"
+    data-testid="scroll-area-scrollbar-vertical"
+  >
+    <div
+      class="bg-border relative flex-1 rounded-full"
+      data-testid="scroll-area-thumb"
+    />
+  </div>
+</DocumentFragment>
+`;

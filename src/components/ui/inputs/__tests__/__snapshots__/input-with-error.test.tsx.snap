@@ -1,0 +1,17 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`InputWithError Component basic rendering should match snapshot without errors 1`] = `
+<input
+  class="flex"
+  data-testid="input"
+  placeholder="Enter text"
+/>
+`;
+
+exports[`InputWithError Component error handling should match snapshot with errors 1`] = `
+<input
+  class="flex border-destructive border"
+  data-testid="input"
+  placeholder="Enter text"
+/>
+`;

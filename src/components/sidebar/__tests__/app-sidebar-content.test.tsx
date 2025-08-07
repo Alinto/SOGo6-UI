@@ -21,7 +21,7 @@ jest.mock('@/features/mails/components/sidebars/sidebar', () => {
   }
 })
 
-jest.mock('@/features/user-settings/components/sidebar/sidebar-content', () => {
+jest.mock('@/features/user-settings/sidebar/sidebar-content', () => {
   return function MockUserSettingsSidebar() {
     return <div data-testid="user-settings-sidebar">User Settings Sidebar</div>
   }
@@ -159,6 +159,91 @@ describe('SidebarsContent Component', () => {
       rerender(<SidebarsContent />)
 
       expect(screen.getByTestId('address-books-sidebar')).toBeInTheDocument()
+    })
+  })
+
+  describe('component isolation', () => {
+    it('should only render one sidebar component at a time', () => {
+      const testCases = [
+        {
+          path: '/address_books/test',
+          expectedSidebar: 'address-books-sidebar',
+        },
+        {
+          path: '/user_settings/test',
+          expectedSidebar: 'user-settings-sidebar',
+        },
+        { path: '/calendars/test', expectedText: 'Calendars Sidebar' },
+        { path: '/u/test', expectedSidebar: 'mail-sidebar' },
+      ]
+
+      testCases.forEach(({ path, expectedSidebar, expectedText }) => {
+        mockUsePathname.mockReturnValue(path)
+        const { unmount } = render(<SidebarsContent />)
+
+        // Count total sidebar components rendered
+        const addressBooksElement = screen.queryByTestId(
+          'address-books-sidebar'
+        )
+        const userSettingsElement = screen.queryByTestId(
+          'user-settings-sidebar'
+        )
+        const mailElement = screen.queryByTestId('mail-sidebar')
+        const calendarsElement = screen.queryByText('Calendars Sidebar')
+
+        const renderedComponents = [
+          addressBooksElement,
+          userSettingsElement,
+          mailElement,
+          calendarsElement,
+        ].filter(Boolean)
+
+        // Should only render exactly one component
+        expect(renderedComponents).toHaveLength(1)
+
+        // Verify the correct component is rendered
+        if (expectedSidebar) {
+          expect(screen.getByTestId(expectedSidebar)).toBeInTheDocument()
+        } else if (expectedText) {
+          expect(screen.getByText(expectedText)).toBeInTheDocument()
+        }
+
+        // Clean up before next iteration
+        unmount()
+      })
+    })
+  })
+
+  describe('path segment extraction', () => {
+    it('should handle various path formats correctly', () => {
+      const pathTests = [
+        { path: '/address_books', firstSection: 'address_books' },
+        { path: '/address_books/', firstSection: 'address_books' },
+        { path: '/address_books/sub/path', firstSection: 'address_books' },
+        { path: '/', firstSection: '' },
+        { path: '', firstSection: undefined },
+        { path: '/single', firstSection: 'single' },
+        { path: 'no-leading-slash', firstSection: undefined }, // Fixed: when no leading slash, split('/')[1] is undefined
+      ]
+
+      pathTests.forEach(({ path, firstSection }) => {
+        const actualFirstSection = path.split('/')[1]
+        expect(actualFirstSection).toBe(firstSection)
+      })
+    })
+  })
+
+  describe('error handling', () => {
+    it('should handle undefined pathname by throwing an error', () => {
+      mockUsePathname.mockReturnValue(undefined)
+
+      expect(() => render(<SidebarsContent />)).toThrow()
+    })
+
+    it('should handle null pathname by throwing an error', () => {
+      mockUsePathname.mockReturnValue(null)
+
+      expect(() => render(<SidebarsContent />)).toThrow()
     })
   })
 })
