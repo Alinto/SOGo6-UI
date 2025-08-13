@@ -1,0 +1,19 @@
+{
+    "AP_SIDEBAR": {
+        "system": {
+            "string": "System"
+        },
+        "theme": {
+            "string": "Theme"
+        },
+        "config": {
+            "string": "Configuration",
+            "rules": {
+                "string": "Rules"
+            },
+            "domains": {
+                "string": "Domains"
+            }
+        }
+    }
+}

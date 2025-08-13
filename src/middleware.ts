@@ -3,7 +3,7 @@ import { defineRouting } from 'next-intl/routing'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
-  matcher: ['/((?!_next|fakeApi|.*\\..*).*)'],
+  matcher: ['/((?!_next|fakeApi|env|.*\\..*).*)'],
 }
 
 export function getLocales() {

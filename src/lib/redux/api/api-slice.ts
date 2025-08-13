@@ -1,4 +1,5 @@
-// Import the RTK Query methods from the React-specific entry point
+import { fetchEnvVars } from '@/lib/env-service'
+import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 const tagTypes = [
@@ -17,13 +18,22 @@ const tagTypes = [
   'mails/folders',
 ] as const
 
+// Dynamic base query that fetches env vars first
+const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
+  const envVars = await fetchEnvVars()
+  const baseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
+
+  const baseQuery = fetchBaseQuery({
+    baseUrl,
+  })
+
+  return baseQuery(args, api, extraOptions)
+}
+
 // Define our single API slice object
 export const apiSlice = createApi({
-  // The cache reducer expects to be added at `state.api` (already default - this is optional)
   reducerPath: 'api',
   tagTypes,
-  // All of our requests will have URLs starting with '/fakeApi'
-  baseQuery: fetchBaseQuery({ baseUrl: '/fakeApi' }),
-  // The "endpoints" represent operations and requests for this server
+  baseQuery: dynamicBaseQuery,
   endpoints: () => ({}),
 })

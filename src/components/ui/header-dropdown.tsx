@@ -107,7 +107,7 @@ const HeaderDropdown: React.FC = () => {
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/admin/panel')}
+          onClick={() => push('/admin_panel')}
         >
           <Cog className="pr-2" />
           {t('admin.panel.string')}

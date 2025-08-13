@@ -106,7 +106,7 @@ const navItems = [
     items: [
       {
         title: 'US_SIDEBAR.administration.panel.string',
-        url: '/admin/panel',
+        url: '/admin_panel',
         icon: Settings,
       },
     ],

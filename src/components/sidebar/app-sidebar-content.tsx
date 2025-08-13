@@ -1,6 +1,7 @@
 'use client'
 
 import Sidebar from '@/features/address_books/components/sidebar/sidebar'
+import AdminPanelSidebar from '@/features/admin-panel/components/sidebar/sidebar-content'
 import MailSidebar from '@/features/mails/components/sidebars/sidebar'
 import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 
@@ -11,6 +12,7 @@ const SidebarsContent = () => {
 
   const firstSection = pathname.split('/')[1]
   const isAddressBooksSidebar = firstSection === 'address_books'
+  const isAdminSidebar = firstSection === 'admin_panel'
   const isUserSettingsSidebar = firstSection === 'user_settings'
   const isCalendarsSidebar = firstSection === 'calendars'
   const isMailSidebar = firstSection === 'u'
@@ -26,6 +28,9 @@ const SidebarsContent = () => {
   }
   if (isMailSidebar) {
     return <MailSidebar />
+  }
+  if (isAdminSidebar) {
+    return <AdminPanelSidebar />
   }
 
   return null
