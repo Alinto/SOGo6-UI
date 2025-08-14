@@ -1,0 +1,20 @@
+{
+    "US_CALENDAR_INVITATIONS": {
+        "title": {
+            "string": "Calendar",
+            "context": "Title for the calendar settings page"
+        },
+        "form": {
+            "notifications": {
+                "string": "Disable e-mail notifications on CalDAV"
+            },
+            "prevent_invitation": {
+                "string": "Prevent from being invited to appointments"
+            },
+            "whitelist_invitation": {
+                "string": "White list for appointment invitations",
+                "context": "If prevent invitation is enabled, this field allows to specify email addresses that are allowed to send appointment invitations."
+            }
+        }
+    }
+}
