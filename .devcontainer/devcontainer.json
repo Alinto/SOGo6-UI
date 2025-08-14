@@ -33,7 +33,8 @@
 				"pkief.material-icon-theme",
 				"unifiedjs.vscode-mdx",
 				"ryanluker.vscode-coverage-gutters",
-				"lokalise.i18n-ally"
+				"lokalise.i18n-ally",
+				"github.vscode-pull-request-github"
 			]
 		}
 	},
