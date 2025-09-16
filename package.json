@@ -57,7 +57,7 @@
     "date-fns": "4.1.0",
     "deepmerge": "4.3.1",
     "framer-motion": "12.23.12",
-    "lucide-react": "0.544.0",
+    "lucide-react": "^0.544.0",
     "next": "15.5.3",
     "next-intl": "4.3.8",
     "next-qrcode": "2.5.1",
@@ -68,6 +68,7 @@
     "react-hook-form": "7.62.0",
     "react-redux": "9.2.0",
     "react-virtualized": "9.22.6",
+    "recharts": "^2.15.4",
     "tailwind-merge": "3.3.1",
     "tailwindcss-animate": "1.0.7",
     "zod": "4.1.8"
