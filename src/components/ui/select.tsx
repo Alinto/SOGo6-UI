@@ -16,10 +16,15 @@ const SelectValue = SelectPrimitive.Value
 // See: https://react.dev/reference/react/forwardRef#forwardref
 const SelectTrigger = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Trigger>,
+<<<<<<< HEAD
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
     rightContent?: React.ReactNode
   }
 >(({ className, children, rightContent, ...props }, ref) => (
+=======
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
+>>>>>>> 7ec796a (wip)
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
@@ -122,10 +127,15 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName
 
 const SelectItem = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Item>,
+<<<<<<< HEAD
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
     labelRight?: string
   }
 >(({ className, children, labelRight, ...props }, ref) => (
+=======
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
+>>>>>>> 7ec796a (wip)
   <SelectPrimitive.Item
     ref={ref}
     className={cn(

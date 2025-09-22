@@ -36,6 +36,13 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       providesTags: [ADMIN_V1_CONFIG_DOMAINS_SLICE],
     }),
+    getConfig: builder.query<AdminConfigRoot, void>({
+      query: () => ({
+        url: `/adminConfig`,
+        method: 'GET',
+      }),
+      providesTags: ['adminConfig/config'],
+    }),
     getRules: builder.query<Rule[], void>({
       query: () => ({
         url: '/admin/v1/config/rules',
