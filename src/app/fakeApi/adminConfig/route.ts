@@ -1,5 +1,18 @@
 const data = {
   domain: {
+    Basic: [
+      {
+        constrains: {
+          choices: ['plain', 'openid', 'cas', 'saml2'],
+        },
+        data_type: 'str',
+        default: ['group', 'groupOfNames', 'groupOfUniqueNames', 'posixGroup'],
+        depends: null,
+        name: 'SOGO_D_AUTH_TYPE',
+        required: true,
+        subparent: 'Basic',
+      },
+    ],
     Advanced: [
       {
         constrains: null,
@@ -20,19 +33,7 @@ const data = {
         subparent: 'Advanced',
       },
     ],
-    Basic: [
-      {
-        constrains: {
-          choices: ['plain', 'openid', 'cas', 'saml2'],
-        },
-        data_type: 'str',
-        default: ['group', 'groupOfNames', 'groupOfUniqueNames', 'posixGroup'],
-        depends: null,
-        name: 'SOGO_D_AUTH_TYPE',
-        required: true,
-        subparent: 'Basic',
-      },
-    ],
+
     'User Source': [
       {
         constrains: {

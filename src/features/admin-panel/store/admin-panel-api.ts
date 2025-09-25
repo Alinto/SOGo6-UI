@@ -36,13 +36,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       providesTags: [ADMIN_V1_CONFIG_DOMAINS_SLICE],
     }),
-    getConfig: builder.query<AdminConfigRoot, void>({
-      query: () => ({
-        url: `/adminConfig`,
-        method: 'GET',
-      }),
-      providesTags: ['adminConfig/config'],
-    }),
     getRules: builder.query<Rule[], void>({
       query: () => ({
         url: '/admin/v1/config/rules',
@@ -132,6 +125,28 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       // invalidate domains list so getDomains refetches
       invalidatesTags: (result, error) => [
         { type: ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE },
+      ],
+    }),
+    getCustomDomainConfig: builder.query<AdminConfig, string>({
+      query: (customDomainId) => ({
+        url: `/adminConfig/domain/${customDomainId}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, customDomainId) => [
+        { type: 'adminConfig/domain', id: customDomainId },
+      ],
+    }),
+    saveCustomDomainConfig: builder.mutation<
+      Record<string, any>, // <-- type de retour de l'api, à changer quand on aura la vrai api
+      { customDomainId: string; config: Record<string, any> }
+    >({
+      query: ({ customDomainId, config }) => ({
+        url: `/adminConfig/domain/${customDomainId}`, //url de l'api à changer quan disponible
+        method: 'POST',
+        body: config,
+      }),
+      invalidatesTags: (result, error, { customDomainId }) => [
+        { type: 'adminConfig/domain', id: customDomainId },
       ],
     }),
   }),

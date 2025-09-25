@@ -1,5 +1,12 @@
 'use client'
-
+//NON UTILISÉE, remplacée par AdminDomainFormFrame
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -53,43 +60,51 @@ const DynamicForm: React.FC<Props> = ({
   const { isDirty, isSubmitting } = form.formState
 
   return (
-    <Form {...form}>
-      <form
-        className="space-y-6 p-4"
-        onSubmit={form.handleSubmit(handleSubmit)}
-      >
-        <div className="grid gap-4">
-          {data.map((item) => (
-            <FormField
-              key={item.name}
-              control={form.control}
-              name={item.name}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    {item.name}
-                    {item.required && (
-                      <span className="text-destructive ml-1">
-                        {REQUIRED_INDICATOR}
-                      </span>
-                    )}
-                  </FormLabel>
-                  <FormControl>
-                    {renderDynamicComponent(item, field)}
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+    <Card className="mx-auto max-w-2xl">
+      <CardHeader>
+        <CardTitle>Configuration</CardTitle>
+        <CardDescription>Paramètres avancés du domaine</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form
+            className="space-y-6"
+            onSubmit={form.handleSubmit(handleSubmit)}
+          >
+            <div className="grid gap-4 sm:grid-cols-2">
+              {data.map((item) => (
+                <FormField
+                  key={item.name}
+                  control={form.control}
+                  name={item.name}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        {item.name}
+                        {item.required && (
+                          <span className="text-destructive ml-1">
+                            {REQUIRED_INDICATOR}
+                          </span>
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        {renderDynamicComponent(item, field)}
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+            <FixedFormButtonGroup
+              onReset={() => form.reset(defaultValues)}
+              disableReset={!isDirty || isSubmitting || isLoading}
+              disableSubmit={!isDirty || isSubmitting || isLoading}
             />
-          ))}
-        </div>
-        <FixedFormButtonGroup
-          onReset={() => form.reset(defaultValues)}
-          disableReset={!isDirty || isSubmitting || isLoading}
-          disableSubmit={!isDirty || isSubmitting || isLoading}
-        />
-      </form>
-    </Form>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   )
 }
 
