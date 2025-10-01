@@ -25,10 +25,10 @@ jest.mock('../skeletons/skeleton', () => ({
 
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key, params) => {
-    if (key === 'MAILS_LIST.contacts_number.string')
-      return `${params.number} contacts`
-    if (key === 'MAILS_LIST.no_items.string') return 'No items available'
-    if (key === 'MAILS_LIST.filters.name.string') return 'Filter by name'
+    if (key === 'contacts_number.string')
+      return `${params?.number || 0} contacts`
+    if (key === 'no_items.string') return 'No items available'
+    if (key === 'filters.name.string') return 'Filter by name'
     return key
   }),
 }))

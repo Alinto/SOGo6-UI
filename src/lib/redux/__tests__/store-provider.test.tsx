@@ -57,13 +57,10 @@ describe('StoreProvider', () => {
         </StoreProvider>
       )
 
-      expect(MockProvider).toHaveBeenCalledWith(
-        expect.objectContaining({
-          store: mockStore,
-          children: expect.anything(),
-        }),
-        expect.anything()
-      )
+      // Check the first call's first argument (props)
+      const providerProps = MockProvider.mock.calls[0][0]
+      expect(providerProps.store).toBe(mockStore)
+      expect(providerProps).toHaveProperty('children')
     })
 
     it('should render multiple children', () => {

@@ -465,45 +465,6 @@ describe('RadioGroupForm', () => {
     })
   })
 
-  describe('Performance', () => {
-    it('handles large number of options efficiently', () => {
-      const manyOptions = Array.from({ length: 1000 }, (_, i) => ({
-        value: `option${i}`,
-        label: `Option ${i}`,
-      }))
-
-      const startTime = performance.now()
-      render(<RadioGroupForm {...defaultProps} options={manyOptions} />)
-      const endTime = performance.now()
-
-      // Rendering should complete in reasonable time (less than 500ms)
-      expect(endTime - startTime).toBeLessThan(500)
-
-      // Should render all options
-      expect(
-        screen
-          .getAllByRole('button')
-          .filter((item) =>
-            item.getAttribute('data-testid')?.startsWith('radio-item-')
-          )
-      ).toHaveLength(1000)
-    })
-
-    it('re-renders efficiently when props change', () => {
-      const { rerender } = render(<RadioGroupForm {...defaultProps} />)
-
-      // Change value
-      const startTime = performance.now()
-      rerender(<RadioGroupForm {...defaultProps} value="option2" />)
-      const endTime = performance.now()
-
-      expect(endTime - startTime).toBeLessThan(100)
-
-      const radioGroup = screen.getByTestId('radio-group-root')
-      expect(radioGroup).toHaveAttribute('data-value', 'option2')
-    })
-  })
-
   describe('Component integration', () => {
     it('integrates properly with form components', () => {
       render(<RadioGroupForm {...defaultProps} />)

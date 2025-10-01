@@ -4,6 +4,27 @@ import ListItem from '../list-item'
 
 // filepath: src/features/address_books/components/__tests__/list-item.test.tsx
 
+// Create mock functions that can be accessed in tests
+const mockPush = jest.fn()
+const mockReplace = jest.fn()
+const mockBack = jest.fn()
+
+// Mock next-intl navigation
+jest.mock('../../../../lib/i18n/navigation', () => ({
+  useRouter: () => ({
+    push: mockPush,
+    replace: mockReplace,
+    back: mockBack,
+  }),
+}))
+
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useParams: () => ({
+    book_id: 'test-book-id',
+  }),
+}))
+
 jest.mock('../../../../components/ui/avatar', () => ({
   Avatar: jest.fn(({ children }) => <div data-testid="avatar">{children}</div>),
   AvatarImage: jest.fn(() => <img data-testid="avatar-image" />),
@@ -25,6 +46,7 @@ jest.mock('../../../../components/ui/checkbox', () => ({
 
 describe('ListItem Component', () => {
   const mockData = {
+    id: '1',
     firstName: 'John',
     lastName: 'Doe',
   }
@@ -67,8 +89,9 @@ describe('ListItem Component', () => {
     expect(screen.getByTestId('checkbox')).toBeChecked()
   })
 
-  it('logs item data when clicked', () => {
-    const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
+  it('navigates to contact page when clicked', () => {
+    mockPush.mockClear() // Clear previous calls
+
     render(
       <ListItem
         data={mockData}
@@ -78,7 +101,6 @@ describe('ListItem Component', () => {
     )
     const listItem = screen.getByText('John Doe').closest('div')
     fireEvent.click(listItem)
-    expect(consoleSpy).toHaveBeenCalledWith('Item clicked:', mockData)
-    consoleSpy.mockRestore()
+    expect(mockPush).toHaveBeenCalledWith('/address_books/test-book-id/1')
   })
 })

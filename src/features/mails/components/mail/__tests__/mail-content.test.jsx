@@ -3,10 +3,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MailContent from '../mail-content'
 
-jest.mock('dompurify', () => ({
-  sanitize: jest.fn((html) => html),
-}))
-
 jest.mock('../mail-attachment', () => ({
   AttachmentDisplay: ({ attachments }) => (
     <div data-testid="attachment-display">Attachments: {attachments.count}</div>

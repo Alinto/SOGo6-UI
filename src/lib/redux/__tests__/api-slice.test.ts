@@ -1,5 +1,11 @@
 import '@testing-library/jest-dom'
 
+// Mock env-service
+const mockFetchEnvVars = jest.fn()
+jest.mock('../../env-service', () => ({
+  fetchEnvVars: mockFetchEnvVars,
+}))
+
 // Mock @reduxjs/toolkit/query/react
 const mockApiSlice = {
   reducerPath: 'api',
@@ -9,7 +15,7 @@ const mockApiSlice = {
 }
 
 const mockCreateApi = jest.fn(() => mockApiSlice)
-const mockFetchBaseQuery = jest.fn(() => 'mock-base-query')
+const mockFetchBaseQuery = jest.fn(() => jest.fn())
 
 jest.mock('@reduxjs/toolkit/query/react', () => ({
   createApi: mockCreateApi,
@@ -20,6 +26,10 @@ describe('API Slice', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.resetModules()
+    // Mock fetchEnvVars to return /fakeApi
+    mockFetchEnvVars.mockResolvedValue({
+      REACT_APP_API_BASE_URL: '/fakeApi',
+    })
   })
 
   describe('apiSlice creation', () => {
@@ -43,7 +53,7 @@ describe('API Slice', () => {
           'preferences',
           'mails/folders',
         ]),
-        baseQuery: 'mock-base-query',
+        baseQuery: expect.any(Function),
         endpoints: expect.any(Function),
       })
     })
@@ -51,6 +61,16 @@ describe('API Slice', () => {
     it('should configure fetchBaseQuery with correct base URL', async () => {
       await import('../api/api-slice')
 
+      // Get the baseQuery function that was passed to createApi
+      const createApiCall = (mockCreateApi.mock.calls as any)[0]
+      const baseQueryFn = createApiCall?.[0]?.baseQuery
+
+      expect(baseQueryFn).toBeInstanceOf(Function)
+
+      // Call the dynamic base query function to ensure it fetches env vars
+      await baseQueryFn({} as any, {} as any, {} as any)
+
+      expect(mockFetchEnvVars).toHaveBeenCalled()
       expect(mockFetchBaseQuery).toHaveBeenCalledWith({
         baseUrl: '/fakeApi',
       })
@@ -118,6 +138,16 @@ describe('API Slice', () => {
     it('should use /fakeApi as base URL', async () => {
       await import('../api/api-slice')
 
+      // Get the baseQuery function that was passed to createApi
+      const createApiCall = (mockCreateApi.mock.calls as any)[0]
+      const baseQueryFn = createApiCall?.[0]?.baseQuery
+
+      expect(baseQueryFn).toBeInstanceOf(Function)
+
+      // Call the dynamic base query function to test it fetches env and configures baseUrl
+      await baseQueryFn({} as any, {} as any, {} as any)
+
+      expect(mockFetchEnvVars).toHaveBeenCalled()
       expect(mockFetchBaseQuery).toHaveBeenCalledWith({
         baseUrl: '/fakeApi',
       })
@@ -129,7 +159,8 @@ describe('API Slice', () => {
       expect(mockCreateApi).toHaveBeenCalled()
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
 
-      expect(createApiCall?.baseQuery).toBe('mock-base-query')
+      // baseQuery should be the dynamicBaseQuery function
+      expect(createApiCall?.baseQuery).toBeInstanceOf(Function)
     })
   })
 

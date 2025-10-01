@@ -27,6 +27,12 @@ jest.mock('@/features/user-settings/sidebar/sidebar-content', () => {
   }
 })
 
+jest.mock('@/features/admin-panel/components/sidebar/sidebar-content', () => {
+  return function MockAdminPanelSidebar() {
+    return <div data-testid="admin-panel-sidebar">Admin Panel Sidebar</div>
+  }
+})
+
 describe('SidebarsContent Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()

@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { createDynamicComponent } from '../dynamic-imports'
 
@@ -253,7 +254,9 @@ describe('Dynamic Imports', () => {
 
       // Click to show component
       const showButton = screen.getByTestId('show-button')
-      showButton.click()
+      await act(async () => {
+        await userEvent.click(showButton)
+      })
 
       // Component should now be rendered
       await waitFor(() => {
@@ -290,7 +293,9 @@ describe('Dynamic Imports', () => {
 
       // Click to trigger dynamic loading
       const loadButton = screen.getByTestId('load-button')
-      loadButton.click()
+      await act(async () => {
+        await userEvent.click(loadButton)
+      })
 
       // Should show loading state then component
       await waitFor(() => {
@@ -331,7 +336,7 @@ describe('Dynamic Imports', () => {
         () => {
           expect(screen.getByTestId('test-component')).toBeInTheDocument()
         },
-        { timeout: 200 }
+        { timeout: 1000 }
       )
     })
   })

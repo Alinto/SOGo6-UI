@@ -25,9 +25,7 @@ describe('ListSkeleton Component', () => {
   it('applies the correct class names to the container', () => {
     render(<ListSkeleton />)
     const container = screen.getByRole('list-skeleton')
-    expect(container).toHaveClass(
-      'flex flex-col w-full md:w-1/2 lg:w-2/5 p-4 rounded'
-    )
+    expect(container).toHaveClass('flex w-full flex-col rounded p-4')
   })
 
   it('renders the header with the correct classnames', () => {

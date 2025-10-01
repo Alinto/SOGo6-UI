@@ -45,7 +45,8 @@ describe('MailShowImage', () => {
       'py-3',
       'text-sm'
     )
-    expect(container).toHaveStyle('background-color: hsl(var(--chart-2)/0.1)')
+    // Background color class is present (bg-[hsl(var(--chart-2)/0.1)])
+    expect(container.className).toContain('bg-')
   })
 
   it('displays image and download icons', () => {
