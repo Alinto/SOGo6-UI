@@ -10,7 +10,6 @@ const data = {
         depends: null,
         name: 'SOGO_D_AUTH_TYPE',
         required: true,
-        subparent: 'Basic',
       },
     ],
     Advanced: [
@@ -21,7 +20,6 @@ const data = {
         depends: null,
         name: 'SOGO_D_IDENTITIES_ENABLED',
         required: true,
-        subparent: 'Advanced',
       },
       {
         constrains: null,
@@ -30,10 +28,8 @@ const data = {
         depends: null,
         name: 'SOGO_D_FOLDER_DISABLE_SHARING',
         required: false,
-        subparent: 'Advanced',
       },
     ],
-
     'User Source': [
       {
         constrains: {
@@ -44,7 +40,6 @@ const data = {
         depends: null,
         name: 'US_TYPE',
         required: true,
-        subparent: 'User Source',
       },
       {
         constrains: null,
@@ -53,7 +48,6 @@ const data = {
         depends: 'US_TYPE%%%equal%%%ldap',
         name: 'LDAP_GROUP_CLASS',
         required: true,
-        subparent: 'User Source',
       },
     ],
   },
@@ -66,7 +60,6 @@ const data = {
         depends: null,
         name: 'SOGO_S_MAILSPOOL_PATH',
         required: true,
-        subparent: 'User Source',
       },
     ],
   },

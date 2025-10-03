@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-// voir avec quentin pour rajouter des infos ici sur chaque domain (user source ?)
+  // voir avec quentin pour rajouter des infos ici sur chaque domain (user source ?)
 const domains: string[] = [
   'example.org',
   'sogo.nu',

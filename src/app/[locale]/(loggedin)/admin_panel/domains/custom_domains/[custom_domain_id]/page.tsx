@@ -23,17 +23,18 @@ import { useGetCustomDomainConfigQuery } from '@/features/admin-panel/store/admi
 import { useParams } from 'next/navigation'
 
 export default function CustomDomainPage() {
-  const params = useParams()
-  const customDomainId = params?.custom_domain_id as string
+  const { custom_domain_id } = useParams()
+  const customDomainId = custom_domain_id as string
   const {
     data: customDomainConfig,
     isLoading,
-    error,
+    // error,
   } = useGetCustomDomainConfigQuery(customDomainId)
 
-  if (error) return <div>Erreur lors du chargement du domaine</div>
+  // if (error) return <div>Erreur lors du chargement du domaine</div>
 
   const tabNames = customDomainConfig ? Object.keys(customDomainConfig) : []
+  console.log('CustomDomainPage - tabNames:', tabNames)
   const tabDataByTab = customDomainConfig || {}
 
   function handleFormSubmit(values: Record<string, unknown>) {
