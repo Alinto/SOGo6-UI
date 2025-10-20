@@ -36,7 +36,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <SidebarInset>
           <AppHeader />
-          <div className="h-[calc(100vh-48px)] gap-4 overflow-hidden border-1">
+          <div className="h-[calc(100vh-48px)] gap-4 overflow-auto border-1">
             {children}
           </div>
         </SidebarInset>
