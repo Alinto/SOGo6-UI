@@ -30,6 +30,8 @@ COPY --chown=${USERNAME}:${USERNAME} .devcontainer/files/bashrc /home/${USERNAME
 
 ENV PATH="/home/vscode/.local/bin:$PATH"
 
+RUN apt-get update --fix-missing
+
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash - && \
 apt-get install -y nodejs
 

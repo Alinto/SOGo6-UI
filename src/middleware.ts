@@ -68,6 +68,7 @@ export default async function handler(req: NextRequest) {
   const localeRegex = generateLocaleRegex(locales)
 
   const isAdmin = isAdminDomain(hostname)
+  console.log(`Request hostname: ${hostname}, isAdmin: ${isAdmin}`)
   const isAdminPanelRoute = isAdminPanelPath(pathname)
   const isAuthRoute = isAuthPath(pathname)
   const isLocaleRoot = isLocaleRootPath(pathname)
