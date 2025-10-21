@@ -1,8 +1,8 @@
-import { routing } from '@/middleware'
 import deepmerge from 'deepmerge'
 import fs from 'fs'
 import { getRequestConfig } from 'next-intl/server'
 import path from 'path'
+import { routing } from './config'
 
 // Helper function to recursively get all files in a directory
 const getAllFiles = (

@@ -1,25 +1,10 @@
+import { getDefaultLocale, getLocales, routing } from '@/lib/i18n/config'
 import createMiddleware from 'next-intl/middleware'
-import { defineRouting } from 'next-intl/routing'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
   matcher: ['/((?!_next|fakeApi|env|.*\\..*).*)'],
 }
-
-export function getLocales() {
-  return ['en', 'de', 'fr', 'es']
-}
-
-export function getDefaultLocale() {
-  return 'en'
-}
-
-export const routing = defineRouting({
-  locales: getLocales(),
-  defaultLocale: getDefaultLocale(),
-  localePrefix: 'always',
-  localeDetection: true,
-})
 
 // Function to generate a dynamic regex to test if pathname begins with one of the locales
 export function generateLocaleRegex(locales: readonly string[]): RegExp {
@@ -68,7 +53,6 @@ export default async function handler(req: NextRequest) {
   const localeRegex = generateLocaleRegex(locales)
 
   const isAdmin = isAdminDomain(hostname)
-  console.log(`Request hostname: ${hostname}, isAdmin: ${isAdmin}`)
   const isAdminPanelRoute = isAdminPanelPath(pathname)
   const isAuthRoute = isAuthPath(pathname)
   const isLocaleRoot = isLocaleRootPath(pathname)
