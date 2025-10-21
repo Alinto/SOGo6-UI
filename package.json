@@ -2,6 +2,7 @@
   "name": "sogo",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dpdm": "dpdm",
     "dev": "next dev --turbopack",
