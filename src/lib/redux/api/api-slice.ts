@@ -16,6 +16,8 @@ const tagTypes = [
   'folder/messages',
   'preferences',
   'mails/folders',
+  'calendars',
+  'calendar_events',
 ] as const
 
 // Dynamic base query that fetches env vars first
