@@ -42,7 +42,7 @@ const config: Config = {
   ],
   // Skip node_modules transformation for faster execution
   transformIgnorePatterns: [
-    'node_modules/(?!(lucide-react|@radix-ui|next-intl)/)',
+    'node_modules/(?!(lucide-react|@radix-ui|next-intl|@formatjs)/)',
   ],
   workerThreads: true,
 }

@@ -6,7 +6,7 @@ exports[`Collapsible Component matches the snapshot 1`] = `
     data-state="closed"
   >
     <button
-      aria-controls="radix-«r4»"
+      aria-controls="radix-_r_4_"
       aria-expanded="false"
       data-state="closed"
       type="button"
@@ -16,7 +16,7 @@ exports[`Collapsible Component matches the snapshot 1`] = `
     <div
       data-state="closed"
       hidden=""
-      id="radix-«r4»"
+      id="radix-_r_4_"
       style=""
     />
   </div>

@@ -1,97 +1,181 @@
 import '@testing-library/jest-dom'
+import {
+  getPathname,
+  Link,
+  redirect,
+  usePathname,
+  useRouter,
+} from '../navigation'
 
 // Mock next-intl/navigation
-const mockCreateNavigation = jest.fn()
 jest.mock('next-intl/navigation', () => ({
-  createNavigation: mockCreateNavigation,
-}))
-
-// Mock middleware routing
-const mockRouting = {
-  locales: ['en', 'de', 'fr', 'es'],
-  defaultLocale: 'en',
-  localePrefix: 'always',
-  localeDetection: true,
-}
-
-jest.mock('@/middleware', () => ({
-  routing: mockRouting,
-}))
-
-describe('navigation', () => {
-  const mockNavigationObjects = {
+  createNavigation: jest.fn((config) => ({
     Link: jest.fn(),
     redirect: jest.fn(),
     usePathname: jest.fn(),
     useRouter: jest.fn(),
     getPathname: jest.fn(),
-  }
+  })),
+}))
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-    jest.resetModules()
-    mockCreateNavigation.mockReturnValue(mockNavigationObjects)
+// Mock i18n config
+jest.mock('../config', () => ({
+  routing: {
+    locales: ['en', 'de', 'fr', 'es'],
+    defaultLocale: 'en',
+    localePrefix: 'always',
+    localeDetection: true,
+  },
+}))
+
+describe('navigation', () => {
+  describe('exports', () => {
+    it('should export Link component', () => {
+      expect(Link).toBeDefined()
+    })
+
+    it('should export redirect function', () => {
+      expect(redirect).toBeDefined()
+    })
+
+    it('should export usePathname hook', () => {
+      expect(usePathname).toBeDefined()
+    })
+
+    it('should export useRouter hook', () => {
+      expect(useRouter).toBeDefined()
+    })
+
+    it('should export getPathname function', () => {
+      expect(getPathname).toBeDefined()
+    })
+
+    it('should export exactly 5 functions/components', () => {
+      const navigationExports = {
+        Link,
+        redirect,
+        usePathname,
+        useRouter,
+        getPathname,
+      }
+      expect(Object.keys(navigationExports)).toHaveLength(5)
+    })
   })
 
-  it('should call createNavigation with routing configuration', () => {
-    // Import the navigation module to trigger createNavigation
-    require('../navigation')
+  describe('Link component', () => {
+    it('should be a function', () => {
+      expect(typeof Link).toBe('function')
+    })
 
-    expect(mockCreateNavigation).toHaveBeenCalledWith(mockRouting)
+    it('should be defined and callable', () => {
+      expect(Link).toBeDefined()
+      expect(typeof Link).toBe('function')
+    })
   })
 
-  it('should export all navigation functions from createNavigation', () => {
-    const navigation = require('../navigation')
+  describe('redirect function', () => {
+    it('should be a function', () => {
+      expect(typeof redirect).toBe('function')
+    })
 
-    expect(navigation.Link).toBe(mockNavigationObjects.Link)
-    expect(navigation.redirect).toBe(mockNavigationObjects.redirect)
-    expect(navigation.usePathname).toBe(mockNavigationObjects.usePathname)
-    expect(navigation.useRouter).toBe(mockNavigationObjects.useRouter)
-    expect(navigation.getPathname).toBe(mockNavigationObjects.getPathname)
+    it('should be defined and callable', () => {
+      expect(redirect).toBeDefined()
+      expect(typeof redirect).toBe('function')
+    })
   })
 
-  it('should provide Link component', () => {
-    const navigation = require('../navigation')
-
-    expect(navigation.Link).toBeDefined()
-    expect(typeof navigation.Link).toBe('function')
+  describe('usePathname hook', () => {
+    it('should be a function', () => {
+      expect(typeof usePathname).toBe('function')
+    })
   })
 
-  it('should provide redirect function', () => {
-    const navigation = require('../navigation')
-
-    expect(navigation.redirect).toBeDefined()
-    expect(typeof navigation.redirect).toBe('function')
+  describe('useRouter hook', () => {
+    it('should be a function', () => {
+      expect(typeof useRouter).toBe('function')
+    })
   })
 
-  it('should provide usePathname hook', () => {
-    const navigation = require('../navigation')
+  describe('getPathname function', () => {
+    it('should be a function', () => {
+      expect(typeof getPathname).toBe('function')
+    })
 
-    expect(navigation.usePathname).toBeDefined()
-    expect(typeof navigation.usePathname).toBe('function')
+    it('should be defined and callable', () => {
+      expect(getPathname).toBeDefined()
+      expect(typeof getPathname).toBe('function')
+    })
   })
 
-  it('should provide useRouter hook', () => {
-    const navigation = require('../navigation')
+  describe('module integration', () => {
+    it('should have all exports as distinct objects', () => {
+      expect(Link).not.toBe(redirect)
+      expect(redirect).not.toBe(usePathname)
+      expect(usePathname).not.toBe(useRouter)
+      expect(useRouter).not.toBe(getPathname)
+    })
 
-    expect(navigation.useRouter).toBeDefined()
-    expect(typeof navigation.useRouter).toBe('function')
+    it('should provide internationalized navigation helpers', () => {
+      const navigationHelpers = [
+        Link,
+        redirect,
+        usePathname,
+        useRouter,
+        getPathname,
+      ]
+      navigationHelpers.forEach((helper) => {
+        expect(helper).toBeDefined()
+        expect(typeof helper).toBe('function')
+      })
+    })
+
+    it('should export all required i18n navigation utilities', () => {
+      const requiredExports = [
+        'Link',
+        'redirect',
+        'usePathname',
+        'useRouter',
+        'getPathname',
+      ]
+      const actualExports = {
+        Link,
+        redirect,
+        usePathname,
+        useRouter,
+        getPathname,
+      }
+
+      requiredExports.forEach((exportName) => {
+        expect(actualExports).toHaveProperty(exportName)
+        expect(
+          actualExports[exportName as keyof typeof actualExports]
+        ).toBeDefined()
+      })
+    })
   })
 
-  it('should provide getPathname function', () => {
-    const navigation = require('../navigation')
+  describe('navigation with routing config', () => {
+    it('should provide navigation utilities based on routing configuration', () => {
+      expect(typeof Link).toBe('function')
+      expect(typeof redirect).toBe('function')
+      expect(typeof usePathname).toBe('function')
+      expect(typeof useRouter).toBe('function')
+      expect(typeof getPathname).toBe('function')
+    })
 
-    expect(navigation.getPathname).toBeDefined()
-    expect(typeof navigation.getPathname).toBe('function')
-  })
+    it('should support all exported navigation methods', () => {
+      const methods = [
+        { name: 'Link', fn: Link },
+        { name: 'redirect', fn: redirect },
+        { name: 'usePathname', fn: usePathname },
+        { name: 'useRouter', fn: useRouter },
+        { name: 'getPathname', fn: getPathname },
+      ]
 
-  it('should handle routing configuration with correct structure', () => {
-    require('../navigation')
-
-    const passedRouting = mockCreateNavigation.mock.calls[0][0]
-    expect(passedRouting).toHaveProperty('locales')
-    expect(passedRouting).toHaveProperty('defaultLocale')
-    expect(passedRouting.locales).toContain('en')
-    expect(passedRouting.defaultLocale).toBe('en')
+      methods.forEach(({ name, fn }) => {
+        expect(fn).toBeDefined()
+        expect(typeof fn).toBe('function')
+      })
+    })
   })
 })

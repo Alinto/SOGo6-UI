@@ -1,4 +1,4 @@
-const path = require('path')
+import path from 'path'
 
 const buildEslintCommand = (filenames) =>
     `next lint --fix --file ${filenames
@@ -10,6 +10,6 @@ const buildTestCommand = (filenames) =>
         .map((f) => path.relative(process.cwd(), f))
         .join(' ')} --passWithNoTests`
 
-module.exports = {
+export default {
     '*.{js,jsx,ts,tsx}': [buildEslintCommand, buildTestCommand],
 }
