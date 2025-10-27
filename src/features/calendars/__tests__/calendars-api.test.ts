@@ -1,9 +1,4 @@
-import {
-  AllDayNotification,
-  Calendar,
-  CalendarsResponse,
-  EventNotification,
-} from '../calendars-types'
+import { Calendar, CalendarsResponse, EventReminder } from '../calendars-types'
 
 /**
  * Tests for calendars types and RTK Query integration
@@ -21,10 +16,8 @@ describe('Calendars Types and API', () => {
         color: '#FF5733',
         event_duration: 30,
         show_as_busy: true,
-        event_notifications: [{ type: 'notification', trigger: 'at-time' }],
-        all_day_notifications: [
-          { type: 'notification', days_before: 1, time: '09:00 AM' },
-        ],
+        event_notifications: [{ method: 'popup', minutes_before: 0 }],
+        all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
       },
       {
         id: 'personal-2',
@@ -35,12 +28,12 @@ describe('Calendars Types and API', () => {
         event_duration: 60,
         show_as_busy: true,
         event_notifications: [
-          { type: 'notification', trigger: 'at-time' },
-          { type: 'email', trigger: '15-minutes-before' },
+          { method: 'popup', minutes_before: 0 },
+          { method: 'email', minutes_before: 15 },
         ],
         all_day_notifications: [
-          { type: 'notification', days_before: 1, time: '09:00 AM' },
-          { type: 'email', days_before: 1, time: '09:00 AM' },
+          { method: 'popup', minutes_before: 1440 },
+          { method: 'email', minutes_before: 1440 },
         ],
       },
     ],
@@ -55,10 +48,8 @@ describe('Calendars Types and API', () => {
         color: '#3357FF',
         event_duration: 60,
         show_as_busy: true,
-        event_notifications: [{ type: 'notification', trigger: 'at-time' }],
-        all_day_notifications: [
-          { type: 'notification', days_before: 1, time: '09:00 AM' },
-        ],
+        event_notifications: [{ method: 'popup', minutes_before: 0 }],
+        all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
       },
     ],
     subscriptions: [
@@ -180,22 +171,22 @@ describe('Calendars Types and API', () => {
   })
 
   describe('Event Notification Configuration', () => {
-    it('should support event notifications with type and trigger', () => {
-      const notification: EventNotification = {
-        type: 'notification',
-        trigger: 'at-time',
+    it('should support event notifications with method and minutes_before', () => {
+      const notification: EventReminder = {
+        method: 'popup',
+        minutes_before: 0,
       }
-      expect(notification.type).toBe('notification')
-      expect(notification.trigger).toBe('at-time')
+      expect(notification.method).toBe('popup')
+      expect(notification.minutes_before).toBe(0)
     })
 
     it('should support email notifications', () => {
-      const notification: EventNotification = {
-        type: 'email',
-        trigger: '15-minutes-before',
+      const notification: EventReminder = {
+        method: 'email',
+        minutes_before: 15,
       }
-      expect(notification.type).toBe('email')
-      expect(notification.trigger).toBe('15-minutes-before')
+      expect(notification.method).toBe('email')
+      expect(notification.minutes_before).toBe(15)
     })
 
     it('should have multiple event notifications', () => {
@@ -206,25 +197,22 @@ describe('Calendars Types and API', () => {
   })
 
   describe('All-Day Event Notification Configuration', () => {
-    it('should support all-day notifications with days_before', () => {
-      const notification: AllDayNotification = {
-        type: 'notification',
-        days_before: 1,
-        time: '09:00 AM',
+    it('should support all-day notifications with minutes_before', () => {
+      const notification: EventReminder = {
+        method: 'popup',
+        minutes_before: 1440,
       }
-      expect(notification.type).toBe('notification')
-      expect(notification.days_before).toBe(1)
-      expect(notification.time).toBe('09:00 AM')
+      expect(notification.method).toBe('popup')
+      expect(notification.minutes_before).toBe(1440)
     })
 
     it('should support email all-day notifications', () => {
-      const notification: AllDayNotification = {
-        type: 'email',
-        days_before: 1,
-        time: '09:00 AM',
+      const notification: EventReminder = {
+        method: 'email',
+        minutes_before: 1440,
       }
-      expect(notification.type).toBe('email')
-      expect(notification.days_before).toBe(1)
+      expect(notification.method).toBe('email')
+      expect(notification.minutes_before).toBe(1440)
     })
 
     it('should have all-day notifications array', () => {

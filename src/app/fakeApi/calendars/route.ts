@@ -14,12 +14,10 @@ const data = {
       event_duration: 30,
       show_as_busy: true,
       event_notifications: [
-        { type: 'notification', trigger: 'at-time' },
-        { type: 'email', trigger: '15-minutes-before' },
+        { method: 'popup', minutes_before: 0 },
+        { method: 'email', minutes_before: 15 },
       ],
-      all_day_notifications: [
-        { type: 'notification', days_before: 1, time: '09:00 AM' },
-      ],
+      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
     },
     {
       id: 'personal-cal-2',
@@ -32,10 +30,8 @@ const data = {
       owner: 'user@example.com',
       event_duration: 0,
       show_as_busy: false,
-      event_notifications: [{ type: 'notification', trigger: 'at-time' }],
-      all_day_notifications: [
-        { type: 'notification', days_before: 1, time: '09:00 AM' },
-      ],
+      event_notifications: [{ method: 'popup', minutes_before: 0 }],
+      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
     },
     {
       id: 'personal-cal-3',
@@ -48,10 +44,8 @@ const data = {
       owner: 'user@example.com',
       event_duration: 0,
       show_as_busy: false,
-      event_notifications: [{ type: 'notification', trigger: 'at-time' }],
-      all_day_notifications: [
-        { type: 'notification', days_before: 1, time: '09:00 AM' },
-      ],
+      event_notifications: [{ method: 'popup', minutes_before: 0 }],
+      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
     },
   ],
   shared: [
@@ -68,12 +62,10 @@ const data = {
       event_duration: 60,
       show_as_busy: true,
       event_notifications: [
-        { type: 'notification', trigger: 'at-time' },
-        { type: 'email', trigger: '30-minutes-before' },
+        { method: 'popup', minutes_before: 0 },
+        { method: 'email', minutes_before: 30 },
       ],
-      all_day_notifications: [
-        { type: 'notification', days_before: 1, time: '09:00 AM' },
-      ],
+      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
     },
     {
       id: 'shared-cal-2',
@@ -87,10 +79,8 @@ const data = {
       permissions: 'read',
       event_duration: 60,
       show_as_busy: true,
-      event_notifications: [{ type: 'notification', trigger: 'at-time' }],
-      all_day_notifications: [
-        { type: 'notification', days_before: 1, time: '09:00 AM' },
-      ],
+      event_notifications: [{ method: 'popup', minutes_before: 0 }],
+      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
     },
   ],
   subscriptions: [

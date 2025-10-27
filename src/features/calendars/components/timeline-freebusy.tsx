@@ -198,7 +198,7 @@ const TimelineFreeBusy = React.memo(function TimelineFreeBusy({
               {availabilityData.map((person) => (
                 <div key={person.person} className="flex items-center">
                   {/* Person name */}
-                  <div className="w-[200px] flex-shrink-0 truncate pr-4 text-sm font-medium">
+                  <div className="w-[200px] shrink-0 truncate pr-4 text-sm font-medium">
                     {person.personName}
                     <div className="truncate text-xs text-gray-500">
                       {person.email}
