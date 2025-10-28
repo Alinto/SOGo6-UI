@@ -1,0 +1,212 @@
+{
+    "CALENDARS": {
+        "loading": "Loading...",
+        "sidebar": {
+            "personals": {
+                "string": "Personal Calendars"
+            },
+            "shared": {
+                "string": "Shared Calendars"
+            },
+            "subscriptions": {
+                "string": "Subscriptions"
+            },
+            "add": {
+                "string": "Add Calendar"
+            },
+            "edit": {
+                "string": "Edit Calendar"
+            },
+            "delete": {
+                "string": "Delete Calendar"
+            },
+            "sharing": {
+                "string": "Sharing Settings"
+            },
+            "link": {
+                "string": "Get Calendar Link"
+            },
+            "export": {
+                "string": "Export Calendar"
+            },
+            "color": {
+                "string": "Calendar Color"
+            }
+        },
+        "actions": {
+            "newEvent": {
+                "string": "New Event"
+            },
+            "today": {
+                "string": "Today"
+            },
+            "month": {
+                "string": "Month"
+            },
+            "week": {
+                "string": "Week"
+            },
+            "day": {
+                "string": "Day"
+            },
+            "agenda": {
+                "string": "Agenda"
+            }
+        },
+        "visualization": {
+            "location": {
+                "string": "Location"
+            },
+            "description": {
+                "string": "Description"
+            },
+            "attendees": {
+                "string": "Attendees"
+            },
+            "conference": {
+                "string": "Video Conference"
+            },
+            "joinMeeting": {
+                "string": "Join Meeting"
+            },
+            "reminders": {
+                "string": "Reminders"
+            },
+            "recurrence": {
+                "string": "Repeats"
+            },
+            "frequency": {
+                "daily": {
+                    "string": "Daily"
+                },
+                "weekly": {
+                    "string": "Weekly"
+                },
+                "monthly": {
+                    "string": "Monthly"
+                },
+                "yearly": {
+                    "string": "Yearly"
+                }
+            },
+            "every": {
+                "string": "Every {count}"
+            },
+            "daysBefore": {
+                "string": "{count} days before"
+            },
+            "hoursBefore": {
+                "string": "{count} hours before"
+            },
+            "minutesBefore": {
+                "string": "{count} minutes before"
+            }
+        },
+        "forms": {
+            "createCalendar": {
+                "title": {
+                    "string": "Create New Calendar"
+                },
+                "nameLabel": {
+                    "string": "Calendar Name"
+                },
+                "namePlaceholder": {
+                    "string": "My Calendar"
+                },
+                "colorLabel": {
+                    "string": "Color"
+                },
+                "submit": {
+                    "string": "Create Calendar"
+                },
+                "cancel": {
+                    "string": "Cancel"
+                }
+            },
+            "editCalendar": {
+                "title": {
+                    "string": "Edit Calendar"
+                },
+                "nameLabel": {
+                    "string": "Calendar Name"
+                },
+                "colorLabel": {
+                    "string": "Color"
+                },
+                "description": {
+                    "string": "Description"
+                },
+                "descriptionPlaceholder": {
+                    "string": "Add description to calendar"
+                },
+                "eventDuration": {
+                    "string": "Event Duration"
+                },
+                "eventNotifications": {
+                    "string": "Event Notifications"
+                },
+                "allDayNotifications": {
+                    "string": "All-day event notifications"
+                },
+                "addNotification": {
+                    "string": "Add notification"
+                },
+                "showBusyStatus": {
+                    "string": "Show others when I'm busy"
+                },
+                "atTimeOfEvent": {
+                    "string": "at time of event"
+                },
+                "dayBefore": {
+                    "string": "day before"
+                },
+                "notification": {
+                    "string": "notification"
+                },
+                "email": {
+                    "string": "e-mail"
+                },
+                "delete": {
+                    "string": "Delete"
+                },
+                "at": {
+                    "string": "at"
+                },
+                "durationOptions": {
+                    "thirtyMinutes": {
+                        "string": "30 minutes"
+                    },
+                    "oneHour": {
+                        "string": "1 hour"
+                    },
+                    "twoHours": {
+                        "string": "2 hours"
+                    },
+                    "allDay": {
+                        "string": "All day"
+                    }
+                },
+                "submit": {
+                    "string": "Save Changes"
+                },
+                "cancel": {
+                    "string": "Cancel"
+                }
+            },
+            "deleteCalendar": {
+                "title": {
+                    "string": "Delete Calendar"
+                },
+                "message": {
+                    "string": "Are you sure you want to delete this calendar? This action cannot be undone."
+                },
+                "confirm": {
+                    "string": "Delete"
+                },
+                "cancel": {
+                    "string": "Cancel"
+                }
+            }
+        }
+    }
+}

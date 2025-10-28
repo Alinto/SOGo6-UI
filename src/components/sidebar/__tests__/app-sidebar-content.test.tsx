@@ -27,6 +27,12 @@ jest.mock('@/features/user-settings/sidebar/sidebar-content', () => {
   }
 })
 
+jest.mock('@/features/calendars/components/sidebar/sidebar', () => {
+  return function MockCalendarsSidebar() {
+    return <div data-testid="calendars-sidebar">Calendars Sidebar</div>
+  }
+})
+
 jest.mock('@/features/admin-panel/components/sidebar/sidebar-content', () => {
   return function MockAdminPanelSidebar() {
     return <div data-testid="admin-panel-sidebar">Admin Panel Sidebar</div>
@@ -57,11 +63,12 @@ describe('SidebarsContent Component', () => {
       expect(screen.getByText('User Settings Sidebar')).toBeInTheDocument()
     })
 
-    it('should render calendars sidebar placeholder when pathname starts with calendars', () => {
+    it('should render calendars sidebar when pathname starts with calendars', () => {
       mockUsePathname.mockReturnValue('/calendars/view')
 
       render(<SidebarsContent />)
 
+      expect(screen.getByTestId('calendars-sidebar')).toBeInTheDocument()
       expect(screen.getByText('Calendars Sidebar')).toBeInTheDocument()
     })
 
@@ -179,11 +186,11 @@ describe('SidebarsContent Component', () => {
           path: '/user_settings/test',
           expectedSidebar: 'user-settings-sidebar',
         },
-        { path: '/calendars/test', expectedText: 'Calendars Sidebar' },
+        { path: '/calendars/test', expectedSidebar: 'calendars-sidebar' },
         { path: '/u/test', expectedSidebar: 'mail-sidebar' },
       ]
 
-      testCases.forEach(({ path, expectedSidebar, expectedText }) => {
+      testCases.forEach(({ path, expectedSidebar }) => {
         mockUsePathname.mockReturnValue(path)
         const { unmount } = render(<SidebarsContent />)
 
@@ -195,7 +202,7 @@ describe('SidebarsContent Component', () => {
           'user-settings-sidebar'
         )
         const mailElement = screen.queryByTestId('mail-sidebar')
-        const calendarsElement = screen.queryByText('Calendars Sidebar')
+        const calendarsElement = screen.queryByTestId('calendars-sidebar')
 
         const renderedComponents = [
           addressBooksElement,
@@ -208,11 +215,7 @@ describe('SidebarsContent Component', () => {
         expect(renderedComponents).toHaveLength(1)
 
         // Verify the correct component is rendered
-        if (expectedSidebar) {
-          expect(screen.getByTestId(expectedSidebar)).toBeInTheDocument()
-        } else if (expectedText) {
-          expect(screen.getByText(expectedText)).toBeInTheDocument()
-        }
+        expect(screen.getByTestId(expectedSidebar)).toBeInTheDocument()
 
         // Clean up before next iteration
         unmount()

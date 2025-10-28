@@ -104,10 +104,7 @@ export function MailSidebar() {
         </SidebarMenu>
       </SidebarGroup>
       {/* Scrollable folders */}
-      <SidebarGroup
-        className="thin-scrollbar min-h-0 flex-1 overflow-y-auto group-data-[collapsible=icon]:p-0"
-        style={{ scrollbarWidth: 'thin' }}
-      >
+      <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           {data?.map((folder) => (
             <RecursiveFolderItem key={folder.path} folder={folder} />

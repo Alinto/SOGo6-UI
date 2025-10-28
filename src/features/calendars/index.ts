@@ -19,6 +19,7 @@ export {
   useGetCalendarEventsQuery,
   useGetCalendarsByTypeQuery,
   useGetCalendarsQuery,
+  useGetEventsInTimeRangeQuery,
   useUpdateCalendarEventMutation,
   useUpdateCalendarMutation,
 } from './store/calendars-api'

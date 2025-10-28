@@ -157,7 +157,6 @@ const data: VCard[] = [
 export async function GET(req: NextRequest) {
   const urlParts = req.nextUrl.pathname.split('/')
   const id = urlParts[urlParts.length - 1]
-  console.log('id', id)
   return NextResponse.json(data.find((item) => item.id === id))
 }
 

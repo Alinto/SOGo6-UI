@@ -142,14 +142,15 @@ Please review the attached documents before the meeting.`,
  */
 export async function GET(
   request: Request,
-  { params }: { params: { calendarId: string; eventId: string } }
+  { params }: { params: Promise<{ calendarId: string; eventId: string }> }
 ) {
   // In a real API, you would fetch the specific event
   // For now, return the example event with the requested ID
+  const { calendarId, eventId } = await params
   const event = {
     ...singleEventExample,
-    id: params.eventId,
-    calendar_id: params.calendarId,
+    id: eventId,
+    calendar_id: calendarId,
   }
   return NextResponse.json(event)
 }
@@ -160,14 +161,15 @@ export async function GET(
  */
 export async function PATCH(
   request: Request,
-  { params }: { params: { calendarId: string; eventId: string } }
+  { params }: { params: Promise<{ calendarId: string; eventId: string }> }
 ) {
+  const { calendarId, eventId } = await params
   const body = await request.json()
 
   const updatedEvent: CalendarEvent = {
     ...singleEventExample,
-    id: params.eventId,
-    calendar_id: params.calendarId,
+    id: eventId,
+    calendar_id: calendarId,
     ...body,
     updated_at: new Date().toISOString(),
     sequence: (body.sequence || 0) + 1,
@@ -182,9 +184,10 @@ export async function PATCH(
  */
 export async function DELETE(
   request: Request,
-  { params }: { params: { calendarId: string; eventId: string } }
+  { params }: { params: Promise<{ calendarId: string; eventId: string }> }
 ) {
-  return NextResponse.json({ success: true, deleted_id: params.eventId })
+  const { eventId } = await params
+  return NextResponse.json({ success: true, deleted_id: eventId })
 }
 
 /**

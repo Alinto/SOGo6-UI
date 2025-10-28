@@ -2,6 +2,7 @@
 
 import Sidebar from '@/features/address_books/components/sidebar/sidebar'
 import AdminPanelSidebar from '@/features/admin-panel/components/sidebar/sidebar-content'
+import CalendarsSidebar from '@/features/calendars/components/sidebar/sidebar'
 import MailSidebar from '@/features/mails/components/sidebars/sidebar'
 import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 
@@ -24,7 +25,7 @@ const SidebarsContent = () => {
     return <UserSettingsSidebar />
   }
   if (isCalendarsSidebar) {
-    return <div>Calendars Sidebar</div>
+    return <CalendarsSidebar />
   }
   if (isMailSidebar) {
     return <MailSidebar />

@@ -78,14 +78,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
             // eslint-disable-next-line react/jsx-no-literals
           >{`${currentPage} / ${totalPages}`}</Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent
-          style={{
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#d1d5db transparent',
-            scrollbarGutter: 'stable',
-          }}
-          className="scrollbar-thin scrollbar-thumb-rounded scrollbar-thumb-gray-400 max-h-60 w-10 overflow-auto"
-        >
+        <DropdownMenuContent className="scrollbar-thin-gray max-h-60 w-10 overflow-auto">
           <DropdownMenuRadioGroup
             value={currentPage.toString()}
             onValueChange={(value) => {

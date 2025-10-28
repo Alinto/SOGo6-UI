@@ -104,6 +104,7 @@ export interface Calendar {
   event_notifications?: EventReminder[]
   all_day_notifications?: EventReminder[]
   show_as_busy?: boolean
+  u_hidden?: boolean // Whether the calendar is hidden from view
   created_at?: string
   updated_at?: string
 }

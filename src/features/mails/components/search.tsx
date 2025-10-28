@@ -66,14 +66,7 @@ export function Search() {
             <CollapsibleTrigger asChild>
               <Button variant="outline">More options</Button>
             </CollapsibleTrigger>
-            <CollapsibleContent
-              style={{
-                scrollbarWidth: 'thin',
-                scrollbarColor: '#d1d5db transparent',
-                scrollbarGutter: 'stable',
-              }}
-              className="max-h-[40vh] overflow-y-auto pr-2"
-            >
+            <CollapsibleContent className="scrollbar-thin-gray max-h-[40vh] overflow-y-auto pr-2">
               <SearchMoreOptions />
             </CollapsibleContent>
           </Collapsible>

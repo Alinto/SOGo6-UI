@@ -24,16 +24,11 @@ const FastAccessContent: React.FC<FastAccessContentProps> = ({ name }) => {
 
   return (
     <Sidebar
-      className={`text-sidebar-foreground-secondary bg-sidebar-background-secondary mt-[48px] mr-[2.5rem] border-0`}
+      className={`text-sidebar-foreground-secondary bg-sidebar-background-secondary mt-12 mr-10 border-0`}
       side="right"
     >
       <SidebarContent
-        className={`overflow-x-hidden overflow-y-auto border-0`}
-        style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db transparent',
-          scrollbarGutter: 'stable',
-        }}
+        className={`scrollbar-thin-gray overflow-x-hidden overflow-y-auto border-0`}
       >
         {ContentComponent}
       </SidebarContent>

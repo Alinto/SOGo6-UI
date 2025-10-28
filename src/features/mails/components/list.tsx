@@ -75,14 +75,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
           />
         </div>
       </div>
-      <ul
-        className="thin-scrollbar mt-2 overflow-y-auto rounded"
-        style={{
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db transparent',
-          scrollbarGutter: 'stable',
-        }}
-      >
+      <ul className="scrollbar-thin-gray mt-2 overflow-y-auto rounded">
         {items.length === 0 && (
           <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
             {t('no_items.string')}
