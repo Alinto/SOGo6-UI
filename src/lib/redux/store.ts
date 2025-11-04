@@ -3,9 +3,11 @@ import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
 import { listenerMiddleware } from './listener-middleware'
 import { createReducerManager, ReducerManager } from './reducer-manager'
+import { sseApi } from './sse/sse-api'
 const staticReducers = {
   // auth: authReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
+  [sseApi.reducerPath]: sseApi.reducer,
 }
 export const reducerManager = createReducerManager(staticReducers)
 
@@ -15,7 +17,8 @@ export const makeStore = () => {
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware()
         .prepend(listenerMiddleware.middleware)
-        .concat(apiSlice.middleware),
+        .concat(apiSlice.middleware)
+        .concat(sseApi.middleware),
   }) as EnhancedStore & ReducerManager
 
   store.add = reducerManager.add

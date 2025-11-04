@@ -3,6 +3,7 @@
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
+import { useMailReceivedListener } from '@/lib/redux/sse/hooks/use-mail-received-listener'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -33,6 +34,10 @@ const Page: React.FC<PageProps> = () => {
     folder: folderString,
     params,
   })
+
+  // Enable real-time mail updates via SSE for INBOX and common folders
+  useMailReceivedListener(folderString, params)
+  console.log('Folder messages data:', data)
   useEffect(() => {
     // If the folder changes, we want to refetch the messages
     // This is necessary because the folder can be a dynamic segment in the URL

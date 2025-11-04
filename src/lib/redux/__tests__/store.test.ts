@@ -31,6 +31,16 @@ jest.mock('../api/api-slice', () => ({
   apiSlice: mockApiSlice,
 }))
 
+const mockSSEApi = {
+  reducerPath: 'sseApi',
+  reducer: jest.fn(),
+  middleware: jest.fn(),
+}
+
+jest.mock('../sse/sse-api', () => ({
+  sseApi: mockSSEApi,
+}))
+
 const mockListenerMiddleware = {
   middleware: jest.fn(),
 }
@@ -63,6 +73,7 @@ describe('Store', () => {
 
       expect(mockCreateReducerManager).toHaveBeenCalledWith({
         [mockApiSlice.reducerPath]: mockApiSlice.reducer,
+        [mockSSEApi.reducerPath]: mockSSEApi.reducer,
       })
     })
 
@@ -102,7 +113,7 @@ describe('Store', () => {
       // Mock getDefaultMiddleware
       const mockMiddlewareChain = {
         prepend: jest.fn().mockReturnThis(),
-        concat: jest.fn().mockReturnValue(['final-middleware']),
+        concat: jest.fn().mockReturnThis(),
       }
 
       const result = middlewareFactory(jest.fn(() => mockMiddlewareChain))
@@ -110,8 +121,13 @@ describe('Store', () => {
       expect(mockMiddlewareChain.prepend).toHaveBeenCalledWith(
         mockListenerMiddleware.middleware
       )
-      expect(mockMiddlewareChain.concat).toHaveBeenCalledWith(
+      expect(mockMiddlewareChain.concat).toHaveBeenNthCalledWith(
+        1,
         mockApiSlice.middleware
+      )
+      expect(mockMiddlewareChain.concat).toHaveBeenNthCalledWith(
+        2,
+        mockSSEApi.middleware
       )
     })
 
@@ -170,6 +186,10 @@ describe('Store', () => {
         apiSlice: mockApiSlice,
       }))
 
+      jest.doMock('../sse/sse-api', () => ({
+        sseApi: mockSSEApi,
+      }))
+
       jest.doMock('../reducer-manager', () => ({
         createReducerManager: mockCreateReducerManager,
       }))
@@ -179,6 +199,7 @@ describe('Store', () => {
 
       const expectedStaticReducers = {
         [mockApiSlice.reducerPath]: mockApiSlice.reducer,
+        [mockSSEApi.reducerPath]: mockSSEApi.reducer,
       }
 
       expect(mockCreateReducerManager).toHaveBeenCalledWith(
@@ -198,12 +219,17 @@ describe('Store', () => {
         apiSlice: customApiSlice,
       }))
 
+      jest.doMock('../sse/sse-api', () => ({
+        sseApi: mockSSEApi,
+      }))
+
       // Reset modules to get fresh import
       jest.resetModules()
       await import('../store')
 
       expect(mockCreateReducerManager).toHaveBeenCalledWith({
         [customApiSlice.reducerPath]: customApiSlice.reducer,
+        [mockSSEApi.reducerPath]: mockSSEApi.reducer,
       })
     })
   })
