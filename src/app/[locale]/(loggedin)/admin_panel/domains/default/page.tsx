@@ -10,19 +10,25 @@ export default function DomainsPage() {
     useDomainConfig({ customDomainId: undefined })
 =======
 import {
-  useGetAdminConfigQuery,
+  useGetDomainQuery,
   useSaveCustomDomainConfigMutation,
 } from '@/features/admin-panel/store/admin-panel-api'
 
 export default function DomainsPage() {
-  const { data: adminConfig, isLoading } = useGetAdminConfigQuery()
+  const { data: adminConfig, isLoading } = useGetDomainQuery()
   const [saveConfig, { isLoading: isSaving }] =
     useSaveCustomDomainConfigMutation()
+
   const domainName = 'Default'
 
-  const tabNames = adminConfig ? Object.keys(adminConfig.domain) : []
-  const tabDataByTab = adminConfig ? adminConfig.domain : {}
+  // Extract tab names from the config object keys
+  const tabNames = adminConfig ? Object.keys(adminConfig) : []
 
+  // Transform the config data structure for each tab
+  // Each tab now contains the raw object/array data instead of ConfigOption[]
+  const tabDataByTab = adminConfig || {}
+
+  // TODO: à revoir plus tard, et surtout gérer les erreurs
   async function handleFormSubmit(values: Record<string, unknown>) {
     try {
       await saveConfig({

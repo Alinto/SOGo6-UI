@@ -1,0 +1,102 @@
+[
+  {
+    "name": "example.org",
+    "extra_infos": {
+      "user_source": "ldap"
+    }
+  },
+  {
+    "name": "sogo.nu",
+    "extra_infos": {
+      "user_source": "ldap, sql",
+      "info_test": "value_test"
+    }
+  },
+  {
+    "name": "business.com",
+    "extra_infos": {
+      "user_source": "ldap",
+      "other_info": "other_value"
+    }
+  },
+  {
+    "name": "example.org",
+    "extra_infos": {
+      "user_source": "ldap"
+    }
+  },
+  {
+    "name": "sogo.nu",
+    "extra_infos": {
+      "user_source": "sql",
+      "info_test": "value_test"
+    }
+  },
+  {
+    "name": "business.com",
+    "extra_infos": {
+      "user_source": "ldap",
+      "other_info": "other_value"
+    }
+  },
+  {
+    "name": "example.org",
+    "extra_infos": {
+      "user_source": "ldap"
+    }
+  },
+  {
+    "name": "sogo.nu",
+    "extra_infos": {
+      "user_source": "sql",
+      "info_test": "value_test"
+    }
+  },
+  {
+    "name": "business.com",
+    "extra_infos": {
+      "user_source": "ldap",
+      "other_info": "other_value"
+    }
+  },
+  {
+    "name": "example.org",
+    "extra_infos": {
+      "user_source": "ldap"
+    }
+  },
+  {
+    "name": "sogo.nu",
+    "extra_infos": {
+      "user_source": "sql",
+      "info_test": "value_test"
+    }
+  },
+  {
+    "name": "business.com",
+    "extra_infos": {
+      "user_source": "ldap",
+      "other_info": "other_value"
+    }
+  },
+  {
+    "name": "example.org",
+    "extra_infos": {
+      "user_source": "ldap"
+    }
+  },
+  {
+    "name": "sogo.nu",
+    "extra_infos": {
+      "user_source": "sql",
+      "info_test": "value_test"
+    }
+  },
+  {
+    "name": "business.com",
+    "extra_infos": {
+      "user_source": "ldap",
+      "other_info": "other_value"
+    }
+  }
+]
