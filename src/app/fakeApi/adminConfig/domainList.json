@@ -8,8 +8,7 @@
   {
     "name": "sogo.nu",
     "extra_infos": {
-      "user_source": "ldap_french, sql_cloud",
-      "liuhazs": "ze"
+      "user_source": "ldap_french, sql_cloud"
     }
   },
   {

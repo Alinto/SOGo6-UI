@@ -22,7 +22,7 @@ export default function DomainsPage() {
   const domainName = 'Default'
 
   // extract the domain array and build a map: sectionName => { options: ConfigOption[], is_duplicable: boolean }
-  const domainArray = adminConfig?.domain ?? []
+  const domainArray = adminConfig?.data.domain ?? []
   const tabNames = domainArray.map((entry: Record<string, unknown>) => {
     // find section key (exclude the is_duplicable property if present)
     const sectionKey =
