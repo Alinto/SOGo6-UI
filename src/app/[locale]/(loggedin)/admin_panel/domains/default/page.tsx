@@ -10,23 +10,36 @@ export default function DomainsPage() {
     useDomainConfig({ customDomainId: undefined })
 =======
 import {
-  useGetDomainQuery,
+  useGetDynamicFormQuery,
   useSaveCustomDomainConfigMutation,
 } from '@/features/admin-panel/store/admin-panel-api'
 
 export default function DomainsPage() {
-  const { data: adminConfig, isLoading } = useGetDomainQuery()
+  const { data: adminConfig, isLoading } = useGetDynamicFormQuery()
   const [saveConfig, { isLoading: isSaving }] =
     useSaveCustomDomainConfigMutation()
 
   const domainName = 'Default'
 
-  // Extract tab names from the config object keys
-  const tabNames = adminConfig ? Object.keys(adminConfig) : []
+  // extract the domain array and build a map: sectionName => { options: ConfigOption[], is_duplicable: boolean }
+  const domainArray = adminConfig?.domain ?? []
+  const tabNames = domainArray.map((entry: Record<string, unknown>) => {
+    // find section key (exclude the is_duplicable property if present)
+    const sectionKey =
+      Object.keys(entry).find((k) => k !== 'is_duplicable') ??
+      Object.keys(entry)[0]
+    return sectionKey
+  })
 
-  // Transform the config data structure for each tab
-  // Each tab now contains the raw object/array data instead of ConfigOption[]
-  const tabDataByTab = adminConfig || {}
+  const tabDataByTab: Record<string, unknown> = {}
+  domainArray.forEach((entry: Record<string, any>) => {
+    const sectionKey =
+      Object.keys(entry).find((k) => k !== 'is_duplicable') ??
+      Object.keys(entry)[0]
+    const options = entry[sectionKey] ?? []
+    const is_duplicable = Boolean(entry.is_duplicable)
+    tabDataByTab[sectionKey] = { options, is_duplicable }
+  })
 
   // TODO: à revoir plus tard, et surtout gérer les erreurs
   async function handleFormSubmit(values: Record<string, unknown>) {

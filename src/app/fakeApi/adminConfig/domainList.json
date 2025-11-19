@@ -2,101 +2,20 @@
   {
     "name": "example.org",
     "extra_infos": {
-      "user_source": "ldap"
+      "user_source": "ldap_french"
     }
   },
   {
     "name": "sogo.nu",
     "extra_infos": {
-      "user_source": "ldap, sql",
-      "info_test": "value_test"
+      "user_source": "ldap_french, sql_cloud",
+      "liuhazs": "ze"
     }
   },
   {
     "name": "business.com",
     "extra_infos": {
-      "user_source": "ldap",
-      "other_info": "other_value"
-    }
-  },
-  {
-    "name": "example.org",
-    "extra_infos": {
-      "user_source": "ldap"
-    }
-  },
-  {
-    "name": "sogo.nu",
-    "extra_infos": {
-      "user_source": "sql",
-      "info_test": "value_test"
-    }
-  },
-  {
-    "name": "business.com",
-    "extra_infos": {
-      "user_source": "ldap",
-      "other_info": "other_value"
-    }
-  },
-  {
-    "name": "example.org",
-    "extra_infos": {
-      "user_source": "ldap"
-    }
-  },
-  {
-    "name": "sogo.nu",
-    "extra_infos": {
-      "user_source": "sql",
-      "info_test": "value_test"
-    }
-  },
-  {
-    "name": "business.com",
-    "extra_infos": {
-      "user_source": "ldap",
-      "other_info": "other_value"
-    }
-  },
-  {
-    "name": "example.org",
-    "extra_infos": {
-      "user_source": "ldap"
-    }
-  },
-  {
-    "name": "sogo.nu",
-    "extra_infos": {
-      "user_source": "sql",
-      "info_test": "value_test"
-    }
-  },
-  {
-    "name": "business.com",
-    "extra_infos": {
-      "user_source": "ldap",
-      "other_info": "other_value"
-    }
-  },
-  {
-    "name": "example.org",
-    "extra_infos": {
-      "user_source": "ldap"
-    }
-  },
-  {
-    "name": "sogo.nu",
-    "extra_infos": {
-      "user_source": "sql",
-      "info_test": "value_test"
-    }
-  },
-  {
-    "name": "business.com",
-    "extra_infos": {
-      "user_source": "ldap",
-      "other_info": "other_value"
+      "user_source": "ldap_swiss"
     }
   }
 ]

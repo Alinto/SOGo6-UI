@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
 
-import dynamicFormCustomDomain from '../../dynamicFormCustomDomain.json'
+import domainSettings from '../'
 
 //const domainConfigs: Record<string, any> =
 
 export async function GET() {
-  return NextResponse.json(dynamicFormCustomDomain)
+  return NextResponse.json(domainSettings)
 }
 
 // export async function GET(
