@@ -11,7 +11,7 @@ export function MailShowImage({ onShowImages }: MailShowImageProps) {
     >
       <ImageIcon className="text-chart-2" size={22} />
       <span className="text-card-foreground flex-1">
-        {t('mail_display.content.external_images_warning.string')}
+        This email contains external images. Click to display them.
       </span>
       <CloudDownload size={22} />
     </div>
