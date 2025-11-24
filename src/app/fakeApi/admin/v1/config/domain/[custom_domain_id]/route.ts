@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server'
 
-import domainSettings from '../'
+// import domainSettings from '../'
 
-//const domainConfigs: Record<string, any> =
+// //const domainConfigs: Record<string, any> =
 
-export async function GET() {
-  return NextResponse.json(domainSettings)
-}
+// export async function GET() {
+//   return NextResponse.json(domainSettings)
+// }
 
 // export async function GET(
 //   req: Request,

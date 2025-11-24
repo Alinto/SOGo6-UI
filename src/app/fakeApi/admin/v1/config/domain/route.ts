@@ -1,7 +1,7 @@
-import dynamicForm from '../dynamicForm.json'
+import domainSettings from '../../../domainSettings.json'
 
 export async function GET() {
-  return new Response(JSON.stringify(dynamicForm), {
+  return new Response(JSON.stringify(domainSettings), {
     status: 200,
     headers: {
       'Content-Type': 'application/json',
