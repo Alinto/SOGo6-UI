@@ -230,7 +230,7 @@
             "default": null,
             "depends": null,
             "name": "US_UID",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -248,7 +248,7 @@
             "default": null,
             "depends": null,
             "name": "US_TYPE",
-            "required": true
+            "required": false
           },
           {
             "constraints": {
@@ -258,7 +258,7 @@
             "default": null,
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_HOSTNAME",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -266,7 +266,7 @@
             "default": null,
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_BIND_DN",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -274,7 +274,7 @@
             "default": null,
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_BIND_DN_PWD",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -282,7 +282,7 @@
             "default": null,
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_BASE_DN",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -290,7 +290,7 @@
             "default": "uid",
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_UID",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -298,7 +298,7 @@
             "default": "cn",
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_CN",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -306,7 +306,7 @@
             "default": "uid",
             "depends": "US_TYPE%%%equal%%%ldap",
             "name": "US_LDAP_ID",
-            "required": true
+            "required": false
           },
           {
             "constraints": {
@@ -397,7 +397,7 @@
             "default": null,
             "depends": "US_TYPE%%%equal%%%sql",
             "name": "US_SQL_USER_URL",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -405,7 +405,7 @@
             "default": null,
             "depends": "US_TYPE%%%equal%%%sql",
             "name": "US_SQL_PREPEND_PWD_SCHEME",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -437,7 +437,7 @@
             "default": null,
             "depends": null,
             "name": "US_CAN_AUTH",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -547,7 +547,7 @@
             "default": ["mail"],
             "depends": "US_CAN_AUTH%%%equal%%%True",
             "name": "US_MAIL",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -587,7 +587,7 @@
             "default": null,
             "depends": null,
             "name": "US_IS_ADDRESSBOOK",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
@@ -643,7 +643,7 @@
             "default": null,
             "depends": null,
             "name": "US_HAS_RESOURCE",
-            "required": true
+            "required": false
           },
           {
             "constraints": null,
