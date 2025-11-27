@@ -4,6 +4,7 @@ import {
   useGetCustomDomainConfigQuery,
   useGetDomainDefaultQuery,
   useGetDynamicFormQuery,
+  usePatchCustomDomainConfigMutation,
   usePatchDomainDefaultMutation,
   useSaveCustomDomainConfigMutation,
 } from '@/features/admin-panel/store/admin-panel-api'
@@ -34,6 +35,8 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     usePatchDomainDefaultMutation()
   const [saveCustomDomainConfig, { isLoading: isSaving }] =
     useSaveCustomDomainConfigMutation()
+  const [patchCustomDomainConfig, { isLoading: isPatchingCustom }] =
+    usePatchCustomDomainConfigMutation()
 
   const isLoading = Boolean(
     isFormMetaLoading || isDefaultLoading || isCustomLoading
@@ -137,18 +140,21 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
         console.log('[useDomainConfig] onSubmit values (diff):', values)
 
         if (customDomainId) {
-          // Save custom domain full object
+          // Update existing custom domain via PATCH
           console.log(
-            `[useDomainConfig] Saving custom domain ${customDomainId}:`,
+            `[useDomainConfig] Patching custom domain ${customDomainId}:`,
             values
           )
-          const res = await saveCustomDomainConfig({
+          const res = await patchCustomDomainConfig({
             customDomainId: customDomainId.toLowerCase(),
             config: values,
           }).unwrap()
-          console.log('[useDomainConfig] saveCustomDomainConfig response:', res)
+          console.log(
+            '[useDomainConfig] patchCustomDomainConfig response:',
+            res
+          )
           // feedback to user
-          alert('Custom domain saved')
+          alert('Custom domain patched')
           return res
         } else {
           // Default domain: convert arrays to mapped objects for duplicable sections
@@ -170,13 +176,14 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     },
     [
       customDomainId,
+      patchCustomDomainConfig,
       saveCustomDomainConfig,
       patchDomainDefault,
       buildSettingsPayload,
     ]
   )
 
-  const isFormLoading = Boolean(isPatching || isSaving)
+  const isFormLoading = Boolean(isPatching || isSaving || isPatchingCustom)
 
   return {
     adminConfig,
