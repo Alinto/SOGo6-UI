@@ -15,22 +15,16 @@ type UseDomainConfigOpts = {
 
 /**
  * Hook that centralizes the common logic used by both the "default" and "custom" domain pages.
- * - fetches dynamic form metadata
- * - fetches either domain-default or custom domain settings depending on presence of customDomainId
- * - builds tabNames and tabDataByTab in the same shape used by DomainConfigFormPage
- * - exposes a submit handler that calls the appropriate mutation
  */
 export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
   const { data: adminConfig, isLoading: isFormMetaLoading } =
     useGetDynamicFormQuery()
 
-  // fetch domain-default only when customDomainId is not provided
   const { data: domainDefaultData, isLoading: isDefaultLoading } =
     useGetDomainDefaultQuery(undefined, {
       skip: Boolean(customDomainId),
     })
 
-  // fetch custom domain config only when customDomainId is provided
   const { data: customConfigData, isLoading: isCustomLoading } =
     useGetCustomDomainConfigQuery(customDomainId ?? '', {
       skip: !customDomainId,
@@ -45,7 +39,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     isFormMetaLoading || isDefaultLoading || isCustomLoading
   )
 
-  // Build the same tabNames and tabDataByTab shape used previously in both pages
   const { tabNames, tabDataByTab } = useMemo(() => {
     const domainArray = adminConfig?.data.domain ?? []
 
@@ -58,17 +51,14 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
 
     const tabData: Record<string, any> = {}
 
-    // settings coming either from domainDefaultData.data or customConfigData.data.settings
     const defaultSettings = domainDefaultData?.data ?? {}
     const customSettings = customConfigData?.data?.settings ?? {}
-    // pick which settings to use depending on presence of customDomainId
     const settings = customDomainId ? customSettings : defaultSettings
 
     domainArray.forEach((entry: Record<string, any>) => {
       const sectionKey =
         Object.keys(entry).find((k) => k !== 'is_duplicable') ??
         Object.keys(entry)[0]
-      // clone options to avoid mutation
       const origOptions = (entry[sectionKey] ?? []) as any[]
       const options = origOptions.map((o) => ({ ...(o ?? {}) }))
       const is_duplicable = Boolean(entry.is_duplicable)
@@ -84,7 +74,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
             typeof sectionSettings === 'object' &&
             sectionSettings !== null
           ) {
-            // convert keyed object (US_UID => object) to array of values
             initialValues = Object.values(sectionSettings)
           }
           tabData[sectionKey] = {
@@ -112,7 +101,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     return { tabNames: names, tabDataByTab: tabData }
   }, [adminConfig, domainDefaultData, customConfigData, customDomainId])
 
-  // helper used by pages to convert arrays back to maps for duplicable sections
   const buildSettingsPayload = useCallback(
     (values: Record<string, unknown>) => {
       const settings: Record<string, any> = {}
@@ -125,7 +113,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
           const arr = value as any[]
           const mapped: Record<string, any> = {}
           arr.forEach((item: any, idx: number) => {
-            // prefer US_UID if present, otherwise try common alternatives or fall back to index
             const possibleKey =
               (item && (item.US_UID ?? item.US_NAME ?? item.id ?? item.name)) ||
               `${idx}`
@@ -143,20 +130,42 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     [tabDataByTab]
   )
 
-  // unified submit handler: will call saveCustomDomainConfig for custom domains,
-  // or patchDomainDefault for the default domain.
+  // unified submit handler with logging + user feedback
   const handleSubmit = useCallback(
     async (values: Record<string, unknown>) => {
-      if (customDomainId) {
-        // for custom domains we save full object (existing flow)
-        await saveCustomDomainConfig({
-          customDomainId: customDomainId.toLowerCase(),
-          config: values,
-        }).unwrap()
-      } else {
-        // for default domain we patch only diffs and convert arrays to keyed objects for duplicable sections
-        const settings = buildSettingsPayload(values)
-        await patchDomainDefault({ config: settings }).unwrap()
+      try {
+        console.log('[useDomainConfig] onSubmit values (diff):', values)
+
+        if (customDomainId) {
+          // Save custom domain full object
+          console.log(
+            `[useDomainConfig] Saving custom domain ${customDomainId}:`,
+            values
+          )
+          const res = await saveCustomDomainConfig({
+            customDomainId: customDomainId.toLowerCase(),
+            config: values,
+          }).unwrap()
+          console.log('[useDomainConfig] saveCustomDomainConfig response:', res)
+          // feedback to user
+          alert('Custom domain saved')
+          return res
+        } else {
+          // Default domain: convert arrays to mapped objects for duplicable sections
+          const settings = buildSettingsPayload(values)
+          console.log('[useDomainConfig] PATCH payload settings:', settings)
+          const res = await patchDomainDefault({ config: settings }).unwrap()
+          console.log('[useDomainConfig] patchDomainDefault response:', res)
+          alert('Default domain patched')
+          return res
+        }
+      } catch (err: any) {
+        console.error('[useDomainConfig] Save error:', err)
+        // try to show useful message
+        const message =
+          err?.data?.message || err?.message || String(err) || 'Unknown error'
+        alert('Error saving parameters: ' + message)
+        throw err
       }
     },
     [
