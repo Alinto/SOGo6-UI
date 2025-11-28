@@ -185,6 +185,9 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
 
   const isFormLoading = Boolean(isPatching || isSaving || isPatchingCustom)
 
+  // Provide domain description from custom config when available (used by custom domain page)
+  const domainDescription = customConfigData?.data?.domain_description
+
   return {
     adminConfig,
     tabNames,
@@ -192,5 +195,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     isLoading,
     isFormLoading,
     handleSubmit,
+    domainDescription,
   }
 }
