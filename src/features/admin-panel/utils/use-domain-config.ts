@@ -139,15 +139,28 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
       try {
         console.log('[useDomainConfig] onSubmit values (diff):', values)
 
+        // Build settings mapping for duplicable sections consistently for both custom and default
+        const settings = buildSettingsPayload(values)
+
         if (customDomainId) {
-          // Update existing custom domain via PATCH
+          // For custom domains, include hardcoded domain_info (domain_description moved to header input)
           console.log(
             `[useDomainConfig] Patching custom domain ${customDomainId}:`,
-            values
+            settings
           )
+
+          const payload = {
+            // domain_description is no longer sent here — header manages it
+            domain_info: {
+              mail_server: 'texte en dur',
+              'user source': 'texte en dur',
+            },
+            settings,
+          }
+
           const res = await patchCustomDomainConfig({
             customDomainId: customDomainId.toLowerCase(),
-            config: values,
+            config: payload,
           }).unwrap()
           console.log(
             '[useDomainConfig] patchCustomDomainConfig response:',
@@ -158,7 +171,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
           return res
         } else {
           // Default domain: convert arrays to mapped objects for duplicable sections
-          const settings = buildSettingsPayload(values)
           console.log('[useDomainConfig] PATCH payload settings:', settings)
           const res = await patchDomainDefault({ config: settings }).unwrap()
           console.log('[useDomainConfig] patchDomainDefault response:', res)
@@ -183,6 +195,35 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     ]
   )
 
+  // New: function to update only domain_description for a custom domain
+  const updateDomainDescription = useCallback(
+    async (newDescription: string) => {
+      if (!customDomainId) {
+        throw new Error('updateDomainDescription called without customDomainId')
+      }
+      try {
+        const payload = { domain_description: newDescription }
+        console.log(
+          `[useDomainConfig] Patching domain_description for ${customDomainId}:`,
+          payload
+        )
+        const res = await patchCustomDomainConfig({
+          customDomainId: customDomainId.toLowerCase(),
+          config: payload,
+        }).unwrap()
+        console.log(
+          '[useDomainConfig] patchCustomDomainConfig (desc) response:',
+          res
+        )
+        return res
+      } catch (err) {
+        console.error('[useDomainConfig] updateDomainDescription error:', err)
+        throw err
+      }
+    },
+    [customDomainId, patchCustomDomainConfig]
+  )
+
   const isFormLoading = Boolean(isPatching || isSaving || isPatchingCustom)
 
   // Provide domain description from custom config when available (used by custom domain page)
@@ -196,5 +237,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     isFormLoading,
     handleSubmit,
     domainDescription,
+    updateDomainDescription, // <-- expose it
   }
 }
