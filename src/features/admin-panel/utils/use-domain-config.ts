@@ -140,10 +140,21 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
               keyFromOriginal = String(originalKeys[idx])
             }
 
-            const possibleKey =
-              (item && (item.US_UID ?? item.US_NAME ?? item.id ?? item.name)) ||
-              `${idx}`
-            const key = keyFromOriginal ?? String(possibleKey)
+            // If the item is explicitly deleted (null) and we have an original key, ensure we
+            // send that original key mapped to null. This guarantees the PATCH contains
+            // something like { "USER_SOURCE": { "us_french_2": null } } for deletions.
+            if ((item === null || item === undefined) && keyFromOriginal) {
+              mapped[keyFromOriginal] = null
+              return
+            }
+
+            // Otherwise, derive a sensible key from known name fields (US_UID, US_NAME, id, name)
+            // or fallback to the index string. If original key exists, prefer it.
+            const inferredKey =
+              item && (item.US_UID ?? item.US_NAME ?? item.id ?? item.name)
+                ? (item.US_UID ?? item.US_NAME ?? item.id ?? item.name)
+                : `${idx}`
+            const key = keyFromOriginal ?? String(inferredKey)
             mapped[key] = item
           })
           settings[sectionKey] = mapped
