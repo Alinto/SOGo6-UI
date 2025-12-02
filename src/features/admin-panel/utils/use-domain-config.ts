@@ -199,16 +199,9 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
         }
 
         if (customDomainId) {
-          // For custom domains, include hardcoded domain_info (domain_description moved to header input)
-          console.log(
-            `[useDomainConfig] Patching custom domain ${customDomainId} with diff:`,
-            diff
-          )
-
           const payload = {
-            // domain_description is no longer sent here — header manages it
             domain_info: {
-              mail_server: 'texte en dur',
+              mail_server: 'texte en dur', //TODO: changer ça
               'user source': 'texte en dur',
             },
             settings: diff,
@@ -222,15 +215,12 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
             '[useDomainConfig] patchCustomDomainConfig response:',
             res
           )
-          // feedback to user
-          alert('Custom domain patched')
+          alert('Custom domain patched') //TODO: changer ça
           return res
         } else {
           // Default domain: send only the diff settings
-          console.log('[useDomainConfig] PATCH payload settings diff:', diff)
           const res = await patchDomainDefault({ config: diff }).unwrap()
-          console.log('[useDomainConfig] patchDomainDefault response:', res)
-          alert('Default domain patched')
+          alert('Default domain patched') //TODO: changer ça
           return res
         }
       } catch (err: any) {
