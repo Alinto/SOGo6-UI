@@ -8,7 +8,7 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src --ext .ts,.tsx --ignore-pattern \"**/__tests__/**\"",
     "test": "jest",
     "test:fast": "jest --passWithNoTests --silent --coverage=false --maxWorkers=50%",
     "test:watch": "jest --watch --coverage=false --maxWorkers=25%",
