@@ -10,12 +10,15 @@ import {
   useSaveCustomDomainConfigMutation,
 } from '@/features/admin-panel/store/admin-panel-api'
 import { useCallback, useMemo } from 'react'
+
 type UseDomainConfigOpts = {
   customDomainId?: string | null
 }
 
 /**
- * Hook that centralizes the common logic used by both the "default" and "custom" domain pages.
+ * Hook that centralizes domain configuration loading, transformation and submit logic.
+ * It returns form metadata (tabs + data), loading states, and handlers to submit changes
+ * or update the domain description.
  */
 export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
   const { data: adminConfig, isLoading: isFormMetaLoading } =
@@ -42,10 +45,20 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     isFormMetaLoading || isDefaultLoading || isCustomLoading
   )
 
+  /**
+   * Build a stable structure:
+   * - tabNames: ordered list of section keys
+   * - tabDataByTab: map sectionKey => metadata (options, is_duplicable, initial/current values, original_keys)
+   *
+   * This memo keeps the logic compact and readable while preserving previous behaviour.
+   */
   const { tabNames, tabDataByTab } = useMemo(() => {
-    const domainArray = adminConfig?.data.domain ?? []
+    const domainArray = (adminConfig?.data?.domain ?? []) as Record<
+      string,
+      any
+    >[]
 
-    const names = domainArray.map((entry: Record<string, unknown>) => {
+    const names = domainArray.map((entry) => {
       const sectionKey =
         Object.keys(entry).find((k) => k !== 'is_duplicable') ??
         Object.keys(entry)[0]
@@ -58,7 +71,7 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     const customSettings = customConfigData?.data?.settings ?? {}
     const settings = customDomainId ? customSettings : defaultSettings
 
-    domainArray.forEach((entry: Record<string, any>) => {
+    domainArray.forEach((entry) => {
       const sectionKey =
         Object.keys(entry).find((k) => k !== 'is_duplicable') ??
         Object.keys(entry)[0]
@@ -66,7 +79,9 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
       const options = origOptions.map((o) => ({ ...(o ?? {}) }))
       const is_duplicable = Boolean(entry.is_duplicable)
 
-      const sectionSettings = settings ? settings[sectionKey] : undefined
+      const sectionSettings = settings
+        ? (settings as any)[sectionKey]
+        : undefined
 
       if (is_duplicable) {
         if (sectionSettings) {
@@ -74,28 +89,24 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
           let originalKeys: string[] | undefined = undefined
 
           if (Array.isArray(sectionSettings)) {
-            initialValues = sectionSettings
+            // already array - keep as-is
+            initialValues = JSON.parse(JSON.stringify(sectionSettings))
           } else if (
             typeof sectionSettings === 'object' &&
             sectionSettings !== null
           ) {
-            // preserve both keys and values so we can map back to original keys later
-            try {
-              originalKeys = Object.keys(sectionSettings)
-              initialValues = JSON.parse(
-                JSON.stringify(Object.values(sectionSettings))
-              )
-            } catch {
-              originalKeys = Object.keys(sectionSettings)
-              initialValues = Object.values(sectionSettings)
-            }
+            // object mapping: preserve keys and values (we'll rebuild payload using original_keys)
+            originalKeys = Object.keys(sectionSettings)
+            initialValues = JSON.parse(
+              JSON.stringify(Object.values(sectionSettings))
+            )
           }
+
           tabData[sectionKey] = {
             options,
             is_duplicable,
-            initial_values: JSON.parse(JSON.stringify(initialValues)),
+            initial_values: initialValues,
             current_values: JSON.parse(JSON.stringify(initialValues)),
-            // store original keys (if available) to rebuild payload using same server keys
             ...(originalKeys
               ? { original_keys: JSON.parse(JSON.stringify(originalKeys)) }
               : {}),
@@ -119,6 +130,11 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     return { tabNames: names, tabDataByTab: tabData }
   }, [adminConfig, domainDefaultData, customConfigData, customDomainId])
 
+  /**
+   * Build settings payload shaped like the server expects.
+   * - For duplicable sections: convert array -> keyed object using original_keys when present.
+   * - For non-duplicable: pass the value directly.
+   */
   const buildSettingsPayload = useCallback(
     (values: Record<string, unknown>) => {
       const settings: Record<string, any> = {}
@@ -133,23 +149,17 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
           const originalKeys: string[] | undefined = sectionMeta?.original_keys
 
           arr.forEach((item: any, idx: number) => {
-            // Prefer to reuse the original server key for this index when available.
-            // This avoids renaming keys (e.g. us_french -> ldap_ex) that would cause a full-section diff.
             let keyFromOriginal: string | undefined = undefined
             if (originalKeys && originalKeys[idx] !== undefined) {
               keyFromOriginal = String(originalKeys[idx])
             }
 
-            // If the item is explicitly deleted (null) and we have an original key, ensure we
-            // send that original key mapped to null. This guarantees the PATCH contains
-            // something like { "USER_SOURCE": { "us_french_2": null } } for deletions.
             if ((item === null || item === undefined) && keyFromOriginal) {
+              // explicit deletion slot -> send original key => null
               mapped[keyFromOriginal] = null
               return
             }
 
-            // Otherwise, derive a sensible key from known name fields (US_UID, US_NAME, id, name)
-            // or fallback to the index string. If original key exists, prefer it.
             const inferredKey =
               item && (item.US_UID ?? item.US_NAME ?? item.id ?? item.name)
                 ? (item.US_UID ?? item.US_NAME ?? item.id ?? item.name)
@@ -168,30 +178,30 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     [tabDataByTab]
   )
 
-  // unified submit handler with logging + user feedback
+  /**
+   * Submit handler for the domain form.
+   * - Builds server-shaped settings
+   * - Computes diff vs original settings
+   * - Calls the appropriate patch endpoint (custom vs default)
+   */
   const handleSubmit = useCallback(
     async (values: Record<string, unknown>) => {
       try {
-        console.log('[useDomainConfig] onSubmit values (full form):', values)
-
-        // Build settings mapping for duplicable sections consistently for both custom and default
+        // Build server-shaped settings
         const newSettings = buildSettingsPayload(values)
 
-        // Get the original settings from server data (default or custom)
         const defaultSettings = domainDefaultData?.data ?? {}
         const customSettings = customConfigData?.data?.settings ?? {}
         const originalSettings = customDomainId
           ? customSettings
           : defaultSettings
 
-        // Compute diff between originalSettings (server-shaped) and newSettings (server-shaped)
         const diff = deepDiffNewValues(
           originalSettings,
           newSettings,
           false,
           false
         )
-        console.log('[useDomainConfig] computed settings diff:', diff)
 
         if (!diff || Object.keys(diff).length === 0) {
           alert('No changes detected')
@@ -199,9 +209,11 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
         }
 
         if (customDomainId) {
+          // preserve previous behaviour: send settings under "settings" and include domain_info if needed
           const payload = {
             domain_info: {
-              mail_server: 'texte en dur', //TODO: changer ça
+              // TODO: replace hardcoded placeholders with actual fields when available
+              mail_server: 'texte en dur',
               'user source': 'texte en dur',
             },
             settings: diff,
@@ -211,21 +223,16 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
             customDomainId: customDomainId.toLowerCase(),
             config: payload,
           }).unwrap()
-          console.log(
-            '[useDomainConfig] patchCustomDomainConfig response:',
-            res
-          )
-          alert('Custom domain patched') //TODO: changer ça
+          alert('Custom domain patched')
           return res
         } else {
-          // Default domain: send only the diff settings
+          // Default domain: send patch to domain-default endpoint with only the diff
           const res = await patchDomainDefault({ config: diff }).unwrap()
-          alert('Default domain patched') //TODO: changer ça
+          alert('Default domain patched')
           return res
         }
       } catch (err: any) {
         console.error('[useDomainConfig] Save error:', err)
-        // try to show useful message
         const message =
           err?.data?.message || err?.message || String(err) || 'Unknown error'
         alert('Error saving parameters: ' + message)
@@ -235,7 +242,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     [
       customDomainId,
       patchCustomDomainConfig,
-      saveCustomDomainConfig,
       patchDomainDefault,
       buildSettingsPayload,
       domainDefaultData,
@@ -243,7 +249,10 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
     ]
   )
 
-  // New: function to update only domain_description for a custom domain
+  /**
+   * Update only the domain_description for a custom domain.
+   * Throws if no customDomainId is provided.
+   */
   const updateDomainDescription = useCallback(
     async (newDescription: string) => {
       if (!customDomainId) {
@@ -251,18 +260,10 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
       }
       try {
         const payload = { domain_description: newDescription }
-        console.log(
-          `[useDomainConfig] Patching domain_description for ${customDomainId}:`,
-          payload
-        )
         const res = await patchCustomDomainConfig({
           customDomainId: customDomainId.toLowerCase(),
           config: payload,
         }).unwrap()
-        console.log(
-          '[useDomainConfig] patchCustomDomainConfig (desc) response:',
-          res
-        )
         return res
       } catch (err) {
         console.error('[useDomainConfig] updateDomainDescription error:', err)
@@ -274,7 +275,6 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
 
   const isFormLoading = Boolean(isPatching || isSaving || isPatchingCustom)
 
-  // Provide domain description from custom config when available (used by custom domain page)
   const domainDescription = customConfigData?.data?.domain_description
 
   return {
