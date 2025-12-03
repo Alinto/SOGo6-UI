@@ -212,8 +212,7 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
           // preserve previous behaviour: send settings under "settings" and include domain_info if needed
           const payload = {
             domain_info: {
-              // TODO: replace hardcoded placeholders with actual fields when available
-              mail_server: 'texte en dur',
+              // TODO:
               'user source': 'texte en dur',
             },
             settings: diff,
