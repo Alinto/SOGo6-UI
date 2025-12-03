@@ -13,7 +13,7 @@ import InputWithTags from '@/components/ui/inputs/input-with-tags'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import { useFieldArray, useForm } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { MailNotifications } from '../mail-notifications-type'
 import { useUpdateMailNotificationsSettingsMutation } from '../store/mail-notifications-settings-api'
@@ -36,7 +36,7 @@ const MailNotificationsSettingForm: React.FC<Props> = ({ data, update }) => {
     update(values)
   }
 
-  const enabled = form.watch('enabled')
+  const enabled = useWatch({ control: form.control, name: 'enabled' })
   const { fields, remove, insert } = useFieldArray({
     control: form.control,
     name: 'emails',

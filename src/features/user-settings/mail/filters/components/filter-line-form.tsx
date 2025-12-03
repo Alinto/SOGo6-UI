@@ -30,8 +30,8 @@ interface FilterLineFormProps {
   index: number
   control: Control
   remove: (index: number) => void
-  attributes?: Record<string, any>
-  listeners?: Record<string, any>
+  attributes?: Record<string, unknown>
+  listeners?: Record<string, unknown>
 }
 
 const FilterLineForm: React.FC<FilterLineFormProps> = ({

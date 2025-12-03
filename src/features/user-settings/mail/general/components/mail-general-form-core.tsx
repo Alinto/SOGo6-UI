@@ -13,7 +13,7 @@ import SelectForm from '@/components/ui/forms/select-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { MailGeneralSettings } from '../mail-general-types'
 import type { useUpdateMailGeneralSettingsMutation } from '../store/mail-general-settings-api'
@@ -34,7 +34,10 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
   function onSubmit(values: z.infer<typeof schema>) {
     update(values)
   }
-  const autoMarkAsRead = form.watch('autoMarkAsRead')
+  const autoMarkAsRead = useWatch({
+    control: form.control,
+    name: 'autoMarkAsRead',
+  }) as boolean
   const { isDirty, isSubmitting } = form.formState
 
   return (

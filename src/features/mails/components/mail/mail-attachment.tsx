@@ -39,7 +39,7 @@ export function AttachmentName({
 }
 
 export function MailAttachment({ part, className = '' }: MailAttachmentProps) {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_COMMONS')
   return (
     <div
       className={cn(
@@ -50,7 +50,7 @@ export function MailAttachment({ part, className = '' }: MailAttachmentProps) {
       <span className="min-w-0 flex-1 truncate">
         <AttachmentName name={part.name} />
       </span>
-      <span className="text-muted-foreground ml-1 flex-shrink-0 text-xs">
+      <span className="text-muted-foreground ml-1 shrink text-xs">
         {formatSize(part.size)}
       </span>
       <TooltipWrapper
@@ -62,7 +62,7 @@ export function MailAttachment({ part, className = '' }: MailAttachmentProps) {
           download
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-1 flex-shrink-0"
+          className="ml-1 shrink"
           aria-label={t('mail_display.content.download_attachment.string')}
         >
           <ArrowDownToLine size={20} />
@@ -77,7 +77,7 @@ export function AttachmentDisplay({
 }: {
   attachments: ImapAttachments
 }) {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_COMMONS')
   const [showAll, setShowAll] = useState(false)
   if (!attachments || !attachments.parts || attachments.parts.length === 0) {
     return null
@@ -94,7 +94,7 @@ export function AttachmentDisplay({
   return (
     <div className="mb-2 flex flex-row flex-wrap items-center gap-2">
       <div className="flex min-w-0 flex-1 flex-wrap gap-2">
-        {displayedParts.map((part, idx) => (
+        {displayedParts.map((part) => (
           <MailAttachment key={part.partId} part={part} />
         ))}
 
@@ -119,7 +119,7 @@ export function AttachmentDisplay({
             download
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-muted hover:bg-card flex-shrink-0 rounded px-3 py-1 text-xs"
+            className="bg-muted hover:bg-card shrink rounded px-3 py-1 text-xs"
             aria-label={t(
               'mail_display.content.download_all_attachments.string'
             )}

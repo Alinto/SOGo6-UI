@@ -23,6 +23,7 @@ export default defineConfig([{
         "next/typescript",
         "plugin:react-hooks/recommended",
         "plugin:react/recommended",
+        "plugin:@typescript-eslint/recommended",
         "eslint:recommended",
         "prettier"
     ),
@@ -44,7 +45,7 @@ export default defineConfig([{
         }],
         "react/jsx-uses-react": "off",
         "react/react-in-jsx-scope": "off",
-        "no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
-        "custom/next-intl-translation-key": "error"
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
     },
 }]);

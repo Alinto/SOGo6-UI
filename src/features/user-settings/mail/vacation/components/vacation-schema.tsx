@@ -17,6 +17,9 @@ const schema = z.object({
     endDate: z.string(),
     startHour: z.string(),
     endHour: z.string(),
+    enableDates: z.boolean(),
+    enableHours: z.boolean(),
+    enableDays: z.boolean(),
     days: z.object({
       monday: z.boolean(),
       tuesday: z.boolean(),

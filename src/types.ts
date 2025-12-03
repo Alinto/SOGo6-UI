@@ -10,12 +10,12 @@ export interface NavItems {
 }
 
 export interface BuilderSlice {
-  query: <T, Q>(options: {
-    query: (arg: Q) => string
-  }) => ResultTypeFrom<{ query: (arg: Q) => string }>
-  mutation: <T, Q>(options: {
-    query: (arg: Q) => { url: string; method: string; body?: any }
+  query: <Q>(_options: {
+    query: (_arg: Q) => string
+  }) => ResultTypeFrom<{ query: (_arg: Q) => string }>
+  mutation: <Q>(_options: {
+    query: (_arg: Q) => { url: string; method: string; body?: object }
   }) => ResultTypeFrom<{
-    query: (arg: Q) => { url: string; method: string; body?: any }
+    query: (_arg: Q) => { url: string; method: string; body?: object }
   }>
 }

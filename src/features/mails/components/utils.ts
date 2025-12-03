@@ -11,18 +11,12 @@ const iconSelector = (path: string, defaultIcon?: IconName): IconName => {
   return 'folder'
 }
 const nameSelector = (name: string): string | undefined => {
-  if (name.toLocaleLowerCase() === 'inbox')
-    return 'MAILS_COMMONS.folders.inbox.string'
-  if (name.toLocaleLowerCase() === 'sent')
-    return 'MAILS_COMMONS.folders.sent.string'
-  if (name.toLocaleLowerCase() === 'drafts')
-    return 'MAILS_COMMONS.folders.drafts.string'
-  if (name.toLocaleLowerCase() === 'trash')
-    return 'MAILS_COMMONS.folders.trash.string'
-  if (name.toLocaleLowerCase() === 'junk')
-    return 'MAILS_COMMONS.folders.junk.string'
-  if (name.toLocaleLowerCase() === 'archive')
-    return 'MAILS_COMMONS.folders.archive.string'
+  if (name.toLocaleLowerCase() === 'inbox') return 'folders.inbox.string'
+  if (name.toLocaleLowerCase() === 'sent') return 'folders.sent.string'
+  if (name.toLocaleLowerCase() === 'drafts') return 'folders.drafts.string'
+  if (name.toLocaleLowerCase() === 'trash') return 'folders.trash.string'
+  if (name.toLocaleLowerCase() === 'junk') return 'folders.junk.string'
+  if (name.toLocaleLowerCase() === 'archive') return 'folders.archive.string'
   return undefined
 }
 

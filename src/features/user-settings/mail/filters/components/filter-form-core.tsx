@@ -16,7 +16,12 @@ import { DialogTrigger } from '@radix-ui/react-dialog'
 import { Edit, Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useMemo } from 'react'
-import { FieldArrayWithId, useFieldArray, useForm } from 'react-hook-form'
+import {
+  FieldArrayWithId,
+  useFieldArray,
+  useForm,
+  useWatch,
+} from 'react-hook-form'
 import { z } from 'zod'
 import { defaultValues, schema } from './filter-schema'
 import { actions, operators, ruleConditions, ruleFields } from './utils'
@@ -106,7 +111,7 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
     name: 'actions',
   })
 
-  const name = form.watch('name')
+  const name = useWatch({ control: form.control, name: 'name' })
 
   return (
     <Dialog>
@@ -156,6 +161,7 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
                       id: `${ruleFields.length}`,
                       condition: '',
                       field: '',
+                      field_value: '',
                       value: '',
                     })
                   }

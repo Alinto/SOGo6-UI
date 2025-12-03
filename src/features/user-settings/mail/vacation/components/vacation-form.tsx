@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { z } from 'zod'
 import { MailVacation } from '../mail-vacation-types'
 import { useUpdateMailVacationSettingsMutation } from '../store/mail-vacation-settings-api'
@@ -40,11 +40,16 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
   function onSubmit(values: z.infer<typeof schema>) {
     update(values)
   }
-  const enabled = form.watch('enabled')
+  const enabled = useWatch({ control: form.control, name: 'enabled' })
 
-  const enableDates = form.watch('constraints.enableDates')
-  const enableHours = form.watch('constraints.enableHours')
-  const enableDays = form.watch('constraints.enableDays')
+  const constraints = useWatch({
+    control: form.control,
+    name: 'constraints',
+  })
+
+  const enableDates = constraints?.enableDates ?? false
+  const enableHours = constraints?.enableHours ?? false
+  const enableDays = constraints?.enableDays ?? false
   const { isDirty, isSubmitting } = form.formState
 
   return (

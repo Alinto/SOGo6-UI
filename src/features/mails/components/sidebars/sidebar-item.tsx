@@ -27,7 +27,7 @@ interface SidebarItemProps {
   isDefault?: boolean
   handleClick: () => void
   collapsible?: boolean
-  onClick?: React.MouseEventHandler<HTMLButtonElement>
+  onClick?: React.MouseEventHandler<HTMLDivElement>
 }
 
 /**
@@ -59,7 +59,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   onClick,
   ...props
 }) => {
-  const [type, setType] = React.useState('')
+  const [, setType] = React.useState('')
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
   return (

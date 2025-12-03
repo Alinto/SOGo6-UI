@@ -9,15 +9,26 @@ import {
 import { Input } from '@/components/ui/input'
 import { DropdownMenuItem } from '@radix-ui/react-dropdown-menu'
 import { DynamicIcon } from 'lucide-react/dynamic'
+import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
 import { AutoSizer, List } from 'react-virtualized'
+import { ImapFolder } from '../mails-types'
 import { useGetFoldersQuery } from '../store/mails-api'
 import { iconSelector } from './utils'
 
-function flattenFolders(folders: any[], level = 0, parentPath = '') {
-  let result: any[] = []
+interface FlattenedFolder extends ImapFolder {
+  level: number
+  key: string
+}
+
+function flattenFolders(
+  folders: ImapFolder[],
+  level = 0,
+  parentPath = ''
+): FlattenedFolder[] {
+  let result: FlattenedFolder[] = []
   for (const f of folders) {
-    result.push({ ...f, level, key: f.id || `${parentPath}/${f.name}` })
+    result.push({ ...f, level, key: f.path || `${parentPath}/${f.name}` })
     if (f.subfolders?.length) {
       result = result.concat(
         flattenFolders(f.subfolders, level + 1, f.path || f.name)
@@ -30,43 +41,49 @@ function flattenFolders(folders: any[], level = 0, parentPath = '') {
 const SearchFolders = () => {
   const { data } = useGetFoldersQuery()
   const [search, setSearch] = useState('')
-
-  // Recursive filter function
-  const filterFolders = (folders: any[], query: string) => {
-    if (!query) return folders
-    return folders
-      .map((folder) => {
-        const subfolders = folder.subfolders
-          ? filterFolders(folder.subfolders, query)
-          : []
-        if (
-          folder.name.toLowerCase().includes(query.toLowerCase()) ||
-          subfolders.length > 0
-        ) {
-          return { ...folder, subfolders }
-        }
-        return null
-      })
-      .filter(Boolean)
-  }
-
+  const t = useTranslations('MAILS_COMMONS')
   // Flatten only filtered folders
-  const filteredData = useMemo(
-    () => (data ? flattenFolders(filterFolders(data, search)) : []),
-    [data, search]
-  )
+  const filteredData = useMemo(() => {
+    // Recursive filter function
+    const filterFolders = (
+      folders: ImapFolder[],
+      query: string
+    ): ImapFolder[] => {
+      if (!query) return folders
+      return folders
+        .map((folder: ImapFolder): ImapFolder | null => {
+          const filteredSubfolders = folder.subfolders
+            ? filterFolders(folder.subfolders, query)
+            : undefined
+          if (
+            folder.name.toLowerCase().includes(query.toLowerCase()) ||
+            (filteredSubfolders && filteredSubfolders.length > 0)
+          ) {
+            return { ...folder, subfolders: filteredSubfolders }
+          }
+          return null
+        })
+        .filter((folder): folder is ImapFolder => folder !== null)
+    }
+
+    return data
+      ? flattenFolders(
+          filterFolders(Array.isArray(data) ? data : [data], search)
+        )
+      : []
+  }, [data, search])
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={'outline'}>Others</Button>
+        <Button variant={'outline'}>{t('search.others.string')}</Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search folders"
+            placeholder={t('search.folders.string')}
           />
         </DropdownMenuGroup>
         <DropdownMenuSeparator />

@@ -9,12 +9,15 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { defaultValues, schema } from './profile-schema'
 
 const PasswordForm: React.FC = () => {
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('FORM_PROFILE')
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
     defaultValues,
@@ -27,7 +30,7 @@ const PasswordForm: React.FC = () => {
   return (
     <Form {...form}>
       <form
-        className="border rounded-md shadow-sm p-4"
+        className="rounded-md border p-4 shadow-sm"
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <div className="grid gap-4 md:grid-cols-2">
@@ -36,7 +39,7 @@ const PasswordForm: React.FC = () => {
             name="firstname"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Name</FormLabel>
+                <FormLabel>{t('firstname.string')}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -48,7 +51,7 @@ const PasswordForm: React.FC = () => {
             name="lastname"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Lastname</FormLabel>
+                <FormLabel>{t('lastname.string')}</FormLabel>
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
@@ -57,7 +60,9 @@ const PasswordForm: React.FC = () => {
           />
         </div>
         <div className="flex justify-end pt-6">
-          <Button className="text-background">Save</Button>
+          <Button className="text-background">
+            {formT('save.default.string')}
+          </Button>
         </div>
       </form>
     </Form>

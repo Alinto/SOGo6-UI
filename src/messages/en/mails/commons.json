@@ -1,5 +1,83 @@
 {
     "MAILS_COMMONS": {
+        "mail_display": {
+            "content": {
+                "download_attachment": {
+                    "string": "Download attachment",
+                    "description": "ARIA label for the download attachment link"
+                },
+                "download_all_attachments": {
+                    "string": "Download all attachments",
+                    "description": "ARIA label for the download all attachments link"
+                }
+            }
+        },
+        "search": {
+            "placeholder": {
+                "string": "Search emails",
+                "description": "Placeholder text for the email search input field"
+            },
+            "more_options": {
+                "string": "More Options",
+                "description": "Button to open more search options"
+            },
+            "folders": {
+                "string": "Folders",
+                "description": "Label for the folders section in the search options"
+            },
+            "confirm": {
+                "string": "Search",
+                "description": "Button to confirm and execute the email search"
+            },
+            "in_message_content": {
+                "string": "In message content",
+                "description": "Option to search within the content of messages"
+            },
+            "with_attachments": {
+                "string": "With Attachments",
+                "description": "Option to filter emails that have attachments"
+            },
+            "in_favorites": {
+                "string": "In favorites",
+                "description": "Option to filter emails that are marked as favorites"
+            },
+            "unseen_only": {
+                "string": "Unseen only",
+                "description": "Option to filter emails that are unseen"
+            },
+            "body": {
+                "string": "Body",
+                "description": "Label for the 'Body' field in email search options"
+            },
+            "date_from": {
+                "string": "Date from",
+                "description": "Label for the 'Date from' field in email search options"
+            },
+            "date_to": {
+                "string": "Date to",
+                "description": "Label for the 'Date to' field in email search options"
+            },
+            "others": {
+                "string": "Others",
+                "description": "Label for the 'Others' section in email search options"
+            }
+        },
+        "from": {
+            "string": "From",
+            "description": "Label for the 'From' field in email search options"
+        },
+        "to": {
+            "string": "To",
+            "description": "Label for the 'To' field in email search options"
+        },
+        "bcc": {
+            "string": "Bcc",
+            "description": "Label for the 'Bcc' field in email search options"
+        },
+        "subject": {
+            "string": "Subject",
+            "description": "Label for the 'Subject' field in email search options"
+        },
         "folders": {
             "actions": {
                 "new_subfolder": {

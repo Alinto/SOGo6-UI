@@ -13,20 +13,23 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
+import { useTranslations } from 'next-intl'
 import SearchFolders from './search-folders'
 import SearchMoreOptions from './search-more-options'
 
 export function Search() {
+  const formT = useTranslations('FORM_COMMONS')
+  const t = useTranslations('MAILS_COMMONS')
   return (
     <Popover>
       <PopoverTrigger asChild>
         <div className="relative">
           <Input
             className="placeholder:text-transparent"
-            placeholder="Search in your messages."
+            placeholder={t('search.placeholder.string')}
           />
           <div className="pointer-events-none absolute inset-0 flex items-center px-3 text-sm text-gray-500">
-            Search in your messages.
+            {t('search.placeholder.string')}
           </div>
         </div>
       </PopoverTrigger>
@@ -40,23 +43,25 @@ export function Search() {
           <Input />
           <div className="grid gap-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="bodySearch">Search in the message content</Label>
+              <Label htmlFor="bodySearch">
+                {t('search.in_message_content.string')}
+              </Label>
               <Checkbox id="bodySearch" />
             </div>
             <div className="">
-              <Label>Search in</Label>
+              <Label>{t('search.folders.string')}</Label>
               <div>
                 <Button className="mr-2" variant={'outline'}>
-                  All folders
+                  {t('search.folders.string')}
                 </Button>
                 <Button className="mr-2" variant={'outline'}>
-                  Inbox
+                  {t('folders.inbox.string')}
                 </Button>
                 <Button className="mr-2" variant={'outline'}>
-                  Draft
+                  {t('folders.drafts.string')}
                 </Button>
                 <Button className="mr-2" variant={'outline'}>
-                  Sent
+                  {t('folders.sent.string')}
                 </Button>
                 <SearchFolders />
               </div>
@@ -64,7 +69,9 @@ export function Search() {
           </div>
           <Collapsible>
             <CollapsibleTrigger asChild>
-              <Button variant="outline">More options</Button>
+              <Button variant="outline">
+                {t('search.more_options.string')}
+              </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="scrollbar-thin-gray max-h-[40vh] overflow-y-auto pr-2">
               <SearchMoreOptions />
@@ -74,8 +81,8 @@ export function Search() {
 
           <div className="flex items-center justify-end">
             <div>
-              <Button>Reset</Button>
-              <Button className="ml-2">Search</Button>
+              <Button>{formT('reset.string')}</Button>
+              <Button className="ml-2">{t('search.confirm.string')}</Button>
             </div>
           </div>
         </div>

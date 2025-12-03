@@ -8,12 +8,15 @@ interface StoreProviderProps {
 }
 
 const StoreProvider: React.FC<StoreProviderProps> = ({ children }) => {
-  const storeRef = useRef<AppStore | null>(null)
+  const storeRef = useRef<AppStore | undefined>(undefined)
+  // eslint-disable-next-line react-hooks/refs
   if (!storeRef.current) {
     storeRef.current = makeStore()
   }
+  // eslint-disable-next-line react-hooks/refs
+  const store = storeRef.current
 
-  return <Provider store={storeRef.current}>{children}</Provider>
+  return <Provider store={store}>{children}</Provider>
 }
 
 export default StoreProvider

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 
 export function parseEmailContact(str: string) {
   const match = str.trim().match(/^(.*)\s*<([^>]+)>$/)
@@ -51,7 +51,7 @@ export function decodeBase64(str: string): string {
           .join('')
       )
     }
-  } catch (e) {
+  } catch {
     return str
   }
 }
@@ -80,13 +80,24 @@ export function blockExternalImages(html: string): string {
 }
 
 export const ShadowEmailContent = ({ html }: { html: string }) => {
-  const shadowRootRef = useRef<HTMLDivElement>(null)
+  const elementRef = useRef<HTMLDivElement | null>(null)
+
+  const refCallback = useCallback(
+    (el: HTMLDivElement | null) => {
+      elementRef.current = el
+      if (el) {
+        el.innerHTML = html || ''
+      }
+    },
+    [html]
+  )
 
   useEffect(() => {
-    if (shadowRootRef.current) {
-      shadowRootRef.current.innerHTML = html || ''
+    if (elementRef.current) {
+      elementRef.current.innerHTML = html || ''
     }
   }, [html])
 
-  return React.createElement('div', { ref: shadowRootRef })
+  // eslint-disable-next-line react-hooks/refs
+  return React.createElement('div', { ref: refCallback })
 }

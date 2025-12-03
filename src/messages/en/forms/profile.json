@@ -1,0 +1,12 @@
+{
+    "FORM_PROFILE": {
+        "firstname": {
+            "string": "First Name",
+            "description": "Label for the first name input field."
+        },
+        "lastname": {
+            "string": "Last Name",
+            "description": "Label for the last name input field."
+        }
+    }
+}
