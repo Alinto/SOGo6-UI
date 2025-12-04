@@ -47,7 +47,7 @@ const SidebarFastAccess: React.FC<SidebarFastAccessProps> = ({
 }) => {
   return (
     <Sidebar
-      className={`text-accent bg-sidebar-background-secondary mt-[48px] border-0`}
+      className={`text-accent bg-sidebar-background-secondary mt-12 border-0`}
       side="right"
     >
       <SidebarContent>

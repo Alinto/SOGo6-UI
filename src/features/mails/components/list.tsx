@@ -14,7 +14,7 @@ import { nameSelector } from './utils'
 
 interface MessagesListProps {
   items: ImapMessagesList[]
-  total: number
+  total: number | undefined
   page: number
   totalPages?: number
   hasNextPage?: boolean
@@ -33,7 +33,8 @@ const MessagesList: React.FC<MessagesListProps> = ({
   isLoading,
   type,
 }) => {
-  const t = useTranslations('MAILS_LIST')
+  const listT = useTranslations('MAILS_LIST')
+  const t = useTranslations('MAILS_COMMONS')
 
   const { folder } = useParams()
 
@@ -61,7 +62,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
             )}
           </span>
           <span className="">
-            {t('messages_number.string', { number: total })}
+            {listT('messages_number.string', { number: total })}
           </span>
         </div>
         <div className="flex flex-row items-center justify-between gap-2">
@@ -78,7 +79,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
       <ul className="scrollbar-thin-gray mt-2 overflow-y-auto rounded">
         {items.length === 0 && (
           <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
-            {t('no_items.string')}
+            {listT('no_items.string')}
           </li>
         )}
         {items.length > 0 &&

@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import React from 'react'
 
 interface ComposeHeaderProps {
-  onClose: () => void
+  onClose?: () => void
 }
 
 const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
@@ -20,17 +20,19 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
           <User className="text-muted-foreground h-9 w-9" />
           <Input className="min-w-3xl" />
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-4"
-            onClick={onClose}
-          >
-            <X className="text-muted-foreground h-6 w-6" />
-            <span className="sr-only">{tCommons('close.string')}</span>
-          </Button>
-        </div>
+        {onClose && (
+          <div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 p-4"
+              onClick={onClose}
+            >
+              <X className="text-muted-foreground h-6 w-6" />
+              <span className="sr-only">{tCommons('close.string')}</span>
+            </Button>
+          </div>
+        )}
       </div>
       <div className="mt-2 flex w-full items-center">
         <Input

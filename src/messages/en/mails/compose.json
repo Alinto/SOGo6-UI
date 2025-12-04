@@ -23,6 +23,26 @@
         "subject": {
             "string": "Subject",
             "description": "Subject of the email"
+        },
+        "minimize": {
+            "string": "Minimize",
+            "description": "Minimize the compose window"
+        },
+        "maximize": {
+            "string": "Maximize",
+            "description": "Maximize the compose window"
+        },
+        "restore": {
+            "string": "Restore",
+            "description": "Restore the compose window to its previous size"
+        },
+        "close": {
+            "string": "Close",
+            "description": "Close the compose window"
+        },
+        "open_in_new_page": {
+            "string": "Open in new page",
+            "description": "Open the compose window in a new page"
         }
     }
 }

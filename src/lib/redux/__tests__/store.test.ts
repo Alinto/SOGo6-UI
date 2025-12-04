@@ -62,6 +62,12 @@ jest.mock('../reducer-manager', () => ({
   createReducerManager: mockCreateReducerManager,
 }))
 
+const mockMailComposeReducer = jest.fn()
+
+jest.mock('@/features/mails/store', () => ({
+  mailComposeReducer: mockMailComposeReducer,
+}))
+
 describe('Store', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -72,6 +78,7 @@ describe('Store', () => {
       await import('../store')
 
       expect(mockCreateReducerManager).toHaveBeenCalledWith({
+        mailCompose: mockMailComposeReducer,
         [mockApiSlice.reducerPath]: mockApiSlice.reducer,
         [mockSSEApi.reducerPath]: mockSSEApi.reducer,
       })
@@ -177,7 +184,7 @@ describe('Store', () => {
   })
 
   describe('static reducers configuration', () => {
-    it('should include api slice reducer in static reducers', async () => {
+    it('should include mailCompose, api slice, and sse api reducers in static reducers', async () => {
       // Reset modules and reimport to ensure fresh state
       jest.resetModules()
 
@@ -194,10 +201,15 @@ describe('Store', () => {
         createReducerManager: mockCreateReducerManager,
       }))
 
+      jest.doMock('@/features/mails/store', () => ({
+        mailComposeReducer: mockMailComposeReducer,
+      }))
+
       // Import the module
       await import('../store')
 
       const expectedStaticReducers = {
+        mailCompose: mockMailComposeReducer,
         [mockApiSlice.reducerPath]: mockApiSlice.reducer,
         [mockSSEApi.reducerPath]: mockSSEApi.reducer,
       }
@@ -223,11 +235,16 @@ describe('Store', () => {
         sseApi: mockSSEApi,
       }))
 
+      jest.doMock('@/features/mails/store', () => ({
+        mailComposeReducer: mockMailComposeReducer,
+      }))
+
       // Reset modules to get fresh import
       jest.resetModules()
       await import('../store')
 
       expect(mockCreateReducerManager).toHaveBeenCalledWith({
+        mailCompose: mockMailComposeReducer,
         [customApiSlice.reducerPath]: customApiSlice.reducer,
         [mockSSEApi.reducerPath]: mockSSEApi.reducer,
       })

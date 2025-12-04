@@ -3,11 +3,22 @@
  * Integrates SSE events with RTK Query for real-time data management
  */
 
+import { fetchEnvVars } from '@/lib/env-service'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { SSEService } from './sse-service'
 import { SSEConfig, SSEConnectionState, SSEMessage } from './types'
 
 let sseServiceInstance: SSEService | null = null
+
+/**
+ * Check if SSE is enabled via environment variable
+ * Fetches env vars if not yet loaded. Defaults to true if not set.
+ */
+const isSSEEnabled = async (): Promise<boolean> => {
+  const envVars = await fetchEnvVars()
+  // Disable SSE only if the env var is explicitly set to false
+  return envVars.SSE_ENABLED !== false
+}
 
 /**
  * Get or create SSE service instance
@@ -99,8 +110,18 @@ export const sseApi = createApi({
     /**
      * Connect to SSE server
      */
-    connectSSE: builder.mutation<{ connected: boolean }, SSEConfig | void>({
+    connectSSE: builder.mutation<
+      { connected: boolean; disabled?: boolean },
+      SSEConfig | void
+    >({
       queryFn: async (newConfig) => {
+        // Check if SSE is disabled via environment variable
+        const sseEnabled = await isSSEEnabled()
+        if (!sseEnabled) {
+          console.log('SSE is disabled via SSE_ENABLED environment variable')
+          return { data: { connected: false, disabled: true } }
+        }
+
         console.log('Connecting to SSE server with config:', newConfig)
         if (newConfig) {
           // Create or update service with new config
@@ -135,8 +156,16 @@ export const sseApi = createApi({
 
 /**
  * Initialize SSE API with config
+ * Returns null if SSE is disabled
  */
-export const initSSEApi = (config: SSEConfig) => {
+export const initSSEApi = async (
+  config: SSEConfig
+): Promise<SSEService | null> => {
+  const sseEnabled = await isSSEEnabled()
+  if (!sseEnabled) {
+    console.log('SSE is disabled via SSE_ENABLED environment variable')
+    return null
+  }
   sseServiceInstance = new SSEService(config)
   return sseServiceInstance
 }

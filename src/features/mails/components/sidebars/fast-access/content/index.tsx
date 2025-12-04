@@ -6,7 +6,7 @@ import NotesContent from './notes-content'
 import TasksContent from './tasks-content'
 
 type FastAccessContentProps = {
-  name: 'address-book' | 'notes' | 'tasks' | 'calendar'
+  name: 'address-book' | 'notes' | 'tasks' | 'calendar' | ''
 }
 
 const FastAccessContent: React.FC<FastAccessContentProps> = ({ name }) => {

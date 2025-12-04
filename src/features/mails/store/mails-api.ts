@@ -48,3 +48,5 @@ export const {
   useGetFolderMessagesQuery,
   useGetMailQuery,
 } = injectedEndpoints
+
+export const mailsApiEndpoints = injectedEndpoints

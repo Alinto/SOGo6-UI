@@ -1,4 +1,5 @@
 // import authReducer from '@/features/auth/auth-slice'
+import { mailComposeReducer } from '@/features/mails/store'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
 import { listenerMiddleware } from './listener-middleware'
@@ -6,6 +7,7 @@ import { createReducerManager, ReducerManager } from './reducer-manager'
 import { sseApi } from './sse/sse-api'
 const staticReducers = {
   // auth: authReducer,
+  mailCompose: mailComposeReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
   [sseApi.reducerPath]: sseApi.reducer,
 }

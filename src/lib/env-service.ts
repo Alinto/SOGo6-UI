@@ -2,6 +2,7 @@ import React from 'react'
 
 export interface EnvVariables {
   REACT_APP_API_BASE_URL?: string
+  SSE_ENABLED?: boolean
   // Add other environment variables here as needed
 }
 
@@ -124,7 +125,9 @@ export const getCachedEnvVars = (): EnvVariables | null => {
   return envCache
 }
 
-export const getEnvVar = (key: keyof EnvVariables): string | undefined => {
+export const getEnvVar = (
+  key: keyof EnvVariables
+): string | boolean | undefined => {
   return envCache?.[key]
 }
 

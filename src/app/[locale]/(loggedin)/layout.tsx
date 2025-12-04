@@ -3,6 +3,7 @@
 import AppHeader from '@/components/app-header'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import FloatingCompose from '@/features/mails/components/compose/floating-compose'
 import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
@@ -42,25 +43,28 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [connect])
 
   return (
-    <SidebarProvider>
-      <DndContext sensors={sensors}>
-        <AppSidebar />
-        <SidebarInset>
-          <AppHeader />
-          <div className="h-[calc(100vh-48px)] gap-4 overflow-auto border">
-            {children}
-          </div>
-        </SidebarInset>
-        {typeof window !== 'undefined' &&
-          ReactDOM.createPortal(
-            <DragOverlay modifiers={[snapCenterToCursor]}>
-              <div className="h-10 w-10">
-                <Contact2 className="h-7 w-7 text-gray-700" />
-              </div>
-            </DragOverlay>,
-            document.body
-          )}
-      </DndContext>
-    </SidebarProvider>
+    <>
+      <SidebarProvider>
+        <DndContext sensors={sensors}>
+          <AppSidebar />
+          <SidebarInset>
+            <AppHeader />
+            <div className="h-[calc(100vh-48px)] gap-4 overflow-auto border">
+              {children}
+            </div>
+          </SidebarInset>
+          {typeof window !== 'undefined' &&
+            ReactDOM.createPortal(
+              <DragOverlay modifiers={[snapCenterToCursor]}>
+                <div className="h-10 w-10">
+                  <Contact2 className="h-7 w-7 text-gray-700" />
+                </div>
+              </DragOverlay>,
+              document.body
+            )}
+        </DndContext>
+      </SidebarProvider>
+      <FloatingCompose />
+    </>
   )
 }

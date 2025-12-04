@@ -31,7 +31,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const { push } = useRouter()
   const { account } = useParams()
   const pathname = usePathname()
-  const t = useTranslations()
+  const t = useTranslations('MAILS_COMMONS')
 
   const hasSubfolders =
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0

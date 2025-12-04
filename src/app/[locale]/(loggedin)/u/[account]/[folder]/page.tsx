@@ -19,6 +19,7 @@ const Page: React.FC<PageProps> = () => {
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const searchParams = useSearchParams()
   const searchParamsKeys = Array.from(searchParams.keys())
+
   const params = searchParamsKeys.reduce(
     (acc, key) => {
       const value = searchParams.get(key)
@@ -44,6 +45,7 @@ const Page: React.FC<PageProps> = () => {
     if (isLoading) return
     // This will ensure that the messages are refetched when the folder changes
     refetch()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderString, refetch])
 
   if (isLoading) {
@@ -51,15 +53,17 @@ const Page: React.FC<PageProps> = () => {
   }
 
   return (
-    <MessagesList
-      items={data?.messages ?? []}
-      page={data?.page ?? 1}
-      total={data?.total}
-      totalPages={data?.totalPages}
-      hasNextPage={data?.hasNextPage}
-      hasPreviousPage={data?.hasPreviousPage}
-      isLoading={isLoading}
-    />
+    <>
+      <MessagesList
+        items={data?.messages ?? []}
+        page={data?.page ?? 1}
+        total={data?.total}
+        totalPages={data?.totalPages}
+        hasNextPage={data?.hasNextPage}
+        hasPreviousPage={data?.hasPreviousPage}
+        isLoading={isLoading}
+      />
+    </>
   )
 }
 

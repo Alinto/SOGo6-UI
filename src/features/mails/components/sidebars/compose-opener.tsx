@@ -4,12 +4,10 @@ import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
-import { ModalCompose } from '../compose/modal-compose'
 
 const ComposeOpener: React.FC = () => {
   const t = useTranslations('COMPOSE')
   const searchParams = useSearchParams()
-  const isOpen = !!searchParams.get('compose')
   const { push } = useRouter()
   const pathname = usePathname()
 
@@ -30,15 +28,6 @@ const ComposeOpener: React.FC = () => {
           {t('new_message.string')}
         </span>
       </SidebarMenuButton>
-      <ModalCompose
-        open={isOpen}
-        onClose={() => {
-          const params = new URLSearchParams(searchParams.toString())
-          params.delete('compose')
-          const query = params.toString()
-          push(query ? `${pathname}?${query}` : pathname)
-        }}
-      />
     </>
   )
 }
