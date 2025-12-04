@@ -209,14 +209,28 @@ export function useDomainConfig({ customDomainId }: UseDomainConfigOpts) {
         }
 
         if (customDomainId) {
-          // preserve previous behaviour: send settings under "settings" and include domain_info if needed
-          const payload = {
-            domain_info: {
-              // TODO:
-              'user source': 'texte en dur',
-            },
-            settings: diff,
+          // Build domain_info.user_source from USER_SOURCE keys present in diff (if any)
+          let domainInfo: Record<string, any> | undefined = undefined
+          if (
+            diff &&
+            Object.prototype.hasOwnProperty.call(diff, 'USER_SOURCE')
+          ) {
+            const usObj = (diff as any)['USER_SOURCE']
+            if (usObj && typeof usObj === 'object' && !Array.isArray(usObj)) {
+              // take keys for which the value is not null/undefined (omit explicit deletions)
+              const keys = Object.keys(usObj).filter(
+                (k) => usObj[k] !== null && usObj[k] !== undefined
+              )
+              if (keys.length > 0) {
+                domainInfo = { user_source: keys.join(',') }
+              }
+            }
           }
+
+          // preserve previous behaviour: send settings under "settings" and include domain_info if built
+          const payload: Record<string, any> = domainInfo
+            ? { domain_info: domainInfo, settings: diff }
+            : { settings: diff }
 
           const res = await patchCustomDomainConfig({
             customDomainId: customDomainId.toLowerCase(),
