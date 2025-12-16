@@ -13,13 +13,15 @@ interface InputWithErrorProps {
   className?: string
 }
 
-const InputWithError: React.FC<
+const InputWithError = React.forwardRef<
+  HTMLInputElement,
   InputWithErrorProps & React.InputHTMLAttributes<HTMLInputElement>
-> = ({ errors, errorName, className, ...props }) => {
+>(({ errors, errorName, className, ...props }, ref) => {
   const t = useTranslations()
   return (
     <>
       <Input
+        ref={ref}
         className={cn(
           'flex',
           errors && errors[errorName] && 'border-destructive border',
@@ -36,6 +38,7 @@ const InputWithError: React.FC<
       />
     </>
   )
-}
+})
+InputWithError.displayName = 'InputWithError'
 
 export default InputWithError

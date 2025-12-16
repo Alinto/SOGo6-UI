@@ -1,3 +1,131 @@
 {
-    "US_MAIL_FORWARD": {}
+  "US_MAIL_FORWARD": {
+    "title": {
+      "string": "Mail Forward"
+    },
+    "labels": {
+      "transfer_incoming": {
+        "string": "Transfer incoming messages"
+      },
+      "email": {
+        "string": "Email address"
+      },
+      "always_forward": {
+        "string": "Always forward"
+      },
+      "keep_copy": {
+        "string": "Keep a copy in this inbox"
+      }
+    },
+    "description": {
+      "transfer_incoming": {
+        "string": "Automatically forward new messages to another email address"
+      },
+      "email": {
+        "string": "Forward to these addresses (up to {max} addresses). Add multiple addresses separated by comma, semicolon, or press Enter/Tab."
+      }
+    },
+    "help": {
+      "email": {
+        "string": "We'll forward new messages to these addresses"
+      }
+    },
+    "placeholders": {
+      "email": {
+        "string": "Add email address and press Enter"
+      }
+    },
+    "errors": {
+      "email": {
+        "invalid": {
+          "string": "Please enter a valid email address"
+        },
+        "duplicate": {
+          "string": "This address is already in the list"
+        }
+      },
+      "emails": {
+        "list": {
+          "string": "There was an error with one or more email addresses"
+        }
+      },
+      "max_reached": {
+        "string": "Maximum {max} addresses allowed"
+      }
+    },
+    "hints": {
+      "blur": {
+        "string": "Press Enter to add this address"
+      }
+    },
+    "tooltip": {
+      "always_forward": {
+        "string": "Incoming mail is forwarded before applying your filters."
+      },
+      "keep_copy": {
+        "string": "Keep a copy of forwarded messages in your inbox. Useful if you want to maintain a local archive."
+      }
+    },
+    "success": {
+      "title": {
+        "string": "Settings Saved"
+      },
+      "saved": {
+        "string": "Forwarding settings saved"
+      }
+    },
+    "errors_api": {
+      "title": {
+        "string": "Error"
+      },
+      "save_failed": {
+        "string": "Couldn't save your changes, try again"
+      },
+      "load_failed": {
+        "string": "Error loading settings"
+      }
+    },
+    "status": {
+      "enabled": {
+        "string": "Enabled"
+      },
+      "disabled": {
+        "string": "Disabled"
+      }
+    },
+    "aria": {
+      "tags_count": {
+        "string": "{count} of {max} email addresses added"
+      },
+      "remove_email": {
+        "string": "Remove {email}"
+      },
+      "email_input_group": {
+        "string": "Email addresses for forwarding"
+      },
+      "toggle_forwarding": {
+        "string": "Toggle email forwarding"
+      }
+    }
+  },
+  "NOTIFICATIONS": {
+    "US_MAIL_FORWARD": {
+      "success": {
+        "title": {
+          "string": "Settings Saved"
+        },
+        "saved": {
+          "string": "Forwarding settings saved successfully"
+        }
+      },
+      "errors_api": {
+        "title": {
+          "string": "Error"
+        },
+        "save_failed": {
+          "string": "Couldn't save your changes, try again"
+        }
+      }
+    }
+  }
 }

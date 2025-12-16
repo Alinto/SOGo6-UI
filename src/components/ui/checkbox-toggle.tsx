@@ -3,14 +3,31 @@ import * as CheckboxPrimitive from '@radix-ui/react-checkbox'
 import React from 'react'
 import { Checkbox } from './checkbox'
 
-interface CheckboxToggleProps
-  extends React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> {
+interface CheckboxToggleProps extends React.ComponentPropsWithoutRef<
+  typeof CheckboxPrimitive.Root
+> {
   label?: string
+
+  /** Show dynamic status text (Enabled/Disabled) */
+  showStatusLabel?: boolean
+  enabledLabel?: string
+  disabledLabel?: string
 }
-const CheckboxToggle: React.FC<CheckboxToggleProps> = ({ label, ...props }) => {
+
+const CheckboxToggle: React.FC<CheckboxToggleProps> = ({
+  label,
+  showStatusLabel = false,
+  enabledLabel = 'Enabled',
+  disabledLabel = 'Disabled',
+  checked,
+  ...props
+}) => {
+  const statusText = checked ? enabledLabel : disabledLabel
+
   return (
     <label className="inline-flex cursor-pointer items-center">
       <Checkbox
+        checked={checked}
         {...props}
         className={cn(
           'peer relative h-6 w-11 rounded-full',
@@ -19,6 +36,16 @@ const CheckboxToggle: React.FC<CheckboxToggleProps> = ({ label, ...props }) => {
         )}
       />
       {label && <span className="ml-3 text-sm">{label}</span>}
+      {showStatusLabel && (
+        <span
+          className={cn(
+            'ml-3 text-sm font-medium transition-colors',
+            checked ? 'text-primary' : 'text-muted-foreground'
+          )}
+        >
+          {statusText}
+        </span>
+      )}
     </label>
   )
 }

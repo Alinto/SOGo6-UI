@@ -21,13 +21,14 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
   ...props
 }) => {
   return (
-    <div className="input-with-tag flex flex-wrap rounded-md border-b-1 p-2">
+    <div className="input-with-tag dark:border-muted flex flex-wrap items-center gap-2 rounded-md border py-2 pr-2">
       {tags.map((tag, i) => (
         <Tag
           key={tag.id}
           value={tag.value}
           icon={'trash-2'}
           action={() => remove(i)}
+          className={i === 0 ? 'ml-2' : ''}
         />
       ))}
       <div className="min-w-96 flex-1">
@@ -41,6 +42,7 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
           }}
           errors={errors}
           errorName={name}
+          className="ml-2 border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
           {...props}
         />
       </div>

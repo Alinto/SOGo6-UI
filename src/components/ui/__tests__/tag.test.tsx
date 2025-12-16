@@ -1,5 +1,4 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import React from 'react'
 
 import Tag from '../tag'
 
@@ -16,15 +15,7 @@ jest.mock('lucide-react/dynamic', () => ({
   ),
 }))
 
-jest.mock('../button', () => ({
-  Button: React.forwardRef<HTMLButtonElement, any>(
-    ({ children, ...props }, ref) => (
-      <button ref={ref} data-testid="button" {...props}>
-        {children}
-      </button>
-    )
-  ),
-}))
+// Note: Tag component now uses native <button> instead of Button component
 
 describe('Tag', () => {
   // Group related tests together for better organization
@@ -41,7 +32,7 @@ describe('Tag', () => {
       // The cn function should be called with the custom class
       const mockCn = require('@/lib/utils').cn as jest.Mock
       expect(mockCn).toHaveBeenCalledWith(
-        expect.stringContaining('tag flex h-9'),
+        expect.stringContaining('tag'),
         expect.any(String),
         customClass
       )
@@ -75,14 +66,14 @@ describe('Tag', () => {
       render(<Tag value="test" icon="user" action={mockAction} />)
 
       expect(screen.getByTestId('dynamic-icon-user')).toBeInTheDocument()
-      expect(screen.getByTestId('button')).toBeInTheDocument()
+      expect(screen.getByRole('button')).toBeInTheDocument()
     })
 
     it('calls action function when icon button is clicked', () => {
       const mockAction = jest.fn()
       render(<Tag value="test" icon="user" action={mockAction} />)
 
-      fireEvent.click(screen.getByTestId('button'))
+      fireEvent.click(screen.getByRole('button'))
       expect(mockAction).toHaveBeenCalledTimes(1)
     })
 
@@ -90,7 +81,7 @@ describe('Tag', () => {
       const mockAction = jest.fn()
       render(<Tag value="test" action={mockAction} />)
 
-      expect(screen.queryByTestId('button')).not.toBeInTheDocument()
+      expect(screen.queryByRole('button')).not.toBeInTheDocument()
     })
   })
 

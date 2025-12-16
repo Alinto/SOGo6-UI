@@ -125,7 +125,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(24)
+      expect(tagTypes).toHaveLength(25)
     })
 
     it('should use readonly tag types array', async () => {
