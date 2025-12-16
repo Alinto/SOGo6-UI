@@ -81,7 +81,7 @@ export function Search() {
 
           <div className="flex items-center justify-end">
             <div>
-              <Button>{formT('reset.string')}</Button>
+              <Button>{formT('reset.default.string')}</Button>
               <Button className="ml-2">{t('search.confirm.string')}</Button>
             </div>
           </div>

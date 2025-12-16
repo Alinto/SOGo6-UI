@@ -40,10 +40,6 @@ const config: Config = {
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}',
   ],
-  // Skip node_modules transformation for faster execution
-  transformIgnorePatterns: [
-    'node_modules/(?!(lucide-react|@radix-ui|next-intl|@formatjs)/)',
-  ],
   workerThreads: true,
 }
 

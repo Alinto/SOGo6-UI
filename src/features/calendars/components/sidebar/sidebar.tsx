@@ -56,7 +56,7 @@ const Sidebar: React.FC = () => {
       </SidebarGroup>
 
       <SidebarGroup className="px-0">
-        <SidebarGroupLabel>{t('sidebar.shared')}</SidebarGroupLabel>
+        <SidebarGroupLabel>{t('sidebar.shared.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {shared.map((calendar) => (
             <SidebarItem
@@ -72,7 +72,9 @@ const Sidebar: React.FC = () => {
       </SidebarGroup>
 
       <SidebarGroup className="px-0">
-        <SidebarGroupLabel>{t('sidebar.subscriptions')}</SidebarGroupLabel>
+        <SidebarGroupLabel>
+          {t('sidebar.subscriptions.string')}
+        </SidebarGroupLabel>
         <AddCalendar type="subscriptions" />
         <SidebarMenu>
           {subscriptions.map((calendar) => (

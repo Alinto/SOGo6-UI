@@ -12,6 +12,14 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     getCalendars: builder.query<CalendarsResponse, void>({
       query: () => 'calendars',
       providesTags: ['calendars'],
+      // async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      //   await createApiNotificationHandler(dispatch, {
+      //     successTitle: 'title.success.string',
+      //     successMessage: 'message.success.string',
+      //     errorTitle: 'title.error.string',
+      //     errorMessage: 'message.error.string',
+      //   })(undefined, { queryFulfilled })
+      // },
     }),
     getCalendarById: builder.query<Calendar | null, string>({
       query: (id) => `calendars/${id}`,

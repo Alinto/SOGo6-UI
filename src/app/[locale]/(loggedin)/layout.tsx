@@ -5,6 +5,10 @@ import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import FloatingCompose from '@/features/mails/components/compose/floating-compose'
 import {
+  NotificationProvider,
+  NotificationToaster,
+} from '@/features/notifications'
+import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
 } from '@/lib/redux/sse'
@@ -44,6 +48,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <NotificationToaster />
+      <NotificationProvider />
       <SidebarProvider>
         <DndContext sensors={sensors}>
           <AppSidebar />

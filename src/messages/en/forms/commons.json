@@ -30,6 +30,12 @@
                 "description": "Click to create a new item."
             }
         },
+        "reset": {
+            "default": {
+                "string": "Reset",
+                "description": "Click to reset the form fields to their default values."
+            }
+        },
         "enabled": {
             "string": "Enabled"
         }

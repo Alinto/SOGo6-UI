@@ -1,6 +1,11 @@
 {
     "CALENDARS": {
         "loading": "Loading...",
+        "events": {
+            "create": {
+                "string": "Create Event"
+            }
+        },
         "sidebar": {
             "personals": {
                 "string": "Personal Calendars"
@@ -106,6 +111,9 @@
             "createCalendar": {
                 "title": {
                     "string": "Create New Calendar"
+                },
+                "defaultEventDuration": {
+                    "string": "Default Event Duration"
                 },
                 "nameLabel": {
                     "string": "Calendar Name"
