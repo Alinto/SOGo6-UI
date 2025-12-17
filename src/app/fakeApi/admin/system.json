@@ -1,0 +1,13 @@
+{
+  "data": {
+    "SYSTEM_SETTINGS": {
+      "SOGO_S_DOMAINLESS_LOGIN": false,
+      "SOGO_S_DO_DOMAIN": true,
+      "SOGO_S_MAILSPOOL_PATH": "/var/spool/sogo",
+      "SOGO_S_REJECT_UNKNOWN_DOMAIN": false,
+      "SOGO_S_SENDMAIL": "/usr/lib/sendmail"
+    }
+  },
+  "error_code": 0,
+  "error_msg": ""
+}

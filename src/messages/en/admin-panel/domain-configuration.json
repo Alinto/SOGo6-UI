@@ -1,0 +1,754 @@
+{
+  "AP_DOMAIN_CONFIGURATION": {
+    "origin": {
+      "rule": {
+        "string": "(from rule {origin})"
+      },
+      "default": {
+        "string": "(from default configuration)"
+      },
+      "domain": {
+        "string": "(from domain {origin})"
+      }
+    },
+    "tabs": {
+      "auth_settings": {
+        "string": "Authentification settings"
+      },
+      "user_source": {
+        "string": "User Source"
+      },
+      "user_module_settings": {
+        "string": "User and Module settings"
+      },
+      "mail_settings": {
+        "string": "Mail settings"
+      },
+      "calendar_contact_settings": {
+        "string": "Calendar and Contact settings"
+      }
+    },
+    "properties": {
+      "SOGO_D_AUTH_TYPE": {
+        "name": {
+          "string": "Authentication type"
+        },
+        "description": {
+          "string": "Select the authentication method for users. 'Plain' means the classic username/password"
+        },
+        "developer_comment": "Options might include LDAP, SQL, etc."
+      },
+      "SOGO_D_CAS_URL": {
+        "name": {
+          "string": "URL of the CAS server"
+        },
+        "description": {
+          "string": "Put the full url of your CAS server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_CAS_LOGOUT_ENABLED": {
+        "name": {
+          "string": "Enable logout with CAS"
+        },
+        "description": {
+          "string": "Check the box to allow user to logout from your sogo and the CAS server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_CONFIG_URL": {
+        "name": {
+          "string": "Url of the OopenID Provider endpoint"
+        },
+        "description": {
+          "string": "Example: https://myopenid.net/.well-known/openid-configuration"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_CLIENT_NAME": {
+        "name": {
+          "string": "OpenID client name"
+        },
+        "description": {
+          "string": "Name of your OpenID client"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_CLIENT_SECRET": {
+        "name": {
+          "string": "OpenID client secret"
+        },
+        "description": {
+          "string": "Secret of your OpenID client"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_SCOPE": {
+        "name": {
+          "string": "OpenID client scope"
+        },
+        "description": {
+          "string": "Scope of your OpenID client. Default to 'openid profile email'."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_EMAIL": {
+        "name": {
+          "string": "user's email key"
+        },
+        "description": {
+          "string": "Key where to find the user's mail in user profile."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_TOKEN_CHECK_INTERVAL": {
+        "name": {
+          "string": "Token check interval"
+        },
+        "description": {
+          "string": "To limit the number of requests made to your openID server to check the token validity, set a interval in second where the token won't be checked again after a first success. 0 means the token will always be checked. 60 means the token won't be checked for 60 secondes after a first success"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_REFRESH_ENABLE": {
+        "name": {
+          "string": "Allow Refresh Token Mechanism"
+        },
+        "description": {
+          "string": "If your OpenID server manages refresh token mechanism, sogo will use it"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_ENDSESSION_ENABLED": {
+        "name": {
+          "string": "Enable End Session from OpenID server"
+        },
+        "description": {
+          "string": "By default, usr can only logout from webmail. Check this setting to also logout from your OpenID server, meaning the user will be logout from all applications using the OpenID server. Only works if your OpenId has a end_session_endpoint"
+        },
+        "developer_comment": ""
+      },
+      "SOGo_D_OPENID_FETCH_USER_PROFILE": {
+        "name": {
+          "string": "Fetch User Profile"
+        },
+        "description": {
+          "string": "By default, SOGo fetch the user profile to get the user's email. Uncheck this to get the email directly from the token. Uncheck this if you're using Microsoft's Active Directory Federation Service (AD FS)"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SAML2_URL": {
+        "name": {
+          "string": "SAML2 IS NOT DONE YET!!!!"
+        },
+        "description": {
+          "string": "Good luck to the person who will do this..."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_PWD_CHANGE_ENABLED": {
+        "name": {
+          "string": "Enable Password Change"
+        },
+        "description": {
+          "string": "Allow users to change their password from SOGo. Make sure that your User Source give the rights to users to make that action"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_CHECK_MAX_ATTEMPT": {
+        "name": {
+          "string": "Login Max Failed Attempt"
+        },
+        "description": {
+          "string": "Set how many times a user can fail its login before being blocked. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_CHECK_TIME_SPAN": {
+        "name": {
+          "string": "Login Failed Attempt Time Span"
+        },
+        "description": {
+          "string": "Set the time span in seconds to count the failed attempt. Example: 60 means the user can only failed up to 'Login Max Failed ATtempt' 60 seconds after the first fail, before being blocked"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_CHECK_BLOCK_TIME": {
+        "name": {
+          "string": "Login Failed Attempt blocked Time"
+        },
+        "description": {
+          "string": "Set how long in seconds the user is blocked after too many failed attempt."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_PWD_RECOVERY": {
+        "name": {
+          "string": "Enable Password Recovery"
+        },
+        "description": {
+          "string": "Allow user to set a password recovery method"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_PWD_RECOVERY_METHOD": {
+        "name": {
+          "string": "Password Recovery Methods Available"
+        },
+        "description": {
+          "string": "Choose password recovery method available for users"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_PWD_RECOVERY_FORCE": {
+        "name": {
+          "string": "Force Password Recovery"
+        },
+        "description": {
+          "string": "Force users to set up a password recovery method."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_PWD_RECOVERY_DELAY": {
+        "name": {
+          "string": "Delay Between Password Recovery"
+        },
+        "description": {
+          "string": "Delay in seconds before a user ca nask for a password recovery again."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA": {
+        "name": {
+          "string": "Enable MFA"
+        },
+        "description": {
+          "string": "Allow user to set up a Multi-Factor Authentication"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_METHOD": {
+        "name": {
+          "string": "MFA Methods Available"
+        },
+        "description": {
+          "string": "Choose password recovery method available for users"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_FORCE": {
+        "name": {
+          "string": "Force MFA"
+        },
+        "description": {
+          "string": "Force users to set up MFA"
+        },
+        "developer_comment": ""
+      },
+      "US_UID": {
+        "name": {
+          "string": "User Source UID"
+        },
+        "description": {
+          "string": "Choose a unique name for this User Source, it won't display to users"
+        },
+        "developer_comment": "Only for SOGo to differentiate differents User SOurce"
+      },
+      "US_TYPE": {
+        "name": {
+          "string": "User Source type"
+        },
+        "description": {
+          "string": "Set your User Source type"
+        },
+        "developer_comment": "Only ldap and sql supported for now"
+      },
+      "US_LDAP_HOSTNAME": {
+        "name": {
+          "string": "LDAP server hostname"
+        },
+        "description": {
+          "string": "Only precise the host and port, don't add any other info"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_BIND_DN": {
+        "name": {
+          "string": "Bind DN"
+        },
+        "description": {
+          "string": "The DN of the login name to use for binding to your server."
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_BIND_DN_PWD": {
+        "name": {
+          "string": "Bind DN password"
+        },
+        "description": {
+          "string": "The password for your bind DN"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_BASE_DN": {
+        "name": {
+          "string": "Base DN"
+        },
+        "description": {
+          "string": "Base DN of your users entry. If the mail's domain is in here, you can add '%d' to dynamically add it from user mail like this: 'ou=%d,dc=example,dc=com'"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_UID": {
+        "name": {
+          "string": "UID field"
+        },
+        "description": {
+          "string": "Field with the user's login, the login must be unique accross all User Sources and Domains"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_CN": {
+        "name": {
+          "string": "CN field"
+        },
+        "description": {
+          "string": "Field with the Complete Name of the user"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_ID": {
+        "name": {
+          "string": "ID field"
+        },
+        "description": {
+          "string": "Field that start a user DN if setting Bind Field is not used.(example: if your have 'dn: uid=sogo,ou=users,dc=example,dc=org' this value should be 'uid'"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_SCOPE": {
+        "name": {
+          "string": "Ldape Search Scope"
+        },
+        "description": {
+          "string": "Indicates the set of entries at or below the BaseDN that may be considered potential matches for a search request "
+        },
+        "developer_comment": "https://ldapwiki.com/wiki/Wiki.jsp?page=LDAP%20Search%20Scopes"
+      },
+      "US_LDAP_FILTER": {
+        "name": {
+          "string": "LDAP Filter"
+        },
+        "description": {
+          "string": "Additionnal filter to use for LDAP queries.\nUse '=', '!=', 'AND', 'OR' and the parenthesis. Example: '(objectClass='mailUser' OR objectClass!='mailGroup') AND accountStatus='active'"
+        },
+        "developer_comment": "Use SOGo's syntax and not ldap syntax for filter"
+      },
+      "US_LDAP_PWD_POLICY": {
+        "name": {
+          "string": "LDAP Password Policy"
+        },
+        "description": {
+          "string": "Indicate that your LDAP server has Password Policy with notion of expiration and grace period"
+        },
+        "developer_comment": "https://ldapwiki.com/wiki/Wiki.jsp?page=Password%20Policy"
+      },
+      "US_LDAP_PWD_UPDATE_SAMBA": {
+        "name": {
+          "string": "LDAP Update Samba Passwords"
+        },
+        "description": {
+          "string": "If a user change its password, also updates sambaNTPassword and sambaLMPassword"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_BIND_AS_USER": {
+        "name": {
+          "string": "Bind as User"
+        },
+        "description": {
+          "string": "After authentication, use the user's DN to bind instead"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_BIND_FIELD": {
+        "name": {
+          "string": "Additional bind fields"
+        },
+        "description": {
+          "string": "Additional bind fields to use. For example if you add 'mail' the bind will also have 'mail=<login>'"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_ATTR_FIELD": {
+        "name": {
+          "string": "Attribute fields"
+        },
+        "description": {
+          "string": "Attributes fields return during search query. Default to '*' meaning all. Be careful as this can heavely affected SOGo behavior"
+        },
+        "developer_comment": ""
+      },
+      "US_LDAP_GROUP_CLASS": {
+        "name": {
+          "string": "LDAP Group Classs"
+        },
+        "description": {
+          "string": "Set the LDAP class that will indicates to SOGO thas this is a group and not a singular user"
+        },
+        "developer_comment": ""
+      },
+      "US_SQL_USER_URL": {
+        "name": {
+          "string": "SQL User Url"
+        },
+        "description": {
+          "string": "Database URL to your users table. Example: postgresql://sogo:sogo@127.0.0.1:5432/sogo/sogo_user"
+        },
+        "developer_comment": ""
+      },
+      "US_SQL_PREPEND_PWD_SCHEME": {
+        "name": {
+          "string": "SQL User Password Scheme"
+        },
+        "description": {
+          "string": "Check YES if the password is store like this in the database {scheme)encryptedValue"
+        },
+        "developer_comment": ""
+      },
+      "US_SQL_USER_FILTER": {
+        "name": {
+          "string": "SQL User Filter"
+        },
+        "description": {
+          "string": "Additional WHERE conditions to add to the sql query. Example: 'active=1'"
+        },
+        "developer_comment": ""
+      },
+      "US_SQL_DOMAIN_FIELD": {
+        "name": {
+          "string": "SQL User domain"
+        },
+        "description": {
+          "string": "Set the column nane where the user's domain is. If ste, each SQL query will add '<domain_column> = <user domain>' to its WHERE condition."
+        },
+        "developer_comment": ""
+      },
+      "US_MAPPING": {
+        "name": {
+          "string": "User Source Mapping"
+        },
+        "description": {
+          "string": "Map your User Source field to contact attribute"
+        },
+        "developer_comment": ""
+      },
+      "US_CAN_AUTH": {
+        "name": {
+          "string": "Can Authenticate"
+        },
+        "description": {
+          "string": "Users on this User Source can login to the webmail"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_ALGO": {
+        "name": {
+          "string": "User Source Password Algorithm"
+        },
+        "description": {
+          "string": "Password algorithm used by this user source. Mandatory for a SQL user source. Optionnal for ldap: only needed if you allow user to change their password"
+        },
+        "developer_comment": ""
+      },
+      "US_SIM_KEY_TYPE": {
+        "name": {
+          "string": "Password Algorithm Symmetric Key Type"
+        },
+        "description": {
+          "string": "Tell how you store the symmetric key of your password algorithm"
+        },
+        "developer_comment": ""
+      },
+      "US_SIM_KEY_VALUE": {
+        "name": {
+          "string": "Password Algorithm Symmetric Key Value"
+        },
+        "description": {
+          "string": "Value depends of the type.\nIf 'path', insert here the file path where SOGo will find your symmetric key.\nIf 'env', set the name of the ENV variable where the key is.\nIf 'plain', directly put here the key"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_POLICY": {
+        "name": {
+          "string": "User Password Policy"
+        },
+        "description": {
+          "string": "Tick the box to add a policy on user's password. This policy will be used when the user change it or if you enable the 'check password strenght on login'"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_LEN_MIN": {
+        "name": {
+          "string": "User Password Minimun Length"
+        },
+        "description": {
+          "string": "Minimum length of a user password, inclusive. Minimumn of 4."
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_LEN_MAX": {
+        "name": {
+          "string": "User Password Maximum Length"
+        },
+        "description": {
+          "string": "Maximum length of a user password, inclusive. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_UPPERCASE_MIN": {
+        "name": {
+          "string": "User Password Uppercase Min"
+        },
+        "description": {
+          "string": "Minimum occurence of uppercase letter. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_LOWERCASE_MIN": {
+        "name": {
+          "string": "User Password Lowercase Min"
+        },
+        "description": {
+          "string": "Minimum occurence of lowercase letter. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_DIGITS_MIN": {
+        "name": {
+          "string": "User Password Digits Min"
+        },
+        "description": {
+          "string": "Minimum occurence of digits. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_SPECIAL_ALLOWED": {
+        "name": {
+          "string": "User Password Special Allowed"
+        },
+        "description": {
+          "string": "List the sepcial characters allowed in passwords"
+        },
+        "developer_comment": ""
+      },
+      "US_PWD_SPECIAL_MIN": {
+        "name": {
+          "string": "User Password Special Min"
+        },
+        "description": {
+          "string": "Minimum occurence of special characters. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "US_MAIL": {
+        "name": {
+          "string": "User Mail Field"
+        },
+        "description": {
+          "string": "Field where to find the user mail. Additional fields may be set after the main mail field to tell user's aliases."
+        },
+        "developer_comment": ""
+      },
+      "US_MAIL_SERVER_LOGIN": {
+        "name": {
+          "string": "User Mail Server Login"
+        },
+        "description": {
+          "string": "Only set if the user login to your mail server (imap) is different than its main mail. Set here the field where to find their login"
+        },
+        "developer_comment": ""
+      },
+      "US_MAIL_FILTERING_LOGIN": {
+        "name": {
+          "string": "User Mail Filtering Login"
+        },
+        "description": {
+          "string": "Only set if the user login to your mail filter server (sieve) is different than its main mail. Set here the field where to find their login"
+        },
+        "developer_comment": ""
+      },
+      "US_MAIL_OUTGOING_LOGIN": {
+        "name": {
+          "string": "User Mail Outgoing Login"
+        },
+        "description": {
+          "string": "Only set if the user login to your mail outgoing server (smtp) is different than its main mail. Set here the field where to find their login"
+        },
+        "developer_comment": ""
+      },
+      "US_KIND": {
+        "name": {
+          "string": "User Kind"
+        },
+        "description": {
+          "string": "Set the field where the kind of user is found ('user', 'resource' or 'group')"
+        },
+        "developer_comment": ""
+      },
+      "US_IS_ADDRESSBOOK": {
+        "name": {
+          "string": "User Source Is Addresssbook"
+        },
+        "description": {
+          "string": "Set the field if the users of this User SOurce can be found via autocompletion or Globaal Address Book"
+        },
+        "developer_comment": ""
+      },
+      "US_SEARCH": {
+        "name": {
+          "string": "User Search Field"
+        },
+        "description": {
+          "string": "Additionnal Field to add when searching an user. Example 'name' will find user by their name"
+        },
+        "developer_comment": ""
+      },
+      "US_DISPLAY_NAME": {
+        "name": {
+          "string": "User Source Display Name"
+        },
+        "description": {
+          "string": "Display name of this user source, will be shown if the global address book list"
+        },
+        "developer_comment": ""
+      },
+      "US_AUTO_SEARCH": {
+        "name": {
+          "string": "User Auto Display in GAB"
+        },
+        "description": {
+          "string": "Automatically search and dissplay users in the Global Address Book when selected. Otherwise the user has to type in to trigger the search of type '.' to search for all."
+        },
+        "developer_comment": ""
+      },
+      "US_AUTO_SEARCH_LIMIT": {
+        "name": {
+          "string": "User Autcompletion limit"
+        },
+        "description": {
+          "string": "Limit the maxinum number of user returned after a search query. 0 means no limit"
+        },
+        "developer_comment": ""
+      },
+      "US_EXTRA_CONTACT_INFO": {
+        "name": {
+          "string": "User Extra Contact Info"
+        },
+        "description": {
+          "string": "Tell what info to add with the autocompletion result. Is shown as 'cn <extra> mail'"
+        },
+        "developer_comment": ""
+      },
+      "US_HIDDEN_USER": {
+        "name": {
+          "string": "User Hidden"
+        },
+        "description": {
+          "string": "List of user uid to never return to others for search and autocompletion"
+        },
+        "developer_comment": ""
+      },
+      "US_HAS_RESOURCE": {
+        "name": {
+          "string": "User Source Has Resource"
+        },
+        "description": {
+          "string": "Check the box if this User Source has resources"
+        },
+        "developer_comment": ""
+      },
+      "US_RESOURCE_SEARCH": {
+        "name": {
+          "string": "User Resource Search"
+        },
+        "description": {
+          "string": "Additionnal search field for resources"
+        },
+        "developer_comment": ""
+      },
+      "US_RESOURCE_MULTIBOOKING": {
+        "name": {
+          "string": "User Resource Multibooking"
+        },
+        "description": {
+          "string": "Field where to find the multibooking value of a resource"
+        },
+        "developer_comment": ""
+      },
+      "US_RESOURCE_EXTRA_INFO": {
+        "name": {
+          "string": "User Resource Extra Info"
+        },
+        "description": {
+          "string": "Tell what info to add with the autocompletion result. Is shown as 'cn <extra> mail'"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MODULE_ACCESS": {
+        "name": {
+          "string": "Module Access"
+        },
+        "description": {
+          "string": "Define what modules are available among mail, calendar and contact"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAPI_ACCESS": {
+        "name": {
+          "string": "Enable MAPI Server"
+        },
+        "description": {
+          "string": "Allow user on desktop to use MAPI protocol"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_EAS_ACCESS": {
+        "name": {
+          "string": "Enable EAS Server"
+        },
+        "description": {
+          "string": "Allow user on mobile to use ActiveSync protocol"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FOLDER_DISABLE_EXPORT": {
+        "name": {
+          "string": "Disable Folder Export"
+        },
+        "description": {
+          "string": "Prevent user from exporting their folder among mail, calendar and contact"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FOLDER_DISABLE_SHARING": {
+        "name": {
+          "string": "Disable Folder Sharing"
+        },
+        "description": {
+          "string": "Prevent user from sharing their folder among mail, calendar and contact"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH": {
+        "name": {
+          "string": "Disable Folder Sharing With Authenticated User"
+        },
+        "description": {
+          "string": "Prevent user from sharing their folder with all authenticated user among mail, calendar and contact"
+        },
+        "developer_comment": ""
+      }
+    }
+  }
+}

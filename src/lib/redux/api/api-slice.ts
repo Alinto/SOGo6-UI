@@ -18,6 +18,15 @@ const tagTypes = [
   'mails/folders',
   'calendars',
   'calendar_events',
+  'adminConfig',
+  'adminConfig/domain',
+  'adminConfig/rules',
+  '/admin/v1/config/system',
+  '/admin/v1/config/domains',
+  '/admin/v1/config/rules',
+  '/admin/v1/config/dynamic-form',
+  '/admin/v1/config/domain-default',
+  'admin/v1/config/domains',
 ] as const
 
 // Dynamic base query that fetches env vars first

@@ -15,19 +15,19 @@ exports[`HeaderDropdown component matches snapshot 1`] = `
           src="/images/account-avatar.svg"
         />
         <span>
-          HF
+          JD
         </span>
       </div>
       <div
-        class="text-sidebar-accent-foreground dark:text-foreground text-sm"
+        class="text-muted-foreground dark:text-foreground text-sm"
       >
         <div>
-          Henry Fafenback
+          John Doe
         </div>
         <div
           class="block text-sm"
         >
-          sbarre@alinto.eu
+          jdoe@sogo.nu
         </div>
       </div>
     </div>

@@ -10,7 +10,6 @@ import ListFilter from './list/list-filter'
 import ListPagination from './list/list-pagination'
 import ListSort from './list/list-sort'
 import AddressBookListSkeleton from './skeletons/skeleton'
-import { nameSelector } from './utils'
 
 interface MessagesListProps {
   items: ImapMessagesList[]
@@ -55,12 +54,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
       <div className="text-foreground flex flex-row items-center justify-between">
         <div className="ml-2.5 flex flex-row items-center gap-4">
           <Checkbox />
-          <span className="text-lg font-semibold">
-            {t(
-              nameSelector(folder as string) ??
-                decodeURIComponent(folder as string)
-            )}
-          </span>
+          <span className="text-lg font-semibold">Inbox</span>
           <span className="">
             {listT('messages_number.string', { number: total })}
           </span>

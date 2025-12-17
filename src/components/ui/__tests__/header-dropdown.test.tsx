@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useTranslations } from 'next-intl'
+import type { ReactElement } from 'react'
+import React from 'react'
 import HeaderDropdown from '../header-dropdown'
 
 // filepath: /SOGo/src/components/ui/header-dropdown.test.tsx
@@ -37,68 +39,111 @@ jest.mock('@/components/theme-switcher', () => ({
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
-  BookA: ({ className, ...props }) => (
+  BookA: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div {...props} className={className} data-testid="book-a-icon" />
   ),
-  CalendarCog: ({ className, ...props }) => (
+  CalendarCog: ({
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div {...props} className={className} data-testid="calendar-cog-icon" />
   ),
-  CircleUserRound: ({ className, ...props }) => (
+  CircleUserRound: ({
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div
       {...props}
       className={className}
       data-testid="circle-user-round-icon"
     />
   ),
-  Cog: ({ className, ...props }) => (
+  Cog: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div {...props} className={className} data-testid="cog-icon" />
   ),
-  LogOut: ({ className, ...props }) => (
+  LogOut: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div {...props} className={className} data-testid="log-out-icon" />
   ),
-  Mail: ({ className, ...props }) => (
+  Mail: ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
     <div {...props} className={className} data-testid="mail-icon" />
   ),
-  UserRoundCog: ({ className, ...props }) => (
+  UserRoundCog: ({
+    className,
+    ...props
+  }: React.HTMLAttributes<HTMLDivElement>) => (
     <div {...props} className={className} data-testid="user-round-cog-icon" />
   ),
 }))
 
 // Mock Radix UI dropdown menu primitives directly
 jest.mock('@radix-ui/react-dropdown-menu', () => {
-  const React = require('react')
+  interface DropdownMenuContextType {
+    open: boolean
+    setOpen: (open: boolean) => void
+  }
 
-  const Root = ({ children }) => {
+  interface TriggerProps extends React.HTMLAttributes<HTMLElement> {
+    asChild?: boolean
+    open?: boolean
+    setOpen?: (open: boolean) => void
+    children?: React.ReactElement
+    ref?: React.Ref<HTMLElement>
+  }
+
+  interface ContentProps extends React.HTMLAttributes<HTMLElement> {
+    sideOffset?: number
+    open?: boolean
+    setOpen?: (open: boolean) => void
+    children?: React.ReactNode
+    ref?: React.Ref<HTMLElement>
+  }
+
+  interface ItemProps extends React.HTMLAttributes<HTMLElement> {
+    children?: React.ReactNode
+    ref?: React.Ref<HTMLElement>
+  }
+
+  const Root = ({ children }: { children: React.ReactNode }) => {
     const [open, setOpen] = React.useState(false)
     return (
       <div>
         {React.Children.map(children, (child) =>
-          React.cloneElement(child, { open, setOpen })
+          React.isValidElement(child)
+            ? React.cloneElement(
+                child as ReactElement<DropdownMenuContextType>,
+                {
+                  open,
+                  setOpen,
+                }
+              )
+            : child
         )}
       </div>
     )
   }
 
-  const Trigger = React.forwardRef(
+  const Trigger = React.forwardRef<HTMLElement, TriggerProps>(
     ({ children, open, setOpen, asChild, ...props }, ref) => {
       const { asChild: _, ...cleanProps } = props
-      return React.cloneElement(children, {
-        ...cleanProps,
-        ref,
-        onClick: () => setOpen && setOpen(!open),
-      })
+      return React.isValidElement(children)
+        ? React.cloneElement(children as ReactElement, {
+            ...cleanProps,
+            ref,
+            onClick: () => setOpen && setOpen(!open),
+          })
+        : null
     }
   )
   Trigger.displayName = 'DropdownMenuTrigger'
 
-  const Portal = ({ children }) => children
+  const Portal = ({ children }: { children?: React.ReactNode }) => children
   Portal.displayName = 'DropdownMenuPortal'
 
-  const Content = React.forwardRef(
+  const Content = React.forwardRef<HTMLElement, ContentProps>(
     ({ children, open, setOpen, sideOffset, ...props }, ref) => {
       const { sideOffset: _, setOpen: __, ...cleanProps } = props
       return open ? (
-        <div {...cleanProps} ref={ref}>
+        <div {...cleanProps} ref={ref as React.Ref<HTMLDivElement>}>
           {children}
         </div>
       ) : null
@@ -106,65 +151,87 @@ jest.mock('@radix-ui/react-dropdown-menu', () => {
   )
   Content.displayName = 'DropdownMenuContent'
 
-  const Item = React.forwardRef(({ children, ...props }, ref) => (
-    <div {...props} ref={ref} role="menuitem">
-      {children}
-    </div>
-  ))
+  const Item = React.forwardRef<HTMLElement, ItemProps>(
+    ({ children, ...props }, ref) => (
+      <div {...props} ref={ref as React.Ref<HTMLDivElement>} role="menuitem">
+        {children}
+      </div>
+    )
+  )
   Item.displayName = 'DropdownMenuItem'
 
-  const Label = React.forwardRef(({ children, ...props }, ref) => (
-    <div {...props} ref={ref} role="label">
-      {children}
-    </div>
-  ))
+  const Label = React.forwardRef<HTMLElement, ItemProps>(
+    ({ children, ...props }, ref) => (
+      <div {...props} ref={ref as React.Ref<HTMLDivElement>} role="label">
+        {children}
+      </div>
+    )
+  )
   Label.displayName = 'DropdownMenuLabel'
 
-  const Separator = React.forwardRef((props, ref) => (
-    <hr {...props} ref={ref} />
-  ))
+  const Separator = React.forwardRef<
+    HTMLHRElement,
+    React.HTMLAttributes<HTMLHRElement>
+  >((props, ref) => <hr {...props} ref={ref} />)
   Separator.displayName = 'DropdownMenuSeparator'
 
-  const Group = ({ children }) => <div>{children}</div>
+  const Group = ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  )
   Group.displayName = 'DropdownMenuGroup'
 
-  const Sub = ({ children }) => <div>{children}</div>
+  const Sub = ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  )
   Sub.displayName = 'DropdownMenuSub'
 
-  const SubTrigger = React.forwardRef(({ children, ...props }, ref) => (
-    <div {...props} ref={ref}>
-      {children}
-    </div>
-  ))
+  const SubTrigger = React.forwardRef<HTMLElement, ItemProps>(
+    ({ children, ...props }, ref) => (
+      <div {...props} ref={ref as React.Ref<HTMLDivElement>}>
+        {children}
+      </div>
+    )
+  )
   SubTrigger.displayName = 'DropdownMenuSubTrigger'
 
-  const SubContent = React.forwardRef(({ children, ...props }, ref) => (
-    <div {...props} ref={ref}>
-      {children}
-    </div>
-  ))
+  const SubContent = React.forwardRef<HTMLElement, ItemProps>(
+    ({ children, ...props }, ref) => (
+      <div {...props} ref={ref as React.Ref<HTMLDivElement>}>
+        {children}
+      </div>
+    )
+  )
   SubContent.displayName = 'DropdownMenuSubContent'
 
-  const RadioGroup = ({ children }) => <div>{children}</div>
+  const RadioGroup = ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  )
   RadioGroup.displayName = 'DropdownMenuRadioGroup'
 
-  const CheckboxItem = React.forwardRef(({ children, ...props }, ref) => (
-    <div {...props} ref={ref}>
-      {children}
-    </div>
-  ))
+  const CheckboxItem = React.forwardRef<HTMLElement, ItemProps>(
+    ({ children, ...props }, ref) => (
+      <div {...props} ref={ref as React.Ref<HTMLDivElement>}>
+        {children}
+      </div>
+    )
+  )
   CheckboxItem.displayName = 'DropdownMenuCheckboxItem'
 
-  const RadioItem = React.forwardRef(({ children, ...props }, ref) => (
-    <div {...props} ref={ref}>
-      {children}
-    </div>
-  ))
+  const RadioItem = React.forwardRef<HTMLElement, ItemProps>(
+    ({ children, ...props }, ref) => (
+      <div {...props} ref={ref as React.Ref<HTMLDivElement>}>
+        {children}
+      </div>
+    )
+  )
   RadioItem.displayName = 'DropdownMenuRadioItem'
 
-  const Shortcut = ({ children, ...props }) => (
-    <span {...props}>{children}</span>
-  )
+  const Shortcut = ({
+    children,
+    ...props
+  }: React.HTMLAttributes<HTMLSpanElement> & {
+    children?: React.ReactNode
+  }) => <span {...props}>{children}</span>
   Shortcut.displayName = 'DropdownMenuShortcut'
 
   return {
@@ -188,14 +255,23 @@ jest.mock('@radix-ui/react-dropdown-menu', () => {
 
 // Mock Avatar component
 jest.mock('@/components/ui/avatar', () => ({
-  Avatar: ({ children }) => <div className="avatar">{children}</div>,
-  AvatarImage: ({ src, ...props }) => <img {...props} src={src} alt="avatar" />,
-  AvatarFallback: ({ children }) => <span>{children}</span>,
+  Avatar: ({ children }: { children?: React.ReactNode }) => (
+    <div className="avatar">{children}</div>
+  ),
+  AvatarImage: ({
+    src,
+    ...props
+  }: React.ImgHTMLAttributes<HTMLImageElement> & { src?: string }) => (
+    <img {...props} src={src} alt="avatar" />
+  ),
+  AvatarFallback: ({ children }: { children?: React.ReactNode }) => (
+    <span>{children}</span>
+  ),
 }))
 
 describe('HeaderDropdown component', () => {
   beforeEach(() => {
-    useTranslations.mockReturnValue((key) => key)
+    ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
   })
 
   it('matches snapshot', () => {
@@ -205,8 +281,8 @@ describe('HeaderDropdown component', () => {
 
   it('renders HeaderDropdown component', () => {
     render(<HeaderDropdown />)
-    expect(screen.getByText('Henry Fafenback')).toBeInTheDocument()
-    expect(screen.getByText('sbarre@alinto.eu')).toBeInTheDocument()
+    expect(screen.getByText('John Doe')).toBeInTheDocument()
+    expect(screen.getByText('jdoe@sogo.nu')).toBeInTheDocument()
   })
 
   it('renders dropdown menu items', async () => {

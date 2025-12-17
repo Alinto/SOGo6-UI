@@ -20,7 +20,8 @@
     "check:translations:missing": "node scripts/check-translation-keys.js --only-missing",
     "check:translations:quiet": "node scripts/check-translation-keys.js --quiet",
     "check:translations:file": "node scripts/check-translation-keys.js --file",
-    "prepare": "husky"
+    "prepare": "husky",
+    "type-check": "tsc"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-react": "11.0.0",

@@ -3,7 +3,9 @@ import createMiddleware from 'next-intl/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
-  matcher: ['/((?!_next|fakeApi|env|.*\\..*).*)'],
+  matcher: [
+    '/((?!_next|fakeApi|env|.*\\.js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot$).*)',
+  ],
 }
 
 // Function to generate a dynamic regex to test if pathname begins with one of the locales
@@ -90,9 +92,12 @@ export default async function handler(req: NextRequest) {
 
   // User domain - block admin_panel routes
   if (!isAdmin && isAdminPanelRoute) {
-    // Redirect to home page if trying to access admin routes from user domain
-    const url = new URL(`/${defaultLocale}`, req.url)
-    return NextResponse.redirect(url)
+    // Allow admin routes in development mode
+    if (process.env.NODE_ENV !== 'development') {
+      // Redirect to home page if trying to access admin routes from user domain
+      const url = new URL(`/${defaultLocale}`, req.url)
+      return NextResponse.redirect(url)
+    }
   }
 
   const res = await middleware(req)

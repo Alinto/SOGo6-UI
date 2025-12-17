@@ -1,19 +1,25 @@
 {
-    "AP_SIDEBAR": {
-        "system": {
-            "string": "System"
+  "AP_SIDEBAR": {
+    "system": {
+      "string": "System"
+    },
+    "theme": {
+      "string": "Theme"
+    },
+    "config": {
+      "string": "Configuration",
+      "rules": {
+        "string": "Rules"
+      },
+      "domains": {
+        "string": "Domains",
+        "default": {
+          "string": "Default"
         },
-        "theme": {
-            "string": "Theme"
-        },
-        "config": {
-            "string": "Configuration",
-            "rules": {
-                "string": "Rules"
-            },
-            "domains": {
-                "string": "Domains"
-            }
+        "custom": {
+          "string": "Custom domains"
         }
+      }
     }
+  }
 }

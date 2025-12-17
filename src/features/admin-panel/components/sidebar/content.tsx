@@ -1,4 +1,4 @@
-import { Database, Globe, Palette, Settings2, UserCog } from 'lucide-react'
+import { Database, Palette } from 'lucide-react'
 
 const navItems = [
   {
@@ -14,21 +14,21 @@ const navItems = [
     url: '/admin_panel/system',
   },
   {
-    title: 'AP_SIDEBAR.config.string',
-    isActive: true,
+    title: 'AP_SIDEBAR.config.domains.string',
     items: [
       {
-        title: 'AP_SIDEBAR.config.domains.string',
-        url: '/admin_panel/domains',
-        icon: Globe,
+        title: 'AP_SIDEBAR.config.domains.default.string',
+        url: '/admin_panel/domains/default',
       },
       {
-        title: 'AP_SIDEBAR.config.rules.string',
-        url: '/admin_panel/rules',
-        icon: UserCog,
-        collapsedIcon: Settings2,
+        title: 'AP_SIDEBAR.config.domains.custom.string',
+        url: '/admin_panel/domains/custom_domains',
       },
     ],
+  },
+  {
+    title: 'AP_SIDEBAR.config.rules.string',
+    url: '/admin_panel/rules',
   },
 ]
 

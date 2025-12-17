@@ -1,0 +1,35 @@
+{
+  "ADMIN_PANNEL_RULE": {
+    "title": {
+      "string": "Rules"
+    },
+    "filter_placeholder": {
+      "string": "Filter rules..."
+    },
+    "add_new_rule": { "string": "Add new rule" },
+    "select_all": {
+      "string": "Select all"
+    },
+    "select_row": {
+      "string": "Select row"
+    },
+    "domain": {
+      "string": "Domain"
+    },
+    "open_menu": {
+      "string": "Open menu"
+    },
+    "actions": {
+      "string": "Actions"
+    },
+    "copy_domain": {
+      "string": "Copy domain name"
+    },
+    "edit": {
+      "string": "Edit"
+    },
+    "delete": {
+      "string": "Delete"
+    }
+  }
+}

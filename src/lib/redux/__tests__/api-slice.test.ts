@@ -52,6 +52,9 @@ describe('API Slice', () => {
           'folder/messages',
           'preferences',
           'mails/folders',
+          'adminConfig',
+          'adminConfig/domain',
+          'adminConfig/rules',
         ]),
         baseQuery: expect.any(Function),
         endpoints: expect.any(Function),
@@ -105,6 +108,9 @@ describe('API Slice', () => {
         'folder/messages',
         'preferences',
         'mails/folders',
+        'adminConfig',
+        'adminConfig/domain',
+        'adminConfig/rules',
       ]
 
       expectedTagTypes.forEach((tagType) => {
@@ -119,7 +125,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(15)
+      expect(tagTypes).toHaveLength(24)
     })
 
     it('should use readonly tag types array', async () => {

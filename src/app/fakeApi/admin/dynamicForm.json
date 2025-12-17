@@ -1,0 +1,1407 @@
+{
+  "data": {
+    "domain": [
+      {
+        "AUTH_SETTINGS": [
+          {
+            "constraints": {
+              "choices": ["plain", "openid", "cas", "saml2"]
+            },
+            "data_type": "str",
+            "default": "plain",
+            "depends": null,
+            "name": "SOGO_D_AUTH_TYPE",
+            "required": false
+          },
+          {
+            "constraints": {
+              "prefixes": ["http://", "https://"]
+            },
+            "data_type": "url",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%cas",
+            "name": "SOGO_D_CAS_URL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%cas",
+            "name": "SOGO_D_CAS_LOGOUT_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": {
+              "prefixes": ["http://", "https://"]
+            },
+            "data_type": "url",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_CONFIG_URL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_CLIENT_NAME",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "secret",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_CLIENT_SECRET",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "openid profile email",
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_SCOPE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "email",
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_EMAIL",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_TOKEN_CHECK_INTERVAL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_REFRESH_ENABLE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_ENDSESSION_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGo_D_OPENID_FETCH_USER_PROFILE",
+            "required": false
+          },
+          {
+            "constraints": {
+              "prefixes": ["http://", "https://"]
+            },
+            "data_type": "url",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%saml2",
+            "name": "SOGO_D_SAML2_URL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%plain",
+            "name": "SOGO_D_PWD_CHANGE_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%plain",
+            "name": "SOGO_D_LOGIN_CHECK_MAX_ATTEMPT",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 5
+            },
+            "data_type": "number",
+            "default": 10,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%plain",
+            "name": "SOGO_D_LOGIN_CHECK_TIME_SPAN",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 5
+            },
+            "data_type": "number",
+            "default": 300,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%plain",
+            "name": "SOGO_D_LOGIN_CHECK_BLOCK_TIME",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%plain",
+            "name": "SOGO_D_PWD_RECOVERY",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["secretQuestion", "secondaryEmail", "apiCall"],
+              "len_max": 3,
+              "len_min": 1
+            },
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_PWD_RECOVERY%%%equal%%%True",
+            "name": "SOGO_D_PWD_RECOVERY_METHOD",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_PWD_RECOVERY%%%equal%%%True",
+            "name": "SOGO_D_PWD_RECOVERY_FORCE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "number",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_D_PWD_RECOVERY_DELAY",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%plain",
+            "name": "SOGO_D_LOGIN_MFA",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["totp"],
+              "len_max": 1,
+              "len_min": 1
+            },
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_LOGIN_MFA%%%equal%%%True",
+            "name": "SOGO_D_LOGIN_MFA_METHOD",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_LOGIN_MFA%%%equal%%%True",
+            "name": "SOGO_D_LOGIN_MFA_FORCE",
+            "required": false
+          }
+        ],
+        "is_duplicable": false
+      },
+      {
+        "USER_SOURCE": [
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": null,
+            "name": "US_UID",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": null,
+            "name": "US_NAME",
+            "required": true
+          },
+          {
+            "constraints": {
+              "choices": ["ldap", "sql"]
+            },
+            "data_type": "str",
+            "default": null,
+            "depends": null,
+            "name": "US_TYPE",
+            "required": true
+          },
+          {
+            "constraints": {
+              "prefixes": ["ldap://", "ldaps://"]
+            },
+            "data_type": "url",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_HOSTNAME",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_BIND_DN",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "secret",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_BIND_DN_PWD",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_BASE_DN",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "uid",
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_UID",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "cn",
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_CN",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "uid",
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_ID",
+            "required": true
+          },
+          {
+            "constraints": {
+              "choices": ["BASE", "ONE", "SUB"]
+            },
+            "data_type": "str",
+            "default": "SUB",
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_SCOPE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_FILTER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_PWD_POLICY",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_PWD_UPDATE_SAMBA",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_QUERY_TIMEOUT",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_BIND_AS_USER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_BIND_FIELD",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": ["*"],
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_ATTR_FIELD",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": [
+              "group",
+              "groupOfNames",
+              "groupOfUniqueNames",
+              "posixGroup"
+            ],
+            "depends": "US_TYPE%%%equal%%%ldap",
+            "name": "US_LDAP_GROUP_CLASS",
+            "required": false
+          },
+          {
+            "constraints": {
+              "prefixes": ["postgresql://", "mysql://"]
+            },
+            "data_type": "url",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%sql",
+            "name": "US_SQL_USER_URL",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%sql",
+            "name": "US_SQL_PREPEND_PWD_SCHEME",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%sql",
+            "name": "US_SQL_USER_FILTER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_TYPE%%%equal%%%sql",
+            "name": "US_SQL_DOMAIN_FIELD",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "dict",
+            "default": null,
+            "depends": null,
+            "name": "US_MAPPING",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": null,
+            "depends": null,
+            "name": "US_CAN_AUTH",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_CAN_AUTH%%%equal%%%True",
+            "name": "US_PWD_ALGO",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["path", "env", "plain"]
+            },
+            "data_type": "str",
+            "default": null,
+            "depends": "US_PWD_ALGO%%%equal%%%sym-aes-128-cbc",
+            "name": "US_SIM_KEY_TYPE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_PWD_ALGO%%%equal%%%sym-aes-128-cbc",
+            "name": "US_SIM_KEY_VALUE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "US_CAN_AUTH%%%equal%%%True",
+            "name": "US_PWD_POLICY",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 1
+            },
+            "data_type": "number",
+            "default": 4,
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_LEN_MIN",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_LEN_MAX",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_UPPERCASE_MIN",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_LOWERCASE_MIN",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_DIGITS_MIN",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_SPECIAL_MIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "%$&*(){}[]!?\\/@#.,:;+=<>-_",
+            "depends": "US_PWD_POLICY%%%equal%%%True",
+            "name": "US_PWD_SPECIAL_ALLOWED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": ["mail"],
+            "depends": "US_CAN_AUTH%%%equal%%%True",
+            "name": "US_MAIL",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_CAN_AUTH%%%equal%%%True",
+            "name": "US_MAIL_SERVER_LOGIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_CAN_AUTH%%%equal%%%True",
+            "name": "US_MAIL_FILTERING_LOGIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_CAN_AUTH%%%equal%%%True",
+            "name": "US_MAIL_OUTGOING_LOGIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": null,
+            "name": "US_KIND",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": null,
+            "depends": null,
+            "name": "US_IS_ADDRESSBOOK",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "US_IS_ADDRESSBOOK%%%equal%%%True",
+            "name": "US_SEARCH",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_IS_ADDRESSBOOK%%%equal%%%True",
+            "name": "US_DISPLAY_NAME",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "US_IS_ADDRESSBOOK%%%equal%%%True",
+            "name": "US_AUTO_SEARCH",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "number",
+            "default": 0,
+            "depends": "US_IS_ADDRESSBOOK%%%equal%%%True",
+            "name": "US_AUTO_QUERY_LIMIT",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_IS_ADDRESSBOOK%%%equal%%%True",
+            "name": "US_EXTRA_CONTACT_INFO",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "US_IS_ADDRESSBOOK%%%equal%%%True",
+            "name": "US_HIDDEN_USER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": null,
+            "depends": null,
+            "name": "US_HAS_RESOURCE",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "US_HAS_RESOURCE%%%equal%%%True",
+            "name": "US_RESOURCE_SEARCH",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_HAS_RESOURCE%%%equal%%%True",
+            "name": "US_RESOURCE_MULTIBOOKING",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "US_HAS_RESOURCE%%%equal%%%True",
+            "name": "US_RESOURCE_EXTRA_INFO",
+            "required": false
+          }
+        ],
+        "is_duplicable": true
+      },
+      {
+        "USER_MODULE_SETTINGS": [
+          {
+            "constraints": {
+              "choices": ["mail", "calendar", "contact"],
+              "len_max": 3,
+              "len_min": 1
+            },
+            "data_type": "list[str]",
+            "default": ["mail", "calendar", "contact"],
+            "depends": null,
+            "name": "SOGO_D_MODULE_ACCESS",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_D_MAPI_ACCESS",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_D_EAS_ACCESS",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["mail", "calendar", "contact"],
+              "len_max": 3,
+              "len_min": 1
+            },
+            "data_type": "list[str]",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_D_FOLDER_DISABLE_EXPORT",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["mail", "calendar", "contact"],
+              "len_max": 3,
+              "len_min": 1
+            },
+            "data_type": "list[str]",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_D_FOLDER_DISABLE_SHARING",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["mail", "calendar", "contact"],
+              "len_max": 3,
+              "len_min": 1
+            },
+            "data_type": "list[str]",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 2
+            },
+            "data_type": "number",
+            "default": 2,
+            "depends": null,
+            "name": "SOGO_D_AUTOCOMPLETION_MIN_LEN",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": null,
+            "name": "SOGO_D_API_MAX_REQUEST",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 10
+            },
+            "data_type": "number",
+            "default": 30,
+            "depends": null,
+            "name": "SOGO_D_API_MAX_REQUEST_INTERVAL",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 5
+            },
+            "data_type": "number",
+            "default": 300,
+            "depends": null,
+            "name": "SOGO_D_API_MAX_REQUEST_BLOCK_INTERVAL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_D_IDENTITIES_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_IDENTITIES_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_IDENTITIES_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_IDENTITIES_CUSTOM_NAME_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_IDENTITIES_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_IDENTITIES_CUSTOM_REPLY_TO_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_D_ALLOW_EXT_MAIL_ACCOUNT",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_ALLOW_EXT_AVATAR",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": [0, 1, 2, 5, 10, 20, 30, 60],
+              "len_max": 8,
+              "len_min": 1
+            },
+            "data_type": "list[number]",
+            "default": [0, 1, 2, 5, 10, 20, 30, 60],
+            "depends": null,
+            "name": "SOGO_D_MAIL_REFRESH_INTERVAL_ALLOWED",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "mail"]
+            },
+            "data_type": "str",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_D_MAIL_JUNK_SETTINGS",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "email",
+            "default": null,
+            "depends": "SOGO_D_MAIL_JUNK_SETTINGS%%%equal%%%mail",
+            "name": "SOGO_D_MAIL_JUNK_MAIL_SPAM",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "email",
+            "default": null,
+            "depends": "SOGO_D_MAIL_JUNK_SETTINGS%%%equal%%%mail",
+            "name": "SOGO_D_MAIL_JUNK_MAIL_HAM",
+            "required": false
+          }
+        ],
+        "is_duplicable": false
+      },
+      {
+        "MAIL_SETTINGS": [
+          {
+            "constraints": {
+              "choices": ["imap"]
+            },
+            "data_type": "str",
+            "default": "imap",
+            "depends": null,
+            "name": "SOGO_D_MAIL_SERVER_TYPE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_MAIL_SERVER_TYPE%%%equal%%%imap",
+            "name": "SOGO_D_IMAP_SERVER",
+            "required": false
+          },
+          {
+            "constraints": {
+              "max_inclusive": 65535,
+              "min_inclusive": 1
+            },
+            "data_type": "number",
+            "default": 143,
+            "depends": "SOGO_D_MAIL_SERVER_TYPE%%%equal%%%imap",
+            "name": "SOGO_D_IMAP_PORT",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "TLS", "SSL"]
+            },
+            "data_type": "str",
+            "default": "None",
+            "depends": "SOGO_D_MAIL_SERVER_TYPE%%%equal%%%imap",
+            "name": "SOGO_D_IMAP_ENCRYPTION",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "plain", "xoauth2"]
+            },
+            "data_type": "str",
+            "default": "None",
+            "depends": "SOGO_D_MAIL_SERVER_TYPE%%%equal%%%imap",
+            "name": "SOGO_D_IMAP_AUTH_MECH",
+            "required": false
+          },
+          {
+            "constraints": {
+              "max_inclusive": 1,
+              "min": 0
+            },
+            "data_type": "number",
+            "default": 1,
+            "depends": null,
+            "name": "SOGO_D_SOFT_EMAIL_QUOTA",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_MAIL_PURGE_ALLOW",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "number",
+            "default": 0,
+            "depends": null,
+            "name": "SOGO_D_MAIL_PURGE_MIN_DATE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_MAIL_FILTERING_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["sieve"]
+            },
+            "data_type": "str",
+            "default": "sieve",
+            "depends": "SOGO_D_MAIL_FILTERING_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_MAIL_FILTERING_TYPE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_SERVER",
+            "required": false
+          },
+          {
+            "constraints": {
+              "max_inclusive": 65535,
+              "min_inclusive": 1
+            },
+            "data_type": "number",
+            "default": 4190,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_PORT",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "TLS", "SSL"]
+            },
+            "data_type": "str",
+            "default": "None",
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_ENCRYPTION",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "plain", "xoauth2"]
+            },
+            "data_type": "str",
+            "default": "None",
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_AUTH_MECH",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["utf-7", "utf-8"]
+            },
+            "data_type": "str",
+            "default": "utf-7",
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_FOLDER_ENCODING",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_HEADER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_FOOTER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_SIEVE_FIRST_FILTER",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_VACATION_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_VACATION_ALLOW_RESPONSE_ALWAYS",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_FORWARD_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_FORWARD_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_FORWARD_ALLOW_USER_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_FORWARD_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_FORWARD_ALLOW_SOGO_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_FORWARD_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_FORWARD_ALLOW_EXT_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_FORWARD_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_FORWARD_WHITELIST",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_FORWARD_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_FORWARD_BLACKLIST",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_MAIL_FILTERING_TYPE%%%equal%%%sieve",
+            "name": "SOGO_D_NOTIFY_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_NOTIFY_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_NOTIFY_ALLOW_USER_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_NOTIFY_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_NOTIFY_ALLOW_SOGO_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_NOTIFY_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_NOTIFY_ALLOW_EXT_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_NOTIFY_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_NOTIFY_WHITELIST",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_NOTIFY_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_NOTIFY_BLACKLIST",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["smtp", "sendmail"]
+            },
+            "data_type": "str",
+            "default": "smtp",
+            "depends": null,
+            "name": "SOGO_D_MAIL_OUTGOING_TYPE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_MAIL_OUTGOING_TYPE%%%equal%%%smtp",
+            "name": "SOGO_D_SMTP_SERVER",
+            "required": false
+          },
+          {
+            "constraints": {
+              "max_inclusive": 65535,
+              "min_inclusive": 1
+            },
+            "data_type": "number",
+            "default": 584,
+            "depends": "SOGO_D_MAIL_OUTGOING_TYPE%%%equal%%%smtp",
+            "name": "SOGO_D_SMTP_PORT",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "TLS", "SSL"]
+            },
+            "data_type": "str",
+            "default": "None",
+            "depends": "SOGO_D_MAIL_OUTGOING_TYPE%%%equal%%%smtp",
+            "name": "SOGO_D_SMTP_ENCRYPTION",
+            "required": false
+          },
+          {
+            "constraints": {
+              "choices": ["None", "plain", "xoauth2"]
+            },
+            "data_type": "str",
+            "default": "None",
+            "depends": "SOGO_D_MAIL_OUTGOING_TYPE%%%equal%%%smtp",
+            "name": "SOGO_D_SMTP_AUTH_MECH",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_MAIL_OUTGOING_TYPE%%%equal%%%smtp",
+            "name": "SOGO_D_SMTP_MASTER_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": null,
+            "depends": "SOGO_D_SMTP_MASTER_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_SMTP_MASTER_LOGIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "secret",
+            "default": null,
+            "depends": "SOGO_D_SMTP_MASTER_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_SMTP_MASTER_PWD",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": null,
+            "name": "SOGO_D_MAIL_MAX_SUBMISSION",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 10
+            },
+            "data_type": "number",
+            "default": 30,
+            "depends": null,
+            "name": "SOGO_D_MAIL_MAX_SUBMISSION_INTERVAL",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 5
+            },
+            "data_type": "number",
+            "default": 300,
+            "depends": null,
+            "name": "SOGO_D_MAIL_MAX_SUBMISSION_BLOCK_INTERVAl",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": null,
+            "name": "SOGO_D_MAIL_MAX_RECIPIENT",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "email",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_D_MAIL_SYSTEM_FROM",
+            "required": false
+          }
+        ],
+        "is_duplicable": false
+      },
+      {
+        "CALENDAR_CONTACT_SETTINGS": [
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_CALDAV_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_CALDAV_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_CALDAV_PUBLIC_ACCESS_ENABLE",
+            "required": false
+          },
+          {
+            "constraints": {
+              "min_inclusive": 0
+            },
+            "data_type": "number",
+            "default": 0,
+            "depends": "SOGO_D_CALDAV_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_CALDAV_START_TIME",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_CARDAV_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": "SOGO_D_CARDAV_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_CARDAV_PUBLIC_ACCESS_ENABLE",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_JITSI_LINK_ENABLED",
+            "required": false
+          },
+          {
+            "constraints": {
+              "prefixes": ["http://", "https://"]
+            },
+            "data_type": "url",
+            "default": null,
+            "depends": "SOGO_D_JITSI_LINK_ENABLED%%%equal%%%True",
+            "name": "SOGO_D_JITSI_BASE_URL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": null,
+            "name": "SOGO_D_REMINDER_ALLOW_MAIL",
+            "required": false
+          }
+        ],
+        "is_duplicable": false
+      }
+    ],
+    "system": [
+      {
+        "SYSTEM_SETTINGS": [
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_S_DO_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": null,
+            "name": "SOGO_S_KNOWN_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_S_REJECT_UNKNOWN_DOMAIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": false,
+            "depends": null,
+            "name": "SOGO_S_DOMAINLESS_LOGIN",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "/usr/lib/sendmail",
+            "depends": null,
+            "name": "SOGO_S_SENDMAIL",
+            "required": false
+          },
+          {
+            "constraints": null,
+            "data_type": "str",
+            "default": "/var/spool/sogo",
+            "depends": null,
+            "name": "SOGO_S_MAILSPOOL_PATH",
+            "required": false
+          }
+        ],
+        "is_duplicable": false
+      }
+    ]
+  },
+  "error_code": 0,
+  "error_msg": ""
+}

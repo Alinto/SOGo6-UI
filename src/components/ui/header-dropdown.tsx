@@ -38,12 +38,12 @@ const HeaderDropdown: React.FC = () => {
         >
           <Avatar>
             <AvatarImage src="/images/account-avatar.svg" />
-            <AvatarFallback>HF</AvatarFallback>
+            <AvatarFallback>JD</AvatarFallback>
           </Avatar>
           {!isMobile && (
-            <div className="text-sidebar-accent-foreground dark:text-foreground text-sm">
-              <div>Henry Fafenback</div>
-              <div className="block text-sm">sbarre@alinto.eu</div>
+            <div className="text-muted-foreground dark:text-foreground text-sm">
+              <div>John Doe</div>
+              <div className="block text-sm">jdoe@sogo.nu</div>
             </div>
           )}
         </div>

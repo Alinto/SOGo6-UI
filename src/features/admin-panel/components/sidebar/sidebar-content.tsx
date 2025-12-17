@@ -1,9 +1,3 @@
-// 'use client'
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
 import {
   SidebarGroup,
   SidebarMenu,
@@ -14,7 +8,6 @@ import {
 } from '@/components/ui/sidebar'
 import { Link } from '@/lib/i18n/navigation'
 import { NavItems } from '@/types'
-import { ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import CollapsedNavMenu from './collapsed-sidebar'
 import items from './content'
@@ -27,40 +20,28 @@ function RecursiveNavItem({ item }: RecursiveNavItemProps) {
   const t = useTranslations()
   if (item.items) {
     return (
-      <Collapsible
-        key={item.title}
-        asChild
-        defaultOpen={item.isActive}
-        className="group/collapsible"
-      >
-        <SidebarMenuItem>
-          <CollapsibleTrigger className="text-sm" asChild>
-            <SidebarMenuButton tooltip={t(item.title)}>
-              {item.icon && <item.icon />}
-              <span>{t(item.title)}</span>
-              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-            </SidebarMenuButton>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <SidebarMenuSub>
-              {item.items?.map((subItem) => (
-                <SidebarMenuSubItem className="pt-2" key={subItem.title}>
-                  {subItem.url ? (
-                    <Link href={subItem.url}>
-                      <SidebarMenuButton>
-                        {subItem.icon && <subItem.icon size={24} />}
-                        <span>{t(subItem.title)}</span>
-                      </SidebarMenuButton>
-                    </Link>
-                  ) : (
-                    <RecursiveNavItem item={subItem} />
-                  )}
-                </SidebarMenuSubItem>
-              ))}
-            </SidebarMenuSub>
-          </CollapsibleContent>
-        </SidebarMenuItem>
-      </Collapsible>
+      <SidebarMenuItem className="group/collapsible">
+        <SidebarMenuButton tooltip={t(item.title)}>
+          {item.icon && <item.icon />}
+          <span>{t(item.title)}</span>
+        </SidebarMenuButton>
+        <SidebarMenuSub className="border-none">
+          {item.items?.map((subItem) =>
+            subItem.url ? (
+              <SidebarMenuSubItem className="pt-2" key={subItem.title}>
+                <Link href={subItem.url}>
+                  <SidebarMenuButton>
+                    {subItem.icon && <subItem.icon size={24} />}
+                    <span>{t(subItem.title)}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuSubItem>
+            ) : (
+              <RecursiveNavItem key={subItem.title} item={subItem} />
+            )
+          )}
+        </SidebarMenuSub>
+      </SidebarMenuItem>
     )
   } else {
     return (

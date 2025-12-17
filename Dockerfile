@@ -16,7 +16,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
 
@@ -45,8 +45,8 @@ RUN find ./node_modules -type d -name "*.d.ts" -exec rm -rf {} + 2>/dev/null || 
 FROM alpine:3.22 AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV="production"
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install only Node.js (minimal runtime, no npm)
 RUN apk add --no-cache nodejs
@@ -70,7 +70,7 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]

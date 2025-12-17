@@ -34,7 +34,8 @@
 	},
 	"containerEnv": {
 		"TZ": "Europe/Paris",
-		"NODE_ENV": "development"
+		"NODE_ENV": "development",
+		"SHELL": "/bin/bash"
 	},
 	"postAttachCommand": "/container-entrypoint"
 }
