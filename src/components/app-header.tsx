@@ -1,24 +1,43 @@
 'use client'
-import { Search } from '@/features/mails/components/search'
+import MailsSearch from '@/features/mails/components/mails-search'
 import { useIsMobile } from '@/hooks/use-mobile'
-import React from 'react'
+import { usePathname } from '@/lib/i18n/navigation'
+import { cn } from '@/lib/utils'
+import React, { memo } from 'react'
 import HeaderDropdown from './ui/header-dropdown'
 import { SidebarTrigger } from './ui/sidebar'
 
 const AppHeader: React.FC = () => {
   const isMobile = useIsMobile()
+  const pathname = usePathname()
+  const showMailSearch = pathname.startsWith('/u/')
+  const showAddressBookSearch = pathname.startsWith('/address-books/')
+  const showCalendarsSearch = pathname.startsWith('/calendars/')
 
   return (
     <header className="bg-header text-header-foreground top-0 right-0 left-0 z-10 flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-      {isMobile && <SidebarTrigger />}
-      <div className="ml-2 w-1/2 xl:w-1/3">
-        <Search />
+      <div
+        className={cn('flex items-center gap-2', isMobile ? 'w-full' : 'w-1/2')}
+      >
+        {isMobile && <SidebarTrigger />}
+        <div className="min-w-0 flex-1 md:ml-3">
+          {showMailSearch && <MailsSearch />}
+        </div>
       </div>
-      <div className="mr-3">
+      {showAddressBookSearch && (
+        <div className="ml-2 w-1/4 min-w-0 flex-1">{/* <MailsSearch /> */}</div>
+      )}
+      {showCalendarsSearch && (
+        <div className="ml-2 min-w-0 flex-1">{/* <MailsSearch /> */}</div>
+      )}
+      {!showMailSearch && !showAddressBookSearch && !showCalendarsSearch && (
+        <div className="ml-2 min-w-0 flex-1"></div>
+      )}
+      <div className="mr-3 shrink-0">
         <HeaderDropdown />
       </div>
     </header>
   )
 }
 
-export default AppHeader
+export default memo(AppHeader, (prev, next) => prev === next)

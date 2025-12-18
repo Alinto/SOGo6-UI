@@ -1,3 +1,5 @@
+import React from 'react'
+
 export const useTranslations = () => {
   return (key: string) => key
 }
@@ -24,3 +26,25 @@ export const NextIntlClientProvider = ({
 
 export const IntlProvider = ({ children }: { children: React.ReactNode }) =>
   children
+
+// Navigation module exports
+export const usePathname = () => '/'
+export const useRouter = () => ({
+  push: jest.fn(),
+  replace: jest.fn(),
+  prefetch: jest.fn(),
+})
+export const useSearchParams = () => new URLSearchParams()
+export const useParams = () => ({})
+export const Link = (props: any) =>
+  React.createElement('a', { href: props.href }, props.children)
+
+// createNavigation export
+export const createNavigation = (routing: any) => ({
+  Link: Link,
+  redirect: jest.fn(),
+  usePathname: usePathname,
+  useRouter: useRouter,
+  getPathname: (name: string) => name,
+  useLocale: useLocale,
+})

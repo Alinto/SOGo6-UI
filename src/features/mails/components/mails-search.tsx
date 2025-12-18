@@ -14,10 +14,11 @@ import {
 } from '@/components/ui/popover'
 import { Separator } from '@/components/ui/separator'
 import { useTranslations } from 'next-intl'
+import { memo } from 'react'
 import SearchFolders from './search-folders'
 import SearchMoreOptions from './search-more-options'
 
-export function Search() {
+export function MailsSearch() {
   const formT = useTranslations('FORM_COMMONS')
   const t = useTranslations('MAILS_COMMONS')
   return (
@@ -90,3 +91,7 @@ export function Search() {
     </Popover>
   )
 }
+
+export default memo(MailsSearch, (prev, next) => {
+  return Object.is(prev, next) || JSON.stringify(prev) === JSON.stringify(next)
+})

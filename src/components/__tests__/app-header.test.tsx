@@ -3,13 +3,21 @@ import AppHeader from '../app-header'
 
 // Mock the hooks and components used by AppHeader
 const mockUseIsMobile = jest.fn()
+const mockUsePathname = jest.fn()
 
 jest.mock('@/hooks/use-mobile', () => ({
   useIsMobile: () => mockUseIsMobile(),
 }))
 
-jest.mock('@/features/mails/components/search', () => ({
-  Search: () => <div data-testid="search-component">Search Component</div>,
+jest.mock('@/lib/i18n/navigation', () => ({
+  usePathname: () => mockUsePathname(),
+  useRouter: jest.fn(),
+  Link: ({ children, href }: any) => <a href={href}>{children}</a>,
+}))
+
+jest.mock('@/features/mails/components/mails-search', () => ({
+  __esModule: true,
+  default: () => <div data-testid="search-component">Search Component</div>,
 }))
 
 jest.mock('../ui/header-dropdown', () => {
@@ -27,6 +35,7 @@ jest.mock('../ui/sidebar', () => ({
 describe('AppHeader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUsePathname.mockReturnValue('/u/inbox')
   })
 
   it('should render the header with basic structure', () => {
@@ -92,12 +101,12 @@ describe('AppHeader', () => {
 
     // Check search container has correct classes
     const searchContainer = screen.getByTestId('search-component').parentElement
-    expect(searchContainer).toHaveClass('ml-2', 'w-1/2', 'xl:w-1/3')
+    expect(searchContainer).toHaveClass('min-w-0', 'flex-1')
 
     // Check header dropdown container has correct classes
     const dropdownContainer =
       screen.getByTestId('header-dropdown').parentElement
-    expect(dropdownContainer).toHaveClass('mr-3')
+    expect(dropdownContainer).toHaveClass('mr-3', 'shrink-0')
   })
 
   describe('responsive behavior', () => {

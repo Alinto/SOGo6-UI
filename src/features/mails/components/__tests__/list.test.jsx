@@ -9,6 +9,23 @@ jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ folder: 'inbox' })),
 }))
 
+// Mock i18n navigation
+jest.mock('@/lib/i18n/navigation', () => ({
+  usePathname: jest.fn(() => '/u/inbox'),
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+  })),
+  useSearchParams: jest.fn(() => ({
+    get: jest.fn((key) => {
+      if (key === 'filter') return 'all'
+      return null
+    }),
+  })),
+  Link: ({ children, href }) => <a href={href}>{children}</a>,
+}))
+
 jest.mock('../list-item', () => ({
   __esModule: true,
   default: jest.fn(({ data, isSelected, onHandleCheckboxClick }) => (
@@ -40,6 +57,13 @@ jest.mock('../list-item-classic', () => ({
 jest.mock('../list/list-filter', () => ({
   __esModule: true,
   default: jest.fn(() => <div data-testid="list-filter">Filter</div>),
+}))
+
+jest.mock('../list/list-filter-dropdown', () => ({
+  __esModule: true,
+  default: jest.fn(() => (
+    <div data-testid="list-filter-dropdown">Dropdown</div>
+  )),
 }))
 
 jest.mock('../list/list-pagination', () => ({

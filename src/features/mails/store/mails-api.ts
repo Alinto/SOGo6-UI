@@ -1,3 +1,4 @@
+import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
@@ -39,6 +40,44 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         { type: 'mail', id: mailId },
       ],
     }),
+    moveToTrash: builder.mutation<void, { folder: string; mailId: string }>({
+      query: ({ folder, mailId }) => ({
+        url: `/mails/folders/${encodeURIComponent(folder)}/messages/${encodeURIComponent(mailId)}/move`,
+        method: 'POST',
+        body: { destination: 'Trash' },
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'title.success.string',
+          successMessage: 'message.success.string',
+          errorTitle: 'title.error.string',
+          errorMessage: 'message.error.string',
+        })(undefined, { queryFulfilled })
+      },
+      invalidatesTags: (result, error, { folder }) => [
+        { type: 'folder/messages', folder },
+        'mails/folders',
+      ],
+    }),
+    archiveMail: builder.mutation<void, { folder: string; mailId: string }>({
+      query: ({ folder, mailId }) => ({
+        url: `/mails/folders/${encodeURIComponent(folder)}/messages/${encodeURIComponent(mailId)}/move`,
+        method: 'POST',
+        body: { destination: 'Archive' },
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'title.success.string',
+          successMessage: 'message.success.string',
+          errorTitle: 'title.error.string',
+          errorMessage: 'message.error.string',
+        })(undefined, { queryFulfilled })
+      },
+      invalidatesTags: (result, error, { folder }) => [
+        { type: 'folder/messages', folder },
+        'mails/folders',
+      ],
+    }),
   }),
   overrideExisting: false,
 })
@@ -47,6 +86,8 @@ export const {
   useGetFoldersQuery,
   useGetFolderMessagesQuery,
   useGetMailQuery,
+  useMoveToTrashMutation,
+  useArchiveMailMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints

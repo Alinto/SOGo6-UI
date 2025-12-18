@@ -7,6 +7,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -28,6 +29,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
 }) => {
   const { push } = useRouter()
   const pathname = usePathname()
+  const isMobile = useIsMobile()
   const searchParams = useSearchParams()
   const t = useTranslations('MAILS_LIST')
   const handlePrev = () => {
@@ -70,34 +72,36 @@ const ListPagination: React.FC<ListPaginationProps> = ({
       >
         <ChevronLeft />
       </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="outline"
-            size={'sm'}
-            // eslint-disable-next-line react/jsx-no-literals
-          >{`${currentPage} / ${totalPages}`}</Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="scrollbar-thin-gray max-h-60 w-10 overflow-auto">
-          <DropdownMenuRadioGroup
-            value={currentPage.toString()}
-            onValueChange={(value) => {
-              const page = parseInt(value, 10)
-              if (!isNaN(page)) onPageChange(page)
-            }}
-          >
-            {Array.from({ length: totalPages }, (_, i) => (
-              <DropdownMenuRadioItem
-                key={i + 1}
-                className="cursor-pointer"
-                value={(i + 1).toString()}
-              >
-                {i + 1}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {!isMobile && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size={'sm'}
+              // eslint-disable-next-line react/jsx-no-literals
+            >{`${currentPage} / ${totalPages}`}</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="scrollbar-thin-gray max-h-60 w-10 overflow-auto">
+            <DropdownMenuRadioGroup
+              value={currentPage.toString()}
+              onValueChange={(value) => {
+                const page = parseInt(value, 10)
+                if (!isNaN(page)) onPageChange(page)
+              }}
+            >
+              {Array.from({ length: totalPages }, (_, i) => (
+                <DropdownMenuRadioItem
+                  key={i + 1}
+                  className="cursor-pointer"
+                  value={(i + 1).toString()}
+                >
+                  {i + 1}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
       <Button
         size={'icon'}
         variant={'outline'}

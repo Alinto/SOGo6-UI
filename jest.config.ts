@@ -25,11 +25,14 @@ const config: Config = {
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
+    '^next-intl/navigation$': '<rootDir>/__mocks__/next-intl.ts',
+    '^next-intl/routing$': '<rootDir>/__mocks__/next-intl/routing.ts',
   },
   transform: {
     '^.+\\.(ts|tsx)?$': 'ts-jest',
     '^.+\\.(js|jsx)$': 'babel-jest',
   },
+  transformIgnorePatterns: ['node_modules/(?!(next-intl)/)'],
   // Performance optimizations
   maxWorkers: '50%', // Use half of available CPU cores
   testTimeout: 10000, // 10 second timeout instead of default 5s

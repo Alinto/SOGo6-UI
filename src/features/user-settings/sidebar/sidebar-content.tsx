@@ -42,7 +42,7 @@ function RecursiveNavItem({ item }: RecursiveNavItemProps) {
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
-          <SidebarMenuSub>
+          <SidebarMenuSub className="border-primary-foreground/20">
             {item.items?.map((subItem) => (
               <SidebarMenuSubItem className="pt-2" key={subItem.title}>
                 {subItem.url ? (
