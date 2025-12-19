@@ -16,6 +16,7 @@ import React from 'react'
 export const metadata: Metadata = {
   title: 'SOGo',
   description: 'SOGo Webmail',
+  robots: 'noindex, nofollow',
   icons: {
     icon: '/images/sogo-compact.svg',
     shortcut: '/images/sogo-compact.svg',

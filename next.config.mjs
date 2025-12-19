@@ -93,6 +93,20 @@ const nextConfig = {
         }
         return config;
     },
+    // Prevent search engine scraping
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'X-Robots-Tag',
+                        value: 'noindex, nofollow',
+                    },
+                ],
+            },
+        ];
+    },
 };
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
