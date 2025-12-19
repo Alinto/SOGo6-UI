@@ -75,6 +75,22 @@ jest.mock('@/hooks/useHover', () => ({
   useHover: jest.fn(() => false),
 }))
 
+// Mock NavigationToggler component
+jest.mock('@/components/ui/layout/navigation-toggler', () => {
+  return function MockNavigationToggler() {
+    return <div data-testid="navigation-toggler">Navigation Toggler</div>
+  }
+})
+
+// Mock NavigationMenuToggler component
+jest.mock('@/components/ui/layout/navigation-menu-toggler', () => {
+  return function MockNavigationMenuToggler() {
+    return (
+      <div data-testid="navigation-menu-toggler">Navigation Menu Toggler</div>
+    )
+  }
+})
+
 // Mock other UI components that might cause issues
 jest.mock('@/components/ui/button', () => ({
   Button: React.forwardRef<
@@ -419,8 +435,8 @@ describe('Sidebar Components', () => {
       </SidebarProvider>
     )
 
-    // SidebarHeader contains navigation components, so we check for those instead
-    expect(screen.getAllByTestId('mail')).toHaveLength(2) // Two mail icons (one visible, one in collapsed menu)
+    // SidebarHeader contains mocked navigation components
+    expect(screen.getByTestId('navigation-toggler')).toBeInTheDocument()
   })
 
   it('renders SidebarInput', () => {

@@ -52,19 +52,20 @@
     "@radix-ui/react-tooltip": "1.2.8",
     "@reduxjs/toolkit": "2.11.2",
     "@tanstack/react-table": "8.21.3",
-    "@use-gesture/react": "^10.3.1",
+    "@use-gesture/react": "10.3.1",
     "ckeditor5": "47.3.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
     "date-fns": "4.1.0",
     "deepmerge": "4.3.1",
+    "es-toolkit": "1.43.0",
     "framer-motion": "12.23.26",
     "lucide-react": "0.561.0",
     "next": "15.5.6",
     "next-intl": "4.6.0",
     "next-qrcode": "2.5.1",
-    "next-themes": "^0.4.6",
+    "next-themes": "0.4.6",
     "react": "19.2.3",
     "react-big-calendar": "1.19.4",
     "react-day-picker": "9.12.0",
@@ -72,7 +73,7 @@
     "react-hook-form": "7.68.0",
     "react-redux": "9.2.0",
     "react-virtualized": "9.22.6",
-    "sonner": "^2.0.7",
+    "sonner": "2.0.7",
     "tailwind-merge": "3.4.0",
     "tailwindcss-animate": "1.0.7",
     "zod": "4.2.1"
@@ -90,7 +91,7 @@
     "@types/jest": "30.0.0",
     "@types/node": "24.9.1",
     "@types/react": "19.2.7",
-    "@types/react-big-calendar": "^1.16.3",
+    "@types/react-big-calendar": "1.16.3",
     "@types/react-dom": "19.2.3",
     "@types/react-virtualized": "9.22.3",
     "babel-jest": "30.2.0",
@@ -114,6 +115,6 @@
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "typescript": "5.9.3",
-    "typescript-eslint": "^8.50.0"
+    "typescript-eslint": "8.50.0"
   }
 }

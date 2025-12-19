@@ -1,0 +1,39 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`NavigationMenuToggler should match snapshot 1`] = `
+<DocumentFragment>
+  <div
+    data-open="false"
+    data-testid="popover"
+  >
+    <div>
+      <button
+        aria-label="Open menu"
+        class="p-0"
+      >
+        <div
+          class="h-7 w-7"
+          data-sidebar="menu-button"
+          data-testid="grid2x2-icon"
+        />
+      </button>
+    </div>
+    <div
+      class="w-fit p-0"
+      data-align="start"
+      data-side="right"
+      data-testid="popover-content"
+    >
+      <div
+        class="h-full w-full"
+      >
+        <div
+          data-testid="navigation-toggler"
+        >
+          Navigation Toggler
+        </div>
+      </div>
+    </div>
+  </div>
+</DocumentFragment>
+`;

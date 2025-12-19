@@ -1,7 +1,7 @@
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
-import { Calendar, Contact2, Mail } from 'lucide-react'
+import { Calendar, Contact2, Mail, NotepadText } from 'lucide-react'
 import React from 'react'
-import { Toggle } from '../toggle'
+import { Tabs, TabsList, TabsTrigger } from '../tabs'
 
 interface NavigationTogglerProps {
   className?: string
@@ -20,41 +20,56 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
   if (firstPathPart === 'calendars') {
     page = 'calendars'
   }
+  if (firstPathPart === 'tasks') {
+    page = 'tasks'
+  }
   if (firstPathPart === 'u') {
     page = 'mail'
   }
 
   const { push } = useRouter()
   return (
-    <div className={className}>
-      <Toggle
-        className="cursor-pointer"
-        aria-label="Mail"
-        size={'lg'}
-        onClick={() => push('/u/0/INBOX')}
-        pressed={page === 'mail'}
-      >
-        <Mail className="h-7 w-7" />
-      </Toggle>
-      <Toggle
-        className="cursor-pointer"
-        aria-label="Address Books"
-        size={'lg'}
-        pressed={page === 'address_books'}
-        onClick={() => push('/address_books')}
-      >
-        <Contact2 className="h-7 w-7" />
-      </Toggle>
-      <Toggle
-        className="cursor-pointer"
-        aria-label="Calendars"
-        size={'lg'}
-        pressed={page === 'calendars'}
-        onClick={() => push('/calendars')}
-      >
-        <Calendar className="h-7 w-7" />
-      </Toggle>
-    </div>
+    <Tabs
+      value={page}
+      className={className}
+      onValueChange={(value) => {
+        if (value === 'mail') push('/u/0/INBOX')
+        else if (value === 'address_books') push('/address_books')
+        else if (value === 'calendars') push('/calendars')
+        else if (value === 'tasks') push('/tasks')
+      }}
+    >
+      <TabsList className="border-sidebar-foreground/20 bg-sidebar grid h-10 w-full grid-cols-4 border px-1 py-1">
+        <TabsTrigger
+          value="mail"
+          aria-label="Mail"
+          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+        >
+          <Mail className="h-6 w-6" />
+        </TabsTrigger>
+        <TabsTrigger
+          value="address_books"
+          aria-label="Address Books"
+          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+        >
+          <Contact2 className="h-6 w-6" />
+        </TabsTrigger>
+        <TabsTrigger
+          value="calendars"
+          aria-label="Calendars"
+          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+        >
+          <Calendar className="h-6 w-6" />
+        </TabsTrigger>
+        <TabsTrigger
+          value="tasks"
+          aria-label="Tasks"
+          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+        >
+          <NotepadText className="h-6 w-6" />
+        </TabsTrigger>
+      </TabsList>
+    </Tabs>
   )
 }
 

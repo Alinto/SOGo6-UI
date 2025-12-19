@@ -403,7 +403,7 @@ const SidebarHeader = React.forwardRef<
           height={open ? 50 : 25}
         />
       </div>
-      <div className="flex items-center justify-center gap-2 group-data-[state=collapsed]:hidden">
+      <div className="group-data-[state=collapsed]:hidden">
         <NavigationToggler className="flex gap-2" />
       </div>
       <div className="hidden items-center justify-center gap-2 group-data-[state=collapsed]:my-2 group-data-[state=collapsed]:flex">
