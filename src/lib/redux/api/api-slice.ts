@@ -15,6 +15,7 @@ const tagTypes = [
   'mail/folders',
   'folder/messages',
   'preferences',
+  'mail',
   'mails/folders',
   'calendars',
   'calendar_events',

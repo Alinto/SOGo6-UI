@@ -588,7 +588,7 @@ export async function GET(
       break
   }
 
-  const pageSize = 20
+  const pageSize = 30
   const start = (page - 1) * pageSize
   const end = start + pageSize
   const pagedMessages = messages.slice(start, end)

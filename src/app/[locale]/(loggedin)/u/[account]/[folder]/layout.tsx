@@ -9,6 +9,7 @@ import {
 import { useGetPreferencesQuery } from '@/features/app-data/store/user-preferences-api'
 import FastAccessContent from '@/features/mails/components/sidebars/fast-access/content'
 import SidebarFastAccess from '@/features/mails/components/sidebars/fast-access/sidebar-fast-access'
+import { useIsMobile } from '@/hooks/use-mobile'
 import React, { useCallback } from 'react'
 
 type FastAccessContentName =
@@ -27,6 +28,7 @@ export default function Layout({
 }) {
   const { data } = useGetPreferencesQuery()
   const layoutType = data?.layoutType || 'modern'
+  const isMobile = useIsMobile()
   const [sidebarOpen, setSidebarOpen] = React.useState(false)
   const [fastAccessContentName, setFastAccessContentName] =
     React.useState<FastAccessContentName>('')
@@ -61,21 +63,21 @@ export default function Layout({
         open={sidebarOpen}
         width={`calc(${SIDEBAR_WIDTH} - 1.5rem)`}
       >
-        <SidebarInset>
-          <div className="flex h-full w-full flex-col overflow-auto p-2">
-            {content}
-          </div>
+        <SidebarInset className="flex h-full w-full flex-col">
+          <div className="flex flex-1 overflow-y-auto p-1">{content}</div>
         </SidebarInset>
         {sidebarOpen && <FastAccessContent name={fastAccessContentName} />}
       </SidebarProvider>
       <SidebarFastAccess handleOpen={handleFastAccessToggle} />
       {/* SidebarTrigger fixed to bottom right */}
-      <div className="fixed right-0 bottom-4 z-50">
-        <SidebarTrigger
-          className="rounded-r-none"
-          reverseIcon={!isClassicLayout}
-        />
-      </div>
+      {!isMobile && (
+        <div className="fixed right-0 bottom-4 z-50">
+          <SidebarTrigger
+            className="rounded-r-none"
+            reverseIcon={!isClassicLayout}
+          />
+        </div>
+      )}
     </SidebarProvider>
   )
 }

@@ -56,7 +56,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
     return <AddressBookListSkeleton />
   }
   return (
-    <div className="flex max-h-[90vh] min-h-0 w-full flex-col rounded">
+    <div className="flex min-h-0 w-full flex-col rounded">
       <div className="text-foreground flex flex-row items-center justify-between">
         <div className="ml-2.5 flex flex-row items-center gap-4">
           <Checkbox />
@@ -83,12 +83,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
           />
         </div>
       </div>
-      <ul
-        className={cn(
-          'scrollbar-thin-gray mt-2 overflow-y-auto rounded',
-          isMobile && 'pb-12'
-        )}
-      >
+      <ul className={cn('mt-2 rounded', isMobile && 'pb-12')}>
         {items.length === 0 && (
           <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
             {t('no_items.string')}

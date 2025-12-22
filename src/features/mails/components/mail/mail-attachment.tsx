@@ -47,12 +47,6 @@ export function MailAttachment({ part, className = '' }: MailAttachmentProps) {
         className
       )}
     >
-      <span className="min-w-0 flex-1 truncate">
-        <AttachmentName name={part.name} />
-      </span>
-      <span className="text-muted-foreground ml-1 shrink text-xs">
-        {formatSize(part.size)}
-      </span>
       <TooltipWrapper
         content={t('mail_display.content.download_attachment.string')}
         side="top"
@@ -62,12 +56,15 @@ export function MailAttachment({ part, className = '' }: MailAttachmentProps) {
           download
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-1 shrink"
+          className="min-w-0 flex-1 truncate underline hover:underline"
           aria-label={t('mail_display.content.download_attachment.string')}
         >
-          <ArrowDownToLine size={20} />
+          <AttachmentName name={part.name} />
         </Link>
       </TooltipWrapper>
+      <span className="text-muted-foreground ml-1 shrink text-xs">
+        {formatSize(part.size)}
+      </span>
     </div>
   )
 }

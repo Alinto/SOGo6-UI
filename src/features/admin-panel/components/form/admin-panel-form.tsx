@@ -81,7 +81,7 @@ const AdminDomainFormFrame: React.FC<Props> = ({
   const { isDirty, isSubmitting } = form.formState
 
   return (
-    <div className="border-border flex min-h-screen w-full flex-1 flex-col overflow-auto rounded border p-4 shadow-sm">
+    <div className="border-border flex min-h-screen w-full flex-1 flex-col rounded border p-4 shadow-sm">
       <Form {...form}>
         <form
           className=""

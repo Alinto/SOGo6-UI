@@ -9,7 +9,7 @@ const MailSubject: React.FC<MailSubjectProps & { className?: string }> = ({
   return (
     <h1
       className={cn(
-        'h-14 w-full px-6 py-4 text-xl font-bold break-words',
+        'w-full px-2 py-3 text-lg font-bold whitespace-normal sm:px-6 sm:py-4 sm:text-xl',
         className
       )}
     >

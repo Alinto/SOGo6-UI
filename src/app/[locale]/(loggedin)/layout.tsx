@@ -53,9 +53,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider>
         <DndContext sensors={sensors}>
           <AppSidebar />
-          <SidebarInset>
+          <SidebarInset className="flex h-screen flex-col">
             <AppHeader />
-            <div className="h-[calc(100vh-48px)] gap-4 overflow-hidden border">
+            <div className="flex-1 gap-4 overflow-y-auto border">
               {children}
             </div>
           </SidebarInset>
