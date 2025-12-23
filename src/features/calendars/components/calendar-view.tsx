@@ -113,7 +113,7 @@ export default function CalendarView({
   }
 
   return (
-    <div className="h-[calc(100vh-48px)] overflow-y-auto">
+    <div className="">
       <Dialog open={selectedSlot !== null} onOpenChange={onSelectedSlotClose}>
         <DialogContent>
           <DialogHeader>

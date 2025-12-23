@@ -3,6 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
+  useLocale: jest.fn(() => 'en'),
   useTranslations: jest.fn(() => (key) => key),
 }))
 

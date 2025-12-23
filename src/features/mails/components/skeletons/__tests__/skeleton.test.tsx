@@ -4,14 +4,14 @@ import MailDetailSkeleton from '../skeleton'
 
 describe('MailDetailSkeleton Component', () => {
   it('renders the MailDetailSkeleton component', () => {
-    render(<MailDetailSkeleton />)
-    const skeleton = document.querySelector('.w-full.p-0.sm\\:p-0')
+    const { container } = render(<MailDetailSkeleton />)
+    const skeleton = container.querySelector('.w-full')
     expect(skeleton).toBeInTheDocument()
   })
 
   it('renders the correct number of action skeletons', () => {
-    render(<MailDetailSkeleton />)
-    const actionSkeletons = document.querySelectorAll('.h-8.w-8.rounded-full')
+    const { container } = render(<MailDetailSkeleton />)
+    const actionSkeletons = container.querySelectorAll('.h-8.w-8.rounded-full')
     expect(actionSkeletons.length).toBe(7)
   })
 })

@@ -53,17 +53,15 @@ const Page: React.FC<PageProps> = () => {
   }
 
   return (
-    <>
-      <MessagesList
-        items={data?.messages ?? []}
-        page={data?.page ?? 1}
-        total={data?.total}
-        totalPages={data?.totalPages}
-        hasNextPage={data?.hasNextPage}
-        hasPreviousPage={data?.hasPreviousPage}
-        isLoading={isLoading}
-      />
-    </>
+    <MessagesList
+      items={data?.messages ?? []}
+      page={data?.page ?? 1}
+      total={data?.total}
+      totalPages={data?.totalPages}
+      hasNextPage={data?.hasNextPage}
+      hasPreviousPage={data?.hasPreviousPage}
+      isLoading={isLoading}
+    />
   )
 }
 

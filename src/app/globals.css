@@ -34,6 +34,7 @@
 
 @layer base {
   :root {
+    --header-height: 48px;
     --background: 0 0% 100%;
     --foreground: 240 5% 10%;
     --card: 0 0% 100%;

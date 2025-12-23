@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
@@ -13,7 +14,7 @@ import {
   Send,
   X,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import * as React from 'react'
 import { closeCompose, openCompose, selectIsComposeOpen } from '../../store'
@@ -23,6 +24,8 @@ import styles from './compose.module.css'
 
 export const FloatingCompose: React.FC = () => {
   const t = useTranslations('COMPOSE')
+  const isMobile = useIsMobile()
+  const locale = useLocale()
   const [isMinimized, setIsMinimized] = React.useState(false)
   const [isMaximized, setIsMaximized] = React.useState(false)
 
@@ -37,8 +40,19 @@ export const FloatingCompose: React.FC = () => {
   React.useEffect(() => {
     if (composeParam === 'true' && !isComposeOpen) {
       dispatch(openCompose())
+    } else if (composeParam !== 'true' && isComposeOpen) {
+      dispatch(closeCompose())
     }
   }, [composeParam, isComposeOpen, dispatch])
+
+  // Maximize on mobile
+  React.useEffect(() => {
+    if (isMobile) {
+      setIsMaximized(true)
+    } else {
+      setIsMaximized(false)
+    }
+  }, [isMobile])
 
   const handleClose = () => {
     dispatch(closeCompose())
@@ -55,7 +69,6 @@ export const FloatingCompose: React.FC = () => {
     const query = params.toString()
     push(query ? `${pathname}?${query}` : pathname)
     // Extract locale from pathname (assumes /:locale/...)
-    const locale = pathname.split('/')[1] || ''
     const composePath = locale ? `/${locale}/compose` : '/compose'
     window.open(composePath, '_blank')
   }
@@ -174,12 +187,12 @@ export const FloatingCompose: React.FC = () => {
       {/* Content - hidden when minimized */}
       {!isMinimized && (
         <>
-          <div className="flex-1 overflow-hidden p-4">
+          <div className="flex-1 overflow-hidden">
             <div className="flex h-full flex-col">
               <ComposeHeader onClose={handleClose} />
               <div
                 className={cn(
-                  'mt-4 flex h-0 flex-1 flex-col overflow-y-auto',
+                  'mt-4 flex flex-1 flex-col overflow-y-auto',
                   styles.compose_editor
                 )}
               >

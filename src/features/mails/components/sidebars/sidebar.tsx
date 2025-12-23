@@ -90,8 +90,8 @@ export function MailSidebar() {
       <SidebarGroup className="py-0 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           <AccountSwitcher
-            accounts={['henry@fafenback.org', 'contact@fafenback.org']}
-            defaultAccount={'henry@fafenback.org'}
+            accounts={['jdoe@sogo.nu', 'ui@sogo.nu']}
+            defaultAccount={'jdoe@sogo.nu'}
           />
         </SidebarMenu>
       </SidebarGroup>

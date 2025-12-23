@@ -6,7 +6,7 @@ import type { AdminPanelHeaderProps } from '../../types/form'
 
 type Props = AdminPanelHeaderProps & {
   editableDescription?: boolean
-  onSaveDescription?: (desc: string) => Promise<any> | any
+  onSaveDescription?: (desc: string) => Promise<void>
 }
 
 /**
@@ -69,8 +69,8 @@ export default function AdminPanelHeader({
   }
 
   return (
-    <div className="p-6">
-      <h1 className="mb-4 flex items-center gap-4 text-2xl font-bold">
+    <div className="px-6 pt-2">
+      <h1 className="mb-1 flex items-center gap-4 text-2xl font-bold">
         <span>{title}</span>
       </h1>
 
@@ -105,7 +105,7 @@ export default function AdminPanelHeader({
               placeholder="Enter domain description"
               disabled={isSaving}
               aria-label="Domain description"
-              className="min-h-[80px]" // ensure visible editing area
+              className="min-h-20" // ensure visible editing area
             />
           ) : (
             // Plain text appearance until clicked/focused
@@ -134,7 +134,7 @@ export default function AdminPanelHeader({
         </div>
       ) : (
         description && (
-          <p className="text-muted-foreground text-base whitespace-pre-wrap">
+          <p className="text-muted-foreground mb-2 text-base whitespace-pre-wrap">
             {description}
           </p>
         )

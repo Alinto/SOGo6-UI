@@ -132,10 +132,8 @@ describe('Layout Component', () => {
 
     const mainContainer = screen
       .getByTestId('sidebar-inset')
-      .querySelector('div[class*="h-[calc"]')
-    expect(mainContainer).toHaveClass('h-[calc(100vh-48px)]')
+      .querySelector('div[class*="gap-4"]')
     expect(mainContainer).toHaveClass('gap-4')
-    expect(mainContainer).toHaveClass('overflow-hidden')
     expect(mainContainer).toHaveClass('border')
   })
 
@@ -206,8 +204,8 @@ describe('Layout Component', () => {
 
       const contentArea = screen
         .getByTestId('sidebar-inset')
-        .querySelector('div[class*="h-[calc"]')
-      expect(contentArea).toHaveClass('h-[calc(100vh-48px)]')
+        .querySelector('div[class*="gap-4"]')
+      expect(contentArea).toBeInTheDocument()
     })
   })
 

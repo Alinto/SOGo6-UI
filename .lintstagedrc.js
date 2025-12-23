@@ -26,7 +26,7 @@ const shouldHaveTest = (filePath) => {
     }
 
     // Skip config files and certain directories
-    const skipPatterns = ['config/', 'public/', 'coverage/', '.next/', 'node_modules/']
+    const skipPatterns = ['config/', 'public/', 'coverage/', '.next/', 'node_modules/', 'src/app/env/', 'src/app/fakeApi/']
     if (skipPatterns.some(pattern => relativePath.startsWith(pattern))) {
         return false
     }

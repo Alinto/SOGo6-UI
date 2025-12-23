@@ -14,17 +14,17 @@ export default function ComposePage() {
   return (
     <div className="bg-background flex h-screen flex-col">
       {/* Header */}
-      <div className="bg-primary text-primary-foreground flex h-12 shrink-0 items-center justify-between px-4">
+      <div className="bg-primary text-primary-foreground flex h-12 shrink-0 items-center justify-between">
         <span className="text-sm font-medium">{t('new_message.string')}</span>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-hidden p-4">
+      <div className="flex-1">
         <div className="flex h-full flex-col">
           <ComposeHeader />
           <div
             className={cn(
-              'mt-4 flex h-0 flex-1 flex-col overflow-y-auto',
+              'mt-4 flex h-screen flex-1 flex-col',
               styles.compose_editor
             )}
           >

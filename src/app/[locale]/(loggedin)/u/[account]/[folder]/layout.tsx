@@ -63,8 +63,10 @@ export default function Layout({
         open={sidebarOpen}
         width={`calc(${SIDEBAR_WIDTH} - 1.5rem)`}
       >
-        <SidebarInset className="flex h-full w-full flex-col">
-          <div className="flex flex-1 overflow-y-auto p-1">{content}</div>
+        <SidebarInset className="flex flex-col">
+          <div className="flex h-[calc(100vh-var(--header-height))] w-full overflow-auto p-1">
+            {content}
+          </div>
         </SidebarInset>
         {sidebarOpen && <FastAccessContent name={fastAccessContentName} />}
       </SidebarProvider>

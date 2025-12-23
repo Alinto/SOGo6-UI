@@ -39,10 +39,7 @@ const messagesByFolder: Record<string, ImapMessages[]> = {
       subject: '[Alinto] CMA a publié "Cleanmail 4.16"',
       isMailingList: false,
       from: 'CMA via Alinto <noreply@jamespot.pro>',
-      to: [
-        'Henry Fafenback <henry@fafenback.org>',
-        'Thibault Keriven <tkeriven@alinto.eu>',
-      ],
+      to: ['John Doe <jdoe@sogo.nu>', 'Thibault Keriven <tkeriven@alinto.eu>'],
       cc: [
         'Sylvain Barré <sbarre@alinto.eu>',
         'Thibault Keriven <tkeriven@alinto.eu>',

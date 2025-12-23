@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { DomainConfigFormPageProps } from '../../types/form'
 import DomainsPageSkeleton from '../skeletons/admin-form-page-skeleton'
 import AdminDomainFormFrame from './admin-panel-form'
@@ -9,7 +9,7 @@ import AdminPanelTabs from './admin-panel-tabs'
 
 type Props = DomainConfigFormPageProps & {
   description?: string
-  onUpdateDescription?: (desc: string) => Promise<any>
+  onUpdateDescription?: (desc: string) => Promise<void>
 }
 
 export default function DomainConfigFormPage({
@@ -22,13 +22,7 @@ export default function DomainConfigFormPage({
   description,
   onUpdateDescription,
 }: Props) {
-  const [activeTab, setActiveTab] = useState(tabNames[0] || '')
-
-  useEffect(() => {
-    if (tabNames.length > 0 && !activeTab) {
-      setActiveTab(tabNames[0])
-    }
-  }, [tabNames, activeTab])
+  const [activeTab, setActiveTab] = useState(() => tabNames[0] || '')
 
   // We now pass the full tabDataByTab to the form so the form can be initialized
   // with default values for all sections. The form will still render only the
@@ -47,14 +41,14 @@ export default function DomainConfigFormPage({
   const editable = Boolean(description !== undefined && onUpdateDescription)
 
   return (
-    <div className="flex h-screen w-full flex-col">
+    <div className="flex h-[calc(100vh-var(--header-height))] w-full flex-col overflow-y-auto">
       <AdminPanelHeader
         title={domainName}
         description={headerDescription}
         editableDescription={editable}
         onSaveDescription={onUpdateDescription}
       />
-      <div className="min-h-0 flex-1 overflow-auto pr-6 pl-6">
+      <div className="min-h-0 flex-1 pr-6 pl-6">
         <AdminPanelTabs
           tabNames={tabNames}
           activeTab={activeTab}

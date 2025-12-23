@@ -1,10 +1,21 @@
 .compose_editor {
+  display: flex;
+  flex-direction: column;
   [role='application'] {
-    height: 96%;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
     [role='presentation']:nth-of-type(2) {
-      height: 96%;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
       [role='textbox'] {
-        height: 95%;
+        border-left: none;
+        border-right: none;
+        flex: 1;
+        min-height: 0;
       }
     }
   }

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const data: MailNotifications = {
   enabled: false,
-  emails: [{ value: 'henry@fafenback.org' }],
+  emails: [{ value: 'jdoe@sogo.nu' }],
   email: '',
   message: 'New message received on your account',
 }

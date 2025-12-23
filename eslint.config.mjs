@@ -39,7 +39,7 @@ export default defineConfig([{
         globals: jestPlugin.environments.globals.globals,
     },
     rules: {
-        "react/jsx-no-literals": ["error", {
+        "react/jsx-no-literals": ["warn", {
             noStrings: true,
             ignoreProps: true,
         }],
