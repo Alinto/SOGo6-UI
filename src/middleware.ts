@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
   matcher: [
-    '/((?!_next|fakeApi|env|.*\\.js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot$).*)',
+    '/((?!_next|fakeApi|env|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$).*)',
   ],
 }
 

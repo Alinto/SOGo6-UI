@@ -2,7 +2,7 @@
 
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Link, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { ArrowRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -31,6 +31,7 @@ export function LoginForm({
             id="email"
             name="email"
             type="email"
+            value="jdoe@sogo.nu"
             placeholder={t('email.placeholder.string')}
             required
           />
@@ -39,12 +40,12 @@ export function LoginForm({
           <ArrowRight className="text-foreground" size={30} />
         </div>
       </div>
-      <div className="text-center text-sm">
+      {/* <div className="text-center text-sm">
         {t('signup.description.string')}
         <Link href="/register" className="underline underline-offset-4">
           {t('signup.title.string')}
         </Link>
-      </div>
+      </div> */}
     </form>
   )
 }

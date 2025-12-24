@@ -4,7 +4,10 @@ export async function getThemesServer(): Promise<string | null> {
   try {
     const headersList = await headers()
     const host = headersList.get('host') || 'localhost:3000'
-    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http'
+    // Use X-Forwarded-Proto from reverse proxy, fallback to NODE_ENV check
+    const protocol =
+      headersList.get('x-forwarded-proto') ||
+      (process.env.NODE_ENV === 'production' ? 'https' : 'http')
 
     const response = await fetch(
       `${protocol}://${host}/fakeApi/customization/themes`,
