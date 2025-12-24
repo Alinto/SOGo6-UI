@@ -11,6 +11,7 @@ const tagTypes = [
   'mail_notifications_settings',
   'mail_vacation_settings',
   'mail_forward_settings',
+  'imap_accounts',
   'address_books',
   'vcard',
   'mail/folders',
