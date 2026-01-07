@@ -21,8 +21,6 @@ RUN groupadd --system --gid "${GROUP_ID}" "${USERNAME}" && \
 
 RUN curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
 
-RUN mv /tx /usr/local/bin
-
 RUN mkdir -p ${WORKSPACE} && chown -R ${USERNAME}:${USERNAME} ${WORKSPACE}
 
 COPY --chown=${USERNAME}:${USERNAME} .devcontainer/container-entrypoint.sh /container-entrypoint
