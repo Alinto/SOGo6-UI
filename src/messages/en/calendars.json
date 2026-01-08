@@ -6,6 +6,14 @@
                 "string": "Create Event"
             }
         },
+        "schedule": {
+            "noEvents": {
+                "string": "No events"
+            },
+            "noUpcomingEvents": {
+                "string": "No upcoming events for this period"
+            }
+        },
         "sidebar": {
             "personals": {
                 "string": "Personal Calendars"

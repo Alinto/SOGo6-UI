@@ -13,7 +13,7 @@ export function MailReturnButton({
 }: MailReturnButtonProps) {
   const { push } = useRouter()
   const { account } = useParams()
-  const t = useTranslations('Mails_Common.mail_display.action-bar')
+  const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
 
   const handleClick = React.useCallback(() => {
     push(`/u/${account}/${encodeURIComponent(folderPath)}`)

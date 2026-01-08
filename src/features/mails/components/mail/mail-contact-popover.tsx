@@ -2,7 +2,7 @@ import { Mail as MailIcon, UserPlus2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
 export function ContactPopoverContent() {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_COMMONS')
   const buttonClass =
     'flex cursor-pointer gap-2 rounded px-2 py-1 text-sm hover:bg-muted'
 

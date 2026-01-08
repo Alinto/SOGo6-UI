@@ -19,7 +19,7 @@ export default function MailHeader({
   showUnsubscribeButton,
   date,
 }: MailHeaderFullProps) {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_COMMONS')
   const [open, setOpen] = useState(false)
   const [showAllTo, setShowAllTo] = useState(false)
   const [showAllCc, setShowAllCc] = useState(false)
