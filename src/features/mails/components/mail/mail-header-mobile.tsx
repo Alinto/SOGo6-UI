@@ -15,7 +15,7 @@ export default function MailHeaderMobile({
   showUnsubscribeButton,
   date,
 }: MailHeaderFullProps) {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_COMMONS')
   const [open, setOpen] = useState(false)
   const [expandRecipients, setExpandRecipients] = useState(false)
 

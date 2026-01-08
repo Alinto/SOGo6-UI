@@ -33,10 +33,10 @@ export function AgendaView({
       <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground text-center">
           <p className="text-lg font-medium">
-            {t('calendar.noEvents.string') || 'No events'}
+            {t('schedule.noEvents.string') || 'No events'}
           </p>
           <p className="text-sm">
-            {t('calendar.noUpcomingEvents.string') ||
+            {t('schedule.noUpcomingEvents.string') ||
               'No upcoming events for this period'}
           </p>
         </div>

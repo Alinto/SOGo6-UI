@@ -64,7 +64,7 @@ jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => {
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
-      'calendar.createEvent.string': 'Create Event',
+      'events.create.string': 'Create Event',
     }
     return translations[key] || key
   },

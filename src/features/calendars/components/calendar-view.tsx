@@ -118,7 +118,7 @@ export default function CalendarView({
         <DialogContent>
           <DialogHeader>
             <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
-              {t('calendar.createEvent.string')}
+              {t('events.create.string')}
             </h2>
           </DialogHeader>
           {selectedSlot && (

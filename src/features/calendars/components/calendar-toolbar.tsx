@@ -77,7 +77,7 @@ export function CalendarToolbar({
   const monthLabel = 'Month'
   const weekLabel = 'Week'
   const dayLabel = 'Day'
-  const agendaLabel = 'Agenda'
+  const scheduleLabel = 'Schedule'
   const weekMonthDisplay = getWeekMonthDisplay(date, locale)
   const dayDisplay = getDayDisplay(date, locale)
   const monthDisplay = getMonthDisplay(date, locale)
@@ -123,7 +123,7 @@ export function CalendarToolbar({
             <SelectItem value={Views.MONTH}>{monthLabel}</SelectItem>
             <SelectItem value={Views.WEEK}>{weekLabel}</SelectItem>
             <SelectItem value={Views.DAY}>{dayLabel}</SelectItem>
-            <SelectItem value={Views.AGENDA}>{agendaLabel}</SelectItem>
+            <SelectItem value={Views.AGENDA}>{scheduleLabel}</SelectItem>
           </SelectContent>
         </Select>
 

@@ -29,7 +29,7 @@ import { useParams } from 'next/navigation'
 import React from 'react'
 
 const MailPage: React.FC = () => {
-  const t = useTranslations('Mails_Common.mail_display.action-bar')
+  const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const params = useParams() as {
     account: string
     folder: string

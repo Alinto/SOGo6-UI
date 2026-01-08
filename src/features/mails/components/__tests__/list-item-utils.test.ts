@@ -43,14 +43,23 @@ describe('list-item-utils', () => {
     })
 
     it('should format dates from this year as "MMM D"', () => {
+      // Mock the current date to ensure consistent test results
+      const mockNow = new Date(2025, 10, 8) // October 8, 2025
+      const realDateConstructor = Date
+
+      jest.spyOn(global, 'Date').mockImplementation((...args: any[]) => {
+        if (args.length === 0) {
+          return mockNow as any
+        }
+        return new realDateConstructor(...args) as any
+      })
+
       // Get a date from 2 months ago (but still this year)
-      const twoMonthsAgo = new Date(
-        now.getFullYear(),
-        now.getMonth() - 2,
-        now.getDate()
-      )
+      const twoMonthsAgo = new Date(2025, 8, 8) // August 8, 2024 (before Jan 8, 2025)
       const result = formatDate(twoMonthsAgo.toISOString())
       expect(result).toMatch(/^[A-Z][a-z]{2}\s\d{1,2}$/)
+
+      jest.restoreAllMocks()
     })
 
     it('should handle leap year dates correctly', () => {

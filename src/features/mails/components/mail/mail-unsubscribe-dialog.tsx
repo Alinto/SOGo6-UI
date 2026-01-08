@@ -16,7 +16,7 @@ export function UnsubscribeDialog({
   onOpenChange,
   senderEmail,
 }: UnsubscribeDialogProps) {
-  const t = useTranslations('Mails_Common')
+  const t = useTranslations('MAILS_COMMONS')
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
