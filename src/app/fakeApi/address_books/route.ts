@@ -1,49 +1,49 @@
-import { NextResponse } from 'next/server'
-
-const data = {
-  globals: [
-    {
-      name: 'Global',
-      description: 'Global address book',
-      type: 'global',
-      id: 'global',
-    },
-    {
-      name: 'Customers',
-      description: 'Customers address book',
-      type: 'global',
-      id: 'customers',
-    },
-  ],
-  personals: [
-    {
-      name: 'Work',
-      description: 'Work address book',
-      type: 'personal',
-      id: 'work',
-      default: true,
-    },
-    {
-      name: 'Personal',
-      description: 'kids address book',
-      type: 'personal',
-      id: 'personal',
-    },
-  ],
-  subscriptions: [
-    {
-      name: 'SmokedKimchi address book',
-      description: 'Shared address book',
-      type: 'shared',
-      id: 'smokedkimchi',
-    },
-  ],
-}
+import { NextRequest, NextResponse } from 'next/server'
+import { addressBooksData } from './data'
 
 export async function GET() {
-  return NextResponse.json(data)
+  return NextResponse.json(addressBooksData)
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json()
+  const { name, description, type } = body
+
+  const baseId = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  let id = baseId
+  let counter = 1
+  const allBooks = [
+    ...addressBooksData.globals,
+    ...addressBooksData.personals,
+    ...addressBooksData.subscriptions,
+  ]
+
+  while (allBooks.some((book) => book.id === id)) {
+    id = `${baseId}-${counter}`
+    counter++
+  }
+
+  const newAddressBook = {
+    name,
+    description: description || '',
+    type,
+    id,
+    default: false,
+  }
+
+  if (type === 'personal') {
+    addressBooksData.personals.push(newAddressBook)
+  } else if (type === 'shared') {
+    addressBooksData.subscriptions.push(newAddressBook)
+  }
+
+  return NextResponse.json(newAddressBook, { status: 201 })
 }
 
 export async function OPTIONS() {
-  return NextResponse.json({ allow: ['GET'] }, { status: 200 })
+  return NextResponse.json({ allow: ['GET', 'POST'] }, { status: 200 })
 }
