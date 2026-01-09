@@ -1,16 +1,32 @@
 {
-    "ADDRESS_BOOKS_LIST": {
-        "contacts_number": {
-            "string": "{number, plural, one {# contact} other {# contacts}}",
-            "context": "Displays the number of contacts in an address book."
-        },
-        "filters": {
-            "name": {
-                "string": "Name"
-            }
-        },
-        "no_items": {
-            "string": "No contact found."
-        }
+  "ADDRESS_BOOKS_LIST": {
+    "contacts_number": {
+      "string": "{number, plural, one {# contact} other {# contacts}}",
+      "context": "Displays the number of contacts in an address book."
+    },
+    "selected_count": {
+      "string": "{number, plural, one {# selected} other {# selected}}",
+      "context": "Displays the number of selected contacts."
+    },
+    "deselect_all": {
+      "string": "Deselect all",
+      "context": "Button to deselect all selected contacts."
+    },
+    "select": {
+      "string": "Select",
+      "context": "Tooltip for select checkbox."
+    },
+    "deselect": {
+      "string": "Deselect",
+      "context": "Tooltip for deselect checkbox."
+    },
+    "filters": {
+      "name": {
+        "string": "Name"
+      }
+    },
+    "no_items": {
+      "string": "No contact found."
     }
+  }
 }
