@@ -26,7 +26,7 @@ ENV NODE_ENV production
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
-RUN npm ci --frozen-lockfile --omit=dev --ignore-scripts && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Lightweight cleanup stage to remove unnecessary files
 FROM alpine:3.22 AS cleanup
