@@ -51,7 +51,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             })
           }}
         >
-          {formT('create.default.string')}
+          {t('create.string')}
         </Button>
         <div className="grid gap-4 lg:grid-cols-2">
           {fields.map((label, i) => (

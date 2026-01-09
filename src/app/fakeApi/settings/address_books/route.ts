@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 const data = [
-  { id: '1', label: 'John Doe' },
-  { id: '2', label: 'Jane Smith' },
+  { id: '1', label: 'Familly' },
+  { id: '2', label: 'Client' },
+  { id: '3', label: 'Colleague' },
 ]
 
 export async function GET() {
