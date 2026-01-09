@@ -1,8 +1,12 @@
 {
     "US_ADDRESS_BOOKS": {
+        "create": {
+                "string": "Add contact category",
+                "context": "Button text to add a new address book category"
+        },
         "title": {
-            "string": "Address Books",
-            "context": "Title for the address books settings page"
+            "string": "Categories",
+            "context": "Title for the address books categories settings page"
         },
         "accessibility": {
             "icon": {
