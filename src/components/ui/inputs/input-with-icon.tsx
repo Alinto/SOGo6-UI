@@ -14,9 +14,8 @@ const InputWithIcon = (
       <Input role="textbox" {...inputProps} />
       <Button
         type="button"
-        size={'icon'}
         variant="ghost"
-        className="absolute top-0 right-0"
+        className="hover:text-foreground absolute top-1/2 right-0 h-9 w-9 -translate-y-1/2 rounded-md hover:bg-transparent focus-visible:ring-0"
         onClick={onActionClick}
       >
         {ActionComponent}
