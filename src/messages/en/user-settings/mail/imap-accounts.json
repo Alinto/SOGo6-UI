@@ -116,6 +116,15 @@
       },
       "certificateFingerprint": {
         "string": "Certificate Fingerprint"
+      },
+      "certificateFile": {
+        "string": "S/MIME Certificate File"
+      },
+      "certificatePassword": {
+        "string": "Certificate Import Password"
+      },
+      "selectedFile": {
+        "string": "Selected file"
       }
     },
     "errors_api": {
@@ -142,6 +151,9 @@
       },
       "certificateFingerprint": {
         "string": "Auto-generated after certificate upload"
+      },
+      "certificatePassword": {
+        "string": "Enter certificate import password"
       }
     },
     "description": {
@@ -153,6 +165,12 @@
       },
       "certificateName": {
         "string": "Name of the certificate"
+      },
+      "certificateFile": {
+        "string": "Upload your S/MIME certificate file"
+      },
+      "certificatePassword": {
+        "string": "Password required to import the certificate file"
       }
     },
     "encryption": {

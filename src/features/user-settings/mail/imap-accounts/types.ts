@@ -35,6 +35,8 @@ export interface ImapAccountCreate {
   password: string
   useDefaultIdentity: boolean
   readReceipts: 'never' | 'selective'
+  certificateFile?: File | null
+  certificatePassword?: string
   certificateName?: string
   certificateFingerprint?: string
 }
@@ -51,6 +53,8 @@ export const DEFAULT_IMAP_VALUES: Omit<ImapAccountCreate, 'password'> = {
   username: '',
   useDefaultIdentity: false,
   readReceipts: 'never',
+  certificateFile: null,
+  certificatePassword: '',
   certificateName: '',
   certificateFingerprint: '',
 }
