@@ -279,8 +279,11 @@ Sidebar.displayName = 'Sidebar'
 
 const SidebarTrigger = React.forwardRef<
   React.ComponentRef<typeof Button>,
-  React.ComponentProps<typeof Button> & { reverseIcon?: boolean }
->(({ className, onClick, reverseIcon, ...props }, ref) => {
+  React.ComponentProps<typeof Button> & {
+    reverseIcon?: boolean
+    onClose?: () => void
+  }
+>(({ className, onClick, reverseIcon, onClose, ...props }, ref) => {
   const isMobile = useIsMobile()
   const { toggleSidebar, open, openMobile } = useSidebar()
 
@@ -305,6 +308,9 @@ const SidebarTrigger = React.forwardRef<
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
+        if (open || openMobile) {
+          onClose?.()
+        }
       }}
       {...props}
     >

@@ -77,6 +77,7 @@ export default function Layout({
           <SidebarTrigger
             className="rounded-r-none"
             reverseIcon={!isClassicLayout}
+            onClose={() => setSidebarOpen(false)}
           />
         </div>
       )}
