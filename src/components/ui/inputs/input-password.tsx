@@ -12,9 +12,9 @@ const PasswordInput = (props: React.ComponentPropsWithoutRef<'input'>) => {
       role="textbox"
       ActionComponent={
         showPassword ? (
-          <EyeClosed data-testid="eye-closed-icon" size={24} />
+          <EyeClosed data-testid="eye-closed-icon" size={18} />
         ) : (
-          <EyeIcon data-testid="eye-icon" size={24} />
+          <EyeIcon data-testid="eye-icon" size={18} />
         )
       }
       onActionClick={() => setShowPassword(!showPassword)}

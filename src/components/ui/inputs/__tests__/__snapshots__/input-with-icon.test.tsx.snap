@@ -10,7 +10,7 @@ exports[`InputWithIcon component matches snapshot 1`] = `
       role="textbox"
     />
     <button
-      class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-9 w-9 absolute top-0 right-0"
+      class="cursor-pointer inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-hidden focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 px-4 py-2 hover:text-foreground absolute top-1/2 right-0 h-9 w-9 -translate-y-1/2 rounded-md hover:bg-transparent focus-visible:ring-0"
       type="button"
     >
       <span>

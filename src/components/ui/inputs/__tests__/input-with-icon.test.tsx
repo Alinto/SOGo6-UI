@@ -47,7 +47,10 @@ describe('InputWithIcon component', () => {
     const { getByRole } = render(
       <InputWithIcon ActionComponent={<span>Icon</span>} />
     )
-    expect(getByRole('button')).toHaveClass('absolute right-0 top-0')
+    const button = getByRole('button')
+    expect(button).toHaveClass('absolute')
+    expect(button).toHaveClass('right-0')
+    expect(button).toHaveClass('top-1/2')
   })
 
   it('calls onActionClick when Button is clicked', () => {
