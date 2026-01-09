@@ -79,7 +79,7 @@ function ImapSettingsTabEdit({
             <RadioGroup
               value={accountData.imapEncryption}
               disabled
-              className="flex flex-row gap-6"
+              className="mt-2 flex flex-row gap-6"
             >
               {(['none', 'ssl', 'tls'] as const).map((value) => (
                 <div key={value} className="flex items-center space-x-2">
@@ -139,7 +139,7 @@ function ImapSettingsTabEdit({
             <RadioGroup
               value={accountData.smtpEncryption}
               disabled
-              className="flex flex-row gap-6"
+              className="mt-2 flex flex-row gap-6"
             >
               {(['none', 'ssl', 'tls'] as const).map((value) => (
                 <div key={value} className="flex items-center space-x-2">
@@ -156,7 +156,7 @@ function ImapSettingsTabEdit({
           </FormControl>
         </FormItem>
 
-        {/* SMTP Authentication - Sur sa propre ligne */}
+        {/* SMTP Authentication */}
         <FormItem className="flex flex-row items-center space-y-0 space-x-3">
           <FormControl>
             <Checkbox checked={accountData.smtpAuth} disabled id="smtp-auth" />
@@ -235,7 +235,7 @@ function ImapSettingsTabEdit({
                 <RadioGroup
                   onValueChange={field.onChange}
                   value={field.value}
-                  className="flex flex-col space-y-2"
+                  className="mt-2 flex flex-col space-y-2"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="never" id="receipts-never" />
@@ -317,7 +317,7 @@ function ImapSettingsTabNew({
                 <RadioGroup
                   onValueChange={field.onChange}
                   value={field.value}
-                  className="flex flex-row gap-6"
+                  className="mt-2 flex flex-row gap-6"
                 >
                   {(['none', 'ssl', 'tls'] as const).map((value) => (
                     <div key={value} className="flex items-center space-x-2">
@@ -386,7 +386,7 @@ function ImapSettingsTabNew({
                 <RadioGroup
                   onValueChange={field.onChange}
                   value={field.value}
-                  className="flex flex-row gap-6"
+                  className="mt-2 flex flex-row gap-6"
                 >
                   {(['none', 'ssl', 'tls'] as const).map((value) => (
                     <div key={value} className="flex items-center space-x-2">
@@ -543,7 +543,7 @@ function ImapSettingsTabNew({
                 <RadioGroup
                   onValueChange={field.onChange}
                   value={field.value}
-                  className="flex flex-col space-y-2"
+                  className="mt-2 flex flex-col space-y-2"
                 >
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="never" id="receipts-never" />

@@ -43,6 +43,8 @@ export const imapAccountCreateSchema = z.object({
   }),
   useDefaultIdentity: z.boolean(),
   readReceipts: z.enum(['never', 'selective']),
+  certificateFile: z.instanceof(File).optional().nullable(),
+  certificatePassword: z.string().optional(),
   certificateName: z.string().optional(),
   certificateFingerprint: z.string().optional(),
 })
