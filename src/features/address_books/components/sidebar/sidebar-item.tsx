@@ -65,10 +65,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         </span>
       </SidebarMenuButton>
       {!disableActions && (
-        <Dialog>
+        <Dialog
+          open={type !== ''}
+          onOpenChange={(open) => !open && setType('')}
+        >
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <SidebarMenuAction className="h-7">
+              <SidebarMenuAction className="h-7 cursor-pointer">
                 <MoreVertical />
               </SidebarMenuAction>
             </DropdownMenuTrigger>
@@ -125,11 +128,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent>
-            {type === 'edit' && <EditForm id={id} name={name} />}
+            {type === 'edit' && (
+              <EditForm id={id} name={name} onSuccess={() => setType('')} />
+            )}
             {type === 'delete' && <DeleteAction id={id} name={name} />}
             {type === 'link' && <LinkAction id={id} name={name} />}
-            {type === 'sharing' && <div>Sharing</div>}
-            {type === 'import' && <div>Import</div>}
+            {type === 'sharing' && <div>{t('options.sharing.string')}</div>}
+            {type === 'import' && <div>{t('options.import.string')}</div>}
           </DialogContent>
         </Dialog>
       )}

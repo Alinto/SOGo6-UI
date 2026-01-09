@@ -1,20 +1,84 @@
 {
-    "CONTACT_FORM": {
-        "emails": {
-            "string": "Email addresses",
-            "context": "Label for the email addresses section in the contact form."
-        },
-        "addresses": {
-            "string": "Addresses",
-            "context": "Label for the addresses section in the contact form."
-        },
-        "notes": {
-            "string": "Notes",
-            "context": "Label for the notes section in the contact form."
-        },
-        "contact_information": {
-            "string": "Contact Information",
-            "context": "Label for the contact information section in the contact form."
-        }
+  "CONTACT_FORM": {
+    "emails": {
+      "string": "Email addresses",
+      "context": "Label for the email addresses section in the contact form."
+    },
+    "addresses": {
+      "string": "Addresses",
+      "context": "Label for the addresses section in the contact form."
+    },
+    "phone_numbers": {
+      "string": "Phone numbers",
+      "context": "Label for the phone numbers section in the contact form."
+    },
+    "urls": {
+      "string": "URLs",
+      "context": "Label for the URLs section in the contact form."
+    },
+    "notes": {
+      "string": "Notes",
+      "context": "Label for the notes section in the contact form."
+    },
+    "contact_information": {
+      "string": "Contact Information",
+      "context": "Label for the contact information section in the contact form."
+    },
+    "contact_details": {
+      "string": "Contact Details",
+      "context": "Title for the contact details view header."
+    },
+    "back_to_list": {
+      "string": "Back to list",
+      "context": "Button label to return to the contact list."
+    },
+    "copied_to_clipboard": {
+      "string": "Copied to clipboard",
+      "context": "Toast message when content is copied successfully."
+    },
+    "copied_value": {
+      "string": "Copied: {value}",
+      "context": "Toast description showing what was copied."
+    },
+    "copy_failed": {
+      "string": "Copy failed",
+      "context": "Toast error message when copy operation fails."
+    },
+    "copy_failed_description": {
+      "string": "Unable to copy to clipboard. Please try again.",
+      "context": "Toast error description when copy fails."
+    },
+    "copy_email": {
+      "string": "Copy email",
+      "context": "Tooltip for copy email button."
+    },
+    "copy": {
+      "string": "Copy",
+      "context": "Generic copy button label."
+    },
+    "edit": {
+      "string": "Edit",
+      "context": "Button label to edit a field."
+    },
+    "save": {
+      "string": "Save",
+      "context": "Button label to save changes."
+    },
+    "cancel": {
+      "string": "Cancel",
+      "context": "Button label to cancel editing."
+    },
+    "edit_note": {
+      "string": "Edit note",
+      "context": "Button label to edit the contact note."
+    },
+    "add_note": {
+      "string": "Add note",
+      "context": "Button label to add a note to the contact."
+    },
+    "no_notes": {
+      "string": "No notes",
+      "context": "Placeholder text when there are no notes."
     }
+  }
 }

@@ -1,72 +1,133 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { useTranslations } from 'next-intl'
+import { useParams } from 'next/navigation'
 import React from 'react'
 import { VCard } from '../../address-books-types'
-import EmailItem from './email-item'
+import { ContactFieldRow } from './contact-field-row'
+import { ContactHeader } from './contact-header'
+import { EmailItem } from './email-item'
+import { NoteField } from './note-field'
 
 interface VisualizationProps {
   data: VCard
 }
 
 const Visualization: React.FC<VisualizationProps> = ({ data }) => {
-  const { firstName, lastName, organization, jobTitle, photo } = data
-  const title =
-    organization && jobTitle
-      ? `${firstName} ${lastName} - ${organization} - ${jobTitle}`
-      : `${firstName} ${lastName}`
+  const {
+    firstName,
+    lastName,
+    organization,
+    jobTitle,
+    photo,
+    emails,
+    phoneNumbers,
+    addresses,
+    note,
+    urls,
+  } = data
 
+  const { book_id, contact_id } = useParams()
   const t = useTranslations('CONTACT_FORM')
 
   return (
-    <Card className="h-full w-full">
-      <CardHeader>
-        <div className="flex items-center space-x-4">
-          <Avatar className="h-24 w-24">
-            {photo ? (
-              <AvatarImage
-                src={photo}
-                alt={`${firstName} ${lastName}`}
-                className="object-cover"
-              />
-            ) : (
-              <AvatarFallback className="text-4xl">
-                {firstName[0].toUpperCase()}
-                {lastName[0].toUpperCase()}
-              </AvatarFallback>
-            )}
-          </Avatar>
-          <div>
-            <h2 className="text-3xl font-bold text-gray-500">{title}</h2>
-          </div>
-        </div>
+    <Card className="flex h-full w-full flex-col">
+      <CardHeader className="pb-4">
+        <ContactHeader
+          firstName={firstName}
+          lastName={lastName}
+          organization={organization}
+          jobTitle={jobTitle}
+          photo={photo}
+        />
       </CardHeader>
-      <CardContent>
-        <Separator className="my-4" />
-        <h3 className="text-lg font-semibold">{t('emails.string')}</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {data.emails.length &&
-            data.emails.map((email, index) => (
-              <EmailItem key={index} email={email} />
-            ))}
-        </div>
-        <Separator className="my-4" />
-        <h3 className="text-lg font-semibold">{t('addresses.string')}</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {data.addresses.length &&
-            data.emails.map((email, index) => (
-              <EmailItem key={index} email={email} />
-            ))}
-        </div>
-        <h3 className="text-lg font-semibold">
-          {t('contact_information.string')}
-        </h3>
-        <p className="text-gray-500">{data.email}</p>
-        <p className="text-gray-500">{data.phoneNumbers}</p>
-        <p className="text-gray-500">{data.addresses}</p>
-        <h3 className="text-lg font-semibold">{t('notes.string')}</h3>
-        <p className="text-gray-500">{data.note}</p>
+      <CardContent className="flex flex-1 flex-col gap-6 overflow-y-auto">
+        {/* Email addresses section */}
+        {emails && emails.length > 0 && (
+          <section aria-labelledby="emails-heading" className="space-y-3">
+            <h2
+              id="emails-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('emails.string')}
+            </h2>
+            <div className="space-y-1">
+              {emails.map((email, index) => (
+                <EmailItem key={index} email={email} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Phone numbers section */}
+        {phoneNumbers && phoneNumbers.length > 0 && (
+          <section aria-labelledby="phone-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="phone-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('phone_numbers.string')}
+            </h2>
+            <div className="space-y-1">
+              {phoneNumbers.map((phone, index) => (
+                <ContactFieldRow key={index} value={phone} type="phone" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Addresses section */}
+        {addresses && addresses.length > 0 && (
+          <section aria-labelledby="addresses-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="addresses-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('addresses.string')}
+            </h2>
+            <div className="space-y-1">
+              {addresses.map((address, index) => (
+                <ContactFieldRow key={index} value={address} type="text" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* URLs section */}
+        {urls && urls.length > 0 && (
+          <section aria-labelledby="urls-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="urls-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('urls.string')}
+            </h2>
+            <div className="space-y-1">
+              {urls.map((url, index) => (
+                <ContactFieldRow key={index} value={url} type="url" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Notes section */}
+        <section aria-labelledby="notes-heading" className="space-y-3">
+          <Separator />
+          <h2
+            id="notes-heading"
+            className="text-foreground text-base font-semibold sm:text-lg"
+          >
+            {t('notes.string')}
+          </h2>
+          <NoteField
+            note={note}
+            contactId={contact_id as string}
+            bookId={book_id as string}
+          />
+        </section>
       </CardContent>
     </Card>
   )
