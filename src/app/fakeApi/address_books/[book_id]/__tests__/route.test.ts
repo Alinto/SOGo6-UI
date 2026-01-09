@@ -1,4 +1,5 @@
 import { VCard } from '@/features/address_books/address-books-types'
+import { NextRequest } from 'next/server'
 
 // Mock Next.js server modules
 jest.mock('next/server', () => ({
@@ -10,12 +11,24 @@ jest.mock('next/server', () => ({
       }
     },
   },
+  NextRequest: class MockNextRequest {
+    url = 'http://localhost:3000/api/test'
+    constructor(url?: string) {
+      if (url) this.url = url
+    }
+  },
 }))
 
 describe('Address Books API Route', () => {
   // Import after mocks
-  let GET: () => Promise<{ json: () => Promise<unknown>; status: number }>
+  let GET: (
+    req: NextRequest,
+    context: { params: Promise<{ book_id: string }> }
+  ) => Promise<{ json: () => Promise<unknown>; status: number }>
   let OPTIONS: () => Promise<{ json: () => Promise<unknown>; status: number }>
+
+  const mockRequest = new NextRequest('http://localhost:3000/api/test')
+  const mockParams = Promise.resolve({ book_id: 'test-book-id' })
 
   beforeAll(async () => {
     const routeModule = await import('../route')
@@ -24,7 +37,7 @@ describe('Address Books API Route', () => {
   })
   describe('GET', () => {
     it('should return a list of VCards', async () => {
-      const response = await GET()
+      const response = await GET(mockRequest, { params: mockParams })
       const data = await response.json()
 
       expect(response.status).toBe(200)
@@ -45,7 +58,7 @@ describe('Address Books API Route', () => {
     })
 
     it('should return valid VCard structure', async () => {
-      const response = await GET()
+      const response = await GET(mockRequest, { params: mockParams })
       const data = await response.json()
 
       expect(Array.isArray(data)).toBe(true)
@@ -62,8 +75,8 @@ describe('Address Books API Route', () => {
     })
 
     it('should return consistent data structure', async () => {
-      const response1 = await GET()
-      const response2 = await GET()
+      const response1 = await GET(mockRequest, { params: mockParams })
+      const response2 = await GET(mockRequest, { params: mockParams })
       const data1 = await response1.json()
       const data2 = await response2.json()
 

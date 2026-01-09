@@ -1,6 +1,28 @@
 import { render, screen } from '@testing-library/react'
 import Layout from '../layout'
 
+// Mock Next.js navigation hooks
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(() => ({
+    book_id: 'test-book-id',
+  })),
+}))
+
+// Mock i18n navigation hooks
+const mockPush = jest.fn()
+const mockUsePathname = jest.fn(() => '/en/address_books/test-book-id')
+jest.mock('@/lib/i18n/navigation', () => ({
+  usePathname: jest.fn(),
+  useRouter: jest.fn(() => ({
+    push: mockPush,
+  })),
+}))
+
+// Mock next-intl
+jest.mock('next-intl', () => ({
+  useTranslations: jest.fn(() => (key: string) => key),
+}))
+
 describe('AddressBook Layout', () => {
   const mockChildren = (
     <div data-testid="children-content">Children Content</div>
@@ -8,6 +30,13 @@ describe('AddressBook Layout', () => {
   const mockVisualization = (
     <div data-testid="visualization-content">Visualization Content</div>
   )
+
+  beforeEach(() => {
+    const { usePathname } = require('@/lib/i18n/navigation')
+    ;(usePathname as jest.Mock).mockReturnValue(
+      '/en/address_books/test-book-id'
+    )
+  })
 
   it('should render the layout component', () => {
     render(<Layout visualization={mockVisualization}>{mockChildren}</Layout>)
@@ -32,22 +61,12 @@ describe('AddressBook Layout', () => {
     expect(flexContainer).toBeInTheDocument()
   })
 
-  it('should apply header height variable to both panels', () => {
+  it('should have min-h-full on the main container', () => {
     const { container } = render(
       <Layout visualization={mockVisualization}>{mockChildren}</Layout>
     )
-    const panels = container.querySelectorAll(
-      '[class*="h-[calc(100vh-var(--header-height))]"]'
-    )
-    expect(panels.length).toBeGreaterThan(0)
-  })
-
-  it('should have border between panels', () => {
-    const { container } = render(
-      <Layout visualization={mockVisualization}>{mockChildren}</Layout>
-    )
-    const childrenPanel = container.querySelector('.border-r')
-    expect(childrenPanel).toBeInTheDocument()
+    const mainContainer = container.querySelector('.min-h-full')
+    expect(mainContainer).toBeInTheDocument()
   })
 
   it('should have responsive width classes on children panel', () => {
@@ -76,11 +95,13 @@ describe('AddressBook Layout', () => {
     expect(visualizationPanel).toHaveClass('md:w-1/2', 'lg:w-3/5')
   })
 
-  it('should apply overflow-y-auto to both panels', () => {
+  it('should not render mobile panel when no contact is selected', () => {
     const { container } = render(
       <Layout visualization={mockVisualization}>{mockChildren}</Layout>
     )
-    const panels = container.querySelectorAll('.overflow-y-auto')
-    expect(panels.length).toBeGreaterThanOrEqual(2)
+    
+    // When no contact is selected, the mobile panel should not be visible
+    const fixedPanel = container.querySelector('.fixed.inset-0')
+    expect(fixedPanel).not.toBeInTheDocument()
   })
 })
