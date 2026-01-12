@@ -6,7 +6,6 @@ const iconSelector = (path: string, defaultIcon?: IconName): IconName => {
   if (path === 'Drafts') return 'file-text'
   if (path === 'Trash') return 'trash-2'
   if (path === 'Junk') return 'alert-triangle'
-  if (path === 'Archive') return 'archive'
   if (defaultIcon) return defaultIcon
   return 'folder'
 }
@@ -16,7 +15,6 @@ const nameSelector = (name: string): string | undefined => {
   if (name.toLocaleLowerCase() === 'drafts') return 'folders.drafts.string'
   if (name.toLocaleLowerCase() === 'trash') return 'folders.trash.string'
   if (name.toLocaleLowerCase() === 'junk') return 'folders.junk.string'
-  if (name.toLocaleLowerCase() === 'archive') return 'folders.archive.string'
   return undefined
 }
 

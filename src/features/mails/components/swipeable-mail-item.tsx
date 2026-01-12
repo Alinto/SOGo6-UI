@@ -1,13 +1,13 @@
 import { cn } from '@/lib/utils'
 import { useDrag } from '@use-gesture/react'
 import { motion, useMotionValue, useTransform } from 'framer-motion'
-import { Archive, Trash2 } from 'lucide-react'
+import { Eye, Trash2 } from 'lucide-react'
 import React, { memo, useCallback, useRef, useState } from 'react'
 
 interface SwipeableMailItemProps {
   children: React.ReactNode
   onDelete: () => void
-  onArchive: () => void
+  onMarkAsSeen: () => void
   onSwipeStart?: () => void
   onSwipeEnd?: () => void
   disabled?: boolean
@@ -20,7 +20,7 @@ const HORIZONTAL_THRESHOLD = 10 // px - minimum horizontal movement to start swi
 const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
   children,
   onDelete,
-  onArchive,
+  onMarkAsSeen,
   onSwipeStart,
   onSwipeEnd,
   disabled = false,
@@ -35,11 +35,11 @@ const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
   const x = useMotionValue(0)
 
   // Transform x position to background opacity (0 to 1 based on threshold)
-  const archiveOpacity = useTransform(x, [0, 100], [0, 1])
+  const markAsSeenOpacity = useTransform(x, [0, 100], [0, 1])
   const deleteOpacity = useTransform(x, [-100, 0], [1, 0])
 
   // Transform x position to icon scale
-  const archiveScale = useTransform(x, [0, 80, 120], [0.5, 1, 1.2])
+  const markAsSeenScale = useTransform(x, [0, 80, 120], [0.5, 1, 1.2])
   const deleteScale = useTransform(x, [-120, -80, 0], [1.2, 1, 0.5])
 
   const handleSwipeComplete = useCallback((direction: 'left' | 'right') => {
@@ -49,12 +49,11 @@ const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
 
   const handleExitComplete = useCallback(() => {
     if (exitDirection === 'right') {
-      onArchive()
+      onMarkAsSeen()
     } else if (exitDirection === 'left') {
       onDelete()
     }
-  }, [exitDirection, onArchive, onDelete])
-
+  }, [exitDirection, onMarkAsSeen, onDelete])
   const bind = useDrag(
     ({ down, movement: [mx, my], first, last, cancel, velocity: [vx] }) => {
       if (disabled || isExiting) {
@@ -141,7 +140,7 @@ const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
             )}
           >
             {exitDirection === 'right' ? (
-              <Archive className="h-6 w-6 text-white" />
+              <Eye className="h-6 w-6 text-white" />
             ) : (
               <Trash2 className="h-6 w-6 text-white" />
             )}
@@ -164,13 +163,13 @@ const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Archive background (green - right swipe) */}
+      {/* Mark as seen background (green - right swipe) */}
       <motion.div
         className="absolute inset-0 flex items-center justify-start bg-green-500 px-4"
-        style={{ opacity: archiveOpacity }}
+        style={{ opacity: markAsSeenOpacity }}
       >
-        <motion.div style={{ scale: archiveScale }}>
-          <Archive className="h-6 w-6 text-white" />
+        <motion.div style={{ scale: markAsSeenScale }}>
+          <Eye className="h-6 w-6 text-white" />
         </motion.div>
       </motion.div>
 

@@ -18,10 +18,6 @@
                     "string": "Return to search results",
                     "description": "Return to search results"
                 },
-                "archive": {
-                    "string": "Archive",
-                    "description": "Archive"
-                },
                 "delete": {
                     "string": "Delete",
                     "description": "Delete the current message"
@@ -212,10 +208,6 @@
             "junk": {
                 "string": "Junk",
                 "description": "Messages identified as spam"
-            },
-            "archive": {
-                "string": "Archive",
-                "description": "Messages you have archived for later reference"
             }
         }
     }

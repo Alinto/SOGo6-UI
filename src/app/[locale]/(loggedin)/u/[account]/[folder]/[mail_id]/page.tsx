@@ -12,7 +12,6 @@ import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
 import {
-  Archive,
   ChevronLeft,
   ChevronRight,
   Flame,
@@ -60,12 +59,10 @@ const MailPage: React.FC = () => {
 
   const actions = {
     mainMobile: [
-      { icon: <Archive size={18} />, title: t('archive.string') },
       { icon: <Trash2 size={18} />, title: t('delete.string') },
       { icon: <MoreHorizontal size={18} />, title: t('more.string') },
     ],
     mainDesktop: [
-      { icon: <Archive size={18} />, title: t('archive.string') },
       { icon: <Trash2 size={18} />, title: t('delete.string') },
       { icon: <Flame size={18} />, title: t('report_spam.string') },
       { icon: <Mail size={18} />, title: t('mark_unread.string') },
