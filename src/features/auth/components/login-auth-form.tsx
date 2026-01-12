@@ -48,7 +48,7 @@ export function LoginAuthForm({
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      password: '',
+      password: 'demo1234',
       rememberMe: false,
     },
   })

@@ -58,7 +58,7 @@ export function LoginForm({
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: '',
+      email: 'demo@sogo.com',
     },
   })
 
