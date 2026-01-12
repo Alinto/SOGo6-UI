@@ -289,7 +289,6 @@ describe('HeaderDropdown component', () => {
     render(<HeaderDropdown />)
 
     fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
-    expect(screen.getByText('admin.panel.string')).toBeInTheDocument()
     expect(screen.getByText('account.section.string')).toBeInTheDocument()
     expect(screen.getByText('account.profile.string')).toBeInTheDocument()
     expect(screen.getByText('account.security.string')).toBeInTheDocument()
@@ -306,28 +305,11 @@ describe('HeaderDropdown component', () => {
   it('renders icons in dropdown menu items', () => {
     render(<HeaderDropdown />)
     fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
-    expect(screen.getByTestId('cog-icon')).toBeInTheDocument()
     expect(screen.getByTestId('circle-user-round-icon')).toBeInTheDocument()
     expect(screen.getAllByTestId('user-round-cog-icon')).toHaveLength(2) // Used in both account security and settings general
     expect(screen.getByTestId('calendar-cog-icon')).toBeInTheDocument()
     expect(screen.getByTestId('book-a-icon')).toBeInTheDocument()
     expect(screen.getByTestId('mail-icon')).toBeInTheDocument()
     expect(screen.getByTestId('log-out-icon')).toBeInTheDocument()
-  })
-
-  it('toggles dropdown menu on trigger click', () => {
-    render(<HeaderDropdown />)
-    const trigger = screen.getByTestId('header-dropdown-trigger')
-
-    // Initially the dropdown should be closed
-    expect(screen.queryByText('admin.panel.string')).not.toBeInTheDocument()
-
-    // Click to open
-    fireEvent.click(trigger)
-    expect(screen.getByText('admin.panel.string')).toBeInTheDocument()
-
-    // Click to close
-    fireEvent.click(trigger)
-    expect(screen.queryByText('admin.panel.string')).not.toBeInTheDocument()
   })
 })

@@ -15,7 +15,6 @@ import {
   BookA,
   CalendarCog,
   CircleUserRound,
-  Cog,
   LogOut,
   Mail,
   UserRoundCog,
@@ -104,13 +103,6 @@ const HeaderDropdown: React.FC = () => {
           onClick={() => push('/user_settings/mail/general')}
         >
           <Mail className="pr-2" /> {t('settings.email.string')}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          className="cursor-pointer"
-          onClick={() => push('/admin_panel')}
-        >
-          <Cog className="pr-2" />
-          {t('admin.panel.string')}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem
