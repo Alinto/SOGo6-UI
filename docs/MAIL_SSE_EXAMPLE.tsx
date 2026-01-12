@@ -165,7 +165,7 @@ function MailItemExample({ mail }: MailItemExampleProps) {
  * This shows how to use the same hook with different folders
  */
 export function MailFoldersExample() {
-  const folders = ['INBOX', 'Sent', 'Drafts', 'Archive']
+  const folders = ['INBOX', 'Sent', 'Drafts']
 
   return (
     <div className="space-y-8">

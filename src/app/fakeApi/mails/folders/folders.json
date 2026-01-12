@@ -53,19 +53,5 @@
     "readOnly": false,
     "selectable": false,
     "default": true
-  },
-  {
-    "name": "Archive",
-    "path": "Archive",
-    "unseen": 7,
-    "messages": 86,
-    "flags": [
-      "\\HasNoChildren",
-      "\\UnMarked"
-    ],
-    "delimiter": "/",
-    "readOnly": false,
-    "selectable": false,
-    "default": true
   }
 ]

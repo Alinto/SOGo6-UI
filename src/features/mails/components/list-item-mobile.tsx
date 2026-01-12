@@ -6,7 +6,7 @@ import { Paperclip, Star } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import React, { memo, useCallback, useRef } from 'react'
 import { ImapMessagesList } from '../mails-types'
-import { useArchiveMailMutation, useMoveToTrashMutation } from '../store'
+import { useMoveToTrashMutation } from '../store'
 import { formatDate } from './list-item-utils'
 import SwipeableMailItem from './swipeable-mail-item'
 
@@ -25,7 +25,6 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const pathname = usePathname()
   const { mail_id, folder } = useParams()
   const [onDelete] = useMoveToTrashMutation()
-  const [onArchive] = useArchiveMailMutation()
   const { id, from, flagged, hasAttachment } = data
   const containerRef = useRef<HTMLDivElement>(null)
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
@@ -78,15 +77,15 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
     onDelete({ folder: folder as string, mailId: id })
   }, [id, onDelete, folder])
 
-  const handleArchive = useCallback(() => {
-    onArchive({ folder: folder as string, mailId: id })
-  }, [id, onArchive, folder])
+  const handleMarkAsSeen = useCallback(() => {
+    //todo implement mark as seen mutation
+  }, [])
 
   return (
     <>
       <SwipeableMailItem
         onDelete={handleDelete}
-        onArchive={handleArchive}
+        onMarkAsSeen={handleMarkAsSeen}
         onSwipeStart={handleSwipeStart}
         onSwipeEnd={handleSwipeEnd}
         disabled={isSelected}

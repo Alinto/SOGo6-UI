@@ -18,7 +18,6 @@ import {
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
-import Image from 'next/image'
 import NavigationMenuToggler from './layout/navigation-menu-toggler'
 import NavigationToggler from './layout/navigation-toggler'
 
@@ -399,14 +398,6 @@ const SidebarHeader = React.forwardRef<
       className={cn('bg-sidebar flex flex-col gap-2 p-2', className)}
       {...props}
     >
-      <div className="flex items-center justify-center gap-4">
-        <Image
-          alt="App Logo"
-          src={open ? '/images/sogo-full-alt.png' : '/images/sogo-compact.svg'}
-          width={open ? 100 : 50}
-          height={open ? 50 : 25}
-        />
-      </div>
       <div className="group-data-[state=collapsed]:hidden">
         <NavigationToggler className="flex gap-2" />
       </div>
