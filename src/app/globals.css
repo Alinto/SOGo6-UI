@@ -42,7 +42,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 5% 10%;
 
-    --primary: 180 60% 45%; /* teal/cyan, matches dark mode */
+    --primary: 180 25% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 10% 96%; /* light blue-gray */
@@ -51,8 +51,8 @@
     --muted: 220 10% 96%;
     --muted-foreground: 220 10% 40%;
 
-    --accent: 30 100% 55%; /* orange accent */
-    --accent-foreground: 240 5% 10%;
+    --accent: 180 25% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 40%; /* strong red */
     --destructive-foreground: 0 0% 100%;
@@ -70,13 +70,19 @@
     --radius: 0.5rem;
 
     --sidebar-background: 180 25% 40%;
-    --sidebar-background-secondary: 0 0% 100%;
-    --sidebar-foreground: 240 5% 10%;
+    --sidebar-background-secondary: 0 0% 100%; /* bg for the right sidebar */
+    --sidebar-foreground: 0 0% 100%; /* white */
+    --sidebar-foreground-secondary: 240 5% 10%; /* text color for the right sidebar */
+    --sidebar-muted-foreground-secondary: 240 5% 10%;
     --sidebar-primary: 180 60% 45%;
-    --sidebar-accent: 30 100% 55%;
-    --sidebar-accent-foreground: 240 5% 10%;
+    --sidebar-accent: 180 25% 60%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 180 60% 45%;
+
+    --header-background: 0 0% 100%;
+    --header-foreground: 270 60% 60%;
+    --header-muted-foreground: 270 60% 60%;
   }
   .dark {
     --background: 220 15% 12%; /* deep blue-gray */
@@ -86,7 +92,7 @@
     --popover: 220 15% 16%;
     --popover-foreground: 220 10% 96%;
 
-    --primary: 180 60% 45%; /* teal/cyan */
+    --primary: 220 15% 30%; /* teal/cyan */
     --primary-foreground: 0 0% 100%; /* white */
 
     --secondary: 220 10% 22%; /* muted blue-gray */
@@ -95,7 +101,7 @@
     --muted: 220 10% 22%;
     --muted-foreground: 220 10% 60%;
 
-    --accent: 30 100% 55%; /* orange accent */
+    --accent: 220 15% 25%; /* orange accent */
     --accent-foreground: 220 10% 96%;
 
     --destructive: 0 70% 40%; /* strong red */
@@ -115,10 +121,14 @@
     --sidebar-background-secondary: 220 15% 12%;
     --sidebar-foreground: 220 10% 96%;
     --sidebar-primary: 180 60% 45%;
-    --sidebar-accent: 30 100% 55%;
+    --sidebar-accent: 220 15% 25%;
     --sidebar-accent-foreground: 220 10% 96%;
     --sidebar-border: 220 10% 22%;
     --sidebar-ring: 180 60% 45%;
+
+    --header-background: 220 15% 12%;
+    --header-foreground: 220 10% 96%;
+    --header-muted-foreground: 270 60% 60%;
   }
   .dyslexia {
     --background: 210 20% 93%; /* very light blue-gray */
