@@ -3,5 +3,20 @@
         "close": {
             "string": "Close"
         }
+    },
+    "COMMON": {
+        "demo": {
+            "warning": {
+                "title": {
+                    "string": "Demo Version"
+                },
+                "description": {
+                    "string": "You are currently using a demo version of the application. Some features may be limited."
+                },
+                "action": {
+                    "string": "Got it"
+                }
+            }
+        }
     }
 }
