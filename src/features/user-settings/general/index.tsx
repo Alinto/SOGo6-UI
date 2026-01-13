@@ -1,5 +1,6 @@
 'use client'
 
+import { PageLoader } from '@/components/lazy-components'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import GeneralSettingsForm from './components/general-form'
@@ -22,7 +23,7 @@ const GeneralSettings: React.FC = () => {
       <h2 className="text-2xl">{t('title.string')}</h2>
       <ThemeProvider />
       {isFetching ? (
-        'LOADING'
+        <PageLoader />
       ) : (
         <GeneralSettingsForm data={data} update={updateData} />
       )}

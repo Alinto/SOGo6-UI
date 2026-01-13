@@ -29,7 +29,7 @@
             },
             "calendars": {
                 "title": {
-                    "string": "Calendars",
+                    "string": "Calendar",
                     "context": "Section title for the settings sidebar"
                 },
                 "general": {

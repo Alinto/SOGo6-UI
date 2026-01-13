@@ -67,9 +67,9 @@
                 "string": "General",
                 "context": "Link to the general settings in the header dropdown"
             },
-            "agenda": {
-                "string": "Agenda",
-                "context": "Link to the agenda settings in the header dropdown"
+            "calendar": {
+                "string": "Calendar",
+                "context": "Link to the calendar settings in the header dropdown"
             },
             "address_books": {
                 "string": "Address books",

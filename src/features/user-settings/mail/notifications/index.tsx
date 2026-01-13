@@ -7,6 +7,7 @@ import {
   useGetMailNotificationsSettingsQuery,
   useUpdateMailNotificationsSettingsMutation,
 } from './store/mail-notifications-settings-api'
+import { PageLoader } from '@/components/lazy-components'
 
 const MailNotificationsSettings: React.FC = () => {
   const t = useTranslations('US_MAIL_NOTIFICATIONS')
@@ -19,7 +20,7 @@ const MailNotificationsSettings: React.FC = () => {
     <div className="grid grid-cols-1 gap-4">
       <h2 className="text-2xl">{t('title.string')}</h2>
       {isFetching ? (
-        'LOADING'
+        <PageLoader />
       ) : (
         <MailNotificationsSettingForm data={data} update={updateData} />
       )}
