@@ -50,7 +50,7 @@ const navItems = [
         items: [
           {
             title: 'US_SIDEBAR.settings.calendars.general.string',
-            url: '/user_settings/calendars/genreral',
+            url: '/user_settings/calendars/general',
           },
           {
             title: 'US_SIDEBAR.settings.calendars.categories.string',

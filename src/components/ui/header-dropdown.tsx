@@ -87,10 +87,10 @@ const HeaderDropdown: React.FC = () => {
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/user_settings/calendar/general')}
+          onClick={() => push('/user_settings/calendars/general')}
         >
           <CalendarCog className="pr-2" />
-          {t('settings.agenda.string')}
+          {t('settings.calendar.string')}
         </DropdownMenuItem>
         <DropdownMenuItem
           className="cursor-pointer"

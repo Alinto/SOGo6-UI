@@ -294,7 +294,7 @@ describe('HeaderDropdown component', () => {
     expect(screen.getByText('account.security.string')).toBeInTheDocument()
     expect(screen.getByText('settings.title.string')).toBeInTheDocument()
     expect(screen.getByText('settings.general.string')).toBeInTheDocument()
-    expect(screen.getByText('settings.agenda.string')).toBeInTheDocument()
+    expect(screen.getByText('settings.calendar.string')).toBeInTheDocument()
     expect(
       screen.getByText('settings.address_books.string')
     ).toBeInTheDocument()

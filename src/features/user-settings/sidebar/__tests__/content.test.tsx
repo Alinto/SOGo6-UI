@@ -60,7 +60,7 @@ describe('navItems', () => {
     expect(calendarsGeneral.title).toBe(
       'US_SIDEBAR.settings.calendars.general.string'
     )
-    expect(calendarsGeneral.url).toBe('/user_settings/calendars/genreral') // Note: there's a typo in the original, 'genreral' instead of 'general'
+    expect(calendarsGeneral.url).toBe('/user_settings/calendars/general')
 
     const calendarsCategories = calendarsItem.items[1]
     expect(calendarsCategories.title).toBe(

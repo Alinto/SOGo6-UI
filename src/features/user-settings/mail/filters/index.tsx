@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import MailFiltersSettingsForm from './components/filters-form'
+import { PageLoader } from '@/components/lazy-components'
 
 import {
   useGetMailFiltersSettingsQuery,
@@ -20,7 +21,7 @@ const MailFiltersSettings: React.FC = () => {
     <div className="grid grid-cols-1 gap-4">
       <h2 className="text-2xl">{t('title.string')}</h2>
       {isFetching ? (
-        'LOADING'
+        <PageLoader />
       ) : (
         <MailFiltersSettingsForm data={data} update={updateData} />
       )}
