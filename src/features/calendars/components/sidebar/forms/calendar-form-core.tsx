@@ -57,7 +57,9 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder={t(`forms.${formPrefix}.nameLabel.string`)}
+                      placeholder={t(
+                        `forms.${formPrefix}.namePlaceholder.string`
+                      )}
                       {...field}
                     />
                   </FormControl>
