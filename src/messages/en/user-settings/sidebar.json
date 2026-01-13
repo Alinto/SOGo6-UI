@@ -1,15 +1,5 @@
 {
     "US_SIDEBAR": {
-        "administration": {
-            "title": {
-                "string": "Administration",
-                "context": "Section title for the settings sidebar"
-            },
-            "panel": {
-                "string": "Panel",
-                "context": "Link to the administration panel in the settings sidebar"
-            }
-        },
         "account": {
             "title": {
                 "string": "Account",

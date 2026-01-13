@@ -2,7 +2,6 @@ import {
   Calendar,
   Contact,
   Mail,
-  Settings,
   SettingsIcon,
   ShieldUser,
   User,
@@ -98,16 +97,6 @@ const navItems = [
             url: '/user_settings/mail/notifications',
           },
         ],
-      },
-    ],
-  },
-  {
-    title: 'US_SIDEBAR.administration.title.string',
-    items: [
-      {
-        title: 'US_SIDEBAR.administration.panel.string',
-        url: '/admin_panel',
-        icon: Settings,
       },
     ],
   },
