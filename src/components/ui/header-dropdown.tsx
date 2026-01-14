@@ -107,7 +107,7 @@ const HeaderDropdown: React.FC = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/logout')}
+          onClick={() => push('/auth/login')}
         >
           <LogOut className="pr-2" />
           {t('logout.string')}
