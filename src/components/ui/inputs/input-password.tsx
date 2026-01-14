@@ -1,14 +1,16 @@
+import { cn } from '@/lib/utils'
 import { EyeClosed, EyeIcon } from 'lucide-react'
 import React from 'react'
 import { InputWithIcon } from './input-with-icon'
 
 const PasswordInput = (props: React.ComponentPropsWithoutRef<'input'>) => {
   const [showPassword, setShowPassword] = React.useState(false)
+  const { className, ...restProps } = props
 
   return (
     <InputWithIcon
       type={showPassword ? 'text' : 'password'}
-      className="pr-10"
+      className={cn('pr-10', className)}
       role="textbox"
       ActionComponent={
         showPassword ? (
@@ -18,7 +20,8 @@ const PasswordInput = (props: React.ComponentPropsWithoutRef<'input'>) => {
         )
       }
       onActionClick={() => setShowPassword(!showPassword)}
-      {...props}
+      iconClassName="text-primary-foreground"
+      {...restProps}
     />
   )
 }

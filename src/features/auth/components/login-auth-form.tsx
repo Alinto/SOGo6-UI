@@ -113,20 +113,22 @@ export function LoginAuthForm({
 
       {/* Email display (read-only) */}
       <div className="mb-6 grid gap-2">
-        <Label className="text-muted-foreground text-sm">
+        <Label className="text-primary-foreground text-sm">
           {t('email.label.string')}
         </Label>
-        <p className="text-foreground text-sm font-medium">{email}</p>
+        <p className="text-primary-foreground text-sm font-medium">{email}</p>
       </div>
 
       {/* Password field */}
       <div className="mb-6 grid gap-2">
-        <Label htmlFor="password">{t('password.label.string')}</Label>
+        <Label htmlFor="password" className="text-primary-foreground">
+          {t('password.label.string')}
+        </Label>
         <PasswordInput
           id="password"
           placeholder={t('password.placeholder.string')}
           className={cn(
-            'border-primary-foreground/60 focus-visible:ring-ring focus-visible:ring-2',
+            'border-primary-foreground/60 text-primary-foreground placeholder:text-primary-foreground/70 focus-visible:ring-ring autofill:text-primary-foreground bg-transparent autofill:bg-transparent focus-visible:ring-2',
             errors.password &&
               'border-destructive focus-visible:ring-destructive'
           )}
@@ -159,7 +161,7 @@ export function LoginAuthForm({
         </div>
         <Label
           htmlFor="remember-me"
-          className="text-foreground cursor-pointer text-sm leading-none font-normal peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          className="text-primary-foreground cursor-pointer text-sm leading-none font-normal peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           {t('remember_me.string')}
         </Label>

@@ -108,7 +108,7 @@ export function LoginForm({
       <div className="mb-6 grid gap-2">
         <Label
           htmlFor="email"
-          className="text-foreground text-sm leading-none font-medium"
+          className="text-primary-foreground text-sm leading-none font-medium"
         >
           {t('email.label.string')}
         </Label>
@@ -117,7 +117,7 @@ export function LoginForm({
           type="email"
           placeholder={t('email.placeholder.string')}
           className={cn(
-            'border-primary-foreground/60 focus-visible:ring-ring focus-visible:ring-2',
+            'border-primary-foreground/60 text-primary-foreground placeholder:text-primary-foreground/70 focus-visible:ring-ring autofill:text-primary-foreground bg-transparent autofill:bg-transparent focus-visible:ring-2',
             errors.email && 'border-destructive focus-visible:ring-destructive'
           )}
           disabled={isLoading}
@@ -136,15 +136,15 @@ export function LoginForm({
       <div className="mb-6 grid gap-2">
         <Label
           htmlFor="language"
-          className="text-foreground flex items-center gap-2 text-sm leading-none font-medium"
+          className="text-primary-foreground flex items-center gap-2 text-sm leading-none font-medium"
         >
-          <Languages size={16} className="text-muted-foreground" />
+          <Languages size={16} className="text-primary-foreground/70" />
           {t('language.label.string')}
         </Label>
         <Select value={locale} onValueChange={handleLocaleChange}>
           <SelectTrigger
             id="language"
-            className="border-primary-foreground/60 focus-visible:ring-ring focus-visible:ring-2"
+            className="border-primary-foreground/60 text-primary-foreground focus-visible:ring-ring bg-transparent focus-visible:ring-2"
             disabled={isLoading}
           >
             <SelectValue placeholder={localeLabels[locale] || locale} />
