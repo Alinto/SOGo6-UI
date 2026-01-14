@@ -3,6 +3,7 @@
 import { Slot } from '@radix-ui/react-slot'
 import { VariantProps, cva } from 'class-variance-authority'
 import { ChevronsLeft, ChevronsRight, Menu } from 'lucide-react'
+import Image from 'next/image'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -398,6 +399,16 @@ const SidebarHeader = React.forwardRef<
       className={cn('bg-sidebar flex flex-col gap-2 p-2', className)}
       {...props}
     >
+      {open && (
+        <div className="flex items-center justify-center gap-4">
+          <Image
+            alt="App Logo"
+            src={'/images/sogo-full-alt.png'}
+            width={100}
+            height={50}
+          />
+        </div>
+      )}
       <div className="group-data-[state=collapsed]:hidden">
         <NavigationToggler className="flex gap-2" />
       </div>
