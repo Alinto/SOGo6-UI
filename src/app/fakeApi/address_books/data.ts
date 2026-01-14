@@ -57,10 +57,10 @@ function initializeData(): AddressBookData {
     ],
     subscriptions: [
       {
-        name: 'SmokedKimchi address book',
+        name: 'Alayah Maria address book',
         description: 'Shared address book',
         type: 'shared',
-        id: 'smokedkimchi',
+        id: 'amaria',
       },
     ],
   }

@@ -70,7 +70,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         onClick={() => {
           if (mail_id) {
             // If mail_id is present, we are in a detail view, so we just update the URL
-            const newPath = pathname.replace(/\/[^/]+$/, `/${id}`)
+            const newPath = `${pathname}/${id}`
             push(newPath)
           } else {
             // If mail_id is not present, we are in a list view, so we navigate to the detail view

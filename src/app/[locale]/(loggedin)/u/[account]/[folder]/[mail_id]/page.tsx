@@ -83,15 +83,15 @@ const MailPage: React.FC = () => {
   const rightActions: RightActionsType = [
     {
       icon: <Reply size={18} />,
-      title: t('mail_display.action-bar.reply.string'),
+      title: t('reply.string'),
     },
     {
       icon: <ReplyAll size={18} />,
-      title: t('mail_display.action-bar.reply_all.string'),
+      title: t('reply_all.string'),
     },
     {
       icon: <Forward size={18} />,
-      title: t('mail_display.action-bar.forward.string'),
+      title: t('forward.string'),
     },
   ]
   return (
