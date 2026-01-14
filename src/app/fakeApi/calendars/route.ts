@@ -1,103 +1,30 @@
-import { NextResponse } from 'next/server'
+import { DEFAULT_CALENDARS } from '@/app/fakeApi/utils/default-data'
+import {
+  cleanupOldData,
+  getDemoData,
+  setDemoData,
+} from '@/app/fakeApi/utils/demo-storage'
+import type { Calendar } from '@/features/calendars/calendars-types'
+import { NextRequest, NextResponse } from 'next/server'
 
-const data = {
-  personal: [
-    {
-      id: 'personal-cal-1',
-      name: 'Personal',
-      description: 'My personal calendar',
-      color: '#3b82f6',
-      type: 'personal',
-      default: true,
-      read_only: false,
-      owner: 'user@example.com',
-      event_duration: 30,
-      show_as_busy: true,
-      event_notifications: [
-        { method: 'popup', minutes_before: 0 },
-        { method: 'email', minutes_before: 15 },
-      ],
-      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
-    },
-    {
-      id: 'personal-cal-2',
-      name: 'Birthdays',
-      description: 'Birthdays and anniversaries',
-      color: '#ec4899',
-      type: 'personal',
-      default: false,
-      read_only: false,
-      owner: 'user@example.com',
-      event_duration: 0,
-      show_as_busy: false,
-      event_notifications: [{ method: 'popup', minutes_before: 0 }],
-      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
-    },
-    {
-      id: 'personal-cal-3',
-      name: 'Anniversaires',
-      description: 'Birthdays and anniversaries',
-      color: '#ec4899',
-      type: 'personal',
-      default: false,
-      read_only: false,
-      owner: 'user@example.com',
-      event_duration: 0,
-      show_as_busy: false,
-      event_notifications: [{ method: 'popup', minutes_before: 0 }],
-      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
-    },
-  ],
-  shared: [
-    {
-      id: 'shared-cal-1',
-      name: 'Team Calendar',
-      description: 'Shared team events and meetings',
-      color: '#10b981',
-      type: 'shared',
-      default: false,
-      read_only: false,
-      owner: 'team-lead@example.com',
-      permissions: 'readwrite',
-      event_duration: 60,
-      show_as_busy: true,
-      event_notifications: [
-        { method: 'popup', minutes_before: 0 },
-        { method: 'email', minutes_before: 30 },
-      ],
-      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
-    },
-    {
-      id: 'shared-cal-2',
-      name: 'Company Meetings',
-      description: 'All-hands meetings and announcements',
-      color: '#8b5cf6',
-      type: 'shared',
-      default: false,
-      read_only: true,
-      owner: 'admin@example.com',
-      permissions: 'read',
-      event_duration: 60,
-      show_as_busy: true,
-      event_notifications: [{ method: 'popup', minutes_before: 0 }],
-      all_day_notifications: [{ method: 'popup', minutes_before: 1440 }],
-    },
-  ],
-  subscriptions: [
-    {
-      id: 'sub-cal-1',
-      name: 'Weather Calendar',
-      description: 'Weather events subscription',
-      color: '#06b6d4',
-      type: 'subscription',
-      default: false,
-      read_only: true,
-      owner: 'weather-service@example.com',
-      url: 'https://weather-service.com/calendar',
-      event_notifications: [],
-      all_day_notifications: [],
-    },
-  ],
+/**
+ * Format notifications from frontend format to API format
+ */
+function formatNotifications(
+  notifications: Array<{ type: string; timing: string | number }> | undefined
+): Array<{
+  method: 'email' | 'popup' | 'notification'
+  minutes_before: number
+}> {
+  if (!notifications || !Array.isArray(notifications)) return []
+
+  return notifications.map((notif) => ({
+    method: (notif.type === 'email' ? 'email' : 'popup') as
+      | 'email'
+      | 'popup'
+      | 'notification',
+    minutes_before: Number(notif.timing) || 0,
+  }))
 }
 
 /**
@@ -105,9 +32,114 @@ const data = {
  * Returns a list of all calendars for the authenticated user
  * Includes personal, shared, and subscribed calendars
  * Each calendar includes event notification settings and preferences
+ * Data is stored per-user in cookies for demo isolation
  */
-export async function GET() {
-  return NextResponse.json(data)
+export async function GET(req: NextRequest) {
+  const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
+
+  const response = NextResponse.json(userCalendars)
+  // Only if the cookie does not exist yet (first visit)
+  if (!req.cookies.get('demo_calendars')) {
+    setDemoData(response, 'demo_calendars', userCalendars)
+  }
+  return response
+}
+
+/**
+ * POST /fakeApi/calendars
+ * Create a new calendar for the authenticated user
+ * Data is stored per-user in cookies for demo isolation
+ */
+export async function POST(req: NextRequest) {
+  const body = await req.json()
+  const {
+    name,
+    description,
+    color,
+    type,
+    eventDuration,
+    showBusyStatus,
+    eventNotifications,
+    allDayNotifications,
+    url,
+  } = body
+
+  // Read the data from the cookie
+  const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
+
+  // Generate the ID (business logic preserved - same pattern as address books)
+  const baseId = name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  let id = baseId
+  let counter = 1
+  const allCalendars = [
+    ...userCalendars.personal,
+    ...userCalendars.shared,
+    ...userCalendars.subscriptions,
+  ]
+
+  while (allCalendars.some((cal) => cal.id === id)) {
+    id = `${baseId}-${counter}`
+    counter++
+  }
+
+  // Format the notifications
+  const eventNotificationsFormatted = formatNotifications(eventNotifications)
+  const allDayNotificationsFormatted = formatNotifications(allDayNotifications)
+
+  // Create the new calendar with all default properties
+  const newCalendar: Calendar = {
+    id,
+    name,
+    description: description || '',
+    color: color || '#3b82f6',
+    type: type || 'personal',
+    default: false,
+    read_only: false,
+    owner: 'user@example.com',
+    event_duration: Number(eventDuration) || 30,
+    show_as_busy: showBusyStatus ?? true,
+    event_notifications: eventNotificationsFormatted,
+    all_day_notifications: allDayNotificationsFormatted,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    // Add permissions if shared
+    ...(type === 'shared' && { permissions: 'readwrite' as const }),
+    // Add url if subscription
+    ...(type === 'subscription' && { url: url || '' }),
+  }
+
+  // Add the calendar in the right category
+  if (type === 'personal') {
+    userCalendars.personal.push(newCalendar)
+    // Limit to 100 calendars max
+    if (userCalendars.personal.length > 100) {
+      userCalendars.personal = cleanupOldData(userCalendars.personal, 100)
+    }
+  } else if (type === 'shared') {
+    userCalendars.shared.push(newCalendar)
+    // Limit to 100 calendars max
+    if (userCalendars.shared.length > 100) {
+      userCalendars.shared = cleanupOldData(userCalendars.shared, 100)
+    }
+  } else if (type === 'subscription') {
+    userCalendars.subscriptions.push(newCalendar)
+    // Limit to 100 calendars max
+    if (userCalendars.subscriptions.length > 100) {
+      userCalendars.subscriptions = cleanupOldData(
+        userCalendars.subscriptions,
+        100
+      )
+    }
+  }
+
+  // Save in the cookie
+  const response = NextResponse.json(newCalendar, { status: 201 })
+  setDemoData(response, 'demo_calendars', userCalendars)
+  return response
 }
 
 /**
@@ -115,5 +147,5 @@ export async function GET() {
  * Returns allowed HTTP methods
  */
 export async function OPTIONS() {
-  return NextResponse.json({ allow: ['GET'] }, { status: 200 })
+  return NextResponse.json({ allow: ['GET', 'POST'] }, { status: 200 })
 }
