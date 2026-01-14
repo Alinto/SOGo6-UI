@@ -104,7 +104,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               // Don't navigate if we were swiping
               if (isSwipingRef.current) return
               if (mail_id) {
-                const newPath = pathname.replace(/\/[^/]+$/, `/${id}`)
+                const newPath = `${pathname}/${id}`
                 push(newPath)
               } else {
                 push(`${pathname}/${id}`)

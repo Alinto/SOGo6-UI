@@ -8,7 +8,7 @@ const schema = z.object({
 
 const defaultValues = {
   firstname: 'Henry',
-  lastname: 'Fafenback',
+  lastname: 'Dupont',
 }
 
 export { defaultValues, schema }

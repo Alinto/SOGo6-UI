@@ -36,7 +36,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
           if (mail_id) {
-            const newPath = pathname.replace(/\/[^/]+$/, `/${id}`)
+            const newPath = `${pathname}/${id}`
             push(newPath)
           } else {
             push(`${pathname}/${id}`)
