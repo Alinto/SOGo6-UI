@@ -6,6 +6,8 @@ export interface AddressBook {
   type: AddressBookType
   id: string
   default?: boolean
+  created_at?: string
+  updated_at?: string
 }
 
 export interface AddressBooks {
@@ -42,4 +44,6 @@ export interface VCard {
   sound?: string
   uid?: string
   key?: string
+  created_at?: string
+  updated_at?: string
 }
