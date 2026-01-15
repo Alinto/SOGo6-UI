@@ -6,7 +6,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '1',
       subject: 'Candidate Interview - David G',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'David Gueto', email: 'dgueto@gmail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2026-01-13T12:30:00Z',
       seen: false,
@@ -17,7 +17,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '2',
       subject: 'Payment confirmation',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'James Wilson', email: 'james.wilson@yahoo.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2026-01-10T12:30:00Z',
       seen: false,
@@ -28,7 +28,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '3',
       subject: 'Monthly operations review',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Georges Henry', email: 'Georges Henry' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2026-01-03T12:30:00Z',
       seen: false,
@@ -39,7 +39,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '4',
       subject: 'Happy New Year and request for information',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Thomas Newcastle', email: 't.nc@gmail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-12-05T12:30:00Z',
       seen: false,
@@ -51,7 +51,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '5',
       subject: 'Fosdem Preparation',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Jane Smith', email: 'jane.smith@sogo.nu' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-12-04T12:30:00Z',
       seen: false,
@@ -62,7 +62,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '6',
       subject: 'Client onboarding call',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Jessica Longisland', email: 'J.longisland@gmail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-12-03T12:30:00Z',
       seen: false,
@@ -73,7 +73,7 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '7',
       subject: 'Product demo invitation',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Claire Martin', email: 'c.martin@sogomail.eu' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-12-01T12:30:00Z',
       seen: false,
@@ -85,25 +85,18 @@ const messagesByFolder: Record<string, any[]> = {
     {
       id: '8',
       subject: 'Thank you for your time',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Claire Martin', email: 'c.martin@sogomail.eu' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-11-27T12:30:00Z',
       seen: false,
       flagged: false,
       hasAttachment: false,
-      snippet: `Dear John,
-
-Thank you for taking the time to meet with us yesterday.
-Your insights were very helpful, and we appreciate the discussion.
-
-Best regards,
-Claire Martin
-`,
+      snippet: `Thank you for taking the time to meet with us yesterday.`,
     },
     {
       id: '9',
       subject: 'Webinar invitation',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Azra Anderson', email: 'azramanderson@gmail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-10-11T12:30:00Z',
       seen: false,
@@ -114,7 +107,7 @@ Claire Martin
     {
       id: '10',
       subject: 'Spontaneous application – Open to opportunities',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Diana Presley', email: 'diana.presley9@gmail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-09-02T12:30:00Z',
       seen: false,
@@ -125,7 +118,7 @@ Claire Martin
     {
       id: '11',
       subject: 'Rescheduling our meeting',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Nina Stevens', email: 'ninastvns@sogomail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-08-13T12:30:00Z',
       seen: false,
@@ -136,7 +129,7 @@ Claire Martin
     {
       id: '12',
       subject: 'Re: Rescheduling our meeting',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'Nina Stevens', email: 'ninastvns@sogomail.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-07-20T12:30:00Z',
       seen: false,
@@ -147,7 +140,7 @@ Claire Martin
     {
       id: '13',
       subject: 'New joiner announcement',
-      from: { name: 'Jane Doe', email: 'jane.doe@sogomail.eu' },
+      from: { name: 'James Hunting', email: 'j.hunting@yahoo.com' },
       to: [{ name: 'User', email: 'user@example.com' }],
       date: '2025-06-27T12:30:00Z',
       seen: false,
