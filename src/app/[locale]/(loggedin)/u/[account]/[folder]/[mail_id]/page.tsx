@@ -11,6 +11,9 @@ import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useRouter } from '@/lib/i18n/navigation'
+
+import { Action, ActionId } from '@/features/mails/components/mail/types'
 import {
   ChevronLeft,
   ChevronRight,
@@ -34,7 +37,8 @@ const MailPage: React.FC = () => {
     folder: string
     mail_id: string
   }
-  const { folder, mail_id } = params
+  const { push } = useRouter()
+  const { folder, account, mail_id } = params
   const isMobile = useIsMobile()
 
   const { data, isLoading, isError } = useGetMailQuery({
@@ -57,6 +61,29 @@ const MailPage: React.FC = () => {
   const to = toRaw.map(parseEmailContact)
   const cc = ccRaw ? ccRaw.map(parseEmailContact) : []
 
+  const handleNavigationAction = (idx: number, action: Action) => {
+    if (action.id === ActionId.GO_BACK) {
+      handleGoBack()
+    } else if (action.id === ActionId.GO_NEXT) {
+      handleGoNext()
+    }
+  }
+
+  const handleGoBack = () => {
+    //implement navigation to the previous mail
+    let prevId = Number(mail_id) - 1
+    prevId = prevId < 1 ? 1 : prevId
+    push(
+      `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(prevId))}`
+    )
+  }
+
+  const handleGoNext = () => {
+    // Implement navigation to the next mail
+    push(
+      `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(Number(mail_id) + 1))}`
+    )
+  }
   const actions = {
     mainMobile: [
       { icon: <Trash2 size={18} />, title: t('delete.string') },
@@ -75,8 +102,16 @@ const MailPage: React.FC = () => {
       { icon: <Tag size={18} />, title: t('label.string') },
     ],
     navigation: [
-      { icon: <ChevronLeft size={18} />, title: t('previous-mail.string') },
-      { icon: <ChevronRight size={18} />, title: t('next-mail.string') },
+      {
+        id: ActionId.GO_BACK,
+        icon: <ChevronLeft size={18} />,
+        title: t('previous-mail.string'),
+      },
+      {
+        id: ActionId.GO_NEXT,
+        icon: <ChevronRight size={18} />,
+        title: t('next-mail.string'),
+      },
     ],
   }
 
@@ -110,7 +145,10 @@ const MailPage: React.FC = () => {
           {isMobile ? (
             <MailActionsBar actions={rightActions} />
           ) : (
-            <MailActionsBar actions={actions.navigation} />
+            <MailActionsBar
+              actions={actions.navigation}
+              onAction={(idx, action) => handleNavigationAction(idx, action)}
+            />
           )}
         </div>
       </div>
