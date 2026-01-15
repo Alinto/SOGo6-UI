@@ -11,6 +11,14 @@ jest.mock('next/navigation', () => ({
   })),
 }))
 
+const mockPush = jest.fn()
+jest.mock('@/lib/i18n/navigation', () => ({
+  usePathname: jest.fn(),
+  useRouter: jest.fn(() => ({
+    push: mockPush,
+  })),
+}))
+
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => key),
 }))

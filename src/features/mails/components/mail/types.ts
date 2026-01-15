@@ -1,10 +1,16 @@
 import React, { type JSX } from 'react'
 
+export const ActionId = {
+  GO_BACK: 'go-back',
+  GO_NEXT: 'go-next',
+}
+
 export interface MailSubjectProps {
   subject: string
 }
 
-type Action = {
+export type Action = {
+  id: string
   icon: React.ReactNode
   title?: string
 }
