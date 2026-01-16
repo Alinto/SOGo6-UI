@@ -1,9 +1,7 @@
 'use client'
-import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -33,8 +31,12 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
       name: '',
       color: '#3b82f6',
       description: '',
-      eventDuration: t('forms.createCalendar.defaultEventDuration.string'),
+      eventDuration: t(
+        'forms.createCalendar.durationOptions.thirtyMinutes.string'
+      ),
       showBusyStatus: false,
+      eventNotifications: [],
+      allDayNotifications: [],
     },
   })
 
@@ -46,6 +48,11 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
     } catch (error) {
       console.error('Failed to create calendar:', error)
     }
+  }
+
+  const handleCancel = () => {
+    setOpen(false)
+    form.reset()
   }
 
   return (
@@ -60,26 +67,26 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
           <DialogTitle>{t('forms.createCalendar.title.string')}</DialogTitle>
         </DialogHeader>
         <CalendarFormCore
-          form={form}
-          onSubmit={handleSubmit}
+          form={
+            form as unknown as ReturnType<
+              typeof useForm<
+                | CalendarAddFormData
+                | import('./calendar-form-types').CalendarEditFormData
+              >
+            >
+          }
+          onSubmit={
+            handleSubmit as (
+              values:
+                | CalendarAddFormData
+                | import('./calendar-form-types').CalendarEditFormData
+            ) => Promise<void>
+          }
+          onCancel={handleCancel}
           isLoading={isLoading}
           formPrefix="createCalendar"
+          showButtons={true}
         />
-        <DialogFooter>
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => {
-              setOpen(false)
-              form.reset()
-            }}
-          >
-            {t('forms.createCalendar.cancel.string')}
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {t('forms.createCalendar.submit.string')}
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

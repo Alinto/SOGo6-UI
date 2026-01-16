@@ -156,6 +156,18 @@
         "atTimeOfEvent": {
           "string": "at time of event"
         },
+        "fiveMinutes": {
+          "string": "5 minutes before"
+        },
+        "fifteenMinutes": {
+          "string": "15 minutes before"
+        },
+        "thirtyMinutesBefore": {
+          "string": "30 minutes before"
+        },
+        "oneHourBefore": {
+          "string": "1 hour before"
+        },
         "dayBefore": {
           "string": "day before"
         },
@@ -228,6 +240,18 @@
         },
         "atTimeOfEvent": {
           "string": "at time of event"
+        },
+        "fiveMinutes": {
+          "string": "5 minutes before"
+        },
+        "fifteenMinutes": {
+          "string": "15 minutes before"
+        },
+        "thirtyMinutesBefore": {
+          "string": "30 minutes before"
+        },
+        "oneHourBefore": {
+          "string": "1 hour before"
         },
         "dayBefore": {
           "string": "day before"

@@ -1,26 +1,9 @@
-'use client'
 import { z } from 'zod'
+import type { CalendarEditFormData } from './calendar-form-types'
 
-// Define the calendar edit form data type
-export interface CalendarEditFormData {
-  id: string
-  name: string
-  color: string
-  description?: string
-  eventDuration: string
-  eventNotifications?: Array<{
-    type: 'notification' | 'email'
-    timing: string
-  }>
-  allDayNotifications?: Array<{
-    type: 'notification' | 'email'
-    daysBefore: number
-    time: string
-  }>
-  showBusyStatus: boolean
-}
+export type { CalendarEditFormData }
 
-const schema = z.object({
+export const schema = z.object({
   id: z.string().min(1, 'Calendar ID is required'),
   name: z
     .string()
@@ -52,6 +35,4 @@ const schema = z.object({
     )
     .optional(),
   showBusyStatus: z.boolean(),
-}) satisfies CalendarEditFormSchema
-
-export { schema }
+})
