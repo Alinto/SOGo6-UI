@@ -34,6 +34,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   disableActions,
 }) => {
   const [type, setType] = React.useState('')
+  const [dialogOpen, setDialogOpen] = React.useState(false)
   const { setCalendarVisibility, isCalendarVisible } = useCalendarVisibility()
   const t = useTranslations('CALENDARS')
 
@@ -71,7 +72,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         </span>
       </div>
       {!disableActions && (
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuAction className="h-7">
@@ -80,14 +81,24 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent side="right" align="start">
               <DialogTrigger asChild>
-                <DropdownMenuItem onClick={() => setType('edit')}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setType('edit')
+                    setDialogOpen(true)
+                  }}
+                >
                   <span>{t('sidebar.edit.string')}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
 
               {!isDefault && (
                 <DialogTrigger asChild>
-                  <DropdownMenuItem onClick={() => setType('delete')}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setType('delete')
+                      setDialogOpen(true)
+                    }}
+                  >
                     <span>{t('sidebar.delete.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
@@ -96,13 +107,23 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               <DropdownMenuSeparator />
 
               <DialogTrigger asChild>
-                <DropdownMenuItem onClick={() => setType('link')}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setType('link')
+                    setDialogOpen(true)
+                  }}
+                >
                   <span>{t('sidebar.link.string')}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
 
               <DialogTrigger asChild>
-                <DropdownMenuItem onClick={() => setType('sharing')}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setType('sharing')
+                    setDialogOpen(true)
+                  }}
+                >
                   <span>{t('sidebar.sharing.string')}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
@@ -110,14 +131,26 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               <DropdownMenuSeparator />
 
               <DialogTrigger asChild>
-                <DropdownMenuItem onClick={() => setType('export')}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setType('export')
+                    setDialogOpen(true)
+                  }}
+                >
                   <span>{t('sidebar.export.string')}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
             </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent>
-            {type === 'edit' && <EditForm id={id} name={name} color={color} />}
+            {type === 'edit' && (
+              <EditForm
+                id={id}
+                name={name}
+                color={color}
+                onClose={() => setDialogOpen(false)}
+              />
+            )}
             {type === 'delete' && <DeleteAction id={id} />}
             {type === 'link' && <LinkAction id={id} />}
           </DialogContent>

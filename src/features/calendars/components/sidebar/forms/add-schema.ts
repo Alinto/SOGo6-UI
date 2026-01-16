@@ -1,20 +1,8 @@
 import { z } from 'zod'
+import type { CalendarAddFormData } from './calendar-form-types'
 
-export interface CalendarAddFormData {
-  name: string
-  color: string
-  description?: string
-  eventDuration: string
-  eventNotifications?: Array<{
-    type: string
-    timing: string
-  }>
-  allDayNotifications?: Array<{
-    type: string
-    timing: string
-  }>
-  showBusyStatus: boolean
-}
+// Re-export the type
+export type { CalendarAddFormData }
 
 export const schema = z
   .object({
@@ -25,7 +13,7 @@ export const schema = z
     eventNotifications: z
       .array(
         z.object({
-          type: z.string(),
+          type: z.enum(['notification', 'email']),
           timing: z.string(),
         })
       )
@@ -33,8 +21,11 @@ export const schema = z
     allDayNotifications: z
       .array(
         z.object({
-          type: z.string(),
-          timing: z.string(),
+          type: z.enum(['notification', 'email']),
+          daysBefore: z.number().min(0, 'Days must be 0 or greater'),
+          time: z
+            .string()
+            .regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, 'Invalid time format'),
         })
       )
       .optional(),

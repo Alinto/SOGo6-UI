@@ -1,6 +1,12 @@
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { Dialog, DialogContent, DialogOverlay, DialogTrigger } from '../dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogOverlay,
+  DialogTitle,
+  DialogTrigger,
+} from '../dialog'
 
 describe('DialogOverlay Component', () => {
   it('renders the DialogOverlay', () => {
@@ -8,6 +14,7 @@ describe('DialogOverlay Component', () => {
       <Dialog>
         <DialogTrigger>Open Dialog</DialogTrigger>
         <DialogContent>
+          <DialogTitle>Test Dialog</DialogTitle>
           <DialogOverlay />
           <div>Dialog Content</div>
         </DialogContent>
@@ -26,6 +33,7 @@ describe('DialogOverlay Component', () => {
       <Dialog>
         <DialogTrigger>Open Dialog</DialogTrigger>
         <DialogContent>
+          <DialogTitle>Test Dialog</DialogTitle>
           <DialogOverlay />
           <div>Dialog Content</div>
         </DialogContent>
@@ -37,11 +45,13 @@ describe('DialogOverlay Component', () => {
 
     expect(asFragment()).toMatchSnapshot()
   })
+
   it('applies custom className to DialogOverlay', () => {
     render(
       <Dialog>
         <DialogTrigger>Open Dialog</DialogTrigger>
         <DialogContent>
+          <DialogTitle>Test Dialog</DialogTitle>
           <DialogOverlay className="custom-class" />
           <div>Dialog Content</div>
         </DialogContent>
@@ -60,6 +70,7 @@ describe('DialogOverlay Component', () => {
       <Dialog>
         <DialogTrigger>Open Dialog</DialogTrigger>
         <DialogContent>
+          <DialogTitle>Test Dialog</DialogTitle>
           <DialogOverlay data-testid="dialog-overlay" />
           <div>Dialog Content</div>
         </DialogContent>
