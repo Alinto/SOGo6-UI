@@ -5,35 +5,33 @@ import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
 import { EventForm } from '@/features/calendars/components/event-form'
+import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
+import { MobileMonthView } from '@/features/calendars/components/mobile-month-view' // ← AJOUTER
+import { MobileWeekView } from '@/features/calendars/components/mobile-week-view'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import { getDateFnsLocale } from '@/lib/i18n/date-locales'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
-import * as locales from 'date-fns/locale'
-import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import { useEffect, useMemo } from 'react'
 import {
   dateFnsLocalizer,
-  SlotInfo,
-  View,
-  Views,
   type DateLocalizer,
+  type SlotInfo,
+  type View,
+  Views,
 } from 'react-big-calendar'
-import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
+import withDragAndDrop, {
+  type EventInteractionArgs,
+} from 'react-big-calendar/lib/addons/dragAndDrop'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-})
-
-const DnDCalendar = withDragAndDrop(ShadcnBigCalendar)
 
 type CalendarEventWithDate = CalendarEvent & {
   start: Date
   end: Date
 }
+
+const DnDCalendar = withDragAndDrop<CalendarEventWithDate>(ShadcnBigCalendar)
 
 interface CalendarViewProps {
   view: View
@@ -43,15 +41,13 @@ interface CalendarViewProps {
   calendarColorMap: Record<string, string | undefined>
   defaultColor: string
 
-  onViewChange: (_view: View) => void
-  onNavigate: (_date: Date) => void
-  onSelectSlot: (_slot: SlotInfo) => void
+  onViewChange: (view: View) => void
+  onNavigate: (date: Date) => void
+  onSelectSlot: (slot: SlotInfo) => void
   onSelectedSlotClose: () => void
-  onCreateEvent: (_data: { title: string; start: string; end: string }) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onEventDrop: (_args: any) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  onEventResize: (_args: any) => void
+  onCreateEvent: (data: { title: string; start: string; end: string }) => void
+  onEventDrop: (args: EventInteractionArgs<CalendarEventWithDate>) => void
+  onEventResize: (args: EventInteractionArgs<CalendarEventWithDate>) => void
 }
 
 export default function CalendarView({
@@ -70,7 +66,26 @@ export default function CalendarView({
   onEventResize,
 }: CalendarViewProps) {
   const t = useTranslations('CALENDARS')
-  // Apply event colors based on their calendar
+  const locale = useLocale()
+  const isMobile = useIsMobile()
+
+  const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
+
+  const localizer = useMemo(
+    () =>
+      dateFnsLocalizer({
+        format: (date: Date, formatStr: string) =>
+          format(date, formatStr, { locale: dateFnsLocale }),
+        parse: (dateStr: string, formatStr: string) =>
+          parse(dateStr, formatStr, new Date(), { locale: dateFnsLocale }),
+        startOfWeek: (date: Date) =>
+          startOfWeek(date, { locale: dateFnsLocale }),
+        getDay,
+        locales: { [locale]: dateFnsLocale },
+      }),
+    [locale, dateFnsLocale]
+  )
+
   useEffect(() => {
     const style = document.createElement('style')
     let cssRules = `
@@ -79,7 +94,6 @@ export default function CalendarView({
       }
     `
 
-    // Generate CSS rules for each event based on calendar color
     Object.entries(calendarColorMap).forEach(([calendarId, color]) => {
       cssRules += `
         .rbc-event[data-calendar-id="${calendarId}"] {
@@ -96,9 +110,7 @@ export default function CalendarView({
     }
   }, [defaultColor, calendarColorMap])
 
-  // Function to get event style based on calendar color
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const eventStyleGetter = (event: any) => {
+  const eventStyleGetter = (event: CalendarEventWithDate) => {
     const calendarColor = calendarColorMap[event.calendar_id] || defaultColor
     return {
       style: {
@@ -112,8 +124,73 @@ export default function CalendarView({
     }
   }
 
+  // Mobile view rendering
+  if (isMobile) {
+    return (
+      <div className="flex h-full flex-col">
+        <Dialog open={selectedSlot !== null} onOpenChange={onSelectedSlotClose}>
+          <DialogContent>
+            <DialogHeader>
+              <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
+                {t('events.create.string')}
+              </h2>
+            </DialogHeader>
+            {selectedSlot && (
+              <EventForm
+                start={selectedSlot.start}
+                end={selectedSlot.end}
+                onSubmit={onCreateEvent}
+                onCancel={onSelectedSlotClose}
+              />
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Contextual top view based on desktop view mode */}
+        {view === Views.MONTH && (
+          <MobileMonthView
+            date={date}
+            events={events}
+            onDateSelect={onNavigate}
+            onNavigate={onNavigate}
+          />
+        )}
+
+        {view === Views.WEEK && (
+          <MobileWeekView
+            date={date}
+            events={events}
+            calendarColorMap={calendarColorMap}
+            defaultColor={defaultColor}
+            onDateSelect={onNavigate}
+          />
+        )}
+
+        {/* Bottom detail view */}
+        <div className="flex-1 overflow-hidden">
+          {view === Views.AGENDA ? (
+            <AgendaView
+              events={events}
+              date={date}
+              calendarColorMap={calendarColorMap}
+            />
+          ) : (
+            <MobileCalendarView
+              date={date}
+              events={events}
+              calendarColorMap={calendarColorMap}
+              defaultColor={defaultColor}
+              onNavigate={onNavigate}
+            />
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  // Desktop view rendering
   return (
-    <div className="">
+    <div className="flex h-full flex-col">
       <Dialog open={selectedSlot !== null} onOpenChange={onSelectedSlotClose}>
         <DialogContent>
           <DialogHeader>
@@ -140,7 +217,7 @@ export default function CalendarView({
           />
         </div>
       ) : (
-        <div className="flex-1 overflow-hidden">
+        <div className="flex h-full flex-1 flex-col overflow-hidden">
           <DnDCalendar
             localizer={localizer}
             selectable
@@ -157,6 +234,7 @@ export default function CalendarView({
             onEventResize={onEventResize}
             eventPropGetter={eventStyleGetter}
             toolbar={false}
+            culture={locale}
             formats={{
               timeGutterFormat: (
                 date: Date,

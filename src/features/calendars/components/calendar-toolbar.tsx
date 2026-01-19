@@ -9,60 +9,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useIsMobile } from '@/hooks/useMediaQuery'
+import { getDateFnsLocale } from '@/lib/i18n/date-locales'
+import { cn } from '@/lib/utils'
 import { addDays, format, isSameMonth, startOfWeek } from 'date-fns'
-import * as locales from 'date-fns/locale'
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { useLocale, useTranslations } from 'next-intl'
+import { useMemo } from 'react'
 import { View, Views } from 'react-big-calendar'
 
 export interface CalendarToolbarProps {
   view: View
   date: Date
-  locale?: string
-  onViewChange: (_view: View) => void
+  onViewChange: (view: View) => void
   onNavigatePrevious: () => void
   onNavigateToday: () => void
   onNavigateNext: () => void
   onCreateEvent: () => void
   timezone: string
-  onTimezoneChange: (_timezone: string) => void
+  onTimezoneChange: (timezone: string) => void
   className?: string
-}
-
-function getWeekMonthDisplay(date: Date, locale?: string): string {
-  const weekStart = startOfWeek(date, { weekStartsOn: 1 })
-  const weekEnd = addDays(weekStart, 6)
-  const dateLocale =
-    locale && locales[locale as keyof typeof locales]
-      ? locales[locale as keyof typeof locales]
-      : undefined
-
-  if (isSameMonth(weekStart, weekEnd)) {
-    return format(weekStart, 'MMMM yyyy', { locale: dateLocale })
-  } else {
-    return `${format(weekStart, 'MMM', { locale: dateLocale })} – ${format(weekEnd, 'MMM yyyy', { locale: dateLocale })}`
-  }
-}
-
-function getDayDisplay(date: Date, locale?: string): string {
-  const dateLocale =
-    locale && locales[locale as keyof typeof locales]
-      ? locales[locale as keyof typeof locales]
-      : undefined
-  return format(date, 'd MMM. yyyy', { locale: dateLocale })
-}
-
-function getMonthDisplay(date: Date, locale?: string): string {
-  const dateLocale =
-    locale && locales[locale as keyof typeof locales]
-      ? locales[locale as keyof typeof locales]
-      : undefined
-  return format(date, 'MMMM yyyy', { locale: dateLocale })
 }
 
 export function CalendarToolbar({
   view,
   date,
-  locale,
   onViewChange,
   onNavigatePrevious,
   onNavigateToday,
@@ -72,67 +43,134 @@ export function CalendarToolbar({
   onTimezoneChange,
   className,
 }: CalendarToolbarProps) {
-  const createEventLabel = 'Create Event'
-  const todayLabel = 'Today'
-  const monthLabel = 'Month'
-  const weekLabel = 'Week'
-  const dayLabel = 'Day'
-  const scheduleLabel = 'Schedule'
-  const weekMonthDisplay = getWeekMonthDisplay(date, locale)
-  const dayDisplay = getDayDisplay(date, locale)
-  const monthDisplay = getMonthDisplay(date, locale)
+  const t = useTranslations('CALENDARS.toolbar')
+  const locale = useLocale()
+  const isMobile = useIsMobile()
+
+  // Get date-fns locale for current user locale
+  const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
+
+  // Calculate date displays (memoized for performance)
+  const weekMonthDisplay = useMemo(() => {
+    const weekStart = startOfWeek(date, {
+      weekStartsOn: 1,
+      locale: dateFnsLocale,
+    })
+    const weekEnd = addDays(weekStart, 6)
+
+    if (isSameMonth(weekStart, weekEnd)) {
+      return format(weekStart, 'MMMM yyyy', { locale: dateFnsLocale })
+    } else {
+      return `${format(weekStart, 'MMM', { locale: dateFnsLocale })} – ${format(weekEnd, 'MMM yyyy', { locale: dateFnsLocale })}`
+    }
+  }, [date, dateFnsLocale])
+
+  const dayDisplay = useMemo(() => {
+    return format(date, 'd MMM. yyyy', { locale: dateFnsLocale })
+  }, [date, dateFnsLocale])
+
+  const monthDisplay = useMemo(() => {
+    return format(date, 'MMMM yyyy', { locale: dateFnsLocale })
+  }, [date, dateFnsLocale])
 
   return (
     <div
-      className={`mb-4 flex flex-wrap items-center justify-between gap-4 ${className || ''}`}
+      className={cn(
+        'mb-4 flex flex-wrap items-center justify-between gap-2 border-b p-2',
+        isMobile && 'gap-2',
+        className
+      )}
     >
-      <div className="flex items-center gap-4">
-        <Button onClick={onCreateEvent}>
-          <Plus className="mr-2 size-5" />
-          {createEventLabel}
-        </Button>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={onNavigatePrevious}>
+      {/* Navigation and date display */}
+      <div className={cn('flex items-center gap-2', isMobile && 'flex-1')}>
+        <div className="flex items-center gap-1">
+          <Button
+            variant="outline"
+            size={isMobile ? 'sm' : 'icon'}
+            onClick={onNavigatePrevious}
+            aria-label={t('previous.string')}
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={onNavigateToday}>
-            {todayLabel}
+          <Button
+            variant="outline"
+            size={isMobile ? 'sm' : 'default'}
+            onClick={onNavigateToday}
+          >
+            {t('today.string')}
           </Button>
-          <Button variant="outline" size="icon" onClick={onNavigateNext}>
+          <Button
+            variant="outline"
+            size={isMobile ? 'sm' : 'icon'}
+            onClick={onNavigateNext}
+            aria-label={t('next.string')}
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
-        {view === Views.WEEK && (
-          <div className="font-bold">{weekMonthDisplay}</div>
-        )}
-        {view === Views.DAY && <div className="font-bold">{dayDisplay}</div>}
-        {view === Views.MONTH && (
-          <div className="font-bold">{monthDisplay}</div>
+
+        {!isMobile && (
+          <>
+            {view === Views.WEEK && (
+              <div className="font-bold">{weekMonthDisplay}</div>
+            )}
+            {view === Views.DAY && (
+              <div className="font-bold">{dayDisplay}</div>
+            )}
+            {view === Views.MONTH && (
+              <div className="font-bold">{monthDisplay}</div>
+            )}
+          </>
         )}
       </div>
 
-      <div className="flex items-center gap-4">
-        <Select
-          value={view}
-          onValueChange={(value) => onViewChange(value as View)}
-        >
-          <SelectTrigger className="w-[100px]">
-            <SelectValue placeholder="Select view" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={Views.MONTH}>{monthLabel}</SelectItem>
-            <SelectItem value={Views.WEEK}>{weekLabel}</SelectItem>
-            <SelectItem value={Views.DAY}>{dayLabel}</SelectItem>
-            <SelectItem value={Views.AGENDA}>{scheduleLabel}</SelectItem>
-          </SelectContent>
-        </Select>
+      {/* Right side controls */}
+      <div className={cn('flex items-center gap-2', isMobile && 'flex-wrap')}>
+        {!isMobile && (
+          <Select
+            value={view}
+            onValueChange={(value) => onViewChange(value as View)}
+          >
+            <SelectTrigger className="w-[100px]">
+              <SelectValue placeholder={t('selectView.string')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={Views.MONTH}>
+                {t('views.month.string')}
+              </SelectItem>
+              <SelectItem value={Views.WEEK}>
+                {t('views.week.string')}
+              </SelectItem>
+              <SelectItem value={Views.DAY}>{t('views.day.string')}</SelectItem>
+              <SelectItem value={Views.AGENDA}>
+                {t('views.schedule.string')}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        )}
 
-        <TimezoneSelect
-          value={timezone}
-          onValueChange={onTimezoneChange}
-          className="w-[280px]"
-        />
+        {!isMobile && (
+          <TimezoneSelect
+            value={timezone}
+            onValueChange={onTimezoneChange}
+            className="w-[280px]"
+          />
+        )}
+
+        <Button onClick={onCreateEvent} size={isMobile ? 'sm' : 'default'}>
+          <Plus className={cn('h-4 w-4', !isMobile && 'mr-2')} />
+          {!isMobile && t('createEvent.string')}
+        </Button>
       </div>
+
+      {/* Mobile: Date display on second row */}
+      {isMobile && (
+        <div className="w-full text-center text-sm font-bold">
+          {view === Views.WEEK && weekMonthDisplay}
+          {view === Views.DAY && dayDisplay}
+          {view === Views.MONTH && monthDisplay}
+        </div>
+      )}
     </div>
   )
 }

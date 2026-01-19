@@ -1,6 +1,37 @@
 {
   "CALENDARS": {
     "loading": "Loading...",
+    "toolbar": {
+      "previous": {
+        "string": "Previous"
+      },
+      "today": {
+        "string": "Today"
+      },
+      "next": {
+        "string": "Next"
+      },
+      "selectView": {
+        "string": "Select view"
+      },
+      "views": {
+        "month": {
+          "string": "Month"
+        },
+        "week": {
+          "string": "Week"
+        },
+        "day": {
+          "string": "Day"
+        },
+        "schedule": {
+          "string": "Schedule"
+        }
+      },
+      "createEvent": {
+        "string": "Create Event"
+      }
+    },
     "events": {
       "create": {
         "string": "Create Event"
@@ -12,6 +43,32 @@
       },
       "noUpcomingEvents": {
         "string": "No upcoming events for this period"
+      }
+    },
+    "mobile": {
+      "event": {
+        "string": "event",
+        "plural": "events"
+      },
+      "noEvents": {
+        "string": "No events"
+      },
+      "swipeToChangeDay": {
+        "string": "Swipe to change day"
+      },
+      "swipeToNavigate": {
+        "string": "← Swipe to navigate →"
+      },
+      "timeSeparator": {
+        "string": "-"
+      },
+      "month": {
+        "today": {
+          "string": "Today"
+        },
+        "hasEvents": {
+          "string": "Has events"
+        }
       }
     },
     "sidebar": {

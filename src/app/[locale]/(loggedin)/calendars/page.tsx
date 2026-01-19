@@ -4,15 +4,12 @@ import { CalendarToolbar } from '@/features/calendars/components/calendar-toolba
 import CalendarView from '@/features/calendars/components/calendar-view'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
-import { useLocale } from 'next-intl'
 import { useMemo } from 'react'
 
 const CalendarPage = () => {
-  const locale = useLocale()
   const calendarState = useCalendarState()
   const { isCalendarVisible } = useCalendarVisibility()
 
-  // Filter events based on calendar visibility, but keep them in store
   const visibleEvents = useMemo(() => {
     return calendarState.events.filter((event) =>
       isCalendarVisible(event.calendar_id)
@@ -25,7 +22,6 @@ const CalendarPage = () => {
         <CalendarToolbar
           view={calendarState.view}
           date={calendarState.date}
-          locale={locale}
           onViewChange={calendarState.handleViewChange}
           onNavigatePrevious={calendarState.navigateToPrevious}
           onNavigateToday={calendarState.navigateToToday}
@@ -42,21 +38,25 @@ const CalendarPage = () => {
           onTimezoneChange={calendarState.setTimezone}
         />
       </div>
-      <CalendarView
-        view={calendarState.view}
-        date={calendarState.date}
-        events={visibleEvents}
-        selectedSlot={calendarState.selectedSlot}
-        calendarColorMap={calendarState.calendarColorMap}
-        defaultColor={calendarState.defaultColor}
-        onViewChange={calendarState.handleViewChange}
-        onNavigate={calendarState.handleNavigate}
-        onSelectSlot={calendarState.handleSelectSlot}
-        onSelectedSlotClose={() => calendarState.setSelectedSlot(null)}
-        onCreateEvent={calendarState.handleCreateEvent}
-        onEventDrop={calendarState.handleEventDrop}
-        onEventResize={calendarState.handleEventResize}
-      />
+      <div className="flex-1 overflow-hidden">
+        {' '}
+        {/* ← AJOUTER CE WRAPPER */}
+        <CalendarView
+          view={calendarState.view}
+          date={calendarState.date}
+          events={visibleEvents}
+          selectedSlot={calendarState.selectedSlot}
+          calendarColorMap={calendarState.calendarColorMap}
+          defaultColor={calendarState.defaultColor}
+          onViewChange={calendarState.handleViewChange}
+          onNavigate={calendarState.handleNavigate}
+          onSelectSlot={calendarState.handleSelectSlot}
+          onSelectedSlotClose={() => calendarState.setSelectedSlot(null)}
+          onCreateEvent={calendarState.handleCreateEvent}
+          onEventDrop={calendarState.handleEventDrop}
+          onEventResize={calendarState.handleEventResize}
+        />
+      </div>
     </main>
   )
 }
