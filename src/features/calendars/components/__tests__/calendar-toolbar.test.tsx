@@ -3,7 +3,24 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { Views } from 'react-big-calendar'
 import { CalendarToolbar } from '../calendar-toolbar'
 
-// Mock des composants UI
+jest.mock('next-intl', () => ({
+  useLocale: () => 'en',
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      'today.string': 'Today',
+      'previous.string': 'Previous',
+      'next.string': 'Next',
+      'createEvent.string': 'Create Event',
+      'selectView.string': 'Select View',
+      'views.month.string': 'Month',
+      'views.week.string': 'Week',
+      'views.day.string': 'Day',
+      'views.schedule.string': 'Schedule',
+    }
+    return translations[key] || key
+  },
+}))
+
 jest.mock('@/components/ui/button', () => ({
   Button: jest.fn(({ children, onClick, ...props }) => (
     <button onClick={onClick} {...props}>
@@ -49,11 +66,14 @@ jest.mock('lucide-react', () => ({
   Plus: jest.fn(() => <span data-testid="plus">+</span>),
 }))
 
+jest.mock('@/hooks/useMediaQuery', () => ({
+  useIsMobile: () => false,
+}))
+
 describe('CalendarToolbar', () => {
   const mockProps = {
     view: Views.MONTH,
     date: new Date('2024-01-15T10:00:00Z'),
-    locale: 'en',
     onViewChange: jest.fn(),
     onNavigatePrevious: jest.fn(),
     onNavigateToday: jest.fn(),

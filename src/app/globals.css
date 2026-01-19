@@ -375,3 +375,5 @@
   font-weight: bold;
   font-style: italic;
 }
+
+@import '../components/calendar/calendar-responsive.css';

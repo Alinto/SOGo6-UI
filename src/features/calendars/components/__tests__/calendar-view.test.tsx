@@ -61,13 +61,20 @@ jest.mock('react-big-calendar/lib/addons/dragAndDrop', () => {
   }
 })
 
+// ✅ MODIFIER CE MOCK (ajouter useLocale)
 jest.mock('next-intl', () => ({
+  useLocale: () => 'en', // ← AJOUTER CETTE LIGNE
   useTranslations: () => (key: string) => {
     const translations: Record<string, string> = {
       'events.create.string': 'Create Event',
     }
     return translations[key] || key
   },
+}))
+
+// ✅ AJOUTER CE NOUVEAU MOCK
+jest.mock('@/hooks/useMediaQuery', () => ({
+  useIsMobile: () => false,
 }))
 
 describe('CalendarView Component', () => {
