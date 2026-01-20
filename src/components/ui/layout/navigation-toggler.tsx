@@ -30,6 +30,7 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
   const { push } = useRouter()
   return (
     <Tabs
+      activationMode="manual"
       value={page}
       className={className}
       onValueChange={(value) => {
