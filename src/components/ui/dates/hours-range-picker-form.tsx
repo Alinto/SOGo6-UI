@@ -46,7 +46,7 @@ export function HoursRangePickerForm({
   form,
   name,
 }: HoursRangePickerFormProps) {
-  const t = useTranslations('Calendar')
+  const t = useTranslations('CALENDAR')
   const [minutesInterval, setMinutesInterval] = useState<number>(5)
   const [hoursType, setHoursType] = useState<string>('24h')
 
