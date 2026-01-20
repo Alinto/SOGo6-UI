@@ -307,7 +307,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.monday
+                              field?.value?.monday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}
@@ -323,7 +323,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.tuesday
+                              field?.value?.tuesday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}
@@ -341,7 +341,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.wednesday
+                              field?.value?.wednesday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}
@@ -359,7 +359,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.thursday
+                              field?.value?.thursday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}
@@ -377,7 +377,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.friday
+                              field?.value?.friday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}
@@ -393,7 +393,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.saturday
+                              field?.value?.saturday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}
@@ -411,7 +411,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({ data, update }) => {
                           <Button
                             type="button"
                             className={cn(
-                              field.value.sunday
+                              field?.value?.sunday
                                 ? 'bg-primary'
                                 : 'text-muted-foreground bg-gray-300'
                             )}

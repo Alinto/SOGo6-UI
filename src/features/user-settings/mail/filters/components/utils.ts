@@ -2,17 +2,17 @@ const operators = [
   {
     id: '1',
     value: 'OR',
-    translateKey: 'US_MAIL_FILTERS.operators.or.string',
+    translateKey: 'operators.or.string',
   },
   {
     id: '1',
     value: 'AND',
-    translateKey: 'US_MAIL_FILTERS.operators.and.string',
+    translateKey: 'operators.and.string',
   },
   {
     id: '1',
     value: 'ALL',
-    translateKey: 'US_MAIL_FILTERS.operators.all.string',
+    translateKey: 'operators.all.string',
   },
 ]
 
@@ -20,22 +20,22 @@ const ruleFields = [
   {
     id: '1',
     value: 'from',
-    translateKey: 'US_MAIL_FILTERS.rules.from.string',
+    translateKey: 'rules.from.string',
   },
   {
     id: '2',
     value: 'to',
-    translateKey: 'US_MAIL_FILTERS.rules.to.string',
+    translateKey: 'rules.to.string',
   },
   {
     id: '3',
     value: 'subject',
-    translateKey: 'US_MAIL_FILTERS.rules.subject.string',
+    translateKey: 'rules.subject.string',
   },
   {
     id: '4',
     value: 'body',
-    translateKey: 'US_MAIL_FILTERS.rules.body.string',
+    translateKey: 'rules.body.string',
   },
   {
     id: '5',
