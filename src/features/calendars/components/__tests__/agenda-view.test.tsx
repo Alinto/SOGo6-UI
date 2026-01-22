@@ -2,18 +2,16 @@ import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import { AgendaView } from '../agenda-view'
 
-
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => {
     const translations: Record<string, string> = {
       'schedule.noEvents.string': 'No events',
       'schedule.noUpcomingEvents.string': 'No upcoming events for this period',
-      'forms.createCalendar.durationOptions.allDay.string': 'All Day', // ← CHANGÉ ICI
+      'forms.createCalendar.durationOptions.allDay.string': 'All Day',
     }
     return translations[key] || key
   }),
 }))
-
 
 describe('AgendaView', () => {
   const mockDate = new Date('2024-01-15T10:00:00Z')
@@ -21,7 +19,6 @@ describe('AgendaView', () => {
     'cal-1': '#3b82f6',
     'cal-2': '#10b981',
   }
-
 
   const mockEvents = [
     {
@@ -65,7 +62,6 @@ describe('AgendaView', () => {
     },
   ]
 
-
   it('should render no events message when there are no upcoming events', () => {
     render(
       <AgendaView
@@ -75,13 +71,11 @@ describe('AgendaView', () => {
       />
     )
 
-
     expect(screen.getByText('No events')).toBeInTheDocument()
     expect(
       screen.getByText('No upcoming events for this period')
     ).toBeInTheDocument()
   })
-
 
   it('should render upcoming events only', () => {
     render(
@@ -92,12 +86,10 @@ describe('AgendaView', () => {
       />
     )
 
-
     expect(screen.getByText('Team Meeting')).toBeInTheDocument()
     expect(screen.getByText('Conference')).toBeInTheDocument()
     expect(screen.queryByText('Past Event')).not.toBeInTheDocument()
   })
-
 
   it('should render event with correct color from calendar color map', () => {
     render(
@@ -108,11 +100,9 @@ describe('AgendaView', () => {
       />
     )
 
-
     const dateIndicators = screen.getAllByText(/^\d+$/)
     expect(dateIndicators.length).toBeGreaterThan(0)
   })
-
 
   it('should display event description when available', () => {
     render(
@@ -123,11 +113,9 @@ describe('AgendaView', () => {
       />
     )
 
-
     expect(screen.getByText('Weekly team sync')).toBeInTheDocument()
     expect(screen.getByText('Annual tech conference')).toBeInTheDocument()
   })
-
 
   it('should display "All Day" badge for all-day events', () => {
     render(
@@ -138,10 +126,8 @@ describe('AgendaView', () => {
       />
     )
 
-
     expect(screen.getByText('All Day')).toBeInTheDocument()
   })
-
 
   it('should use default color when calendar color is not in map', () => {
     const eventsWithUnknownCalendar = [
@@ -160,7 +146,6 @@ describe('AgendaView', () => {
       },
     ]
 
-
     render(
       <AgendaView
         events={eventsWithUnknownCalendar}
@@ -169,10 +154,8 @@ describe('AgendaView', () => {
       />
     )
 
-
     expect(screen.getByText('Unknown Calendar Event')).toBeInTheDocument()
   })
-
 
   it('should sort events by start date', () => {
     const unsortedEvents = [
@@ -204,7 +187,6 @@ describe('AgendaView', () => {
       },
     ]
 
-
     render(
       <AgendaView
         events={unsortedEvents}
@@ -212,7 +194,6 @@ describe('AgendaView', () => {
         calendarColorMap={mockCalendarColorMap}
       />
     )
-
 
     const eventTitles = screen.getAllByRole('heading', { level: 3 })
     expect(eventTitles[0]).toHaveTextContent('Earlier Event')
