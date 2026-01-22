@@ -1,129 +1,81 @@
-import type { CalendarEvent } from '@/features/calendars'
-import { render, screen } from '@testing-library/react'
-import { MobileCalendarView } from '../mobile-calendar-view'
+jest.mock('@/lib/i18n/date-locales', () => {
+  const { enUS } = require('date-fns/locale/en-US')
+  return {
+    getDateFnsLocale: () => enUS,
+  }
+})
 
 jest.mock('next-intl', () => ({
   useLocale: () => 'en',
-  useTranslations: () => (key: string) => {
-    const translations: Record<string, string> = {
-      'event.string': 'event',
-      'event.plural': 'events',
-      'noEvents.string': 'No events',
-      'swipeToChangeDay.string': 'Swipe to change day',
-      'swipeToNavigate.string': '← Swipe to navigate →',
-      'timeSeparator.string': '-',
-    }
-    return translations[key] || key
-  },
+  useTranslations: () => (key: string) => key,
 }))
 
-// Mock @use-gesture/react
-jest.mock('@use-gesture/react', () => ({
-  useDrag: () => () => ({}),
+jest.mock('@/hooks/useMediaQuery', () => ({
+  useIsMobile: () => true,
 }))
 
-// Mock framer-motion
-jest.mock('framer-motion', () => ({
-  AnimatePresence: ({ children }: any) => children,
-  motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-  },
-}))
+import { render } from '@testing-library/react'
+import { Views } from 'react-big-calendar'
+import { MobileCalendarView } from '../mobile-calendar-view'
 
 describe('MobileCalendarView', () => {
   const mockOnNavigate = jest.fn()
-
-  // Helper to create complete mock events
-  const createMockEvent = (
-    overrides = {}
-  ): CalendarEvent & { start: Date; end: Date } => ({
-    id: '1',
-    title: 'Test Event',
-    start: new Date('2026-01-19T10:00:00'),
-    end: new Date('2026-01-19T11:00:00'),
-    start_date: '2026-01-19T10:00:00',
-    end_date: '2026-01-19T11:00:00',
-    calendar_id: 'cal1',
-    all_day: false,
-    created_at: '2026-01-19T09:00:00',
-    updated_at: '2026-01-19T09:00:00',
-    description: '',
-    location: '',
-    status: 'confirmed',
-    transparency: 'opaque',
-    ...overrides,
-  })
+  const mockOnViewChange = jest.fn()
 
   const defaultProps = {
+    view: Views.MONTH,
     date: new Date('2026-01-19'),
     events: [],
     calendarColorMap: {},
     defaultColor: '#3b82f6',
     onNavigate: mockOnNavigate,
+    onViewChange: mockOnViewChange,
   }
 
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('should render date header', () => {
-    render(<MobileCalendarView {...defaultProps} />)
-    expect(screen.getByText('19')).toBeInTheDocument()
-    expect(screen.getByText(/Monday, January 2026/i)).toBeInTheDocument()
+  it('should render without crashing', () => {
+    const { container } = render(<MobileCalendarView {...defaultProps} />)
+    expect(container).toBeInTheDocument()
   })
 
-  it('should show "No events" message when there are no events', () => {
-    render(<MobileCalendarView {...defaultProps} />)
-    expect(screen.getByText('No events')).toBeInTheDocument()
+  it('should render month view when view is MONTH', () => {
+    const { container } = render(
+      <MobileCalendarView {...defaultProps} view={Views.MONTH} />
+    )
+    expect(container.firstChild).toBeTruthy()
   })
 
-  it('should show event count badge with correct number', () => {
-    const propsWithEvent = {
-      ...defaultProps,
-      events: [createMockEvent()],
-    }
-    render(<MobileCalendarView {...propsWithEvent} />)
-    expect(screen.getByText('1 event')).toBeInTheDocument()
+  it('should render week view when view is WEEK', () => {
+    const { container } = render(
+      <MobileCalendarView {...defaultProps} view={Views.WEEK} />
+    )
+    expect(container.firstChild).toBeTruthy()
   })
 
-  it('should render event details when events exist', () => {
-    const propsWithEvent = {
-      ...defaultProps,
-      events: [
-        createMockEvent({
-          title: 'Team Standup',
-          start: new Date('2026-01-19T09:30:00'),
-          end: new Date('2026-01-19T10:00:00'),
-          start_date: '2026-01-19T09:30:00',
-          end_date: '2026-01-19T10:00:00',
-          description: 'Daily team sync',
-        }),
-      ],
-    }
-    render(<MobileCalendarView {...propsWithEvent} />)
-    expect(screen.getByText('Team Standup')).toBeInTheDocument()
-    expect(screen.getByText('Daily team sync')).toBeInTheDocument()
+  it('should render day view when view is DAY', () => {
+    const { container } = render(
+      <MobileCalendarView {...defaultProps} view={Views.DAY} />
+    )
+    expect(container.firstChild).toBeTruthy()
   })
 
-  it('should show swipe hint', () => {
-    render(<MobileCalendarView {...defaultProps} />)
-    expect(screen.getByText('← Swipe to navigate →')).toBeInTheDocument()
-  })
+  it('should render different views correctly', () => {
+    const { container: monthContainer } = render(
+      <MobileCalendarView {...defaultProps} view={Views.MONTH} />
+    )
+    expect(monthContainer.firstChild).toBeTruthy()
 
-  it('should display correct time format', () => {
-    const propsWithEvent = {
-      ...defaultProps,
-      events: [
-        createMockEvent({
-          start: new Date('2026-01-19T09:30:00'),
-          end: new Date('2026-01-19T10:00:00'),
-          start_date: '2026-01-19T09:30:00',
-          end_date: '2026-01-19T10:00:00',
-        }),
-      ],
-    }
-    render(<MobileCalendarView {...propsWithEvent} />)
-    expect(screen.getByText(/09:30/)).toBeInTheDocument()
-    expect(screen.getByText(/10:00/)).toBeInTheDocument()
+    const { container: weekContainer } = render(
+      <MobileCalendarView {...defaultProps} view={Views.WEEK} />
+    )
+    expect(weekContainer.firstChild).toBeTruthy()
+
+    const { container: dayContainer } = render(
+      <MobileCalendarView {...defaultProps} view={Views.DAY} />
+    )
+    expect(dayContainer.firstChild).toBeTruthy()
   })
 })

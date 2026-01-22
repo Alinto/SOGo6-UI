@@ -1,12 +1,20 @@
-import type { CalendarEvent } from '@/features/calendars'
-import { fireEvent, render } from '@testing-library/react'
-import { MobileWeekView } from '../mobile-week-view'
+jest.mock('@/lib/i18n/date-locales', () => {
+  const { enUS } = require('date-fns/locale/en-US')
+  return {
+    getDateFnsLocale: () => enUS,
+  }
+})
 
 jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => {
+    const translations: Record<string, string> = {
+      'CALENDARS.mobile.swipeHint.string': '← Swipe to see all days →',
+    }
+    return translations[key] || key
+  },
   useLocale: () => 'en',
 }))
 
-// Mock framer-motion
 jest.mock('framer-motion', () => ({
   motion: {
     button: ({ children, onClick, className, ...props }: any) => (
@@ -17,10 +25,13 @@ jest.mock('framer-motion', () => ({
   },
 }))
 
+import type { CalendarEvent } from '@/features/calendars'
+import { fireEvent, render } from '@testing-library/react'
+import { MobileWeekView } from '../mobile-week-view'
+
 describe('MobileWeekView', () => {
   const mockOnDateSelect = jest.fn()
 
-  // Mock event complet qui respecte le type CalendarEvent
   const createMockEvent = (
     overrides = {}
   ): CalendarEvent & { start: Date; end: Date } => ({
@@ -84,10 +95,7 @@ describe('MobileWeekView', () => {
     }
     const { container } = render(<MobileWeekView {...propsWithEvents} />)
 
-    // Chercher les dots d'événements
-    const indicators = container.querySelectorAll(
-      '.h-1\\.5.w-1\\.5.rounded-full'
-    )
+    const indicators = container.querySelectorAll('[style*="width: 6px"]')
     expect(indicators.length).toBeGreaterThan(0)
   })
 })

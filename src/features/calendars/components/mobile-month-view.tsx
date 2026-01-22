@@ -81,19 +81,19 @@ export function MobileMonthView({
   }
 
   return (
-    <div className="bg-background flex shrink-0 flex-col gap-3 border-b p-4">
+    <div className="bg-background flex shrink-0 flex-col gap-3 border-b p-4 overflow-hidden"> {/* ← FIX: Ajouter overflow-hidden */}
       {/* Header with month navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between min-w-0"> {/* ← FIX: Ajouter min-w-0 */}
         <Button
           variant="ghost"
           size="icon"
           onClick={handlePreviousMonth}
-          className="h-8 w-8"
+          className="h-8 w-8 shrink-0" // ← FIX: Ajouter shrink-0
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
-        <h2 className="text-lg font-semibold">
+        <h2 className="text-lg font-semibold truncate px-2"> {/* ← FIX: Ajouter truncate et px-2 */}
           {format(date, 'MMMM yyyy', { locale: dateFnsLocale })}
         </h2>
 
@@ -101,19 +101,19 @@ export function MobileMonthView({
           variant="ghost"
           size="icon"
           onClick={handleNextMonth}
-          className="h-8 w-8"
+          className="h-8 w-8 shrink-0" // ← FIX: Ajouter shrink-0
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-1 overflow-hidden"> {/* ← FIX: Ajouter overflow-hidden */}
         {/* Weekday headers */}
         {weekDayHeaders.map((dayName, index) => (
           <div
             key={`header-${index}`}
-            className="text-muted-foreground flex h-8 items-center justify-center text-xs font-medium"
+            className="text-muted-foreground flex h-8 items-center justify-center text-xs font-medium min-w-0 truncate" // ← FIX: Ajouter min-w-0 truncate
           >
             {dayName}
           </div>
@@ -131,7 +131,7 @@ export function MobileMonthView({
               key={`day-${index}`}
               onClick={() => onDateSelect(day)}
               className={cn(
-                'relative flex h-10 flex-col items-center justify-center rounded-md text-sm transition-colors',
+                'relative flex h-10 w-full flex-col items-center justify-center rounded-md text-sm transition-colors min-w-0', // ← FIX: Ajouter w-full et min-w-0
                 // Current month vs other months
                 isCurrentMonth
                   ? 'text-foreground'
@@ -148,20 +148,24 @@ export function MobileMonthView({
                 !isCurrentMonth && 'cursor-default hover:bg-transparent'
               )}
               disabled={!isCurrentMonth}
+              aria-label={format(day, 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale })} // ← FIX: Ajouter aria-label
             >
-              {format(day, 'd')}
+              <span className="truncate w-full text-center"> {/* ← FIX: Wrapper avec truncate */}
+                {format(day, 'd')}
+              </span>
 
               {/* Event indicator dot */}
               {hasEvents && isCurrentMonth && (
                 <div
                   className={cn(
-                    'absolute bottom-1 h-1 w-1 rounded-full',
+                    'absolute bottom-1 h-1 w-1 rounded-full shrink-0', // ← FIX: Ajouter shrink-0
                     isToday
                       ? 'bg-primary-foreground'
                       : isSelected
                         ? 'bg-accent-foreground'
                         : 'bg-primary'
                   )}
+                  aria-hidden="true" // ← FIX: Ajouter aria-hidden
                 />
               )}
             </button>
@@ -170,14 +174,14 @@ export function MobileMonthView({
       </div>
 
       {/* Legend */}
-      <div className="text-muted-foreground flex items-center justify-center gap-4 text-xs">
-        <div className="flex items-center gap-1">
-          <div className="bg-primary h-2 w-2 rounded-full" />
-          <span>{t('today.string')}</span>
+      <div className="text-muted-foreground flex items-center justify-center gap-4 text-xs flex-wrap"> {/* ← FIX: Ajouter flex-wrap */}
+        <div className="flex items-center gap-1 shrink-0"> {/* ← FIX: Ajouter shrink-0 */}
+          <div className="bg-primary h-2 w-2 rounded-full shrink-0" /> {/* ← FIX: Ajouter shrink-0 */}
+          <span className="whitespace-nowrap">{t('today.string')}</span> {/* ← FIX: Ajouter whitespace-nowrap */}
         </div>
-        <div className="flex items-center gap-1">
-          <div className="bg-primary h-1 w-1 rounded-full" />
-          <span>{t('hasEvents.string')}</span>
+        <div className="flex items-center gap-1 shrink-0"> {/* ← FIX: Ajouter shrink-0 */}
+          <div className="bg-primary h-1 w-1 rounded-full shrink-0" /> {/* ← FIX: Ajouter shrink-0 */}
+          <span className="whitespace-nowrap">{t('hasEvents.string')}</span> {/* ← FIX: Ajouter whitespace-nowrap */}
         </div>
       </div>
     </div>
