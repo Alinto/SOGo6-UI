@@ -45,6 +45,20 @@
         "string": "No upcoming events for this period"
       }
     },
+    "views": {
+      "month": {
+        "string": "Month"
+      },
+      "week": {
+        "string": "Week"
+      },
+      "day": {
+        "string": "Day"
+      },
+      "agenda": {
+        "string": "Agenda"
+      }
+    },
     "mobile": {
       "event": {
         "string": "event",
@@ -52,6 +66,9 @@
       },
       "noEvents": {
         "string": "No events"
+      },
+      "swipeHint": {
+        "string": "← Swipe to see all days →"
       },
       "swipeToChangeDay": {
         "string": "Swipe to change day"

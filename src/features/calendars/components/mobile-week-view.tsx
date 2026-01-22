@@ -2,10 +2,8 @@
 
 import { type CalendarEvent } from '@/features/calendars'
 import { getDateFnsLocale } from '@/lib/i18n/date-locales'
-import { cn } from '@/lib/utils'
 import { addDays, format, isSameDay, startOfWeek } from 'date-fns'
-import { motion } from 'framer-motion'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
 type CalendarEventWithDate = CalendarEvent & {
@@ -28,17 +26,15 @@ export function MobileWeekView({
   defaultColor,
   onDateSelect,
 }: MobileWeekViewProps) {
-  // Get dynamic locale from next-intl
+  const t = useTranslations('CALENDARS.mobile')
   const locale = useLocale()
   const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
 
-  // Calculate week days (memoized)
   const weekDays = useMemo(() => {
-    const weekStart = startOfWeek(date, { weekStartsOn: 1 }) // Monday
+    const weekStart = startOfWeek(date, { weekStartsOn: 1 })
     return Array.from({ length: 7 }, (_, i) => addDays(weekStart, i))
   }, [date])
 
-  // Get events for a specific day (memoized per day)
   const getEventsForDay = useMemo(() => {
     const eventsByDay = new Map<string, CalendarEventWithDate[]>()
 
@@ -62,74 +58,174 @@ export function MobileWeekView({
   const today = useMemo(() => new Date(), [])
 
   return (
-    <div className="overflow-x-auto">
-      <div className="flex gap-2 p-4">
-        {weekDays.map((day, index) => {
-          const dayEvents = getEventsForDay(day)
-          const isToday = isSameDay(day, today)
-          const isSelected = isSameDay(day, date)
-          const dayLabel = format(day, 'EEEE d MMMM', { locale: dateFnsLocale })
+    <div className="w-full">
+      {/* Outer wrapper - Safari needs explicit width */}
+      <div 
+        style={{
+          width: '100%',
+          maxWidth: '100vw',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Scroll container - Safari iOS specific */}
+        <div
+          style={{
+            overflowX: 'scroll',
+            overflowY: 'hidden',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            width: '100%',
+            touchAction: 'pan-x',
+            cursor: 'grab',
+          }}
+        >
+          {/* Inner flex container - force horizontal layout */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '8px',
+              padding: '16px',
+              width: 'max-content',
+              minWidth: '100%',
+            }}
+          >
+            {weekDays.map((day) => {
+              const dayEvents = getEventsForDay(day)
+              const isToday = isSameDay(day, today)
+              const isSelected = isSameDay(day, date)
+              const dayLabel = format(day, 'EEEE d MMMM', { locale: dateFnsLocale })
 
-          return (
-            <motion.button
-              key={day.toISOString()}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-              onClick={() => onDateSelect(day)}
-              aria-label={dayLabel}
-              aria-pressed={isSelected}
-              className={cn(
-                'flex min-w-[60px] flex-col items-center gap-2 rounded-lg border p-3 transition-all',
-                isSelected && 'border-primary bg-primary/10',
-                isToday && !isSelected && 'border-primary/50',
-                !isSelected && !isToday && 'border-border hover:bg-accent'
-              )}
-            >
-              {/* Day name */}
-              <span className="text-muted-foreground text-xs font-medium uppercase">
-                {format(day, 'EEE', { locale: dateFnsLocale })}
-              </span>
-
-              {/* Day number */}
-              <span
-                className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-full text-lg font-bold',
-                  isToday && 'bg-primary text-primary-foreground'
-                )}
-              >
-                {format(day, 'd')}
-              </span>
-
-              {/* Event dots */}
-              {dayEvents.length > 0 && (
-                <div
-                  className="flex gap-1"
-                  aria-label={`${dayEvents.length} events`}
+              return (
+                <button
+                  key={day.toISOString()}
+                  onClick={() => onDateSelect(day)}
+                  aria-label={dayLabel}
+                  aria-pressed={isSelected}
+                  style={{
+                    minWidth: '70px',
+                    width: '70px',
+                    flexShrink: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '8px',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid',
+                    transition: 'all 0.2s',
+                    cursor: 'pointer',
+                    borderColor: isSelected
+                      ? 'hsl(var(--primary))'
+                      : isToday
+                      ? 'hsl(var(--primary) / 0.5)'
+                      : 'hsl(var(--border))',
+                    backgroundColor: isSelected
+                      ? 'hsl(var(--primary) / 0.1)'
+                      : 'transparent',
+                  }}
                 >
-                  {dayEvents.slice(0, 3).map((event, idx) => {
-                    const color =
-                      calendarColorMap[event.calendar_id] || defaultColor
-                    return (
-                      <div
-                        key={`${event.id}-${idx}`}
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: color }}
-                        aria-hidden="true"
-                      />
-                    )
-                  })}
-                  {dayEvents.length > 3 && (
+                  {/* Day name */}
+                  <span
+                    style={{
+                      fontSize: '12px',
+                      fontWeight: 500,
+                      textTransform: 'uppercase',
+                      color: 'hsl(var(--muted-foreground))',
+                      width: '100%',
+                      textAlign: 'center',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {format(day, 'EEE', { locale: dateFnsLocale })}
+                  </span>
+
+                  {/* Day number */}
+                  <span
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      fontSize: '18px',
+                      fontWeight: 'bold',
+                      flexShrink: 0,
+                      backgroundColor: isToday
+                        ? 'hsl(var(--primary))'
+                        : 'transparent',
+                      color: isToday
+                        ? 'hsl(var(--primary-foreground))'
+                        : 'inherit',
+                    }}
+                  >
+                    {format(day, 'd')}
+                  </span>
+
+                  {/* Event dots */}
+                  {dayEvents.length > 0 && (
                     <div
-                      className="bg-muted-foreground h-1.5 w-1.5 rounded-full"
-                      aria-hidden="true"
-                    />
+                      style={{
+                        display: 'flex',
+                        gap: '4px',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        maxWidth: '100%',
+                      }}
+                      aria-label={`${dayEvents.length} events`}
+                    >
+                      {dayEvents.slice(0, 3).map((event, idx) => {
+                        const color =
+                          calendarColorMap[event.calendar_id] || defaultColor
+                        return (
+                          <div
+                            key={`${event.id}-${idx}`}
+                            style={{
+                              width: '6px',
+                              height: '6px',
+                              borderRadius: '50%',
+                              backgroundColor: color,
+                              flexShrink: 0,
+                            }}
+                            aria-hidden="true"
+                          />
+                        )
+                      })}
+                      {dayEvents.length > 3 && (
+                        <div
+                          style={{
+                            width: '6px',
+                            height: '6px',
+                            borderRadius: '50%',
+                            backgroundColor: 'hsl(var(--muted-foreground))',
+                            flexShrink: 0,
+                          }}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </div>
                   )}
-                </div>
-              )}
-            </motion.button>
-          )
-        })}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Scroll indicator for mobile */}
+      <div
+        style={{
+          textAlign: 'center',
+          fontSize: '12px',
+          color: 'hsl(var(--muted-foreground))',
+          marginTop: '8px',
+          padding: '0 16px',
+        }}
+      >
+        {t('swipeHint.string')}
       </div>
     </div>
   )

@@ -17,7 +17,7 @@ const CalendarPage = () => {
   }, [calendarState.events, isCalendarVisible])
 
   return (
-    <main className="flex h-screen w-full flex-col">
+    <main className="flex h-screen w-full flex-col overflow-x-hidden">
       <div className="shrink-0">
         <CalendarToolbar
           view={calendarState.view}

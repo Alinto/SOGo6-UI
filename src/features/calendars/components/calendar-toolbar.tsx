@@ -126,28 +126,26 @@ export function CalendarToolbar({
 
       {/* Right side controls */}
       <div className={cn('flex items-center gap-2', isMobile && 'flex-wrap')}>
-        {!isMobile && (
-          <Select
-            value={view}
-            onValueChange={(value) => onViewChange(value as View)}
-          >
-            <SelectTrigger className="w-[100px]">
-              <SelectValue placeholder={t('selectView.string')} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={Views.MONTH}>
-                {t('views.month.string')}
-              </SelectItem>
-              <SelectItem value={Views.WEEK}>
-                {t('views.week.string')}
-              </SelectItem>
-              <SelectItem value={Views.DAY}>{t('views.day.string')}</SelectItem>
-              <SelectItem value={Views.AGENDA}>
-                {t('views.schedule.string')}
-              </SelectItem>
-            </SelectContent>
-          </Select>
-        )}
+        <Select
+          value={view}
+          onValueChange={(value) => onViewChange(value as View)}
+        >
+          <SelectTrigger className={cn(isMobile ? 'w-[90px]' : 'w-[100px]')}>
+            <SelectValue placeholder={t('selectView.string')} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={Views.MONTH}>
+              {t('views.month.string')}
+            </SelectItem>
+            <SelectItem value={Views.WEEK}>
+              {t('views.week.string')}
+            </SelectItem>
+            <SelectItem value={Views.DAY}>{t('views.day.string')}</SelectItem>
+            <SelectItem value={Views.AGENDA}>
+              {t('views.schedule.string')}
+            </SelectItem>
+          </SelectContent>
+        </Select>
 
         {!isMobile && (
           <TimezoneSelect

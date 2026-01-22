@@ -5,8 +5,32 @@ import { Views } from 'react-big-calendar'
 // Mock dependencies
 jest.mock('@/components/calendar', () => {
   return function MockShadcnBigCalendar(props: any) {
+    // Filter out react-big-calendar specific props that shouldn't be on DOM elements
+    const {
+      // React-big-calendar props
+      resizable,
+      selectable,
+      draggableAccessor,
+      resizableAccessor,
+      onSelectSlot,
+      onEventDrop,
+      onEventResize,
+      onView,
+      onNavigate,
+      eventPropGetter,
+      toolbar,
+      localizer,
+      culture,
+      formats,
+      date,
+      view,
+      events,
+      // Keep only valid DOM props
+      ...domProps
+    } = props
+
     return (
-      <div data-testid="calendar" {...props}>
+      <div data-testid="calendar" {...domProps}>
         Calendar Component
       </div>
     )

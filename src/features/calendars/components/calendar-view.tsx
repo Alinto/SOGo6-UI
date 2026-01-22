@@ -6,8 +6,6 @@ import { type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
 import { EventForm } from '@/features/calendars/components/event-form'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
-import { MobileMonthView } from '@/features/calendars/components/mobile-month-view' // ← AJOUTER
-import { MobileWeekView } from '@/features/calendars/components/mobile-week-view'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { getDateFnsLocale } from '@/lib/i18n/date-locales'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
@@ -50,6 +48,39 @@ interface CalendarViewProps {
   onEventResize: (args: EventInteractionArgs<CalendarEventWithDate>) => void
 }
 
+// Extracted dialog component to avoid duplication
+function EventDialog({
+  selectedSlot,
+  onClose,
+  onSubmit,
+}: {
+  selectedSlot: SlotInfo | null
+  onClose: () => void
+  onSubmit: (data: { title: string; start: string; end: string }) => void
+}) {
+  const t = useTranslations('CALENDARS')
+
+  return (
+    <Dialog open={selectedSlot !== null} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
+            {t('events.create.string')}
+          </h2>
+        </DialogHeader>
+        {selectedSlot && (
+          <EventForm
+            start={selectedSlot.start}
+            end={selectedSlot.end}
+            onSubmit={onSubmit}
+            onCancel={onClose}
+          />
+        )}
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 export default function CalendarView({
   view,
   date,
@@ -65,7 +96,6 @@ export default function CalendarView({
   onEventDrop,
   onEventResize,
 }: CalendarViewProps) {
-  const t = useTranslations('CALENDARS')
   const locale = useLocale()
   const isMobile = useIsMobile()
 
@@ -86,8 +116,19 @@ export default function CalendarView({
     [locale, dateFnsLocale]
   )
 
+  // Inject dynamic CSS for calendar colors
   useEffect(() => {
+    const STYLE_ID = 'calendar-colors-style'
+
+    // Remove existing style if present
+    const existingStyle = document.getElementById(STYLE_ID)
+    if (existingStyle) {
+      existingStyle.remove()
+    }
+
     const style = document.createElement('style')
+    style.id = STYLE_ID
+
     let cssRules = `
       .rbc-slot-selection {
         background-color: ${defaultColor} !important;
@@ -105,8 +146,12 @@ export default function CalendarView({
 
     style.innerHTML = cssRules
     document.head.appendChild(style)
+
     return () => {
-      document.head.removeChild(style)
+      const styleToRemove = document.getElementById(STYLE_ID)
+      if (styleToRemove) {
+        styleToRemove.remove()
+      }
     }
   }, [defaultColor, calendarColorMap])
 
@@ -128,62 +173,31 @@ export default function CalendarView({
   if (isMobile) {
     return (
       <div className="flex h-full flex-col">
-        <Dialog open={selectedSlot !== null} onOpenChange={onSelectedSlotClose}>
-          <DialogContent>
-            <DialogHeader>
-              <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
-                {t('events.create.string')}
-              </h2>
-            </DialogHeader>
-            {selectedSlot && (
-              <EventForm
-                start={selectedSlot.start}
-                end={selectedSlot.end}
-                onSubmit={onCreateEvent}
-                onCancel={onSelectedSlotClose}
-              />
-            )}
-          </DialogContent>
-        </Dialog>
+        <EventDialog
+          selectedSlot={selectedSlot}
+          onClose={onSelectedSlotClose}
+          onSubmit={onCreateEvent}
+        />
 
-        {/* Contextual top view based on desktop view mode */}
-        {view === Views.MONTH && (
-          <MobileMonthView
-            date={date}
-            events={events}
-            onDateSelect={onNavigate}
-            onNavigate={onNavigate}
-          />
-        )}
-
-        {view === Views.WEEK && (
-          <MobileWeekView
-            date={date}
-            events={events}
-            calendarColorMap={calendarColorMap}
-            defaultColor={defaultColor}
-            onDateSelect={onNavigate}
-          />
-        )}
-
-        {/* Bottom detail view */}
-        <div className="flex-1 overflow-hidden">
-          {view === Views.AGENDA ? (
+        {view === Views.AGENDA ? (
+          <div className="flex-1 overflow-hidden">
             <AgendaView
               events={events}
               date={date}
               calendarColorMap={calendarColorMap}
             />
-          ) : (
-            <MobileCalendarView
-              date={date}
-              events={events}
-              calendarColorMap={calendarColorMap}
-              defaultColor={defaultColor}
-              onNavigate={onNavigate}
-            />
-          )}
-        </div>
+          </div>
+        ) : (
+          <MobileCalendarView
+            view={view}
+            date={date}
+            events={events}
+            calendarColorMap={calendarColorMap}
+            defaultColor={defaultColor}
+            onNavigate={onNavigate}
+            onViewChange={onViewChange}
+          />
+        )}
       </div>
     )
   }
@@ -191,23 +205,12 @@ export default function CalendarView({
   // Desktop view rendering
   return (
     <div className="flex h-full flex-col">
-      <Dialog open={selectedSlot !== null} onOpenChange={onSelectedSlotClose}>
-        <DialogContent>
-          <DialogHeader>
-            <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
-              {t('events.create.string')}
-            </h2>
-          </DialogHeader>
-          {selectedSlot && (
-            <EventForm
-              start={selectedSlot.start}
-              end={selectedSlot.end}
-              onSubmit={onCreateEvent}
-              onCancel={onSelectedSlotClose}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
+      <EventDialog
+        selectedSlot={selectedSlot}
+        onClose={onSelectedSlotClose}
+        onSubmit={onCreateEvent}
+      />
+
       {view === Views.AGENDA ? (
         <div className="flex-1 overflow-hidden">
           <AgendaView
