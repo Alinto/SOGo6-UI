@@ -17,7 +17,7 @@ const AppHeader: React.FC = () => {
   return (
     <header className="bg-header text-header-foreground top-0 right-0 left-0 z-10 flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
       <div
-        className={cn('flex items-center gap-2', isMobile ? 'w-full' : 'w-1/2')}
+        className={cn('flex items-center gap-2 ml-3', isMobile ? 'w-full' : 'w-1/2')}
       >
         {isMobile && <SidebarTrigger />}
         <div className="min-w-0 flex-1 md:ml-3">
