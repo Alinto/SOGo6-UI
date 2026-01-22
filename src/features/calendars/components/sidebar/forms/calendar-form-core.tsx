@@ -253,7 +253,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
             </FormLabel>
             <div className="space-y-2">
               {eventNotifications.map((notification, index) => (
-                <div key={index} className="flex items-center gap-x-2 gap-y-0">
+                <div key={index} className="flex flex-wrap items-center gap-2 min-w-0">
                   <Select
                     value={notification.type}
                     onValueChange={(value) => {
@@ -265,7 +265,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                       })
                     }}
                   >
-                    <SelectTrigger className="w-fit">
+                    <SelectTrigger className="w-fit min-w-0 shrink-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -294,7 +294,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                       })
                     }}
                   >
-                    <SelectTrigger className="flex-1">
+                    <SelectTrigger className="flex-1 min-w-0 sm:min-w-[200px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -362,7 +362,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
             </FormLabel>
             <div className="space-y-2">
               {allDayNotifications.map((notification, index) => (
-                <div key={index} className="flex items-center gap-x-2 gap-y-0">
+                <div key={index} className="flex flex-wrap items-center gap-2 min-w-0">
                   <Select
                     value={notification.type}
                     onValueChange={(value) => {
@@ -374,7 +374,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                       })
                     }}
                   >
-                    <SelectTrigger className="w-fit">
+                    <SelectTrigger className="w-fit min-w-0 shrink-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -394,7 +394,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                   </Select>
                   <Input
                     type="number"
-                    className="w-14 text-center"
+                    className="w-14 shrink-0 text-center"
                     value={notification.daysBefore}
                     onChange={(e) => {
                       const updated = [...allDayNotifications]
@@ -405,15 +405,15 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                       })
                     }}
                   />
-                  <span className="text-sm whitespace-nowrap">
+                  <span className="text-sm whitespace-nowrap shrink-0">
                     {t(`forms.${formPrefix}.dayBefore.string`)}
                   </span>
-                  <span className="text-sm whitespace-nowrap">
+                  <span className="text-sm whitespace-nowrap shrink-0">
                     {t(`forms.${formPrefix}.at.string`)}
                   </span>
                   <Input
                     type="time"
-                    className="w-fit"
+                    className="w-fit min-w-0 shrink-0"
                     value={notification.time}
                     onChange={(e) => {
                       const updated = [...allDayNotifications]

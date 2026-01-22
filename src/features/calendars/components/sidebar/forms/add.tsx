@@ -62,7 +62,7 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
           <Plus />
         </SidebarGroupAction>
       </DialogTrigger>
-      <DialogContent className="scrollbar-thin-gray max-w-2xl">
+      <DialogContent className="scrollbar-thin-gray max-w-[calc(100vw-2rem)] sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{t('forms.createCalendar.title.string')}</DialogTitle>
         </DialogHeader>

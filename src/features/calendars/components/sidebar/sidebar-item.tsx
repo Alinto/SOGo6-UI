@@ -142,7 +142,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               </DialogTrigger>
             </DropdownMenuContent>
           </DropdownMenu>
-          <DialogContent>
+          <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl">
             {type === 'edit' && (
               <EditForm
                 id={id}
