@@ -11,6 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
 import { MoreVertical } from 'lucide-react'
 import { DynamicIcon, IconName } from 'lucide-react/dynamic'
@@ -52,6 +53,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   const formT = useTranslations('FORM_COMMONS')
   const { push } = useRouter()
+  const isMobile = useIsMobile()
+  
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -75,7 +78,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 <MoreVertical />
               </SidebarMenuAction>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start">
+            <DropdownMenuContent
+              side={isMobile ? 'bottom' : 'right'}
+              align={isMobile ? 'center' : 'start'}
+            >
               {editAction && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('edit')}>
