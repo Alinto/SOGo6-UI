@@ -8,6 +8,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { MoreVertical } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useMemo } from 'react'
@@ -37,6 +38,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const { setCalendarVisibility, isCalendarVisible } = useCalendarVisibility()
   const t = useTranslations('CALENDARS')
+  const isMobile = useIsMobile()
 
   const handleCheckboxChange = (checked: boolean) => {
     setCalendarVisibility(id, checked)
@@ -79,7 +81,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 <MoreVertical />
               </SidebarMenuAction>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start">
+            <DropdownMenuContent
+              side={isMobile ? 'bottom' : 'right'}
+              align={isMobile ? 'center' : 'start'}
+            >
               <DialogTrigger asChild>
                 <DropdownMenuItem
                   onClick={() => {
