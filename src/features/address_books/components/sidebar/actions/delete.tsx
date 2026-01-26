@@ -36,7 +36,7 @@ const DeleteAction: React.FC<{ name: string; id: string }> = ({ name, id }) => {
           })}
         </DialogTitle>
       </DialogHeader>
-      <DialogFooter className="sm:justify-space-between">
+      <DialogFooter className="gap-2 sm:justify-space-between">
         <DialogClose asChild>
           <Button type="button" variant="secondary" disabled={isLoading}>
             {formT('cancel.default.string')}

@@ -61,7 +61,7 @@ const EditForm: React.FC<EditFormProps> = ({ name, id, onSuccess }) => {
           />
         </div>
       </DialogDescription>
-      <DialogFooter className="sm:justify-start">
+      <DialogFooter className="gap-2 sm:justify-start">
         <DialogClose asChild>
           <Button type="button" variant="secondary" disabled={isLoading}>
             {formT('cancel.default.string')}
