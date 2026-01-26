@@ -83,25 +83,21 @@ export function MobileMonthView({
   return (
     <div className="bg-background flex shrink-0 flex-col gap-3 border-b p-4 overflow-hidden"> {/* ← FIX: Ajouter overflow-hidden */}
       {/* Header with month navigation */}
-      <div className="flex items-center justify-between min-w-0"> {/* ← FIX: Ajouter min-w-0 */}
+      <div className="flex items-center justify-center gap-2 min-w-0"> {/* ← FIX: Centrer les boutons de navigation avec espacement */}
         <Button
           variant="ghost"
           size="icon"
           onClick={handlePreviousMonth}
-          className="h-8 w-8 shrink-0" // ← FIX: Ajouter shrink-0
+          className="h-8 w-8 shrink-0"
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-
-        <h2 className="text-lg font-semibold truncate px-2"> {/* ← FIX: Ajouter truncate et px-2 */}
-          {format(date, 'MMMM yyyy', { locale: dateFnsLocale })}
-        </h2>
 
         <Button
           variant="ghost"
           size="icon"
           onClick={handleNextMonth}
-          className="h-8 w-8 shrink-0" // ← FIX: Ajouter shrink-0
+          className="h-8 w-8 shrink-0"
         >
           <ChevronRight className="h-4 w-4" />
         </Button>

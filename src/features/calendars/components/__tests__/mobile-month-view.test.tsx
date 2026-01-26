@@ -65,9 +65,15 @@ describe('MobileMonthView', () => {
     jest.clearAllMocks()
   })
 
-  it('should render current month and year', () => {
+  it('should render navigation buttons', () => {
     render(<MobileMonthView {...defaultProps} />)
-    expect(screen.getByText('January 2026')).toBeInTheDocument()
+    const buttons = screen.getAllByRole('button')
+    // Should have navigation buttons (previous and next month)
+    const navButtons = buttons.filter((btn) =>
+      btn.querySelector('.lucide-chevron-left') ||
+      btn.querySelector('.lucide-chevron-right')
+    )
+    expect(navButtons.length).toBeGreaterThanOrEqual(2)
   })
 
   it('should render weekday headers', () => {

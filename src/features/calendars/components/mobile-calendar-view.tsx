@@ -38,15 +38,29 @@ export function MobileCalendarView({
 
   return (
     <div className="flex h-full flex-col">
-      {/* Month view: calendar grid only */}
+      {/* Month view: calendar grid + selected day details */}
       {view === Views.MONTH && (
-        <div className="flex-1 overflow-hidden">
-          <MobileMonthView
-            date={date}
-            events={events}
-            onDateSelect={onNavigate}
-            onNavigate={onNavigate}
-          />
+        <div className="flex h-full flex-col">
+          {/* Calendar grid */}
+          <div className="shrink-0">
+            <MobileMonthView
+              date={date}
+              events={events}
+              onDateSelect={onNavigate}
+              onNavigate={onNavigate}
+            />
+          </div>
+
+          {/* Selected day details (scrollable) */}
+          <div className="flex-1 overflow-hidden">
+            <MobileDayView
+              date={date}
+              events={events}
+              calendarColorMap={calendarColorMap}
+              defaultColor={defaultColor}
+              onNavigate={onNavigate}
+            />
+          </div>
         </div>
       )}
 
