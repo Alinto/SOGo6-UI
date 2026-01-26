@@ -20,6 +20,7 @@ import React from 'react'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
 import EditForm from './forms/edit'
+import WorkInProgress from '@/components/work-in-progress'
 
 interface SidebarItemProps {
   name: string
@@ -122,14 +123,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DialogTrigger>
               )}
               {exportAction && (
-                <DropdownMenuItem>
-                  <span>{t('options.export.string')}</span>
-                </DropdownMenuItem>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem onClick={() => setType('export')}>
+                    <span>{t('options.export.string')}</span>
+                  </DropdownMenuItem>
+                </DialogTrigger>
               )}
               {downloadAction && (
-                <DropdownMenuItem>
-                  <span>{t('options.ios_download.string')}</span>
-                </DropdownMenuItem>
+                <DialogTrigger asChild>
+                  <DropdownMenuItem onClick={() => setType('download')}>
+                    <span>{t('options.ios_download.string')}</span>
+                  </DropdownMenuItem>
+                </DialogTrigger>
               )}
             </DropdownMenuContent>
           </DropdownMenu>
@@ -139,8 +144,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             )}
             {type === 'delete' && <DeleteAction id={id} name={name} />}
             {type === 'link' && <LinkAction id={id} name={name} />}
-            {type === 'sharing' && <div>{t('options.sharing.string')}</div>}
-            {type === 'import' && <div>{t('options.import.string')}</div>}
+            {type === 'sharing' && (
+              <WorkInProgress title={t('options.sharing.string')} />
+            )}
+            {type === 'import' && (
+              <WorkInProgress title={t('options.import.string')} />
+            )}
+            {type === 'export' && (
+              <WorkInProgress title={t('options.export.string')} />
+            )}
+            {type === 'download' && (
+              <WorkInProgress title={t('options.ios_download.string')} />
+            )}
           </DialogContent>
         </Dialog>
       )}

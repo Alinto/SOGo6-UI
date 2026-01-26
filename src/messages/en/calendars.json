@@ -111,7 +111,10 @@
         "string": "Sharing Settings"
       },
       "link": {
-        "string": "Get Calendar Link"
+        "string": "Get Calendar Link",
+        "description": {
+          "string": "Copy this link to subscribe to this calendar in other calendar applications."
+        }
       },
       "export": {
         "string": "Export Calendar"

@@ -144,10 +144,4 @@ describe('MobileMonthView', () => {
     const dots = container.querySelectorAll('.absolute.bottom-1.rounded-full')
     expect(dots.length).toBeGreaterThan(0)
   })
-
-  it('should render legend with today and has events indicators', () => {
-    render(<MobileMonthView {...defaultProps} />)
-    expect(screen.getByText('Today')).toBeInTheDocument()
-    expect(screen.getByText('Has events')).toBeInTheDocument()
-  })
 })

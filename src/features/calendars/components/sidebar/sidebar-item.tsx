@@ -16,6 +16,7 @@ import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
 import EditForm from './forms/edit'
+import WorkInProgress from '@/components/work-in-progress'
 
 interface SidebarItemProps {
   name: string
@@ -158,6 +159,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             )}
             {type === 'delete' && <DeleteAction id={id} />}
             {type === 'link' && <LinkAction id={id} />}
+            {type === 'sharing' && (
+              <WorkInProgress title={t('sidebar.sharing.string')} />
+            )}
+            {type === 'export' && (
+              <WorkInProgress title={t('sidebar.export.string')} />
+            )}
           </DialogContent>
         </Dialog>
       )}

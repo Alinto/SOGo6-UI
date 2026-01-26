@@ -148,12 +148,12 @@ export const DEFAULT_ADDRESS_BOOKS: AddressBooks = {
   ],
   subscriptions: [
     {
-      name: 'SmokedKimchi address book',
-      description: 'Shared address book',
+      name: 'Contacts',
+      description: 'A quirky, shared demo address book for otter enthusiasts.',
       type: 'shared',
-      id: 'smokedkimchi',
-      created_at: '2024-01-01T00:00:00.000Z',
-      updated_at: '2024-01-01T00:00:00.000Z',
+      id: 'contacts',
+      created_at: '2024-02-29T12:34:56.000Z',
+      updated_at: '2024-02-29T12:34:56.000Z',
     },
   ],
 }
@@ -320,5 +320,5 @@ export const DEFAULT_VCARDS: Record<string, VCard[]> = {
     },
   ],
   customers: [],
-  smokedkimchi: [],
+  contacts: [],
 }

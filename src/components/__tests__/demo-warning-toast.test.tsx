@@ -47,7 +47,7 @@ describe('DemoWarningToast', () => {
 
     await waitFor(() => {
       expect(toast.warning).toHaveBeenCalledWith(
-        '⚠️ Demo Version',
+        'Demo Version',
         expect.objectContaining({
           description:
             'You are currently using a demo version of the application. Some features may be limited.',

@@ -17,7 +17,7 @@ import {
   subMonths,
 } from 'date-fns'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import { useMemo } from 'react'
 
 type CalendarEventWithDate = CalendarEvent & {
@@ -38,7 +38,6 @@ export function MobileMonthView({
   onDateSelect,
   onNavigate,
 }: MobileMonthViewProps) {
-  const t = useTranslations('CALENDARS.mobile.month')
   const locale = useLocale()
   const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
 
@@ -69,6 +68,17 @@ export function MobileMonthView({
   // Check if a day has events
   const hasEventsOnDay = (day: Date) => {
     return events.some((event) => isSameDay(new Date(event.start), day))
+  }
+
+  // Handle day click - navigate to month if clicking on a day from another month
+  const handleDayClick = (day: Date) => {
+    const isCurrentMonth = isSameMonth(day, date)
+    if (!isCurrentMonth) {
+      // Navigate to the month of the clicked day
+      onNavigate(day)
+    }
+    // Always select the clicked day
+    onDateSelect(day)
   }
 
   // Navigation handlers
@@ -125,7 +135,7 @@ export function MobileMonthView({
           return (
             <button
               key={`day-${index}`}
-              onClick={() => onDateSelect(day)}
+              onClick={() => handleDayClick(day)}
               className={cn(
                 'relative flex h-10 w-full flex-col items-center justify-center rounded-md text-sm transition-colors min-w-0', // ← FIX: Ajouter w-full et min-w-0
                 // Current month vs other months
@@ -138,20 +148,17 @@ export function MobileMonthView({
                 isSelected &&
                   !isToday &&
                   'bg-accent text-accent-foreground font-semibold',
-                // Hover state
-                'hover:bg-accent/50',
-                // Disabled for other months
-                !isCurrentMonth && 'cursor-default hover:bg-transparent'
+                // Hover state - allow hover even for other months
+                'hover:bg-accent/50 cursor-pointer'
               )}
-              disabled={!isCurrentMonth}
               aria-label={format(day, 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale })} // ← FIX: Ajouter aria-label
             >
               <span className="truncate w-full text-center"> {/* ← FIX: Wrapper avec truncate */}
                 {format(day, 'd')}
               </span>
 
-              {/* Event indicator dot */}
-              {hasEvents && isCurrentMonth && (
+              {/* Event indicator dot - show for all months */}
+              {hasEvents && (
                 <div
                   className={cn(
                     'absolute bottom-1 h-1 w-1 rounded-full shrink-0', // ← FIX: Ajouter shrink-0
@@ -167,18 +174,6 @@ export function MobileMonthView({
             </button>
           )
         })}
-      </div>
-
-      {/* Legend */}
-      <div className="text-muted-foreground flex items-center justify-center gap-4 text-xs flex-wrap"> {/* ← FIX: Ajouter flex-wrap */}
-        <div className="flex items-center gap-1 shrink-0"> {/* ← FIX: Ajouter shrink-0 */}
-          <div className="bg-primary h-2 w-2 rounded-full shrink-0" /> {/* ← FIX: Ajouter shrink-0 */}
-          <span className="whitespace-nowrap">{t('today.string')}</span> {/* ← FIX: Ajouter whitespace-nowrap */}
-        </div>
-        <div className="flex items-center gap-1 shrink-0"> {/* ← FIX: Ajouter shrink-0 */}
-          <div className="bg-primary h-1 w-1 rounded-full shrink-0" /> {/* ← FIX: Ajouter shrink-0 */}
-          <span className="whitespace-nowrap">{t('hasEvents.string')}</span> {/* ← FIX: Ajouter whitespace-nowrap */}
-        </div>
       </div>
     </div>
   )

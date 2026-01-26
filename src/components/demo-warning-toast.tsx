@@ -10,7 +10,7 @@ export function DemoWarningToast() {
   useEffect(() => {
     // Show toast after 1 second
     const timer = setTimeout(() => {
-      toast.warning(`⚠️ ${t('demo.warning.title.string')}`, {
+      toast.warning(`${t('demo.warning.title.string')}`, {
         description: t('demo.warning.description.string'),
         duration: 10000, // 10 secondes
         action: {

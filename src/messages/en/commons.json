@@ -2,6 +2,17 @@
     "COMMONS": {
         "close": {
             "string": "Close"
+        },
+        "workInProgress": {
+            "description": {
+                "string": "This feature is currently under development."
+            },
+            "message": {
+                "string": "We're working hard to bring you this feature."
+            },
+            "comingSoon": {
+                "string": "Coming soon! Stay tuned."
+            }
         }
     },
     "COMMON": {
