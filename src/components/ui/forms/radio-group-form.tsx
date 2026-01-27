@@ -20,7 +20,10 @@ const RadioGroupForm: React.FC<RadioGroupFormProps> = ({
 }) => {
   return (
     <RadioGroup
-      className={cn(horizontal ? 'flex-row' : 'flex-col', 'flex gap-4')}
+      className={cn(
+        horizontal ? 'flex-row flex-wrap' : 'flex-col',
+        'flex gap-4'
+      )}
       onValueChange={onValueChange}
       defaultValue={value}
     >

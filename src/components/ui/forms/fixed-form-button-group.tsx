@@ -38,7 +38,7 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
         'flex gap-4 pt-6',
         isInline
           ? 'justify-end sm:justify-start'
-          : 'fixed right-12 bottom-20 justify-end'
+          : 'fixed right-3 bottom-20 justify-end'
       )}
     >
       <Button

@@ -523,10 +523,13 @@ describe('RadioGroupForm', () => {
     it('handles className utility function correctly', () => {
       // Test that cn utility is being called properly
       render(<RadioGroupForm {...defaultProps} horizontal />)
-
+    
       const radioGroup = screen.getByTestId('radio-group-root')
-      // The mock cn function joins classes with spaces
-      expect(radioGroup.className).toBe('flex-row flex gap-4')
+      expect(radioGroup.className).toContain('flex-row')
+      expect(radioGroup.className).toContain('flex-wrap')
+      expect(radioGroup.className).toContain('flex')
+      expect(radioGroup.className).toContain('gap-4')
     })
+    
   })
 })

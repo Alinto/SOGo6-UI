@@ -27,6 +27,9 @@ const localeLabels: Record<string, string> = {
   es: 'Español',
 }
 
+// Langues disponibles en version demo
+const availableLocales = ['en']
+
 const createLoginSchema = (t: (key: string) => string) =>
   z.object({
     email: z
@@ -150,15 +153,17 @@ export function LoginForm({
             <SelectValue placeholder={localeLabels[locale] || locale} />
           </SelectTrigger>
           <SelectContent>
-            {locales.map((loc) => (
-              <SelectItem key={loc} value={loc}>
-                {localeLabels[loc] || loc}
-              </SelectItem>
-            ))}
+            {/* Affiche seulement les langues disponibles en demo */}
+            {locales
+              .filter((loc) => availableLocales.includes(loc))
+              .map((loc) => (
+                <SelectItem key={loc} value={loc}>
+                  {localeLabels[loc] || loc}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       </div>
-
       {/* Submit button - CTA principal */}
       <Button
         type="submit"
