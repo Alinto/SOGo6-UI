@@ -134,7 +134,7 @@ describe('Layout Component', () => {
       .getByTestId('sidebar-inset')
       .querySelector('div[class*="gap-4"]')
     expect(mainContainer).toHaveClass('gap-4')
-    expect(mainContainer).toHaveClass('border')
+    expect(mainContainer).toHaveClass('border-y')
   })
 
   it('should wrap content in DndContext', () => {

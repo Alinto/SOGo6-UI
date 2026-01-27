@@ -57,7 +57,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <AppSidebar />
           <SidebarInset className="flex h-screen flex-col">
             <AppHeader />
-            <div className="flex-1 gap-4 border">{children}</div>
+            <div className="flex-1 gap-4 border-y">{children}</div>
           </SidebarInset>
           {typeof window !== 'undefined' &&
             ReactDOM.createPortal(

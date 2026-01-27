@@ -45,7 +45,7 @@ export function AgendaView({
 
   return (
     <div className="flex h-full flex-col overflow-y-auto">
-      <div className="flex-1 space-y-4 p-6">
+      <div className="flex-1 space-y-4 md:p-6">
         {upcomingEvents.map((event) => {
           const eventDate = new Date(event.start)
           const eventEndDate = new Date(event.end)

@@ -28,10 +28,10 @@ describe('Calendars Layout', () => {
     expect(layoutDiv).toHaveClass('overflow-auto')
   })
 
-  it('should have padding class', () => {
+  it('should have vertical padding class', () => {
     const { container } = render(<Layout>{mockChildren}</Layout>)
     const layoutDiv = container.firstChild as HTMLElement
-    expect(layoutDiv).toHaveClass('p-2')
+    expect(layoutDiv).toHaveClass('py-2')
   })
 
   it('should render multiple children', () => {
@@ -51,7 +51,7 @@ describe('Calendars Layout', () => {
     expect(layoutDiv).toHaveClass(
       'h-[calc(100vh-var(--header-height))]',
       'overflow-auto',
-      'p-2'
+      'py-2'
     )
   })
 

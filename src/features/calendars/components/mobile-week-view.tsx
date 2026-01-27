@@ -77,7 +77,7 @@ export function MobileWeekView({
             msOverflowStyle: 'none',
             width: '100%',
             touchAction: 'pan-x',
-            cursor: 'grab',
+            cursor: 'grab', 
           }}
         >
           {/* Inner flex container - force horizontal layout */}
