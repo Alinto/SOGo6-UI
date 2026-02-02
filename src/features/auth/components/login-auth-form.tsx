@@ -13,12 +13,16 @@ import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useLoginMutation } from '@/features/auth/components/store/auth.api'
+import { useAppDispatch } from '@/lib/redux/hooks'
+import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 
 const createPasswordSchema = (t: (key: string) => string) =>
   z.object({
     password: z
       .string()
-      .min(8, t('password.error.min.string'))
+      .min(1, t('password.error.min.string'))
       .max(128, t('password.error.max.string')),
     rememberMe: z.boolean(),
   })
@@ -34,6 +38,9 @@ export function LoginAuthForm({
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
 
+  const dispatch = useAppDispatch()
+  const [login] = useLoginMutation()
+
   const [isLoading, setIsLoading] = React.useState(false)
   const [serverError, setServerError] = React.useState<string | null>(null)
 
@@ -48,14 +55,13 @@ export function LoginAuthForm({
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      password: 'demo1234',
+      password: '',
       rememberMe: false,
     },
   })
 
   const rememberMe = watch('rememberMe')
 
-  // Redirect if no email
   React.useEffect(() => {
     if (!email) {
       push('/auth/login')
@@ -69,33 +75,43 @@ export function LoginAuthForm({
     setServerError(null)
 
     try {
-      // Local simulation (no API call)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const result = await login({
+        username: email,
+        password: data.password,
+      }).unwrap()
 
-      // Simulate basic validation
-      if (data.password.length < 8) {
+      if (result.data?.jwt_token) {
+        const credentials = {
+          token: result.data.jwt_token,
+          user: {
+            uid: email,
+            cn: email.split('@')[0],
+            email: email,
+          },
+        }
+        
+        dispatch(setCredentials(credentials))
+        push('/u/0/INBOX')
+      } else {
         throw new Error(t('error.invalid_credentials.string'))
       }
-
-      // Simulate failure for certain passwords (example)
-      if (data.password === 'wrongpassword') {
-        throw new Error(t('error.invalid_credentials.string'))
+    } catch (error: unknown) {  
+      const status = getErrorStatus(error)
+      
+      if (status === 401) {
+        setServerError(t('error.invalid_credentials.string'))
+      } else if (status === 404) {
+        setServerError('Route de login introuvable (404). Vérifie le Swagger backend.')
+      } else {
+        setServerError(getErrorMessage(error) || t('error.generic.string'))
       }
-
-      // Simulate successful authentication
-      // Redirect to inbox
-      push('/u/0/INBOX')
-    } catch (error) {
-      setServerError(
-        error instanceof Error ? error.message : t('error.generic.string')
-      )
     } finally {
       setIsLoading(false)
     }
   }
 
   if (!email) {
-    return null // Or a loader during redirect
+    return null
   }
 
   return (
@@ -111,7 +127,6 @@ export function LoginAuthForm({
         </div>
       )}
 
-      {/* Email display (read-only) */}
       <div className="mb-6 grid gap-2">
         <Label className="text-primary-foreground text-sm">
           {t('email.label.string')}
@@ -119,7 +134,6 @@ export function LoginAuthForm({
         <p className="text-primary-foreground text-sm font-medium">{email}</p>
       </div>
 
-      {/* Password field */}
       <div className="mb-6 grid gap-2">
         <Label htmlFor="password" className="text-primary-foreground">
           {t('password.label.string')}
@@ -146,7 +160,6 @@ export function LoginAuthForm({
         )}
       </div>
 
-      {/* Remember me */}
       <div className="mb-6 flex items-center gap-3">
         <div className="flex h-11 min-h-[44px] items-center">
           <Checkbox
@@ -166,7 +179,7 @@ export function LoginAuthForm({
           {t('remember_me.string')}
         </Label>
       </div>
-      {/* Submit button */}
+
       <div className="mb-6">
         <Button
           type="submit"

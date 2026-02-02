@@ -1,4 +1,3 @@
-// import authReducer from '@/features/auth/auth-slice'
 import { mailComposeReducer } from '@/features/mails/store'
 import { notificationsReducer } from '@/features/notifications'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
@@ -6,23 +5,48 @@ import { apiSlice } from './api/api-slice'
 import { listenerMiddleware } from './listener-middleware'
 import { createReducerManager, ReducerManager } from './reducer-manager'
 import { sseApi } from './sse/sse-api'
+import authSlice from '@/features/auth/components/store/auth.slice'
+import {
+  localStorageSyncMiddleware,
+  loadAuthFromStorage,
+} from './middleware/local-storage-sync'
+
+// Load auth state from localStorage on startup
+const loadPreloadedState = () => {
+  const savedAuth = loadAuthFromStorage()
+  return savedAuth
+    ? { auth: savedAuth }
+    : {
+        auth: {
+          token: null,
+          user: null,
+          isAuthenticated: false,
+        },
+      }
+}
+
 const staticReducers = {
-  // auth: authReducer,
+  auth: authSlice,
   mailCompose: mailComposeReducer,
   notifications: notificationsReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
   [sseApi.reducerPath]: sseApi.reducer,
 }
+
 export const reducerManager = createReducerManager(staticReducers)
 
 export const makeStore = () => {
+  const preloadedState = loadPreloadedState()
+
   const store = configureStore({
     reducer: reducerManager.reduce,
+    preloadedState,
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware()
         .prepend(listenerMiddleware.middleware)
         .concat(apiSlice.middleware)
-        .concat(sseApi.middleware),
+        .concat(sseApi.middleware)
+        .concat(localStorageSyncMiddleware),
   }) as EnhancedStore & ReducerManager
 
   store.add = reducerManager.add

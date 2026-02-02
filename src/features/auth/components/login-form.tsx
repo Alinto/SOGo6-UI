@@ -61,12 +61,11 @@ export function LoginForm({
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'demo@sogo.com',
+      email: 'sogo-tests1@example.org',
     },
   })
 
   const handleLocaleChange = (newLocale: string) => {
-    // Replace the locale in the pathname
     const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`)
     push(newPathname)
   }
@@ -76,7 +75,6 @@ export function LoginForm({
     setServerError(null)
 
     try {
-      // Simulation
       await new Promise((resolve) => setTimeout(resolve, 500))
 
       const provider = 'local'
@@ -153,7 +151,6 @@ export function LoginForm({
             <SelectValue placeholder={localeLabels[locale] || locale} />
           </SelectTrigger>
           <SelectContent>
-            {/* Affiche seulement les langues disponibles en demo */}
             {locales
               .filter((loc) => availableLocales.includes(loc))
               .map((loc) => (

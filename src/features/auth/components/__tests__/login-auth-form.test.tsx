@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
+import React from 'react'
 import { LoginAuthForm } from '../login-auth-form'
+import StoreProvider from '@/lib/redux/store-provider'
 
 // Mock next-intl
 const mockTranslate = jest.fn((key: string) => key)
@@ -22,6 +24,10 @@ jest.mock('@/lib/i18n/navigation', () => ({
   }),
 }))
 
+const renderWithProvider = (ui: React.ReactElement) => {
+  return render(<StoreProvider>{ui}</StoreProvider>)
+}
+
 describe('LoginAuthForm - Step 2 (Password)', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -29,45 +35,45 @@ describe('LoginAuthForm - Step 2 (Password)', () => {
   })
 
   it('renders email from searchParams as read-only', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const emailDisplay = screen.getByText('test@example.com')
     expect(emailDisplay).toBeInTheDocument()
   })
 
   it('renders password input field', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const passwordInput = screen.getByLabelText(/password.label.string/i)
     expect(passwordInput).toBeInTheDocument()
   })
 
   it('renders remember me checkbox', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const rememberMeCheckbox = screen.getByRole('checkbox')
     expect(rememberMeCheckbox).toBeInTheDocument()
   })
 
   it('renders remember me label', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const rememberMeLabel = screen.getByText(/remember_me.string/i)
     expect(rememberMeLabel).toBeInTheDocument()
   })
 
   it('renders submit button', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const submitButton = screen.getByRole('button', { name: /login.string/i })
     expect(submitButton).toBeInTheDocument()
     expect(submitButton).toHaveAttribute('type', 'submit')
   })
 
   it('renders without crashing', () => {
-    const { container } = render(<LoginAuthForm />)
+    const { container } = renderWithProvider(<LoginAuthForm />)
     expect(container).toBeTruthy()
   })
 
   it('redirects to login page if no email in searchParams', async () => {
     mockSearchParams.delete('email')
 
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
 
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith('/auth/login')
@@ -75,13 +81,13 @@ describe('LoginAuthForm - Step 2 (Password)', () => {
   })
 
   it('renders email label', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const emailLabel = screen.getByText(/email.label.string/i)
     expect(emailLabel).toBeInTheDocument()
   })
 
   it('password input has correct attributes', () => {
-    render(<LoginAuthForm />)
+    renderWithProvider(<LoginAuthForm />)
     const passwordInput = screen.getByLabelText(/password.label.string/i)
     expect(passwordInput).toHaveAttribute('autoComplete', 'current-password')
     // autoFocus is handled by React, not visible as HTML attribute
