@@ -1,11 +1,23 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 
-export function parseEmailContact(str: string) {
+export function parseEmailContact(str: string | { name: string; email: string }) {
+  if (typeof str === 'object' && str !== null) {
+    return {
+      name: str.name || '',
+      email: str.email || '',
+    }
+  }
+  
+  if (typeof str !== 'string') {
+    return { name: '', email: '' }
+  }
+  
   const match = str.trim().match(/^(.*)\s*<([^>]+)>$/)
   if (match) {
     return { name: match[1].trim(), email: match[2].trim() }
   }
-  return { email: str.trim() }
+  
+  return { name: '', email: str.trim() }
 }
 
 export function formatMailTime(date: number) {
@@ -57,10 +69,12 @@ export function decodeBase64(str: string): string {
 }
 
 export function containsExternalImages(html: string): boolean {
+  if (!html || typeof html !== 'string') return false
   return /<img[^>]+(?:src|data-src)=['"](https?:\/\/[^'"]+)['"]/i.test(html)
 }
 
 export function replaceDataSrcWithSrc(html: string): string {
+  if (!html || typeof html !== 'string') return ''
   return html.replace(
     /<img([^>]*?)data-src=['"]([^'"]+)['"]/gi,
     '<img$1src="$2"'
@@ -68,6 +82,7 @@ export function replaceDataSrcWithSrc(html: string): string {
 }
 
 export function blockExternalImages(html: string): string {
+  if (!html || typeof html !== 'string') return ''
   html = html.replace(
     /<img([^>]*?)src=['"](https?:\/\/[^'"]+)['"]/gi,
     '<img$1src="" style="display:none;"'

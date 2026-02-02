@@ -21,6 +21,7 @@ describe('parseEmailContact', () => {
   it('parses only email', () => {
     expect(parseEmailContact('john@doe.com')).toEqual({
       email: 'john@doe.com',
+      name: '',
     })
   })
   it('trims spaces', () => {

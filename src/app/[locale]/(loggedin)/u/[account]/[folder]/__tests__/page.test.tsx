@@ -61,7 +61,7 @@ describe('Mail Folder Page', () => {
   it('should render the page component', () => {
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -95,7 +95,7 @@ describe('Mail Folder Page', () => {
 
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: mockMessages,
+        mails: mockMessages,
         page: 1,
         total: 2,
         totalPages: 1,
@@ -116,7 +116,7 @@ describe('Mail Folder Page', () => {
   it('should pass correct page information to MessagesList', () => {
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 2,
         total: 50,
         totalPages: 5,
@@ -140,7 +140,7 @@ describe('Mail Folder Page', () => {
     const mockRefetch = jest.fn()
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -167,7 +167,7 @@ describe('Mail Folder Page', () => {
     const mockRefetch = jest.fn()
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -200,7 +200,7 @@ describe('Mail Folder Page', () => {
     ;(useSearchParams as jest.Mock).mockReturnValue(searchParams)
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -226,7 +226,7 @@ describe('Mail Folder Page', () => {
   it('should handle empty messages array', () => {
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -253,17 +253,16 @@ describe('Mail Folder Page', () => {
 
     expect(screen.getByTestId('items-count')).toHaveTextContent('0')
     expect(screen.getByTestId('current-page')).toHaveTextContent('1')
-    expect(screen.getByTestId('total')).toHaveTextContent('')
+    expect(screen.getByTestId('total')).toHaveTextContent('0')
   })
 
-  it('should call refetch when folder changes', async () => {
-    const mockRefetch = jest.fn()
-
-    const { rerender } = render(<Page />)
-
+  it('should call useGetFolderMessagesQuery with new folder when folder changes', async () => {
+    ;(useParams as jest.Mock).mockReturnValue({
+      folder: 'INBOX',
+    })
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -271,16 +270,33 @@ describe('Mail Folder Page', () => {
         hasPreviousPage: false,
       },
       isLoading: false,
-      refetch: mockRefetch,
+      refetch: jest.fn(),
     })
+
+    const { rerender } = render(<Page />)
+
+    // Verify that the hook was called with INBOX
+    expect(useGetFolderMessagesQuery).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        folder: 'INBOX',
+      })
+    )
+
+    // Change the folder to Drafts
     ;(useParams as jest.Mock).mockReturnValue({
       folder: 'Drafts',
     })
 
+    // Re-render the component (simulate the route change)
     rerender(<Page />)
 
+    // Verify that the hook was called with Drafts
     await waitFor(() => {
-      expect(mockRefetch).toHaveBeenCalled()
+      expect(useGetFolderMessagesQuery).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          folder: 'Drafts',
+        })
+      )
     })
   })
 
@@ -305,7 +321,7 @@ describe('Mail Folder Page', () => {
     })
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,
@@ -328,7 +344,7 @@ describe('Mail Folder Page', () => {
   it('should show loading skeleton when data is loading', () => {
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: {
-        messages: [],
+        mails: [],
         page: 1,
         total: 0,
         totalPages: 0,

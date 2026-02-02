@@ -1,4 +1,5 @@
 import { fetchEnvVars } from '@/lib/env-service'
+import type { RootState } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
@@ -32,19 +33,34 @@ const tagTypes = [
   'admin/v1/config/domains',
 ] as const
 
-// Dynamic base query that fetches env vars first
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
+  console.log('🔍 dynamicBaseQuery CALLED')
+  
   const envVars = await fetchEnvVars()
   const baseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
+  
+  console.log('🌐 Base URL:', baseUrl)
 
   const baseQuery = fetchBaseQuery({
     baseUrl,
+    prepareHeaders: (headers, { getState }) => {
+      const state = getState() as RootState
+    
+      
+      const token = state.auth?.token
+
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`)
+      }
+
+      headers.set('Content-Type', 'application/json')
+      return headers
+    },
   })
 
   return baseQuery(args, api, extraOptions)
 }
 
-// Define our single API slice object
 export const apiSlice = createApi({
   reducerPath: 'api',
   tagTypes,
