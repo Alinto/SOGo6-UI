@@ -1,4 +1,5 @@
 import { apiSlice } from '@/lib/redux/api/api-slice'
+import type { User } from './auth.slice'
 
 interface LoginRequest {
   username: string
@@ -8,15 +9,14 @@ interface LoginRequest {
 interface LoginResponse {
   data: {
     jwt_token: string
+    user: User
   }
-  error_code: string
-  error_msg: string
 }
 
+type AuthMode = 'ldap' | 'local' | 'sso'
+
 interface AuthModeResponse {
-  data: string
-  error_code: string
-  error_msg: string
+  data: AuthMode
 }
 
 export const authApi = apiSlice.injectEndpoints({
@@ -27,6 +27,8 @@ export const authApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: credentials,
       }),
+      // Invalidate preferences cache after login to refetch user data
+      invalidatesTags: ['preferences'],
     }),
     getAuthMode: builder.query<AuthModeResponse, { username: string }>({
       query: ({ username }) => ({

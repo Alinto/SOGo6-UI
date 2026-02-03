@@ -16,17 +16,17 @@ export const localStorageSyncMiddleware: Middleware<object, RootState> =
     if (actionType?.startsWith('auth/')) {
       const { auth } = store.getState()
       try {
-        if (auth.isAuthenticated) {
+        if (auth.token) {
+          // Save auth state to localStorage if token exists
           localStorage.setItem(
             STORAGE_KEY,
             JSON.stringify({
               token: auth.token,
               user: auth.user,
-              isAuthenticated: auth.isAuthenticated,
             })
           )
         } else {
-          // Remove if logged out
+          // Remove from localStorage if logged out
           localStorage.removeItem(STORAGE_KEY)
         }
       } catch (error) {
@@ -44,7 +44,6 @@ interface StoredAuthState {
     cn: string
     email: string
   }
-  isAuthenticated: boolean
 }
 
 /**
@@ -68,7 +67,7 @@ export const loadAuthFromStorage = (): StoredAuthState | undefined => {
       parsed &&
       typeof parsed.token === 'string' &&
       parsed.user &&
-      typeof parsed.isAuthenticated === 'boolean'
+      typeof parsed.user.uid === 'string'
     ) {
       return parsed as StoredAuthState
     }

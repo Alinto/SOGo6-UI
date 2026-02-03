@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom'
 import { configureStore } from '@reduxjs/toolkit'
-import authReducer, { setCredentials, logout } from '../auth.slice'
+import authReducer, { setCredentials, logout, selectIsAuthenticated } from '../auth.slice'
 import type { User } from '../auth.slice'
 
 describe('Auth Slice', () => {
@@ -18,7 +18,7 @@ describe('Auth Slice', () => {
     })
 
     expect(store.getState().auth).toBeDefined()
-    expect(store.getState().auth.isAuthenticated).toBe(false)
+    expect(selectIsAuthenticated(store.getState())).toBe(false)
   })
 
   it('should handle setCredentials action', () => {
@@ -39,7 +39,7 @@ describe('Auth Slice', () => {
     const state = store.getState().auth
     expect(state.token).toBe('test-token')
     expect(state.user).toEqual(user)
-    expect(state.isAuthenticated).toBe(true)
+    expect(selectIsAuthenticated(store.getState())).toBe(true)
   })
 
   it('should handle logout action', () => {
@@ -61,6 +61,6 @@ describe('Auth Slice', () => {
     const state = store.getState().auth
     expect(state.token).toBeNull()
     expect(state.user).toBeNull()
-    expect(state.isAuthenticated).toBe(false)
+    expect(selectIsAuthenticated(store.getState())).toBe(false)
   })
 })

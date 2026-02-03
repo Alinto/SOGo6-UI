@@ -14,15 +14,8 @@ import {
 // Load auth state from localStorage on startup
 const loadPreloadedState = () => {
   const savedAuth = loadAuthFromStorage()
-  return savedAuth
-    ? { auth: savedAuth }
-    : {
-        auth: {
-          token: null,
-          user: null,
-          isAuthenticated: false,
-        },
-      }
+  // Return saved auth or undefined to use slice's initialState
+  return savedAuth ? { auth: savedAuth } : undefined
 }
 
 const staticReducers = {
