@@ -33,27 +33,33 @@ const tagTypes = [
   'admin/v1/config/domains',
 ] as const
 
+// Cache the base URL to avoid fetching env vars on every API call
+let cachedBaseUrl: string | null = null
+
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
-  console.log('🔍 dynamicBaseQuery CALLED')
-  
-  const envVars = await fetchEnvVars()
-  const baseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
-  
-  console.log('🌐 Base URL:', baseUrl)
+  // Fetch and cache base URL only once
+  if (!cachedBaseUrl) {
+    const envVars = await fetchEnvVars()
+    cachedBaseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
+    
+    // Log only in development
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🌐 API Base URL initialized:', cachedBaseUrl)
+    }
+  }
 
   const baseQuery = fetchBaseQuery({
-    baseUrl,
+    baseUrl: cachedBaseUrl,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState
-    
-      
       const token = state.auth?.token
 
       if (token) {
         headers.set('Authorization', `Bearer ${token}`)
       }
 
-      headers.set('Content-Type', 'application/json')
+      // Don't force Content-Type - let RTK Query handle it automatically
+      // This allows proper handling of multipart/form-data for file uploads
       return headers
     },
   })
