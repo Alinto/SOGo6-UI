@@ -172,9 +172,6 @@
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 13% 40%;
     --sidebar-ring: 220 80% 60%;
-    font-family: 'OpenDyslexic', Arial, sans-serif !important;
-    letter-spacing: 0.05em;
-    word-spacing: 0.1em;
   }
   .tritanopia {
     /* Backgrounds and foregrounds: high contrast, avoid blue/yellow confusion */
@@ -335,6 +332,9 @@
 }
 
 @layer base {
+  html {
+    font-size: 16px; /* Base font size: 14px instead of default 16px */
+  }
   * {
     @apply border-border outline-ring/50;
   }
@@ -343,37 +343,23 @@
   }
 }
 
+/* Force dyslexic font on all elements when dyslexia theme is active */
+/* This must be outside @layer base to have higher specificity than Tailwind utilities */
+html.dyslexia,
+html.dyslexia *,
+html.dyslexia body,
+html.dyslexia [class*="font-"] {
+  font-family: var(--font-opendyslexic), 'OpenDyslexic', Arial, sans-serif !important;
+  letter-spacing: 0.05em !important;
+  word-spacing: 0.1em !important;
+}
+
 @custom-variant dyslexia (&:where(.dyslexia, .dyslexia *));
 @custom-variant tritanopia (&:where(.tritanopia, .tritanopia *));
 @custom-variant deuteranopia (&:where(.deuteranopia, .deuteranopia *));
 @custom-variant protanopia (&:where(.protanopia, .protanopia *));
 
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Regular.otf') format('opentype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Italic.otf') format('opentype');
-  font-weight: normal;
-  font-style: italic;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-Bold.otf') format('opentype');
-  font-weight: bold;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'OpenDyslexic';
-  src: url('/fonts/OpenDyslexic-BoldItalic.otf') format('opentype');
-  font-weight: bold;
-  font-style: italic;
-}
+/* Font faces are now loaded via next/font/local in src/lib/fonts.ts */
+/* The font variable --font-opendyslexic is available when the font is imported */
 
   @import '../components/calendar/calendar-responsive.css';

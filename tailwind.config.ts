@@ -5,8 +5,9 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Geist Sans"', 'Arial', 'sans-serif'],
-        dyslexia: ['"OpenDyslexic"', 'Arial', 'sans-serif'],
+        sans: ['var(--font-geist-sans)', 'sans-serif'],
+        mono: ['var(--font-geist-mono)', 'monospace'],
+        dyslexia: ['var(--font-opendyslexic)', 'sans-serif'],
       },
       keyframes: {
         horizontalTranslate: {

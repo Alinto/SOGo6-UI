@@ -2,6 +2,24 @@ import { render, screen } from '@testing-library/react'
 import React from 'react'
 import RootLayout from '../layout'
 
+jest.mock('@/lib/fonts', () => ({
+  geistSans: {
+    className: 'geist-sans',
+    variable: '--font-geist-sans',
+    style: { fontFamily: 'Geist Sans' },
+  },
+  geistMono: {
+    className: 'geist-mono',
+    variable: '--font-geist-mono',
+    style: { fontFamily: 'Geist Mono' },
+  },
+  openDyslexic: {
+    className: 'open-dyslexic',
+    variable: '--font-opendyslexic',
+    style: { fontFamily: 'OpenDyslexic' },
+  },
+}))
+
 // Mock next-intl's createTranslator
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,

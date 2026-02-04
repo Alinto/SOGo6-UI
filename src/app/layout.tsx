@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import './globals.css'
-// import localFont from "next/font/local";
+import { geistSans, geistMono, openDyslexic } from '@/lib/fonts'
 import { ThemeProvider } from '@/components/theme-provider'
 import StoreProvider from '@/lib/redux/store-provider'
 import React from 'react'
@@ -33,7 +33,11 @@ export default async function RootLayout({
 }>) {
   const { locale } = await params
   return (
-    <html suppressHydrationWarning lang={locale}>
+    <html
+      suppressHydrationWarning
+      lang={locale}
+      className={`${geistSans.variable} ${geistMono.variable} ${openDyslexic.variable}`}
+    >
       <body className="overflow-hidden antialiased">
         <ThemeProvider
           attribute="class"
