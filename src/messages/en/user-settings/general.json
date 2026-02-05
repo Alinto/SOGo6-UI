@@ -29,8 +29,20 @@
             "enable_notifications": {
                 "string": "Enable Notifications"
             },
-            "animation_level": {
-                "string": "Animation Level"
+            "saved": {
+                "string": "General settings saved"
+            },
+            "mail": {
+                "string": "Mail"
+            },
+            "calendar": {
+                "string": "Calendar"
+            },
+            "contacts": {
+                "string": "Contacts"
+            },
+            "last": {
+                "string": "Last displayed module"
             }
         },
         "descriptions": {

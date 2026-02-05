@@ -8,9 +8,7 @@ const data = {
   test: crypto.randomUUID(),
   timeStyle: '15:02',
   defaultView: 'Mail',
-  refreshFrequency: 'Every 5 minutes',
   enableNotifications: false,
-  animationLevel: 'normal',
 }
 
 export async function GET() {

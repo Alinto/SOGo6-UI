@@ -15,9 +15,8 @@ const schema = z.object({
   longDateStyle: z.string(),
   timeStyle: z.string(),
   defaultView: z.string(),
-  refreshFrequency: z.string(),
   enableNotifications: z.boolean(),
-  animationLevel: z.string(),
+  avatarEnabled: z.boolean(),
 }) satisfies GeneralSettingsSchema
 
 export { schema }

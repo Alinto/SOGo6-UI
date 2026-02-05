@@ -20,12 +20,14 @@ const SelectForm: React.FC<SelectFormProps> = ({
   value,
 }) => {
   // Ensure value is always defined and matches an option
-  const selectedValue = value || options[0]?.value || ''
-  
+  const selectedValue = value || options[0]?.value || undefined
+
   // If value doesn't match any option, use the first option
-  const isValidValue = options.some(opt => opt.value === selectedValue)
-  const finalValue = isValidValue ? selectedValue : (options[0]?.value || '')
-  
+  const isValidValue = options.some((opt) => opt.value === selectedValue)
+  const finalValue = isValidValue
+    ? selectedValue
+    : options[0]?.value || undefined
+
   return (
     <Select onValueChange={onValueChange} value={finalValue}>
       <FormControl>

@@ -5,7 +5,6 @@ export interface GeneralSettings {
   longDateStyle: string
   timeStyle: string
   defaultView: string
-  refreshFrequency: string
   enableNotifications: boolean
-  animationLevel: string
+  avatarEnabled: boolean
 }

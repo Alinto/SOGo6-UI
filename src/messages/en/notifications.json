@@ -1,31 +1,43 @@
 {
     "NOTIFICATIONS": {
+        "success": {
+            "string": "Success",
+            "developer_comment": "Operation completed successfully."
+        },
         "title": {
             "success": {
                 "string": "Success",
-                "devolopper_comment": "Operation completed successfully."
+                "developer_comment": "Operation completed successfully."
             },
             "error": {
                 "string": "Error",
-                "devolopper_comment": "An error occurred during the operation."
+                "developer_comment": "An error occurred during the operation. {error}"
             },
             "warning": {
                 "string": "Warning",
-                "devolopper_comment": "Please check the details and proceed with caution."
+                "developer_comment": "Please check the details and proceed with caution."
+            },
+            "info": {
+                "string": "Info",
+                "developer_comment": "Informational message."
             }
         },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",
-                "devolopper_comment": "The operation was successful."
+                "developer_comment": "The operation was successful."
             },
             "error": {
                 "string": "An error occurred during the operation.",
-                "devolopper_comment": "There was an error while processing your request."
+                "developer_comment": "There was an error while processing your request."
             },
             "warning": {
                 "string": "Please check the details and proceed with caution.",
-                "devolopper_comment": "This is a warning message to alert the user."
+                "developer_comment": "This is a warning message to alert the user."
+            },
+            "info": {
+                "string": "This is an informational message.",
+                "developer_comment": "This message provides information to the user."
             }
         }
     }
