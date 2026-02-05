@@ -20,7 +20,7 @@ const AppHeader: React.FC = () => {
         className={cn('flex items-center gap-2 ml-3', isMobile ? 'w-full' : 'w-1/2')}
       >
         {isMobile && <SidebarTrigger />}
-        <div className="min-w-0 flex-1 md:ml-3">
+        <div className="min-w-0 flex-1">
           {showMailSearch && <MailsSearch />}
         </div>
       </div>
