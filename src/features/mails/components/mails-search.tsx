@@ -15,6 +15,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { useTranslations } from 'next-intl'
 import { memo } from 'react'
+import { SearchIcon } from 'lucide-react'
 import SearchFolders from './search-folders'
 import SearchMoreOptions from './search-more-options'
 
@@ -29,7 +30,8 @@ export function MailsSearch() {
             className="placeholder:text-transparent"
             placeholder={t('search.placeholder.string')}
           />
-          <div className="pointer-events-none absolute inset-0 flex items-center px-3 text-sm text-gray-500">
+          <div className="pointer-events-none absolute inset-0 flex items-center gap-2 px-3 text-sm text-gray-500">
+            <SearchIcon className="size-4 shrink-0 opacity-70" />
             {t('search.placeholder.string')}
           </div>
         </div>

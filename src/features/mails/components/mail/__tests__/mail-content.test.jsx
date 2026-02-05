@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MailContent from '../mail-content'
 
@@ -22,6 +22,8 @@ describe('MailContent', () => {
   const mockBase64Body = 'PHA+VGhpcyBpcyBhIGJhc2U2NCBlbWFpbCBib2R5PC9wPg==' // Base64 of '<p>This is a base64 email body</p>'
   const mockBodyWithImages =
     '<p>Email with image</p><img src="http://example.com/image.jpg" />'
+  const mockBodyWithScript =
+    '<p>Content with script</p><script>alert("xss")</script>'
   const mockAttachments = {
     count: 2,
     parts: [
@@ -35,10 +37,20 @@ describe('MailContent', () => {
     ],
   }
 
-  it('renders mail content with plain HTML', () => {
-    render(<MailContent body={mockPlainBody} />)
+  it('renders mail content with plain HTML', async () => {
+    const { container } = render(<MailContent body={mockPlainBody} />)
 
-    expect(screen.getByText('This is a plain email body')).toBeInTheDocument()
+    // Wait for Shadow DOM to be created and content to be injected
+    await waitFor(() => {
+      const shadowHost = container.querySelector('.mail-shadow-root')
+      expect(shadowHost).toBeTruthy()
+      expect(shadowHost.shadowRoot).toBeTruthy()
+    })
+
+    const shadowHost = container.querySelector('.mail-shadow-root')
+    const shadowContent = shadowHost.shadowRoot.textContent
+
+    expect(shadowContent).toContain('This is a plain email body')
   })
 
   it('renders attachments when provided', () => {
@@ -72,34 +84,61 @@ describe('MailContent', () => {
     expect(screen.queryByTestId('show-images')).not.toBeInTheDocument()
   })
 
-  it('decodes base64 content correctly', () => {
-    render(<MailContent body={mockBase64Body} />)
+  it('decodes base64 content correctly', async () => {
+    const { container } = render(<MailContent body={mockBase64Body} />)
 
-    // The component should decode the base64 and render the content
-    expect(screen.getByText('This is a base64 email body')).toBeInTheDocument()
+    // Wait for Shadow DOM to be created and content to be injected
+    await waitFor(() => {
+      const shadowHost = container.querySelector('.mail-shadow-root')
+      expect(shadowHost).toBeTruthy()
+      expect(shadowHost.shadowRoot).toBeTruthy()
+    })
+
+    const shadowHost = container.querySelector('.mail-shadow-root')
+    const shadowContent = shadowHost.shadowRoot.textContent
+
+    expect(shadowContent).toContain('This is a base64 email body')
   })
 
   it('has proper structure with border separator', () => {
-    render(<MailContent body={mockPlainBody} />)
+    const { container } = render(<MailContent body={mockPlainBody} />)
 
-    const container = screen
-      .getByText('This is a plain email body')
-      .closest('.w-full')
-    expect(container).toHaveClass('w-full')
+    // Check for the main container
+    const mainContainer = container.querySelector('.w-full')
+    expect(mainContainer).toBeInTheDocument()
+    expect(mainContainer).toHaveClass('w-full')
 
     // Check for border separator
-    const border = container.querySelector('.border-muted')
+    const border = mainContainer.querySelector('.border-muted')
     expect(border).toBeInTheDocument()
     expect(border).toHaveClass('my-2', 'border-t')
   })
 
   it('renders mail content in proper container', () => {
-    render(<MailContent body={mockPlainBody} />)
+    const { container } = render(<MailContent body={mockPlainBody} />)
 
-    const mailContent = screen
-      .getByText('This is a plain email body')
-      .closest('.mail-content')
+    const mailContent = container.querySelector('.mail-content')
     expect(mailContent).toBeInTheDocument()
     expect(mailContent).toHaveClass('mail-content')
+  })
+
+  it('sanitizes HTML content by removing scripts', async () => {
+    const { container } = render(<MailContent body={mockBodyWithScript} />)
+
+    // Wait for Shadow DOM to be created and content to be injected
+    await waitFor(() => {
+      const shadowHost = container.querySelector('.mail-shadow-root')
+      expect(shadowHost).toBeTruthy()
+      expect(shadowHost.shadowRoot).toBeTruthy()
+    })
+
+    const shadowHost = container.querySelector('.mail-shadow-root')
+    const shadowContent = shadowHost.shadowRoot.innerHTML
+
+    // Script tag should be removed by sanitization
+    expect(shadowContent).not.toContain('<script>')
+    expect(shadowContent).not.toContain('alert("xss")')
+    // But the safe content should remain
+    expect(shadowContent).toContain('Content with script')
   })
 })
