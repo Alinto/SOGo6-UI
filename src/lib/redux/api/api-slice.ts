@@ -18,6 +18,7 @@ const tagTypes = [
   'mail/folders',
   'folder/messages',
   'preferences',
+  'profile',
   'mail',
   'mails/folders',
   'calendars',

@@ -52,6 +52,10 @@
             "security": {
                 "string": "Security",
                 "context": "Link to the account security in the header dropdown"
+            },
+            "defaultUser": {
+                "string": "User",
+                "context": "Default username fallback when profile is not yet loaded"
             }
         },
         "logout": {

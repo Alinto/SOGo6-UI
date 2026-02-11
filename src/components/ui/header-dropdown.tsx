@@ -9,6 +9,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { Skeleton } from '@/components/ui/skeleton'
+import { useProfile } from '@/features/user-profile/hooks/use-profile'
+import { useAppSelector } from '@/lib/redux/hooks'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
 import {
@@ -28,6 +31,38 @@ const HeaderDropdown: React.FC = () => {
   const isMobile = useIsMobile()
   const { theme } = useTheme()
   const { push } = useRouter()
+  const { user, isLoading, isError } = useProfile()
+
+  // Fallback to auth.user if profile API failed
+  const authUser = useAppSelector((state) => state.auth.user)
+  const displayUser = isError ? authUser : user
+
+  // Extract initials from name (e.g. "John Doe" → "JD")
+  const fallbackUsername =
+    displayUser?.cn
+      ?.split(' ')
+      .map((n: string) => n[0])
+      .join('')
+      .toUpperCase() || 'U'
+
+  const userName = displayUser?.cn || t('account.defaultUser.string')
+  const userEmail = displayUser?.email || ''
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 px-4">
+        <Skeleton className="h-10 w-10 rounded-full" />
+        {!isMobile && (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="hover:cursor-pointer" asChild>
@@ -37,12 +72,12 @@ const HeaderDropdown: React.FC = () => {
         >
           <Avatar>
             <AvatarImage src="/images/account-avatar.svg" />
-            <AvatarFallback>JD</AvatarFallback>
+            <AvatarFallback>{fallbackUsername}</AvatarFallback>
           </Avatar>
           {!isMobile && (
             <div className="text-muted-foreground dark:text-foreground text-sm">
-              <div>John Doe</div>
-              <div className="block text-sm">jdoe@sogo.nu</div>
+              <div>{userName}</div>
+              <div className="block text-sm">{userEmail}</div>
             </div>
           )}
         </div>
