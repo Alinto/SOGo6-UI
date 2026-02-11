@@ -269,6 +269,57 @@ jest.mock('@/components/ui/avatar', () => ({
   ),
 }))
 
+// Mock useProfile hook
+jest.mock('@/features/user-profile/hooks/use-profile', () => ({
+  useProfile: jest.fn(() => ({
+    user: {
+      uid: 'jdoe@sogo.nu',
+      cn: 'John Doe',
+      email: 'jdoe@sogo.nu',
+      domain: 'sogo.nu',
+    },
+    isLoading: false,
+    isError: false,
+    profile: null,
+    mainAccount: null,
+    externalAccounts: [],
+    allMailboxes: [],
+    defaultIdentity: null,
+    preferences: null,
+    language: null,
+    timezone: null,
+    firstModule: null,
+    mfaEnabled: false,
+    uiSettings: null,
+    canAddExternalAccount: false,
+    identitiesEnabled: false,
+    customFromEnabled: false,
+    moduleAccess: [],
+    mfaAvailable: false,
+    passwordChangeEnabled: false,
+    error: undefined,
+    refetch: jest.fn(),
+  })),
+}))
+
+// Mock useAppSelector
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: jest.fn(() => ({
+    uid: 'jdoe@sogo.nu',
+    cn: 'John Doe',
+    email: 'jdoe@sogo.nu',
+  })),
+  useAppDispatch: jest.fn(() => jest.fn()),
+  useAppStore: jest.fn(),
+}))
+
+// Mock Skeleton component
+jest.mock('@/components/ui/skeleton', () => ({
+  Skeleton: ({ className }: { className?: string }) => (
+    <div className={className} data-testid="skeleton" />
+  ),
+}))
+
 describe('HeaderDropdown component', () => {
   beforeEach(() => {
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
