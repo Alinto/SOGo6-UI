@@ -25,6 +25,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import { ThemeSwitcher } from '../theme-switcher'
+import InstallPrompt from '@/lib/pwa/components/install-prompt'
 
 const HeaderDropdown: React.FC = () => {
   const t = useTranslations('HEADER')
@@ -139,6 +140,8 @@ const HeaderDropdown: React.FC = () => {
         >
           <Mail className="pr-2" /> {t('settings.email.string')}
         </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <InstallPrompt />
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"

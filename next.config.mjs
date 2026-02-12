@@ -1,42 +1,116 @@
 import createNextIntlPlugin from 'next-intl/plugin';
+import withPWAInit from 'next-pwa';
+
+const isDev = process.env.NODE_ENV === 'development';
+
+const withPWA = withPWAInit({
+    dest: 'public',
+    disable: isDev, 
+    register: true,
+    skipWaiting: true,
+    buildExcludes: [
+        /app-build-manifest\.json$/,
+        /middleware-manifest\.json$/,
+        /build-manifest\.json$/,
+    ],
+    fallbacks: {
+        document: '/offline',
+    },
+    disableDevLogs: true,
+    runtimeCaching: [
+        {
+            urlPattern: /^https:\/\/fonts\.(?:gstatic|googleapis)\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+                cacheName: 'google-fonts',
+                expiration: { maxEntries: 10, maxAgeSeconds: 31536000 },
+            },
+        },
+        {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|avif|ico)$/i,
+            handler: 'CacheFirst',
+            options: {
+                cacheName: 'static-images',
+                expiration: { maxEntries: 100, maxAgeSeconds: 2592000 },
+            },
+        },
+        {
+            urlPattern: /\.(?:js|css|woff2?)$/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+                cacheName: 'static-assets',
+                expiration: { maxEntries: 60, maxAgeSeconds: 86400 },
+            },
+        },
+        {
+            urlPattern: /^https?.*\.(html|htm)$/i,
+            handler: 'NetworkFirst',
+            options: {
+                cacheName: 'pages-cache',
+                networkTimeoutSeconds: 10,
+                expiration: { 
+                    maxEntries: 50, 
+                    maxAgeSeconds: 7 * 24 * 60 * 60
+                },
+            },
+        },
+        {
+            urlPattern: /\/_next\/data\/.+\/.+\.json$/i,
+            handler: 'NetworkFirst',
+            options: {
+                cacheName: 'next-data',
+                expiration: {
+                    maxEntries: 32,
+                    maxAgeSeconds: 24 * 60 * 60
+                },
+            },
+        },
+        {
+            urlPattern: /\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+                cacheName: 'api-cache',
+                networkTimeoutSeconds: 10,
+                expiration: {
+                    maxEntries: 50,
+                    maxAgeSeconds: 5 * 60
+                },
+            },
+        },
+    ],
+});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     eslint: {
-        // Warning: This allows production builds to successfully complete even if
-        // your project has ESLint errors.
         ignoreDuringBuilds: true,
     },
-    reactStrictMode: false, // Disable because of trigger several components remounts
+    reactStrictMode: false,
     typescript: {
-        // !! WARN !!
-        // Dangerously allow production builds to successfully complete even if
-        // your project has type errors.
-        // !! WARN !!
         ignoreBuildErrors: true,
     },
-    // Production optimizations for minimal bundle size
     output: 'standalone',
     compress: true,
     productionBrowserSourceMaps: false,
     poweredByHeader: false,
-    // Aggressive image optimization
+    experimental: {
+        serverActions: {
+            bodySizeLimit: '2mb',
+        },
+    },
     images: {
         unoptimized: false,
         formats: ['image/avif', 'image/webp'],
-        minimumCacheTTL: 31536000, // 1 year
+        minimumCacheTTL: 31536000,
         deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
         imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     },
-    // Enable incremental static generation
     onDemandEntries: {
-        maxInactiveAge: 60 * 1000, // Keep pages for 60s
+        maxInactiveAge: 60 * 1000,
         pagesBufferLength: 5,
     },
-    // Webpack optimizations
     webpack: (config, { isServer }) => {
         if (!isServer) {
-            // Client-side optimizations
             config.optimization = {
                 ...config.optimization,
                 minimize: true,
@@ -47,7 +121,6 @@ const nextConfig = {
                     cacheGroups: {
                         default: false,
                         vendors: false,
-                        // React and core libraries
                         react: {
                             name: 'react-vendors',
                             test: /[\\/]node_modules[\\/](react|react-dom|next)[\\/]/,
@@ -55,7 +128,6 @@ const nextConfig = {
                             reuseExistingChunk: true,
                             enforce: true,
                         },
-                        // UI components library
                         radix: {
                             name: 'radix-ui',
                             test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
@@ -63,7 +135,6 @@ const nextConfig = {
                             reuseExistingChunk: true,
                             enforce: true,
                         },
-                        // Redux and state management
                         redux: {
                             name: 'redux',
                             test: /[\\/]node_modules[\\/](@reduxjs|react-redux)[\\/]/,
@@ -71,7 +142,6 @@ const nextConfig = {
                             reuseExistingChunk: true,
                             enforce: true,
                         },
-                        // Form libraries
                         forms: {
                             name: 'forms',
                             test: /[\\/]node_modules[\\/](react-hook-form|@hookform|zod)[\\/]/,
@@ -79,7 +149,6 @@ const nextConfig = {
                             reuseExistingChunk: true,
                             enforce: true,
                         },
-                        // Other common libraries
                         common: {
                             name: 'common',
                             minChunks: 2,
@@ -93,7 +162,6 @@ const nextConfig = {
         }
         return config;
     },
-    // Prevent search engine scraping
     async headers() {
         return [
             {
@@ -111,4 +179,4 @@ const nextConfig = {
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');
 
-export default withNextIntl(nextConfig);
+export default withPWA(withNextIntl(nextConfig));

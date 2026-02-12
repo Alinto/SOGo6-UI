@@ -2,47 +2,30 @@ import { getDefaultLocale, getLocales, routing } from '@/lib/i18n/config'
 import createMiddleware from 'next-intl/middleware'
 import { NextRequest, NextResponse } from 'next/server'
 
+// Pre-compile configuration at module load time to avoid recalculating on every request
+const LOCALES = getLocales();
+const DEFAULT_LOCALE = getDefaultLocale();
+const LOCALE_PATTERN = LOCALES.join('|');
+
+// Pre-compiled regular expressions for better performance
+const LOCALE_REGEX = new RegExp(`^/(${LOCALE_PATTERN})(/|$)`);
+const ADMIN_PATH_REGEX = new RegExp(`^/(${LOCALE_PATTERN})/admin_panel(/.*)?$`);
+const LOCALE_ROOT_REGEX = new RegExp(`^/(${LOCALE_PATTERN})/?$`);
+const AUTH_PATH_REGEX = new RegExp(`^/(${LOCALE_PATTERN})/auth(/|$)`);
+
+// Parse admin domains once at startup
+const ADMIN_DOMAINS = new Set(
+  (process.env.NEXT_PUBLIC_ADMIN_DOMAINS?.split(',') || []).map(d => d.trim())
+);
+
 export const config = {
   matcher: [
-    '/((?!_next|fakeApi|env|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$).*)',
+    '/((?!_next|fakeApi|env|manifest\\.webmanifest|offline|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$).*)',
   ],
 }
 
-// Function to generate a dynamic regex to test if pathname begins with one of the locales
-export function generateLocaleRegex(locales: readonly string[]): RegExp {
-  const localePattern = locales.join('|')
-  return new RegExp(`^/(${localePattern})(/|$)`)
-}
-
-// Function to check if the request is from the admin domain
-export function isAdminDomain(hostname: string): boolean {
-  const adminDomains = process.env.NEXT_PUBLIC_ADMIN_DOMAINS?.split(',') || []
-  return adminDomains.some((domain) => hostname.includes(domain.trim()))
-}
-
-// Function to check if the path is admin panel (including all sub-routes)
-export function isAdminPanelPath(pathname: string): boolean {
-  const locales = getLocales()
-  const localePattern = locales.join('|')
-  // This regex matches /[locale]/admin_panel and all its sub-routes
-  const adminPathRegex = new RegExp(`^/(${localePattern})/admin_panel(/.*)?$`)
-  return adminPathRegex.test(pathname)
-}
-
-// Function to check if the path is just the locale root (e.g., /en, /fr)
-export function isLocaleRootPath(pathname: string): boolean {
-  const locales = getLocales()
-  const localePattern = locales.join('|')
-  const localeRootRegex = new RegExp(`^/(${localePattern})/?$`)
-  return localeRootRegex.test(pathname)
-}
-
-// Function to check if the path is auth-related (login/signup)
-export function isAuthPath(pathname: string): boolean {
-  const locales = getLocales()
-  const localePattern = locales.join('|')
-  const authPathRegex = new RegExp(`^/(${localePattern})/auth(/|$)`)
-  return authPathRegex.test(pathname)
+function isAdminDomain(hostname: string): boolean {
+  return Array.from(ADMIN_DOMAINS).some((domain) => hostname.includes(domain))
 }
 
 const middleware = createMiddleware(routing)
@@ -50,56 +33,38 @@ const middleware = createMiddleware(routing)
 export default async function handler(req: NextRequest) {
   const hostname = req.headers.get('host') || ''
   const pathname = req.nextUrl.pathname
-  const locales = getLocales()
-  const defaultLocale = getDefaultLocale()
-  const localeRegex = generateLocaleRegex(locales)
 
   const isAdmin = isAdminDomain(hostname)
-  const isAdminPanelRoute = isAdminPanelPath(pathname)
-  const isAuthRoute = isAuthPath(pathname)
-  const isLocaleRoot = isLocaleRootPath(pathname)
+  const isAdminPanelRoute = ADMIN_PATH_REGEX.test(pathname)
+  const isAuthRoute = AUTH_PATH_REGEX.test(pathname)
+  const isLocaleRoot = LOCALE_ROOT_REGEX.test(pathname)
 
-  // Check if the pathname matches the locale regex
-  if (!localeRegex.test(pathname)) {
-    // Redirect to the default locale
+  // Redirect to default locale if pathname doesn't start with a locale
+  if (!LOCALE_REGEX.test(pathname)) {
     const queryParams = req.nextUrl.search
-    const url = new URL(`/${defaultLocale}${pathname}${queryParams}`, req.url)
+    const url = new URL(`/${DEFAULT_LOCALE}${pathname}${queryParams}`, req.url)
     return NextResponse.redirect(url)
   }
 
-  // Domain-based routing logic
-  // Allow auth routes on both domains
+  // Allow auth routes on both admin and user domains
   if (isAuthRoute) {
     return await middleware(req)
   }
 
-  // Admin domain - ONLY allow admin_panel routes
+  // Admin domain: redirect all non-admin_panel routes to admin_panel
   if (isAdmin) {
-    // If accessing locale root (e.g., /en), redirect to admin_panel
-    if (isLocaleRoot) {
-      const locale = pathname.split('/')[1]
-      const url = new URL(`/${locale}/admin_panel`, req.url)
-      return NextResponse.redirect(url)
-    }
-
-    // If NOT on admin_panel route, redirect to admin_panel
-    if (!isAdminPanelRoute) {
+    if (isLocaleRoot || !isAdminPanelRoute) {
       const locale = pathname.split('/')[1]
       const url = new URL(`/${locale}/admin_panel`, req.url)
       return NextResponse.redirect(url)
     }
   }
 
-  // User domain - block admin_panel routes
-  if (!isAdmin && isAdminPanelRoute) {
-    // Allow admin routes in development mode
-    if (process.env.NODE_ENV !== 'development') {
-      // Redirect to home page if trying to access admin routes from user domain
-      const url = new URL(`/${defaultLocale}`, req.url)
-      return NextResponse.redirect(url)
-    }
+  // User domain: block admin_panel routes in production
+  if (!isAdmin && isAdminPanelRoute && process.env.NODE_ENV === 'production') {
+    const url = new URL(`/${DEFAULT_LOCALE}`, req.url)
+    return NextResponse.redirect(url)
   }
 
-  const res = await middleware(req)
-  return res
+  return await middleware(req)
 }

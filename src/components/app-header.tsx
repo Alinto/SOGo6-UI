@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import React, { memo } from 'react'
+import OfflineBanner from '@/lib/pwa/components/offline-banner'
 import HeaderDropdown from './ui/header-dropdown'
 import { SidebarTrigger } from './ui/sidebar'
 
@@ -15,7 +16,9 @@ const AppHeader: React.FC = () => {
   const showCalendarsSearch = pathname.startsWith('/calendars/')
 
   return (
-    <header className="bg-header text-header-foreground top-0 right-0 left-0 z-10 flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+    <>
+      <OfflineBanner />
+      <header className="bg-header text-header-foreground top-0 right-0 left-0 z-10 flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
       <div
         className={cn('flex items-center gap-2 ml-3', isMobile ? 'w-full' : 'w-1/2')}
       >
@@ -36,7 +39,8 @@ const AppHeader: React.FC = () => {
       <div className="mr-3 shrink-0">
         <HeaderDropdown />
       </div>
-    </header>
+      </header>
+    </>
   )
 }
 

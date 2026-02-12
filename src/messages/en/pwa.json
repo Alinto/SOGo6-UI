@@ -1,0 +1,254 @@
+{
+  "PWA": {
+    "install": {
+      "button": {
+        "string": "Install App",
+        "context": "Button to install PWA in header dropdown"
+      },
+      "installing": {
+        "string": "Installing...",
+        "context": "Installing in progress"
+      },
+      "success": {
+        "string": "App installed successfully!",
+        "context": "Success message after installation"
+      },
+      "error": {
+        "string": "Failed to install app",
+        "context": "Error message when installation fails"
+      },
+      "title": {
+        "string": "Install SOGo",
+        "context": "Title of install prompt dialog"
+      },
+      "description": {
+        "string": "Install SOGo on your device for offline access and better performance.",
+        "context": "Description in install prompt"
+      },
+      "confirm": {
+        "string": "Install",
+        "context": "Confirm installation button"
+      },
+      "cancel": {
+        "string": "Not now",
+        "context": "Cancel installation button"
+      },
+      "installed": {
+        "string": "App Installed",
+        "context": "Message when app is already installed"
+      }
+    },
+    "offline": {
+      "banner": {
+        "string": "You are offline. Some features may be limited.",
+        "context": "Offline mode banner message"
+      },
+      "bannerWithDetails": {
+        "string": "Offline mode: Mail deletion only. Calendars and contacts fully available.",
+        "context": "Offline mode banner with feature details"
+      },
+      "syncing": {
+        "string": "Syncing {count} changes...",
+        "context": "Sync status message with count"
+      },
+      "syncSuccess": {
+        "string": "All changes synchronized",
+        "context": "Sync completed successfully"
+      },
+      "notAvailable": {
+        "string": "Not available offline",
+        "context": "Feature unavailable offline"
+      },
+      "limitedFeatures": {
+        "string": "Limited features in offline mode",
+        "context": "Tooltip for disabled features"
+      },
+      "learnMore": {
+        "string": "Learn more",
+        "context": "Link to offline features documentation"
+      },
+      "pageTitle": {
+        "string": "You're Offline",
+        "context": "Title of offline fallback page"
+      },
+      "pageDescription": {
+        "string": "This page is not available offline. Please check your internet connection and try again.",
+        "context": "Description on offline fallback page"
+      },
+      "retryButton": {
+        "string": "Retry",
+        "context": "Button to retry loading the page"
+      },
+      "goHomeButton": {
+        "string": "Go Home",
+        "context": "Button to return to home page"
+      },
+      "cachedPagesHint": {
+        "string": "Previously visited pages may still be available while offline.",
+        "context": "Hint about cached pages"
+      }
+    },
+    "storage": {
+      "title": {
+        "string": "Offline Storage",
+        "context": "Storage settings section title"
+      },
+      "usage": {
+        "string": "Using {used} of {total}",
+        "context": "Storage quota usage display"
+      },
+      "usagePercent": {
+        "string": "{percent}% used",
+        "context": "Storage usage percentage"
+      },
+      "clearCache": {
+        "string": "Clear Cache",
+        "context": "Button to clear offline cache"
+      },
+      "clearCacheConfirm": {
+        "string": "Are you sure you want to clear all offline data?",
+        "context": "Confirmation message for clearing cache"
+      },
+      "cacheCleared": {
+        "string": "Offline cache cleared successfully",
+        "context": "Success message after clearing cache"
+      },
+      "retentionDays": {
+        "string": "Keep emails for {days} days",
+        "context": "Setting for email retention period"
+      },
+      "keepImportant": {
+        "string": "Keep important emails indefinitely",
+        "context": "Toggle to keep starred/flagged emails"
+      }
+    },
+    "sync": {
+      "pending": {
+        "string": "{count} pending",
+        "context": "Number of operations waiting to sync"
+      },
+      "pendingPlural": {
+        "string": "{count} pending operations",
+        "context": "Number of operations waiting to sync (long form)"
+      },
+      "syncNow": {
+        "string": "Sync Now",
+        "context": "Button to trigger manual sync"
+      },
+      "syncing": {
+        "string": "Syncing...",
+        "context": "Currently syncing status"
+      },
+      "syncFailed": {
+        "string": "Sync failed",
+        "context": "Sync operation failed"
+      },
+      "retrying": {
+        "string": "Retrying ({attempt}/{max})...",
+        "context": "Retry attempt message"
+      },
+      "conflict": {
+        "title": {
+          "string": "Sync Conflict",
+          "context": "Conflict resolution dialog title"
+        },
+        "description": {
+          "string": "This item was modified both locally and on the server. Choose which version to keep.",
+          "context": "Conflict resolution dialog description"
+        },
+        "keepLocal": {
+          "string": "Keep Local",
+          "context": "Button to keep local version"
+        },
+        "keepServer": {
+          "string": "Keep Server",
+          "context": "Button to keep server version"
+        },
+        "localVersion": {
+          "string": "Local Version",
+          "context": "Label for local version in conflict"
+        },
+        "serverVersion": {
+          "string": "Server Version",
+          "context": "Label for server version in conflict"
+        }
+      }
+    },
+    "features": {
+      "title": {
+        "string": "Offline Features",
+        "context": "Title for offline features page"
+      },
+      "available": {
+        "string": "Available Offline",
+        "context": "Section title for available features"
+      },
+      "limited": {
+        "string": "Limited Offline",
+        "context": "Section title for limited features"
+      },
+      "unavailable": {
+        "string": "Not Available Offline",
+        "context": "Section title for unavailable features"
+      },
+      "mail": {
+        "read": {
+          "string": "Read previously viewed emails",
+          "context": "Feature: read cached emails"
+        },
+        "delete": {
+          "string": "Delete emails (synced when online)",
+          "context": "Feature: delete emails offline"
+        },
+        "markAsRead": {
+          "string": "Mark as read/unread",
+          "context": "Feature: mark as read (not available)"
+        },
+        "move": {
+          "string": "Move to folder",
+          "context": "Feature: move emails (not available)"
+        },
+        "flag": {
+          "string": "Star/flag emails",
+          "context": "Feature: flag emails (not available)"
+        }
+      },
+      "calendar": {
+        "view": {
+          "string": "View all events",
+          "context": "Feature: view calendar events"
+        },
+        "create": {
+          "string": "Create events (synced when online)",
+          "context": "Feature: create calendar events"
+        },
+        "edit": {
+          "string": "Edit events (synced when online)",
+          "context": "Feature: edit calendar events"
+        },
+        "delete": {
+          "string": "Delete events (synced when online)",
+          "context": "Feature: delete calendar events"
+        }
+      },
+      "contacts": {
+        "view": {
+          "string": "View all contacts",
+          "context": "Feature: view contacts"
+        },
+        "create": {
+          "string": "Create contacts (synced when online)",
+          "context": "Feature: create contacts"
+        },
+        "edit": {
+          "string": "Edit contacts (synced when online)",
+          "context": "Feature: edit contacts"
+        },
+        "delete": {
+          "string": "Delete contacts (synced when online)",
+          "context": "Feature: delete contacts"
+        }
+      }
+    }
+  }
+}
