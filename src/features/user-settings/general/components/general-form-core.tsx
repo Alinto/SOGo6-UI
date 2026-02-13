@@ -12,8 +12,8 @@ import {
 } from '@/components/ui/form'
 import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import SelectForm from '@/components/ui/forms/select-form'
-import type { UserGeneral } from '@/features/user-settings/store/user-preferences-types'
-import { UserPreferences } from '@/features/user-settings/store/user-preferences-types'
+import type { UserGeneral } from '@/features/user-settings/store/user-preferences-api-types'
+import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
 import {
   DateFormats,
   MODULES,
@@ -25,8 +25,8 @@ import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import {
-  mapGeneralSettingsToUserGeneral,
-  mapUserPreferencesToGeneralSettings,
+  mapApiToGeneralSettings,
+  mapGeneralSettingsToApi,
 } from '../store/general-utils'
 import { schema } from './general-schema'
 
@@ -38,11 +38,7 @@ interface Props {
 export function GeneralSettingsForm({ data, update }: Props) {
   const t = useTranslations('US_GENERAL')
 
-  const fetchedData = data
-    ? mapUserPreferencesToGeneralSettings(data)
-    : undefined
-
-  console.log('fetchedData', fetchedData)
+  const fetchedData = data ? mapApiToGeneralSettings(data) : undefined
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -51,14 +47,12 @@ export function GeneralSettingsForm({ data, update }: Props) {
 
   useEffect(() => {
     if (data) {
-      console.log('Resetting form with data:', data)
-      form.reset(mapUserPreferencesToGeneralSettings(data))
+      form.reset(mapApiToGeneralSettings(data))
     }
   }, [data])
 
   function onSubmit(values: z.infer<typeof schema>) {
-    console.log('onSubmit', values)
-    update(mapGeneralSettingsToUserGeneral(values))
+    update(mapGeneralSettingsToApi(values))
   }
 
   const { isDirty, isSubmitting } = form.formState

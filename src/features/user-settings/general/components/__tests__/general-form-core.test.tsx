@@ -1,9 +1,9 @@
-import { UserPreferences } from '@/features/user-settings/store/user-preferences-types'
+import { UserPreferencesMock } from '@/__mocks__/userPreferences.js'
+import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useTranslations } from 'next-intl'
 import { GeneralSettingsForm } from '../general-form-core'
-import { UserPreferencesMock } from './mock_data'
 
 // Mock next-intl
 jest.mock('next-intl', () => ({

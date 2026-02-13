@@ -3,7 +3,6 @@ export const UserGeneralMock = {
   SOGO_U_TIME_FORMAT: '24H',
   SOGO_U_FIRST_MODULE: 'mail',
   SOGO_U_BROWSER_NOTIF: false,
-  SOGO_U_REFRESH_MAIL_VIEW: 5,
   SOGO_U_EXT_AVATAR_ENABLED: false,
   SOGO_U_LONG_DATE: 'Saturday, February 01, 2025',
   SOGO_U_SHORT_DATE: '01-Feb-25',

@@ -1,8 +1,8 @@
 {
     "US_ADDRESS_BOOKS": {
         "create": {
-                "string": "Add contact category",
-                "context": "Button text to add a new address book category"
+            "string": "Add contact category",
+            "context": "Button text to add a new address book category"
         },
         "title": {
             "string": "Categories",
@@ -15,6 +15,14 @@
                     "context": "Accessibility message for the delete icon"
                 }
             }
+        },
+        "notification": {
+            "title": "Notifications",
+            "string": "Send notification when an address book is created",
+            "context": "Label for the notification setting"
+        },
+        "color": {
+            "title": "Couleur"
         }
     }
 }

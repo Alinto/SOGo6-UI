@@ -1,24 +1,22 @@
 'use client'
-import { z, ZodArray, ZodObject, ZodType } from 'zod'
-import { AddressBook } from '../address-books-types'
+import { z, ZodObject, ZodType } from 'zod'
+import { ContactGeneralSettings } from '../../store/user-preferences-types'
 
-type AddressBookSchema = ZodObject<{
-  books: ZodArray<
-    ZodObject<{
-      [K in keyof Partial<AddressBook>]: K extends keyof AddressBook
-        ? ZodType<AddressBook[K]>
-        : never
-    }>
-  >
+type ContactsSettingsSchema = ZodObject<{
+  [K in keyof Partial<ContactGeneralSettings>]: K extends keyof ContactGeneralSettings
+    ? ZodType<ContactGeneralSettings[K]>
+    : never
 }>
 
 const schema = z.object({
-  books: z.array(
+  categories: z.array(
     z.object({
-      id: z.string(),
-      label: z.string(),
+      name: z.string(),
+      color: z.string(),
+      canBeTranslated: z.boolean(),
     })
   ),
-}) satisfies AddressBookSchema
+  creationNotification: z.boolean(),
+}) satisfies ContactsSettingsSchema
 
 export { schema }

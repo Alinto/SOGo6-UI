@@ -1,13 +1,11 @@
 import type {
   UserGeneral,
   UserPreferences,
-} from '@/features/user-settings/store/user-preferences-types'
+} from '@/features/user-settings/store/user-preferences-api-types'
+import { GeneralSettings } from '../../store/user-preferences-types'
 import { DateFormats } from '../../utils'
-import { GeneralSettings } from '../general-types'
 
-export function mapGeneralSettingsToUserGeneral(
-  values: GeneralSettings
-): UserGeneral {
+export function mapGeneralSettingsToApi(values: GeneralSettings): UserGeneral {
   return {
     SOGO_U_LANGUAGE: values.language,
     SOGO_U_TIME_FORMAT: values.timeStyle,
@@ -20,15 +18,7 @@ export function mapGeneralSettingsToUserGeneral(
   }
 }
 
-// export function mapGeneralSettingsToUserPreferences(
-//   values: GeneralSettings
-// ): UserPreferences {
-//     return {
-//     USER_GENERAL: mapGeneralSettingsToUserGeneral(values),
-//     }
-// }
-
-export function mapUserPreferencesToGeneralSettings(
+export function mapApiToGeneralSettings(
   data: UserPreferences
 ): GeneralSettings {
   return {

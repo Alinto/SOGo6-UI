@@ -2,7 +2,7 @@ import { FormLoader, LazyWrapper } from '@/components/lazy-components'
 import {
   UserGeneral,
   UserPreferences,
-} from '@/features/user-settings/store/user-preferences-types'
+} from '@/features/user-settings/store/user-preferences-api-types'
 import type React from 'react'
 import { lazy } from 'react'
 
