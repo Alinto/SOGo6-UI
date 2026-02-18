@@ -10,6 +10,15 @@ jest.mock('@/components/app-header', () => {
   }
 })
 
+jest.mock('@/features/user-profile', () => ({
+  useGetUserProfileQuery: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+  })),
+}))
+
+
 jest.mock('@/components/sidebar/app-sidebar', () => ({
   AppSidebar: () => <div data-testid="app-sidebar">App Sidebar</div>,
 }))

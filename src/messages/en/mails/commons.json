@@ -158,6 +158,12 @@
             "string": "From",
             "description": "Label for the 'From' field in email search options"
         },
+        "account_switcher": {
+            "add_account": {
+                "string": "Add account",
+                "description": "Button to add an external mail account in the sidebar account switcher"
+            }
+        },
         "to": {
             "string": "To",
             "description": "Label for the 'To' field in email search options"

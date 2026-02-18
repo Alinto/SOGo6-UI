@@ -9,6 +9,7 @@ import {
   NotificationProvider,
   NotificationToaster,
 } from '@/features/notifications'
+import { useGetUserProfileQuery } from '@/features/user-profile'
 import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
@@ -26,6 +27,11 @@ import { Contact2 } from 'lucide-react'
 import React, { useEffect } from 'react'
 import ReactDOM from 'react-dom'
 
+function ProfilePrefetch() {
+  useGetUserProfileQuery()
+  return null
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -42,13 +48,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [connect] = useConnectSSEMutation()
 
   useEffect(() => {
-    // Connect SSE with environment-based configuration
     const config = getSSEConfigForEnvironment()
     connect(config)
   }, [connect])
 
   return (
     <>
+      <ProfilePrefetch />
       <DemoWarningToast />
       <NotificationToaster />
       <NotificationProvider />
