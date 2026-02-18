@@ -1,18 +1,18 @@
 'use client'
 
+import { PageLoader } from '@/components/lazy-components'
+import {
+  useGetUserPreferencesQuery,
+  useUpdateUserPreferencesMailGeneralMutation,
+} from '@/features/user-settings/store/user-preferences-api'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import MailGeneralSettingsForm from './components/mail-general-form'
-import { PageLoader } from '@/components/lazy-components'
-import {
-  useGetMailGeneralSettingsQuery,
-  useUpdateMailGeneralSettingsMutation,
-} from './store/mail-general-settings-api'
 
 const MailGeneralSettings: React.FC = () => {
   const t = useTranslations('US_MAIL_GENERAL')
-  const { data, error, isFetching } = useGetMailGeneralSettingsQuery()
-  const [updateData] = useUpdateMailGeneralSettingsMutation()
+  const { data, error, isFetching } = useGetUserPreferencesQuery()
+  const [updateData] = useUpdateUserPreferencesMailGeneralMutation()
   if (error) {
     console.log(error)
     return 'ERROR'

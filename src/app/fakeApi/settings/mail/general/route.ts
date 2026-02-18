@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const data: MailGeneralSettings = {
   displaySubscribeMailboxesOnly: false,
-  EAS: false,
   countAllUnseen: false,
   sortByThreads: false,
   displayFullEmails: false,

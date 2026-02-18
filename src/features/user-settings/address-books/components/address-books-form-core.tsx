@@ -52,14 +52,11 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
 
   useEffect(() => {
     if (data) {
-      console.log('resetting form with data', data)
       form.reset(mapApiToContactGeneralSettings(data))
     }
   }, [data])
 
   function onSubmit(values: z.infer<typeof schema>) {
-    console.log('update print', values)
-    console.log('update print2', mapContactsSettingsToApi(values))
     update(mapContactsSettingsToApi(values))
   }
 
@@ -70,7 +67,6 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
 
   const { isDirty, isSubmitting } = form.formState
 
-  console.log('fields', fields)
 
   const { control, register, handleSubmit } = form
 

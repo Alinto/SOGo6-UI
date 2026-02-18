@@ -2,8 +2,10 @@ import { createApiNotificationHandler } from '@/features/notifications/api-notif
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import type { MutationLifecycleApi } from '@reduxjs/toolkit/query'
 import {
+  UserCalendarGeneral,
   UserContactPreferences,
   UserGeneral,
+  UserMailGeneral,
   UserPreferencesResponse,
 } from './user-preferences-api-types'
 
@@ -58,12 +60,30 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       invalidatesTags: ['preferences'],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
+    // PATCH — general
+    updateUserPreferencesMailGeneral: builder.mutation<
+      UserPreferencesResponse,
+      UserMailGeneral
+    >({
+      query: (body) => patchPreferences({ USER_MAIL_GENERAL_SETTINGS: body }),
+      invalidatesTags: ['preferences'],
+      onQueryStarted: patchPreferencesOnQueryStarted,
+    }),
     // PATCH — address-books
     updateUserPreferencesContact: builder.mutation<
       UserPreferencesResponse,
       UserContactPreferences
     >({
       query: (body) => patchPreferences({ ...body }),
+      invalidatesTags: ['preferences'],
+      onQueryStarted: patchPreferencesOnQueryStarted,
+    }),
+    // PATCH — calendar general
+    updateUserPreferencesCalendarGeneral: builder.mutation<
+      UserPreferencesResponse,
+      UserCalendarGeneral
+    >({
+      query: (body) => patchPreferences({ USER_CALENDAR_GENERAL: body }),
       invalidatesTags: ['preferences'],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
@@ -75,4 +95,6 @@ export const {
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesGeneralMutation,
   useUpdateUserPreferencesContactMutation,
+  useUpdateUserPreferencesMailGeneralMutation,
+  useUpdateUserPreferencesCalendarGeneralMutation
 } = userPreferencesApi
