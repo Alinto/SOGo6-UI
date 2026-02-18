@@ -1,5 +1,13 @@
 {
     "COMPOSE": {
+        "from": {
+            "string": "From",
+            "description": "Label for the sender identity selector in the compose form"
+        },
+        "to": {
+            "string": "To",
+            "description": "Label for the recipient field in the compose form"
+        },
         "new_message": {
             "string": "New Message",
             "description": "Button for composing a new message in sidebar"

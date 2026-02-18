@@ -82,17 +82,15 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
 }
 
 export function MailSidebar() {
-  const { data, isFetching } = useGetFoldersQuery()
+  const { account } = useParams()
+  const { data, isFetching } = useGetFoldersQuery({ accountId: String(account ?? '0') })
   if (isFetching) return <SidebarSkeleton />
 
   return (
     <>
       <SidebarGroup className="py-0 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
-          <AccountSwitcher
-            accounts={['jdoe@sogo.nu', 'ui@sogo.nu']}
-            defaultAccount={'jdoe@sogo.nu'}
-          />
+          <AccountSwitcher />
         </SidebarMenu>
       </SidebarGroup>
       {/* Sticky header */}
