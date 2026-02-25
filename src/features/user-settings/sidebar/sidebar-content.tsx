@@ -1,4 +1,4 @@
-// 'use client'
+'use client'
 import {
   Collapsible,
   CollapsibleContent,
@@ -17,7 +17,7 @@ import { NavItems } from '@/types'
 import { ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import CollapsedNavMenu from './collapsed-sidebar'
-import items from './content'
+import { useNavItems } from './content'
 
 interface RecursiveNavItemProps {
   item: NavItems
@@ -65,6 +65,8 @@ function RecursiveNavItem({ item }: RecursiveNavItemProps) {
 }
 
 export function Sidebar() {
+  const items = useNavItems()
+
   return (
     <div>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
