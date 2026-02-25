@@ -57,9 +57,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
         <Avatar className={!isHovered && !isSelected ? 'h-6 w-6' : 'hidden'}>
           <AvatarImage src="/images/account-avatar.svg" />
           <AvatarFallback>
-            {from.name.length
-              ? from.name[0].toUpperCase()
-              : from.email[0].toUpperCase()}
+            {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
