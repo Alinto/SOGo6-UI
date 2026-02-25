@@ -1,0 +1,40 @@
+# Build & dependencies
+.next/
+node_modules/
+dist/
+build/
+coverage/
+
+# Lock files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Logs
+*.log
+npm-debug.log*
+
+# Docker
+Dockerfile*
+.dockerignore
+
+# Translations (keep only English as reference)
+src/messages/de/
+src/messages/es/
+src/messages/fr/
+
+# Static assets
+public/
+
+# Config files (no useful context for the agent)
+.husky/
+.prettierrc*
+.eslintrc*
+eslint.config*
+postcss.config*
+tailwind.config*
+jest.config*
+babel.config*
+
+# Scripts
+scripts/
