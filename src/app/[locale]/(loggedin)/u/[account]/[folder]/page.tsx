@@ -6,13 +6,18 @@ import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
 import { useParams, useSearchParams } from 'next/navigation'
 import React from 'react'
 
+const EXCLUDED_PARAMS = ['filter']
+
 const Page = () => {
   const { folder } = useParams()
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const searchParams = useSearchParams()
+  const activeFilter = searchParams.get('filter') ?? 'all'
 
   const params = React.useMemo(() => {
-    const searchParamsKeys = Array.from(searchParams.keys())
+    const searchParamsKeys = Array.from(searchParams.keys()).filter(
+      (key) => !EXCLUDED_PARAMS.includes(key)
+    )
     return searchParamsKeys.reduce(
       (acc, key) => {
         const value = searchParams.get(key)
@@ -30,6 +35,22 @@ const Page = () => {
     params,
   })
 
+  const filteredMails = React.useMemo(() => {
+    const mails = data?.mails ?? []
+    switch (activeFilter) {
+      case 'unread':
+        return mails.filter((mail) => !mail.seen)
+      case 'read':
+        return mails.filter((mail) => mail.seen)
+      case 'starred':
+        return mails.filter((mail) => mail.flagged)
+      case 'attachments':
+        return mails.filter((mail) => mail.hasAttachment)
+      default:
+        return mails
+    }
+  }, [data?.mails, activeFilter])
+
   if (isLoading) {
     return <ListSkeleton />
   }
@@ -45,7 +66,7 @@ const Page = () => {
 
   return (
     <MessagesList
-      items={data?.mails ?? []}
+      items={filteredMails}
       page={data?.page ?? 1}
       total={data?.total ?? 0}
       totalPages={data?.totalPages ?? 1}

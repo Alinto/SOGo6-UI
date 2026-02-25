@@ -133,9 +133,11 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               >
                 <AvatarImage src="/images/account-avatar.svg" />
                 <AvatarFallback className="text-lg font-semibold">
-                  {from.name.length
+                  {from.name && from.name.length > 0
                     ? from.name[0].toUpperCase()
-                    : from.email[0].toUpperCase()}
+                    : from.email && from.email.length > 0
+                    ? from.email[0].toUpperCase()
+                    : '?'}
                 </AvatarFallback>
               </Avatar>
               {/* Content on the right */}
