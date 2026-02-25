@@ -67,5 +67,12 @@ export function useProfile() {
     moduleAccess: profile?.ui?.SOGO_D_MODULE_ACCESS || [],
     mfaAvailable: profile?.ui?.SOGO_D_LOGIN_MFA ?? false,
     passwordChangeEnabled: profile?.ui?.SOGO_D_PWD_CHANGE_ENABLED ?? false,
+    forwardEnabled: profile?.ui?.SOGO_D_FORWARD_ENABLED ?? false,
+    vacationEnabled: profile?.ui?.SOGO_D_VACATION_ENABLED ?? false,
+    mailFilteringEnabled: profile?.ui?.SOGO_D_MAIL_FILTERING_ENABLED ?? false,
+    mailPurgeAllow: profile?.ui?.SOGO_D_MAIL_PURGE_ALLOW ?? false,
+    mailMaxRecipient: profile?.ui?.SOGO_D_MAIL_MAX_RECIPIENT ?? 0,
+    jitsiLinkEnabled: profile?.ui?.SOGO_D_JITSI_LINK_ENABLED ?? false,
+    jitsiBaseUrl: profile?.ui?.SOGO_D_JITSI_BASE_URL ?? null,
   }
 }

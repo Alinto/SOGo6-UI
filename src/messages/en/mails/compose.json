@@ -51,6 +51,14 @@
         "open_in_new_page": {
             "string": "Open in new page",
             "description": "Open the compose window in a new page"
+        },
+        "jitsi": {
+            "string": "Insert Jitsi meeting link",
+            "description": "Button to insert a Jitsi video meeting link into the message body"
+        },
+        "max_recipients_reached": {
+            "string": "Maximum {max} recipients reached",
+            "description": "Error shown when the maximum number of recipients has been reached"
         }
     }
 }

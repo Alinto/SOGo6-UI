@@ -40,6 +40,7 @@ interface MailComposeState {
   isComposeOpen: boolean
   isSending: boolean
   sendError: string | null
+  pendingInsert: string | null
 }
 
 const initialState: MailComposeState = {
@@ -48,6 +49,7 @@ const initialState: MailComposeState = {
   isComposeOpen: false,
   isSending: false,
   sendError: null,
+  pendingInsert: null,
 }
 
 const mailComposeSlice = createSlice({
@@ -269,6 +271,11 @@ const mailComposeSlice = createSlice({
       state.drafts = {}
       state.activeDraftId = null
     },
+
+    // Set pending insert (transient signal for editor content insertion)
+    setPendingInsert: (state, action: PayloadAction<string | null>) => {
+      state.pendingInsert = action.payload
+    },
   },
 })
 
@@ -290,6 +297,7 @@ export const {
   setSending,
   setSendError,
   clearAllDrafts,
+  setPendingInsert,
 } = mailComposeSlice.actions
 
 export default mailComposeSlice.reducer

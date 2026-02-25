@@ -1,3 +1,5 @@
+'use client'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,48 +8,25 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuAction, SidebarMenuButton } from '@/components/ui/sidebar'
+import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MoreVertical } from 'lucide-react'
-import { DynamicIcon, IconName } from 'lucide-react/dynamic'
+import { DynamicIcon } from 'lucide-react/dynamic'
+import type { IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 
 interface SidebarItemProps {
   name: string
-  id: string
-  disableActions?: boolean
-  editAction?: boolean
-  importAction?: boolean
-  sharingAction?: boolean
-  linkAction?: boolean
-  exportAction?: boolean
-  downloadAction?: boolean
   icon?: IconName
   isActive?: boolean
   isDefault?: boolean
+  disableActions?: boolean
   handleClick: () => void
-  collapsible?: boolean
   onClick?: React.MouseEventHandler<HTMLDivElement>
+  collapsible?: boolean
 }
 
-/**
- * SidebarItem component renders an interactive item for the sidebar menu,
- * displaying an icon and label, and optionally providing a dropdown menu
- * with additional actions such as renaming, marking as read, creating a subfolder,
- * and sharing. It supports both desktop and mobile layouts, and can be customized
- * via props for active state, disabling actions, and handling click events.
- *
- * @param {SidebarItemProps} props - The properties for the SidebarItem component.
- * @param {string} props.name - The display name of the sidebar item.
- * @param {string} [props.icon] - The name of the icon to display.
- * @param {boolean} [props.disableActions] - If true, disables the dropdown actions menu.
- * @param {boolean} [props.isActive] - If true, highlights the item as active.
- * @param {(e?: React.MouseEvent) => void} [props.handleClick] - Handler for main item click.
- * @param {(e: React.MouseEvent) => void} [props.onClick] - Optional handler for icon button click.
- * @param {...any} props - Additional props are spread to the icon button.
- *
- * @returns {JSX.Element} The rendered sidebar item component.
- */
 const SidebarItem: React.FC<SidebarItemProps> = ({
   name,
   icon,
@@ -55,17 +34,19 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isActive,
   isDefault,
   handleClick,
-  // onClick is used to handle clicks on the icon button for collapsible items only
   onClick,
-  ...props
 }) => {
-  const [, setType] = React.useState('')
+  const [type, setType] = React.useState<string | null>(null)
+  const { mailPurgeAllow } = useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
+
   return (
     <>
       <SidebarMenuButton
-        className={`h-10 align-middle ${!isDefault ? 'group-data-[collapsible=icon]:hidden' : ''} group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`}
+        className={`h-10 align-middle ${
+          !isDefault ? 'group-data-[collapsible=icon]:hidden' : ''
+        } group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`}
         tooltip={name}
         isActive={isActive}
         onClick={handleClick}
@@ -73,7 +54,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       >
         {icon && (
           <div
-            className={`z-50 mr-2 h-5 w-5 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1 ${onClick ? '[&[data-state=open]>svg:first-child]:rotate-90' : ''}`}
+            className={`z-50 mr-2 h-5 w-5 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1 ${
+              onClick ? '[&[data-state=open]>svg:first-child]:rotate-90' : ''
+            }`}
             data-collapsible="icon"
             data-state="open"
             onClick={(e) => {
@@ -84,7 +67,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 handleClick()
               }
             }}
-            {...props}
           >
             <DynamicIcon
               className="h-5 w-5 transition-transform data-[state=open]:rotate-90"
@@ -98,32 +80,49 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       </SidebarMenuButton>
 
       {!disableActions && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuAction dataSidebar={`menu-button-${name}`} showOnHover>
-              <MoreVertical />
-            </SidebarMenuAction>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
-            align={isMobile ? 'end' : 'start'}
-          >
-            <DropdownMenuItem onClick={() => setType('edit')}>
-              <span>{t('folders.actions.rename.string')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setType('delete')}>
-              <span>{t('folders.actions.mark_as_read.string')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setType('link')}>
-              <span>{t('folders.actions.new_subfolder.string')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setType('sharing')}>
-              <span>{t('folders.actions.sharing.string')}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuAction
+                dataSidebar={`menu-button-${name}`}
+                showOnHover
+              >
+                <MoreVertical />
+              </SidebarMenuAction>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56 rounded-lg"
+              side={isMobile ? 'bottom' : 'right'}
+              align={isMobile ? 'end' : 'start'}
+            >
+              <DropdownMenuItem onClick={() => setType('rename')}>
+                <span>{t('folders.actions.rename.string')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setType('mark_as_read')}>
+                <span>{t('folders.actions.mark_as_read.string')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setType('new_subfolder')}>
+                <span>{t('folders.actions.new_subfolder.string')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setType('sharing')}>
+                <span>{t('folders.actions.sharing.string')}</span>
+              </DropdownMenuItem>
+              {mailPurgeAllow && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setType('purge')}>
+                    <span>{t('folders.actions.purge.string')}</span>
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* TODO: connect a Dialog to `type` for each action */}
+          {/* type === 'rename' && <RenameDialog ... /> */}
+          {/* type === 'purge' && <PurgeDialog ... /> */}
+        </>
       )}
     </>
   )

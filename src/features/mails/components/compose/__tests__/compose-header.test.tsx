@@ -31,6 +31,28 @@ jest.mock('@/components/ui/select', () => ({
   SelectItem: ({ children, value }: any) => <div data-value={value}>{children}</div>,
 }))
 
+jest.mock('lucide-react/dynamic', () => ({
+  DynamicIcon: ({ name }: { name: string }) => <span>{name}</span>,
+  iconNames: [],
+}))
+
+jest.mock('@/components/ui/inputs/input-with-tags', () => ({
+  __esModule: true,
+  default: ({ name, placeholder }: { name: string; placeholder: string }) => (
+    <input data-testid={name} placeholder={placeholder} />
+  ),
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: jest.fn(() => jest.fn()),
+  useAppSelector: jest.fn(() => null),
+}))
+
+jest.mock('@/features/mails/store/mail-compose-slice', () => ({
+  setPendingInsert: jest.fn(),
+  updateRecipients: jest.fn(),
+}))
+
 jest.mock('@/features/user-profile', () => ({
   useProfile: jest.fn(),
 }))
@@ -51,6 +73,9 @@ const mockProfile = (overrides = {}) => {
     identitiesEnabled: false,
     customFromEnabled: false,
     user: { email: 'jdoe@sogo.nu' },
+    jitsiLinkEnabled: false,
+    jitsiBaseUrl: null,
+    mailMaxRecipient: 0,
     ...overrides,
   })
 }

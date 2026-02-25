@@ -193,6 +193,10 @@
                 "sharing": {
                     "string": "Sharing",
                     "description": "Button to share the current folder"
+                },
+                "purge": {
+                    "string": "Purge",
+                    "description": "Button to permanently delete all messages in the current folder"
                 }
             },
             "inbox": {
