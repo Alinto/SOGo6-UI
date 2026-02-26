@@ -49,6 +49,20 @@
         },
         "no_items": {
             "string": "No message found."
+        },
+        "actions": {
+            "mark_as_read": {
+                "string": "Mark as read"
+            },
+            "mark_as_unread": {
+                "string": "Mark as unread"
+            },
+            "delete": {
+                "string": "Move to trash"
+            },
+            "archive": {
+                "string": "Archive"
+            }
         }
     }
 }

@@ -8,6 +8,9 @@ interface ListItemProps {
   data: ImapMessagesList
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
+  onToggleRead?: (id: string) => void
+  onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
 }
 
 const ListItem: React.FC<ListItemProps> = (props) => {

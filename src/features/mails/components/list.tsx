@@ -1,11 +1,14 @@
 import Draggable from '@/components/dnd/draggable'
 import { Checkbox } from '@/components/ui/checkbox'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
+import { Archive, Flame, Mail, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useMemo } from 'react'
 import { ImapMessagesList } from '../mails-types'
+import MailActionsBar from './mail/mail-action-bar'
 import ListItem from './list-item'
 import ListItemClassic from './list-item-classic'
 import ListFilter from './list/list-filter'
@@ -56,16 +59,52 @@ const MessagesList: React.FC<MessagesListProps> = ({
     return <AddressBookListSkeleton />
   }
   return (
+    <TooltipProvider delayDuration={300}>
     <div className="flex min-h-0 w-full flex-col rounded">
       <div className="text-foreground flex flex-row items-center justify-between">
         <div className="ml-2.5 flex flex-row items-center gap-4">
-          <Checkbox />
-          <span className="text-lg font-semibold">
-            {tMailsCommons(folderTranslation as string)}
-          </span>
-          <span className="text-muted-foreground hidden text-sm md:inline-block">
-            {t('messages_number.string', { number: total ?? 0 })}
-          </span>
+          <Checkbox
+            checked={
+              items.length > 0 && selectedItems.length === items.length
+                ? true
+                : selectedItems.length > 0
+                  ? 'indeterminate'
+                  : false
+            }
+            onCheckedChange={(checked) => {
+              setSelectedItems(checked ? [...items] : [])
+            }}
+          />
+          {selectedItems.length > 0 ? (
+            <MailActionsBar
+              actions={[
+                { id: 'bulk-delete', title: 'Delete', icon: <Trash2 size={16} /> },
+                { id: 'bulk-archive', title: 'Archive', icon: <Archive size={16} /> },
+                { id: 'bulk-mark-read', title: 'Mark as read', icon: <Mail size={16} /> },
+                { id: 'bulk-spam', title: 'Mark as spam', icon: <Flame size={16} /> },
+                { id: 'bulk-label', title: 'Label', icon: <Tag size={16} /> },
+              ]}
+              onAction={(idx) => {
+                const ids = selectedItems.map((item) => item.id)
+                switch (idx) {
+                  case 0: console.log('TODO bulk delete', ids); break
+                  case 1: console.log('TODO bulk archive', ids); break
+                  case 2: console.log('TODO bulk mark as read', ids); break
+                  case 3: console.log('TODO bulk spam', ids); break
+                  case 4: console.log('TODO bulk label', ids); break
+                }
+              }}
+            />
+          ) : (
+            <>
+              <span className="text-lg font-semibold">
+                {tMailsCommons(folderTranslation as string)}
+              </span>
+              <span className="text-muted-foreground hidden text-sm md:inline-block">
+                {t('messages_number.string', { number: total ?? 0 })}
+              </span>
+            </>
+          )}
         </div>
         <div className="flex flex-row items-center justify-between gap-2">
           <div className="hidden lg:flex">
@@ -103,6 +142,9 @@ const MessagesList: React.FC<MessagesListProps> = ({
                   data={item}
                   onHandleCheckboxClick={handleCheckboxClick}
                   isSelected={selectedItems.includes(item)}
+                  onToggleRead={(id) => console.log('TODO toggleRead', id)}
+                  onDelete={(id) => console.log('TODO delete', id)}
+                  onArchive={(id) => console.log('TODO archive', id)}
                 />
               )
             return (
@@ -117,6 +159,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
           })}
       </ul>
     </div>
+    </TooltipProvider>
   )
 }
 
