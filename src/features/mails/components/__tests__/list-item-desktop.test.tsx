@@ -120,7 +120,7 @@ describe('ListItemDesktop', () => {
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
     fireEvent.mouseLeave(container)
-    expect(screen.queryByTestId('checkbox')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('checkbox')).toBeInTheDocument()
   })
 
   it('calls onHandleCheckboxClick when checkbox clicked', () => {

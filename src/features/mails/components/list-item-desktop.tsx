@@ -6,7 +6,7 @@ import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { Archive, Mail, MailOpen, Paperclip, Star, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React, { memo, useState } from 'react'
+import React, { memo } from 'react'
 import { ImapMessagesList } from '../mails-types'
 import { formatDate } from './list-item-utils'
 
@@ -32,17 +32,12 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const pathname = usePathname()
   const { mail_id } = useParams()
   const { id, from, flagged, hasAttachment } = data
-  const [isHovered, setIsHovered] = useState(false)
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
 
   return (
     <>
       <div
-        className={`hover:bg-secondary flex min-h-10 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${
-          isSelectedClass
-        } ${data.seen ? '' : 'bg-primary/15 font-semibold'} `}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        className={`group hover:bg-secondary flex min-h-10 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${isSelectedClass} ${data.seen ? '' : 'bg-primary/15 font-semibold'}`}
         onClick={() => {
           if (mail_id) {
             const newPath = `${pathname}/${id}`
@@ -52,88 +47,94 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
           }
         }}
       >
-        {(isHovered || isSelected) && (
-          <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden">
-            <Checkbox
-              className="shrink-0 cursor-pointer bg-white"
-              checked={isSelected}
-              onClick={(e) => {
-                onHandleCheckboxClick(e, data)
-              }}
-            />
-          </span>
-        )}
-        <Avatar className={!isHovered && !isSelected ? 'h-6 w-6' : 'hidden'}>
+        
+        <span
+          className={`relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden ${
+            isSelected ? 'flex' : 'hidden group-hover:flex'
+          }`}
+        >
+          <Checkbox
+            className="shrink-0 cursor-pointer bg-white"
+            checked={isSelected}
+            onClick={(e) => onHandleCheckboxClick(e, data)}
+          />
+        </span>
+
+        <Avatar className={`h-6 w-6 group-hover:hidden ${isSelected ? 'hidden' : ''}`}>
           <AvatarImage src="/images/account-avatar.svg" />
           <AvatarFallback>
             {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
           </AvatarFallback>
         </Avatar>
+
         <div>
           <Star
             fill={flagged ? 'yellow' : 'white'}
             className="h-4 w-4 cursor-pointer transition-all duration-200 hover:h-5 hover:w-5"
             strokeWidth={1}
-            onClick={(e) => {
-              e.stopPropagation()
-            }}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
+
         <div
           className={`text-md w-1/5 truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
         >
           {from.name || from.email}
         </div>
-        <span
-          className={`w-3/5 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
-        >
+
+        <span className={`w-3/5 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}>
           {data.subject}
         </span>
-        {!isHovered ? (
-          <span className="text-muted-foreground w-1/5 text-right">
-            {hasAttachment && <Paperclip className="mr-2 inline h-4 w-4" />}
-            {formatDate(data.date)}
-          </span>
-        ) : (
-          <div className="flex w-1/5 items-center justify-end gap-1">
-              <TooltipWrapper
-                content={data.seen ? t('actions.mark_as_unread.string') : t('actions.mark_as_read.string')}
-                side="top"
-              >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onToggleRead?.(data.id)
-                  }}
-                  className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
-                >
-                  {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
-                </button>
-              </TooltipWrapper>
-              <TooltipWrapper content={t('actions.delete.string')} side="top">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDelete?.(data.id)
-                  }}
-                  className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </TooltipWrapper>
-              <TooltipWrapper content={t('actions.archive.string')} side="top">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onArchive?.(data.id)
-                  }}
-                  className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
-                >
-                  <Archive size={16} />
-                </button>
-              </TooltipWrapper>
-            </div>
-        )}
+
+        <span className="text-muted-foreground w-1/5 text-right group-hover:hidden">
+          {hasAttachment && <Paperclip className="mr-2 inline h-4 w-4" />}
+          {formatDate(data.date)}
+        </span>
+
+        <div className="hidden w-1/5 items-center justify-end gap-1 group-hover:flex">
+          <TooltipWrapper
+            content={
+              data.seen
+                ? t('actions.mark_as_unread.string')
+                : t('actions.mark_as_read.string')
+            }
+            side="top"
+          >
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onToggleRead?.(data.id)
+              }}
+              className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
+            >
+              {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
+            </button>
+          </TooltipWrapper>
+
+          <TooltipWrapper content={t('actions.delete.string')} side="top">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onDelete?.(data.id)
+              }}
+              className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
+            >
+              <Trash2 size={16} />
+            </button>
+          </TooltipWrapper>
+
+          <TooltipWrapper content={t('actions.archive.string')} side="top">
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+                onArchive?.(data.id)
+              }}
+              className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
+            >
+              <Archive size={16} />
+            </button>
+          </TooltipWrapper>
+        </div>
       </div>
       <Separator className="m-0" />
     </>

@@ -4,6 +4,7 @@ import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
 import { useParams, useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 
 const EXCLUDED_PARAMS = ['filter']
@@ -13,6 +14,8 @@ const Page = () => {
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
+  const activeSort = searchParams.get('sort') ?? 't_asc'
+  const t = useTranslations('MAILS_COMMONS')
 
   const params = React.useMemo(() => {
     const searchParamsKeys = Array.from(searchParams.keys()).filter(
@@ -21,9 +24,7 @@ const Page = () => {
     return searchParamsKeys.reduce(
       (acc, key) => {
         const value = searchParams.get(key)
-        if (value !== null) {
-          acc[key] = value
-        }
+        if (value !== null) acc[key] = value
         return acc
       },
       {} as Record<string, string>
@@ -37,28 +38,32 @@ const Page = () => {
 
   const filteredMails = React.useMemo(() => {
     const mails = data?.mails ?? []
-    switch (activeFilter) {
-      case 'unread':
-        return mails.filter((mail) => !mail.seen)
-      case 'read':
-        return mails.filter((mail) => mail.seen)
-      case 'starred':
-        return mails.filter((mail) => mail.flagged)
-      case 'attachments':
-        return mails.filter((mail) => mail.hasAttachment)
-      default:
-        return mails
-    }
-  }, [data?.mails, activeFilter])
 
-  if (isLoading) {
-    return <ListSkeleton />
-  }
+    let result = mails
+    switch (activeFilter) {
+      case 'unread':      result = mails.filter((m) => !m.seen); break
+      case 'read':        result = mails.filter((m) => m.seen); break
+      case 'starred':     result = mails.filter((m) => m.flagged); break
+      case 'attachments': result = mails.filter((m) => m.hasAttachment); break
+    }
+
+    return [...result].sort((a, b) => {
+      switch (activeSort) {
+        case 't_asc':  return new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime()
+        case 't_desc': return new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()
+        case 's_asc':  return (a.size ?? 0) - (b.size ?? 0)
+        case 's_desc': return (b.size ?? 0) - (a.size ?? 0)
+        default:       return 0
+      }
+    })
+  }, [data, activeFilter, activeSort])
+
+  if (isLoading) return <ListSkeleton />
 
   if (error) {
     return (
       <div className="p-4 text-red-500">
-        <h2>Error</h2>
+        <h2>{t('error.string')}</h2>
         <pre>{JSON.stringify(error, null, 2)}</pre>
       </div>
     )

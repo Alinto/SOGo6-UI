@@ -45,6 +45,7 @@ function mapMailToListItem(mail: {
   seen?: boolean
   flagged?: boolean
   has_attachment?: boolean
+  size?: number
   contents?: Array<{ content: string; contentType: string }>
 }): ImapMessagesList {
   const textContent = mail.contents?.find((c) => c.contentType === 'text/plain')?.content || ''
@@ -64,6 +65,7 @@ function mapMailToListItem(mail: {
     flagged: mail.flagged || false,
     hasAttachment: mail.has_attachment || false,
     snippet: snippet,
+    size: mail.size,
   }
 }
 

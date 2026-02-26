@@ -104,6 +104,10 @@
                 }
             }
         },
+        "error": {
+            "string": "Error",
+            "description": "Generic error title used when mails fail to load"
+        },
         "search": {
             "placeholder": {
                 "string": "Search emails",

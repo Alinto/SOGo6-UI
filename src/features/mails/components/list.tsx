@@ -97,12 +97,12 @@ const MessagesList: React.FC<MessagesListProps> = ({
             />
           ) : (
             <>
-              <span className="text-lg font-semibold">
-                {tMailsCommons(folderTranslation as string)}
-              </span>
-              <span className="text-muted-foreground hidden text-sm md:inline-block">
-                {t('messages_number.string', { number: total ?? 0 })}
-              </span>
+          <span className="text-lg font-semibold">
+            {tMailsCommons(folderTranslation as string)}
+          </span>
+          <span className="text-muted-foreground hidden text-sm md:inline-block">
+            {t('messages_number.string', { number: total ?? 0 })}
+          </span>
             </>
           )}
         </div>

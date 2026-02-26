@@ -21,6 +21,7 @@ export interface ImapMessagesList {
   flagged: boolean
   hasAttachment: boolean
   snippet: string
+  size?: number
 }
 
 export interface ImapAttachmentPart {
