@@ -1,8 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { TooltipWrapper } from '@/components/ui/tooltip'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
-import { Paperclip, Star } from 'lucide-react'
+import { Archive, Mail, MailOpen, Paperclip, Star, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { memo, useState } from 'react'
 import { ImapMessagesList } from '../mails-types'
@@ -12,13 +14,20 @@ interface ListItemDesktopProps {
   data: ImapMessagesList
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
+  onToggleRead?: (id: string) => void
+  onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
 }
 
 const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   data,
   isSelected,
   onHandleCheckboxClick,
+  onToggleRead,
+  onDelete,
+  onArchive,
 }) => {
+  const t = useTranslations('MAILS_LIST')
   const { push } = useRouter()
   const pathname = usePathname()
   const { mail_id } = useParams()
@@ -29,7 +38,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   return (
     <>
       <div
-        className={`hover:bg-secondary flex cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${
+        className={`hover:bg-secondary flex min-h-10 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${
           isSelectedClass
         } ${data.seen ? '' : 'bg-primary/15 font-semibold'} `}
         onMouseEnter={() => setIsHovered(true)}
@@ -80,10 +89,51 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
         >
           {data.subject}
         </span>
-        <span className="text-muted-foreground w-1/5 text-right">
-          {hasAttachment && <Paperclip className="mr-2 inline h-4 w-4" />}
-          {formatDate(data.date)}
-        </span>
+        {!isHovered ? (
+          <span className="text-muted-foreground w-1/5 text-right">
+            {hasAttachment && <Paperclip className="mr-2 inline h-4 w-4" />}
+            {formatDate(data.date)}
+          </span>
+        ) : (
+          <div className="flex w-1/5 items-center justify-end gap-1">
+              <TooltipWrapper
+                content={data.seen ? t('actions.mark_as_unread.string') : t('actions.mark_as_read.string')}
+                side="top"
+              >
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onToggleRead?.(data.id)
+                  }}
+                  className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
+                >
+                  {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
+                </button>
+              </TooltipWrapper>
+              <TooltipWrapper content={t('actions.delete.string')} side="top">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete?.(data.id)
+                  }}
+                  className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </TooltipWrapper>
+              <TooltipWrapper content={t('actions.archive.string')} side="top">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onArchive?.(data.id)
+                  }}
+                  className="cursor-pointer rounded p-1 transition-colors hover:bg-background"
+                >
+                  <Archive size={16} />
+                </button>
+              </TooltipWrapper>
+            </div>
+        )}
       </div>
       <Separator className="m-0" />
     </>
