@@ -4,15 +4,17 @@ import userEvent from '@testing-library/user-event'
 import { useTranslations } from 'next-intl'
 import LabelsForm from '../address-books-form-core'
 
-// Mock next-intl
+// --- Mocks ---
+
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(),
 }))
 
-// Mock UI components
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, ...props }: any) => (
-    <button {...props}>{children}</button>
+  Button: ({ children, onClick, type, ...props }: any) => (
+    <button onClick={onClick} type={type ?? 'button'} {...props}>
+      {children}
+    </button>
   ),
 }))
 
@@ -23,32 +25,51 @@ jest.mock('@/components/ui/input', () => ({
 jest.mock('@/components/ui/form', () => ({
   Form: ({ children }: any) => <div>{children}</div>,
   FormControl: ({ children }: any) => <div>{children}</div>,
-  FormDescription: ({ children }: any) => <p>{children}</p>,
-  FormField: ({ render, ...props }: any) =>
-    render({ field: { value: '', onChange: jest.fn(), ...props } }),
-  FormItem: ({ children }: any) => <div>{children}</div>,
-  FormLabel: ({ children }: any) => <label>{children}</label>,
+  FormDescription: ({ children, ...props }: any) => (
+    <p {...props}>{children}</p>
+  ),
+  FormField: ({ render, name }: any) =>
+    render({
+      field: {
+        value: '',
+        onChange: jest.fn(),
+        onBlur: jest.fn(),
+        name,
+        ref: jest.fn(),
+      },
+    }),
+  FormItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+  FormLabel: ({ children, ...props }: any) => (
+    <label {...props}>{children}</label>
+  ),
   FormMessage: () => null,
 }))
 
 jest.mock('@/components/ui/popover', () => ({
   Popover: ({ children }: any) => <div>{children}</div>,
   PopoverTrigger: ({ children }: any) => <div>{children}</div>,
-  PopoverContent: ({ children }: any) => <div>{children}</div>,
+  PopoverContent: ({ children }: any) => (
+    <div data-testid="popover-content">{children}</div>
+  ),
 }))
 
 jest.mock('@/components/ui/forms/fixed-form-button-group', () => {
-  return function MockButtonGroup(props: any) {
+  return function MockFixedFormButtonGroup({
+    onReset,
+    disableReset,
+    disableSubmit,
+  }: any) {
     return (
       <div data-testid="button-group">
         <button
-          onClick={props.onReset}
-          disabled={props.disableReset}
+          type="button"
+          onClick={onReset}
+          disabled={disableReset}
           data-testid="reset-btn"
         >
           Reset
         </button>
-        <button disabled={props.disableSubmit} data-testid="submit-btn">
+        <button type="submit" disabled={disableSubmit} data-testid="submit-btn">
           Submit
         </button>
       </div>
@@ -58,7 +79,7 @@ jest.mock('@/components/ui/forms/fixed-form-button-group', () => {
 
 jest.mock('@radix-ui/react-accessible-icon', () => ({
   AccessibleIcon: ({ children, label }: any) => (
-    <div title={label}>{children}</div>
+    <span aria-label={label}>{children}</span>
   ),
 }))
 
@@ -67,16 +88,24 @@ jest.mock('lucide-react', () => ({
   Check: () => <svg data-testid="check-icon" />,
 }))
 
-// Mock the store utils so we control what the form receives
 jest.mock('../../store/address-books-utils', () => ({
-  mapApiToContactGeneralSettings: (data: any) => ({
+  mapApiToContactGeneralSettings: jest.fn((data: any) => ({
     creationNotification: data?.creationNotification ?? false,
     categories: data?.categories ?? [],
-  }),
-  mapContactsSettingsToApi: (values: any) => values,
+  })),
+  mapContactsSettingsToApi: jest.fn((values: any) => values),
 }))
 
-// Helper to build a UserPreferences-shaped object for tests
+jest.mock('../address-books-schema', () => ({
+  schema: { parse: jest.fn((v) => v) },
+}))
+
+jest.mock('@hookform/resolvers/zod', () => ({
+  zodResolver: () => async (values: any) => ({ values, errors: {} }),
+}))
+
+// --- Helpers ---
+
 const makePreferences = (
   categories: { name: string; color: string; canBeTranslated: boolean }[] = [],
   creationNotification = false
@@ -86,99 +115,269 @@ const makePreferences = (
     categories,
   }) as unknown as UserPreferences
 
+const setupTranslations = () => {
+  ;(useTranslations as jest.Mock).mockImplementation(() => {
+    const map: Record<string, string> = {
+      'create.string': 'Create',
+      'notification.title': 'Notify on creation',
+      'notification.string': 'Receive a notification when a contact is created',
+      'accessibility.icon.delete.string': 'Delete {{name}}',
+    }
+    return (key: string, vars?: Record<string, string>) => {
+      let result = map[key] ?? key
+      if (vars) {
+        Object.entries(vars).forEach(([k, v]) => {
+          result = result.replace(`{{${k}}}`, v)
+        })
+      }
+      return result
+    }
+  })
+}
+
+// --- Tests ---
+
 describe('LabelsForm', () => {
   const mockUpdate = jest.fn()
 
   beforeEach(() => {
     jest.clearAllMocks()
-    ;(useTranslations as jest.Mock).mockImplementation(() => {
-      const translations: Record<string, string> = {
-        'create.string': 'Create',
-        'notification.title': 'Notification Title',
-        'notification.string': 'Notification Description',
-        'accessibility.icon.delete.string': 'Delete {{name}}',
-      }
-      return (key: string, variables?: Record<string, string>) => {
-        let result = translations[key] ?? key
-        if (variables) {
-          Object.entries(variables).forEach(([k, v]) => {
-            result = result.replace(`{{${k}}}`, v)
-          })
-        }
-        return result
-      }
+    setupTranslations()
+  })
+
+  // --- Rendering ---
+
+  describe('Initial rendering', () => {
+    it('renders the form element with p-4 class', () => {
+      const { container } = render(
+        <LabelsForm data={undefined} update={mockUpdate} />
+      )
+      expect(container.querySelector('form')).toHaveClass('p-4')
+    })
+
+    it('renders the Create button', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(
+        screen.getByRole('button', { name: /create/i })
+      ).toBeInTheDocument()
+    })
+
+    it('renders the notification checkbox', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(screen.getByRole('checkbox')).toBeInTheDocument()
+    })
+
+    it('renders the notification title label', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(screen.getByText('Notify on creation')).toBeInTheDocument()
+    })
+
+    it('renders the notification description', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(
+        screen.getByText('Receive a notification when a contact is created')
+      ).toBeInTheDocument()
+    })
+
+    it('renders the FixedFormButtonGroup', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(screen.getByTestId('button-group')).toBeInTheDocument()
+    })
+
+    it('renders without crashing when data is undefined', () => {
+      expect(() =>
+        render(<LabelsForm data={undefined} update={mockUpdate} />)
+      ).not.toThrow()
+    })
+
+    it('renders the categories grid container', () => {
+      const { container } = render(
+        <LabelsForm data={undefined} update={mockUpdate} />
+      )
+      expect(
+        container.querySelector('.grid.gap-4.lg\\:grid-cols-2')
+      ).toBeInTheDocument()
     })
   })
 
-  it('should render the form with no categories', () => {
-    render(<LabelsForm data={undefined} update={mockUpdate} />)
+  // --- Rendering with data ---
 
-    expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument()
+  describe('Rendering with initial category data', () => {
+    it('renders one input row per category', () => {
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+        { name: 'Work', color: '#ef4444', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+      expect(screen.getAllByRole('textbox')).toHaveLength(2)
+    })
+
+    it('populates input values from initial categories', () => {
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+        { name: 'Work', color: '#ef4444', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+      const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
+      expect(inputs[0]).toHaveValue('Personal')
+      expect(inputs[1]).toHaveValue('Work')
+    })
+
+    it('renders a trash icon for each category', () => {
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+        { name: 'Work', color: '#ef4444', canBeTranslated: false },
+        { name: 'Family', color: '#10b981', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+      expect(screen.getAllByTestId('trash-icon')).toHaveLength(3)
+    })
+
+    it('renders accessible delete label with interpolated category name', () => {
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+      expect(screen.getByLabelText('Delete Personal')).toBeInTheDocument()
+    })
+
+    it('renders a color popover for each category', () => {
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+        { name: 'Work', color: '#ef4444', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+      expect(screen.getAllByTestId('popover-content')).toHaveLength(2)
+    })
+
+    it('renders 10 color swatches inside each popover', () => {
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+      // The popover content renders 10 color buttons
+      const popover = screen.getByTestId('popover-content')
+      const colorButtons = popover.querySelectorAll('button')
+      expect(colorButtons).toHaveLength(10)
+    })
+
+    it('renders no category rows when categories array is empty', () => {
+      render(<LabelsForm data={makePreferences([])} update={mockUpdate} />)
+      expect(screen.queryAllByRole('textbox')).toHaveLength(0)
+      expect(screen.queryAllByTestId('trash-icon')).toHaveLength(0)
+    })
   })
 
-  it('should render delete buttons for each category', () => {
-    const data = makePreferences([
-      { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
-      { name: 'Work', color: '#ef4444', canBeTranslated: false },
-    ])
+  // --- Adding categories ---
 
-    render(<LabelsForm data={data} update={mockUpdate} />)
+  describe('Adding a new category', () => {
+    it('adds a new row when Create is clicked', async () => {
+      const user = userEvent.setup()
+      render(<LabelsForm data={makePreferences([])} update={mockUpdate} />)
 
-    const trashIcons = screen.getAllByTestId('trash-icon')
-    expect(trashIcons).toHaveLength(2)
+      await user.click(screen.getByRole('button', { name: /create/i }))
+
+      expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    })
+
+    it('adds multiple rows on repeated clicks', async () => {
+      const user = userEvent.setup()
+      render(<LabelsForm data={makePreferences([])} update={mockUpdate} />)
+
+      const createBtn = screen.getByRole('button', { name: /create/i })
+      await user.click(createBtn)
+      await user.click(createBtn)
+      await user.click(createBtn)
+
+      expect(screen.getAllByRole('textbox')).toHaveLength(3)
+    })
+
+    it('new row input starts empty', async () => {
+      const user = userEvent.setup()
+      render(<LabelsForm data={makePreferences([])} update={mockUpdate} />)
+
+      await user.click(screen.getByRole('button', { name: /create/i }))
+
+      const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
+      expect(inputs[0]).toHaveValue('')
+    })
+
+    it('appends new row after existing categories', async () => {
+      const user = userEvent.setup()
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+
+      await user.click(screen.getByRole('button', { name: /create/i }))
+
+      const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
+      expect(inputs).toHaveLength(2)
+      expect(inputs[0]).toHaveValue('Personal')
+      expect(inputs[1]).toHaveValue('')
+    })
+
+    it('new row has a trash icon', async () => {
+      const user = userEvent.setup()
+      render(<LabelsForm data={makePreferences([])} update={mockUpdate} />)
+
+      await user.click(screen.getByRole('button', { name: /create/i }))
+
+      expect(screen.getAllByTestId('trash-icon')).toHaveLength(1)
+    })
   })
 
-  it('should add a new category row when create button is clicked', async () => {
-    const user = userEvent.setup()
-    const data = makePreferences([
-      { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
-    ])
+  // --- Removing categories ---
 
-    render(<LabelsForm data={data} update={mockUpdate} />)
+  describe('Removing a category', () => {
+    it('removes a row when its delete button is clicked', async () => {
+      const user = userEvent.setup()
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+        { name: 'Work', color: '#ef4444', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
 
-    const createButton = screen.getByRole('button', { name: /create/i })
-    await user.click(createButton)
+      await user.click(screen.getAllByLabelText(/delete/i)[0])
 
-    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
-    expect(inputs.length).toBeGreaterThanOrEqual(2)
+      expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    })
+
+    it('removes all rows when each is deleted', async () => {
+      const user = userEvent.setup()
+      const data = makePreferences([
+        { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+      ])
+      render(<LabelsForm data={data} update={mockUpdate} />)
+
+      await user.click(screen.getByLabelText('Delete Personal'))
+
+      expect(screen.queryAllByRole('textbox')).toHaveLength(0)
+    })
   })
 
-  it('should handle undefined data gracefully', () => {
-    render(<LabelsForm data={undefined} update={mockUpdate} />)
+  // --- Translations ---
 
-    expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument()
+  describe('Translations', () => {
+    it('calls useTranslations with US_ADDRESS_BOOKS namespace', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(useTranslations).toHaveBeenCalledWith('US_ADDRESS_BOOKS')
+    })
+
+    it('only calls useTranslations with the US_ADDRESS_BOOKS namespace', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      const calls = (useTranslations as jest.Mock).mock.calls.map((c) => c[0])
+      expect(calls.every((ns: string) => ns === 'US_ADDRESS_BOOKS')).toBe(true)
+    })
   })
 
-  it('should render the button group', () => {
-    render(<LabelsForm data={makePreferences()} update={mockUpdate} />)
+  // --- Form button group state ---
 
-    expect(screen.getByTestId('button-group')).toBeInTheDocument()
-  })
-
-  it('should use the US_ADDRESS_BOOKS translation namespace', () => {
-    render(<LabelsForm data={makePreferences()} update={mockUpdate} />)
-
-    expect(useTranslations).toHaveBeenCalledWith('US_ADDRESS_BOOKS')
-  })
-
-  it('should render categories in a grid layout', () => {
-    const data = makePreferences([
-      { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
-      { name: 'Work', color: '#ef4444', canBeTranslated: false },
-    ])
-
-    const { container } = render(<LabelsForm data={data} update={mockUpdate} />)
-
-    const gridDiv = container.querySelector('.grid.gap-4.lg\\:grid-cols-2')
-    expect(gridDiv).toBeInTheDocument()
-  })
-
-  it('should render the form with correct base styles', () => {
-    const { container } = render(
-      <LabelsForm data={makePreferences()} update={mockUpdate} />
-    )
-
-    const form = container.querySelector('form')
-    expect(form).toHaveClass('p-4')
+  describe('FixedFormButtonGroup', () => {
+    it('disables reset and submit when form is pristine', () => {
+      render(<LabelsForm data={makePreferences()} update={mockUpdate} />)
+      expect(screen.getByTestId('reset-btn')).toBeDisabled()
+      expect(screen.getByTestId('submit-btn')).toBeDisabled()
+    })
   })
 })
