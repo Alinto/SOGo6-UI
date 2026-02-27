@@ -74,3 +74,23 @@ export interface CalendarGeneralSettings {
   // DAV
   davForceSyncFromClient: boolean // SOGO_U_DAV_FORCE_SYNC_FROM_CLIENT
 }
+
+export interface CalendarCategory {
+  name: string
+  color: string
+  isDefault: boolean
+}
+
+export interface CalendarCategoriesSettings {
+  categories: CalendarCategory[] //SOGO_U_CALENDAR_CATEGORIES
+}
+
+export interface MailCategory {
+  name: string
+  color: string
+  isDefault: boolean
+}
+
+export interface MailCategoriesSettings {
+  categories: MailCategory[] //SOGO_U_MAIL_CATEGORIES
+}

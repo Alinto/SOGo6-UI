@@ -2,9 +2,11 @@ import { createApiNotificationHandler } from '@/features/notifications/api-notif
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import type { MutationLifecycleApi } from '@reduxjs/toolkit/query'
 import {
+  UserCalendarCategory,
   UserCalendarGeneral,
   UserContactPreferences,
   UserGeneral,
+  UserMailCategory,
   UserMailGeneral,
   UserPreferencesResponse,
 } from './user-preferences-api-types'
@@ -60,12 +62,21 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       invalidatesTags: ['preferences'],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
-    // PATCH — general
+    // PATCH — mail general
     updateUserPreferencesMailGeneral: builder.mutation<
       UserPreferencesResponse,
       UserMailGeneral
     >({
       query: (body) => patchPreferences({ USER_MAIL_GENERAL_SETTINGS: body }),
+      invalidatesTags: ['preferences'],
+      onQueryStarted: patchPreferencesOnQueryStarted,
+    }),
+    // PATCH — mail category
+    updateUserPreferencesMailCategory: builder.mutation<
+      UserPreferencesResponse,
+      UserMailCategory
+    >({
+      query: (body) => patchPreferences({ USER_MAIL_CATEGORY_SETTINGS: body }),
       invalidatesTags: ['preferences'],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
@@ -87,6 +98,15 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       invalidatesTags: ['preferences'],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
+    // PATCH — calendar category
+    updateUserPreferencesCalendarCategory: builder.mutation<
+      UserPreferencesResponse,
+      UserCalendarCategory
+    >({
+      query: (body) => patchPreferences({ USER_CALENDAR_CATEGORY: body }),
+      invalidatesTags: ['preferences'],
+      onQueryStarted: patchPreferencesOnQueryStarted,
+    }),
   }),
 })
 
@@ -96,5 +116,7 @@ export const {
   useUpdateUserPreferencesGeneralMutation,
   useUpdateUserPreferencesContactMutation,
   useUpdateUserPreferencesMailGeneralMutation,
-  useUpdateUserPreferencesCalendarGeneralMutation
+  useUpdateUserPreferencesMailCategoryMutation,
+  useUpdateUserPreferencesCalendarGeneralMutation,
+  useUpdateUserPreferencesCalendarCategoryMutation,
 } = userPreferencesApi

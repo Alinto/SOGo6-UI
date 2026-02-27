@@ -2,14 +2,14 @@
 
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import LabelsFormSkeleton from './general/components/skeleton'
+import LabelsFormSkeleton from './components/skeleton'
 
 import {
   useGetUserPreferencesQuery,
   useUpdateUserPreferencesCalendarGeneralMutation,
 } from '@/features/user-settings/store/user-preferences-api'
 
-import { CalendarsGeneralSettingsForm } from './general/components/calendar-general-form'
+import { CalendarsGeneralSettingsForm } from './components/calendar-general-form'
 
 const CalendarsGeneralSettings: React.FC = () => {
   const t = useTranslations('US_CALENDARS')

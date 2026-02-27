@@ -19,7 +19,7 @@ import { schema } from './mail-general-schema'
 import {
   mapApiToMailGeneralSettings,
   mapMailGeneralSettingsToApi,
-} from '../store/mail-general-utils'
+} from '../../store/mail-utils'
 
 import { SecondsInput } from '@/components/seconds-input'
 import { Input } from '@/components/ui/input'
@@ -454,7 +454,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
                   options={[
                     { value: 'html', label: 'HTML' },
                     {
-                      value: 'plain text',
+                      value: 'text',
                       label: 'Plain Text',
                     },
                   ]}

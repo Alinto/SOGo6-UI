@@ -1,9 +1,15 @@
 import type {
+  UserCalendarCategory,
+  UserCalendarCategoryContent,
   UserCalendarGeneral,
   UserPreferences,
 } from '@/features/user-settings/store/user-preferences-api-types'
 
-import { CalendarGeneralSettings } from '../../store/user-preferences-types'
+import {
+  CalendarCategoriesSettings,
+  CalendarCategory,
+  CalendarGeneralSettings,
+} from '../../store/user-preferences-types'
 
 export function calendarGeneralToApi(
   value: CalendarGeneralSettings
@@ -62,5 +68,46 @@ export function apiToCalendarGeneral(
       value.USER_CALENDAR_GENERAL.SOGO_U_DO_NOT_SEND_INVIT_FROM_DAV,
     davForceSyncFromClient:
       value.USER_CALENDAR_GENERAL.SOGO_U_DAV_FORCE_SYNC_FROM_CLIENT,
+  }
+}
+
+function calendarCategoryToApi(
+  value: CalendarCategory
+): UserCalendarCategoryContent {
+  return {
+    name: value.name,
+    color: value.color,
+    is_default: value.isDefault,
+  }
+}
+
+export function mapCalendarCategorySettingsToApi(
+  values: CalendarCategoriesSettings
+): UserCalendarCategory {
+  return {
+    SOGO_U_CALENDAR_CATEGORIES: values.categories.map((e) =>
+      calendarCategoryToApi(e)
+    ),
+  }
+}
+
+function apiToCalendarCategory(
+  value: UserCalendarCategoryContent
+): CalendarCategory {
+  return {
+    name: value.name,
+    color: value.color,
+    isDefault: value.is_default,
+  }
+}
+
+export function mapApiToCalendarCategorySettings(
+  data: UserPreferences
+): CalendarCategoriesSettings {
+  return {
+    categories:
+      data.USER_CALENDAR_CATEGORY?.SOGO_U_CALENDAR_CATEGORIES?.map((e) =>
+        apiToCalendarCategory(e)
+      ) || [],
   }
 }

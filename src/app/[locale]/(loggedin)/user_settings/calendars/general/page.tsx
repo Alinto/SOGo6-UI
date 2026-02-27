@@ -1,4 +1,4 @@
-import CalendarsGeneralSettings from '@/features/user-settings/calendar'
+import CalendarsGeneralSettings from '@/features/user-settings/calendar/general'
 import React from 'react'
 
 const Page: React.FC = () => {

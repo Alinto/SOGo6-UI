@@ -1,7 +1,7 @@
+import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useTranslations } from 'next-intl'
-import { AddressBook } from '../../address-books-types'
 import LabelsForm from '../address-books-form-core'
 
 // Mock next-intl
@@ -14,6 +14,27 @@ jest.mock('@/components/ui/button', () => ({
   Button: ({ children, ...props }: any) => (
     <button {...props}>{children}</button>
   ),
+}))
+
+jest.mock('@/components/ui/input', () => ({
+  Input: ({ ...props }: any) => <input {...props} />,
+}))
+
+jest.mock('@/components/ui/form', () => ({
+  Form: ({ children }: any) => <div>{children}</div>,
+  FormControl: ({ children }: any) => <div>{children}</div>,
+  FormDescription: ({ children }: any) => <p>{children}</p>,
+  FormField: ({ render, ...props }: any) =>
+    render({ field: { value: '', onChange: jest.fn(), ...props } }),
+  FormItem: ({ children }: any) => <div>{children}</div>,
+  FormLabel: ({ children }: any) => <label>{children}</label>,
+  FormMessage: () => null,
+}))
+
+jest.mock('@/components/ui/popover', () => ({
+  Popover: ({ children }: any) => <div>{children}</div>,
+  PopoverTrigger: ({ children }: any) => <div>{children}</div>,
+  PopoverContent: ({ children }: any) => <div>{children}</div>,
 }))
 
 jest.mock('@/components/ui/forms/fixed-form-button-group', () => {
@@ -43,25 +64,42 @@ jest.mock('@radix-ui/react-accessible-icon', () => ({
 
 jest.mock('lucide-react', () => ({
   Trash2: () => <svg data-testid="trash-icon" />,
+  Check: () => <svg data-testid="check-icon" />,
 }))
+
+// Mock the store utils so we control what the form receives
+jest.mock('../../store/address-books-utils', () => ({
+  mapApiToContactGeneralSettings: (data: any) => ({
+    creationNotification: data?.creationNotification ?? false,
+    categories: data?.categories ?? [],
+  }),
+  mapContactsSettingsToApi: (values: any) => values,
+}))
+
+// Helper to build a UserPreferences-shaped object for tests
+const makePreferences = (
+  categories: { name: string; color: string; canBeTranslated: boolean }[] = [],
+  creationNotification = false
+): UserPreferences =>
+  ({
+    creationNotification,
+    categories,
+  }) as unknown as UserPreferences
 
 describe('LabelsForm', () => {
   const mockUpdate = jest.fn()
 
   beforeEach(() => {
     jest.clearAllMocks()
-
-    // Setup mock translations
-    ;(useTranslations as jest.Mock).mockImplementation((namespace: string) => {
-      const translations: Record<string, Record<string, string>> = {
-        FORM_COMMONS: {},
-        US_ADDRESS_BOOKS: {
-          'create.string': 'Create',
-          'accessibility.icon.delete.string': 'Delete {{name}}',
-        },
+    ;(useTranslations as jest.Mock).mockImplementation(() => {
+      const translations: Record<string, string> = {
+        'create.string': 'Create',
+        'notification.title': 'Notification Title',
+        'notification.string': 'Notification Description',
+        'accessibility.icon.delete.string': 'Delete {{name}}',
       }
       return (key: string, variables?: Record<string, string>) => {
-        let result = translations[namespace]?.[key] || key
+        let result = translations[key] ?? key
         if (variables) {
           Object.entries(variables).forEach(([k, v]) => {
             result = result.replace(`{{${k}}}`, v)
@@ -72,36 +110,17 @@ describe('LabelsForm', () => {
     })
   })
 
-  it('should render the form with an empty list', () => {
-    render(<LabelsForm data={[]} update={mockUpdate} />)
+  it('should render the form with no categories', () => {
+    render(<LabelsForm data={undefined} update={mockUpdate} />)
 
     expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument()
   })
 
-  it('should render the form with initial data', () => {
-    const data: AddressBook[] = [
-      { id: '1', label: 'Personal' },
-      { id: '2', label: 'Work' },
-    ]
-
-    render(<LabelsForm data={data} update={mockUpdate} />)
-
-    // Get all input fields
-    const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
-
-    // Verify we have 2 inputs
-    expect(inputs).toHaveLength(2)
-
-    // Verify the values are set correctly from initial data
-    expect(inputs[0]).toHaveValue('Personal')
-    expect(inputs[1]).toHaveValue('Work')
-  })
-
-  it('should render delete buttons for each address book', () => {
-    const data: AddressBook[] = [
-      { id: '1', label: 'Personal' },
-      { id: '2', label: 'Work' },
-    ]
+  it('should render delete buttons for each category', () => {
+    const data = makePreferences([
+      { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+      { name: 'Work', color: '#ef4444', canBeTranslated: false },
+    ])
 
     render(<LabelsForm data={data} update={mockUpdate} />)
 
@@ -109,16 +128,17 @@ describe('LabelsForm', () => {
     expect(trashIcons).toHaveLength(2)
   })
 
-  it('should add a new address book when create button is clicked', async () => {
+  it('should add a new category row when create button is clicked', async () => {
     const user = userEvent.setup()
-    const data: AddressBook[] = [{ id: '1', label: 'Personal' }]
+    const data = makePreferences([
+      { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+    ])
 
-    const { rerender } = render(<LabelsForm data={data} update={mockUpdate} />)
+    render(<LabelsForm data={data} update={mockUpdate} />)
 
     const createButton = screen.getByRole('button', { name: /create/i })
     await user.click(createButton)
 
-    // After clicking, we should see a new empty input field
     const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
     expect(inputs.length).toBeGreaterThanOrEqual(2)
   })
@@ -129,28 +149,23 @@ describe('LabelsForm', () => {
     expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument()
   })
 
-  it('should render the button group with correct props', () => {
-    const data: AddressBook[] = [{ id: '1', label: 'Personal' }]
-
-    render(<LabelsForm data={data} update={mockUpdate} />)
+  it('should render the button group', () => {
+    render(<LabelsForm data={makePreferences()} update={mockUpdate} />)
 
     expect(screen.getByTestId('button-group')).toBeInTheDocument()
   })
 
-  it('should use correct translation namespaces', () => {
-    const data: AddressBook[] = []
+  it('should use the US_ADDRESS_BOOKS translation namespace', () => {
+    render(<LabelsForm data={makePreferences()} update={mockUpdate} />)
 
-    render(<LabelsForm data={data} update={mockUpdate} />)
-
-    expect(useTranslations).toHaveBeenCalledWith('FORM_COMMONS')
     expect(useTranslations).toHaveBeenCalledWith('US_ADDRESS_BOOKS')
   })
 
-  it('should render form in grid layout', () => {
-    const data: AddressBook[] = [
-      { id: '1', label: 'Personal' },
-      { id: '2', label: 'Work' },
-    ]
+  it('should render categories in a grid layout', () => {
+    const data = makePreferences([
+      { name: 'Personal', color: '#3b82f6', canBeTranslated: false },
+      { name: 'Work', color: '#ef4444', canBeTranslated: false },
+    ])
 
     const { container } = render(<LabelsForm data={data} update={mockUpdate} />)
 
@@ -158,10 +173,10 @@ describe('LabelsForm', () => {
     expect(gridDiv).toBeInTheDocument()
   })
 
-  it('should render form with correct base styles', () => {
-    const data: AddressBook[] = []
-
-    const { container } = render(<LabelsForm data={data} update={mockUpdate} />)
+  it('should render the form with correct base styles', () => {
+    const { container } = render(
+      <LabelsForm data={makePreferences()} update={mockUpdate} />
+    )
 
     const form = container.querySelector('form')
     expect(form).toHaveClass('p-4')

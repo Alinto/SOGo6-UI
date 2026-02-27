@@ -39,10 +39,6 @@
                 "categories": {
                     "string": "Categories",
                     "context": "Link to the categories calendars settings in the settings sidebar"
-                },
-                "invitations": {
-                    "string": "Invitations",
-                    "context": "Link to the invitations calendars settings in the settings sidebar"
                 }
             },
             "email": {
@@ -57,6 +53,10 @@
                 "general": {
                     "string": "General",
                     "context": "Link to the general email settings in the settings sidebar"
+                },
+                "categories": {
+                    "string": "Categories",
+                    "context": "Link to the categories email settings in the settings sidebar"
                 },
                 "labels": {
                     "string": "Labels",

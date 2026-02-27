@@ -1,7 +1,15 @@
-import type { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
+import type {
+  UserMailCategory,
+  UserMailCategoryContent,
+  UserPreferences,
+} from '@/features/user-settings/store/user-preferences-api-types'
 
 import type { UserMailGeneral } from '@/features/user-settings/store/user-preferences-api-types'
-import { MailGeneralSettings } from '../../../store/user-preferences-types'
+import {
+  MailCategoriesSettings,
+  MailCategory,
+  MailGeneralSettings,
+} from '../../store/user-preferences-types'
 
 export function mapMailGeneralSettingsToApi(
   values: MailGeneralSettings
@@ -91,5 +99,40 @@ export function mapApiToMailGeneralSettings(
       data.USER_MAIL_GENERAL_SETTINGS?.SOGO_U_COMPOSE_MAIL_WINDOW === 'popup'
         ? 'popup'
         : 'inline',
+  }
+}
+
+function mailCategoryToApi(value: MailCategory): UserMailCategoryContent {
+  return {
+    name: value.name,
+    color: value.color,
+    is_default: value.isDefault,
+  }
+}
+
+export function mapMailCategorySettingsToApi(
+  values: MailCategoriesSettings
+): UserMailCategory {
+  return {
+    SOGO_U_MAIL_CATEGORIES: values.categories.map((e) => mailCategoryToApi(e)),
+  }
+}
+
+function apiToMailCategory(value: UserMailCategoryContent): MailCategory {
+  return {
+    name: value.name,
+    color: value.color,
+    isDefault: value.is_default,
+  }
+}
+
+export function mapApiToMailCategorySettings(
+  data: UserPreferences
+): MailCategoriesSettings {
+  return {
+    categories:
+      data.USER_MAIL_CATEGORY_SETTINGS?.SOGO_U_MAIL_CATEGORIES?.map((e) =>
+        apiToMailCategory(e)
+      ) || [],
   }
 }

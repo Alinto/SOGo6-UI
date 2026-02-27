@@ -52,6 +52,16 @@ export interface UserContactCategory {
   SOGO_U_CONTACT_CATEGORIES: UserContactCategoryContent[]
 }
 
+export interface UserCalendarCategoryContent {
+  name: string
+  color: string
+  is_default: boolean
+}
+
+export interface UserCalendarCategory {
+  SOGO_U_CALENDAR_CATEGORIES: UserCalendarCategoryContent[]
+}
+
 export interface UserContactPreferences {
   USER_CONTACT_GENERAL: UserContactGeneral
   USER_CONTACT_CATEGORY: UserContactCategory
@@ -77,14 +87,31 @@ export interface UserMailGeneral {
   SOGO_U_COLLECT_UNKNWON_ADDRESSES: boolean
   SOGO_U_COLLECT_UNKNWON_ADDRESSBOOK_NAME: string
 }
+
+export interface UserMailCategoryContent {
+  name: string
+  color: string
+  is_default: boolean
+}
+
+export interface UserMailCategory {
+  SOGO_U_MAIL_CATEGORIES: UserMailCategoryContent[]
+}
+
+export interface UserMailPreferences {
+  USER_MAIL_GENERAL: UserMailGeneral
+  USER_MAIL_CATEGORY: UserMailCategory
+}
+
 export interface UserPreferences {
   USER_GENERAL: UserGeneral
   USER_SECURITY: UserSecurity
   USER_CALENDAR_GENERAL: UserCalendarGeneral
-  USER_CALENDAR_CATEGORY: Record<string, unknown>
+  USER_CALENDAR_CATEGORY: UserCalendarCategory
   USER_CONTACT_GENERAL: UserContactGeneral
   USER_CONTACT_CATEGORY: UserContactCategory
   USER_MAIL_GENERAL_SETTINGS: UserMailGeneral
+  USER_MAIL_CATEGORY_SETTINGS: UserMailCategory
 }
 
 export interface UserPreferencesResponse {

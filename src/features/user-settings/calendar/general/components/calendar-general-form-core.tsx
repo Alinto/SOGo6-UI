@@ -23,7 +23,7 @@ import { z } from 'zod'
 import {
   apiToCalendarGeneral,
   calendarGeneralToApi,
-} from '../../store/calendar-general-utils'
+} from '../../store/calendar-utils'
 import { eventState, schema } from './calendar-general-schema'
 
 interface Props {
@@ -83,27 +83,6 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
           console.log('errors sbmit', err)
         )}
       >
-        <div className="grid gap-4 p-4 md:grid-cols-2 md:space-x-10">
-          <FormField
-            control={form.control}
-            name="calendarCreationNotif"
-            render={({ field }) => (
-              <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="min-w-0 flex-1">
-                  <FormLabel className="mb-2 block wrap-break-word">
-                    {t('calendarCreationNotif.string')}
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
         <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField
             control={form.control}
@@ -127,8 +106,31 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
+
+          <div className="p-4">
+            <FormField
+              control={form.control}
+              name="calendarCreationNotif"
+              render={({ field }) => (
+                <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="min-w-0 flex-1">
+                    <FormLabel className="mb-2 block wrap-break-word">
+                      {t('calendarCreationNotif.string')}
+                    </FormLabel>
+                  </div>
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
+
+        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField
             control={form.control}
             name="workdayStartTime"
@@ -161,13 +163,11 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-        <div className="grid gap-4 p-4 md:grid-cols-2 md:space-x-10">
           <FormField
             control={form.control}
             name="busyOffHours"
             render={({ field }) => (
-              <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
+              <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3 p-4">
                 <FormControl>
                   <Checkbox
                     checked={field.value}
@@ -198,9 +198,6 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField
             control={form.control}
             name="calendarWeekNumberFormat"
@@ -219,9 +216,6 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField
             control={form.control}
             name="calendarDefault"
@@ -256,9 +250,6 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField
             control={form.control}
             name="taskDefaultClass"
@@ -276,9 +267,6 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-
-        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField
             control={form.control}
             name="journalDefaultClass"
@@ -310,9 +298,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-        {/* //TODO */}
-        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
+          {/* //TODO */}
           <FormField
             control={form.control}
             name="taskDefaultReminder"
@@ -323,9 +309,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           />
-        </div>
-        {/* //TODO */}
-        <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
+          {/* //TODO */}
           <FormField
             control={form.control}
             name="journalDefaultReminder"
@@ -338,7 +322,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
           />
         </div>
 
-        <div className="grid gap-4 p-4 md:grid-cols-2 md:space-x-10">
+        <div className="grid gap-4 p-4 pb-0 md:grid-cols-2 md:space-x-10">
           <FormField
             control={form.control}
             name="noInvitation"
@@ -361,7 +345,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
         </div>
 
         {/* Email whitelist — rendered when noInvitation is checked */}
-        <div className="grid gap-4 p-4 md:grid-cols-2 md:space-x-10">
+        <div className="grid gap-4 p-4 pt-1 pl-14 md:grid-cols-2 md:space-x-10">
           <FormField
             control={form.control}
             name="noInvitationWhitelist"

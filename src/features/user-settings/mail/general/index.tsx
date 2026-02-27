@@ -23,7 +23,7 @@ const MailGeneralSettings: React.FC = () => {
       {isFetching ? (
         <PageLoader />
       ) : (
-        <MailGeneralSettingsForm data={data} update={updateData} />
+        <MailGeneralSettingsForm data={data?.data} update={updateData} />
       )}
     </div>
   )

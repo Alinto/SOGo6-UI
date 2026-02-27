@@ -97,6 +97,24 @@
         "davForceSyncFromClient": {
             "string": "Force synchronization of events created from CalDAV clients",
             "context": "Label for the setting that determines whether to force synchronization of events created from CalDAV clients or not"
+        },
+        "categories": {
+            "create": {
+                "string": "Add calendar category",
+                "context": "Button text to add a new calendar category"
+            },
+            "title": {
+                "string": "Categories",
+                "context": "Title for the calendar categories settings page"
+            },
+            "accessibility": {
+                "icon": {
+                    "delete": {
+                        "string": "Delete {name}",
+                        "context": "Accessibility message for the delete icon"
+                    }
+                }
+            }
         }
     }
 }
