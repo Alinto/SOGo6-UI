@@ -10,13 +10,11 @@ import type {
   ImapAttachments,
 } from '../mails-types'
 
-
 interface BackendResponse<T> {
   data: T
   error_code: string
   error_msg: string
 }
-
 
 interface PaginationHeader {
   total: number
@@ -26,6 +24,13 @@ interface PaginationHeader {
   page: number
 }
 
+const FOLDER_ORDER: Record<string, number> = {
+  'inbox': 0,
+  'sent': 1,
+  'draft': 2,
+  'junk': 3,
+  'trash': 4,
+}
 
 function mapFolderResponse(folder: ImapFolder): ImapFolder {
   return {
@@ -34,6 +39,22 @@ function mapFolderResponse(folder: ImapFolder): ImapFolder {
   }
 }
 
+function sortFoldersRecursively(folders: ImapFolder[]): ImapFolder[] {
+  return folders
+    .sort((a, b) => {
+      const orderA = FOLDER_ORDER[a.type] ?? 99
+      const orderB = FOLDER_ORDER[b.type] ?? 99
+      return orderA === orderB 
+        ? a.name.localeCompare(b.name) 
+        : orderA - orderB
+    })
+    .map(folder => ({
+      ...folder,
+      subfolders: folder.children 
+        ? sortFoldersRecursively(folder.children.map(mapFolderResponse))
+        : [],
+    }))
+}
 
 function mapMailToListItem(mail: {
   uid?: string
@@ -69,7 +90,6 @@ function mapMailToListItem(mail: {
   }
 }
 
-
 /**
  * Extracts HTML or text content from contents[] for compatibility with MailContent
  * @param contents - Contents from the backend
@@ -99,7 +119,6 @@ function extractBodyFromContents(
     return ''
   }
 }
-
 
 /**
  * Normalizes attachments from the backend to the ImapAttachments format
@@ -132,7 +151,7 @@ function normalizeAttachments(
   if (Array.isArray(attachments) && attachments.length > 0) {
     try {
       const parts = attachments.map((att, index) => ({
-        partId: att.filename || `attachment-${index}`, // Deterministic ID based on index
+        partId: att.filename || `attachment-${index}`,
         name: att.filename || 'unnamed',
         contentType: att.contentType || 'application/octet-stream',
         size: att.size || 0,
@@ -143,7 +162,7 @@ function normalizeAttachments(
       return {
         parts,
         count: parts.length,
-        zipUri: undefined, // Backend does not provide zipUri for now
+        zipUri: undefined,
       }
     } catch (error) {
       if (process.env.NODE_ENV === 'development') {
@@ -157,10 +176,8 @@ function normalizeAttachments(
   return { parts: [], count: 0 }
 }
 
-
 const getFoldersQuery = ({ accountId = '0' }: { accountId?: string } = {}) => 
   `/api/user/v1/mailboxes/${accountId}/folders`
-
 
 const getFolderMessagesQuery = ({
   accountId = '0',
@@ -182,7 +199,6 @@ const getFolderMessagesQuery = ({
   return url
 }
 
-
 const getMailQuery = ({ 
   accountId = '0',
   folder, 
@@ -192,7 +208,6 @@ const getMailQuery = ({
   folder: string
   mailId: string 
 }) => `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`
-
 
 const moveToTrashQuery = ({
   accountId = '0',
@@ -207,15 +222,14 @@ const moveToTrashQuery = ({
   method: 'DELETE' as const,
 })
 
-
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getFolders: builder.query<ImapFolder[], { accountId?: string }>({
       query: getFoldersQuery,
       transformResponse: (response: BackendResponse<ImapFolder[]>) => {
         const folders = response.data || []
-        const mappedFolders = folders.map(mapFolderResponse)
-        return mappedFolders
+        const mappedAndSorted = sortFoldersRecursively(folders)
+        return mappedAndSorted
       },
       providesTags: ['mails/folders'],
     }),
@@ -332,13 +346,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }>({
       query: getMailQuery,
       transformResponse: (response: BackendResponse<ImapMessages> | ImapMessages) => {
-        // Extract data (handle format with/without BackendResponse wrapper)
         let mail = 'data' in response ? response.data : response
         
         const mailId = mail.uid || mail.id || 'unknown'
         
-        // TRANSFORMATION 1 : contents[] → body string
-        // If the mail has contents[] but no body, extract the body
         if (mail.contents && mail.contents.length > 0 && !mail.body) {
           if (process.env.NODE_ENV === 'development') {
             console.log(`🔄 [getMail] Extracting body from contents[] for mail: ${mailId}`)
@@ -349,21 +360,20 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             body: extractBodyFromContents(mail.contents)
           }
         }
-       // TRANSFORMATION 2 : normalize attachments
-          // If attachments exist, transform them into ImapAttachments
-          if (mail.attachments) {
-            const needsNormalization = Array.isArray(mail.attachments)
-            
-            if (process.env.NODE_ENV === 'development' && needsNormalization) {
-              const attachmentCount = Array.isArray(mail.attachments) ? mail.attachments.length : 0
-              console.log(`🔄 [getMail] Normalizing ${attachmentCount} attachments for mail: ${mailId}`)
-            }
-            
-            mail = {
-              ...mail,
-              attachments: normalizeAttachments(mail.attachments)
-            }
+        
+        if (mail.attachments) {
+          const needsNormalization = Array.isArray(mail.attachments)
+          
+          if (process.env.NODE_ENV === 'development' && needsNormalization) {
+            const attachmentCount = Array.isArray(mail.attachments) ? mail.attachments.length : 0
+            console.log(`🔄 [getMail] Normalizing ${attachmentCount} attachments for mail: ${mailId}`)
           }
+          
+          mail = {
+            ...mail,
+            attachments: normalizeAttachments(mail.attachments)
+          }
+        }
         return mail
       },
       providesTags: (result, error, { mailId }) => [
@@ -391,9 +401,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       ],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 })
-
 
 export const {
   useGetFoldersQuery,
@@ -402,9 +411,7 @@ export const {
   useMoveToTrashMutation,
 } = injectedEndpoints
 
-
 export const mailsApiEndpoints = injectedEndpoints
-
 
 export {
   getFolderMessagesQuery,
