@@ -1,47 +1,38 @@
-FROM debian:12
+FROM node:22-slim
 
-ENV DEBIAN_FRONTEND=noninteractive
 ARG USERNAME=vscode
 ARG WORKSPACE=/SOGo
 ARG USER_ID=1000
 ARG GROUP_ID=1000
-ARG NODE_VERSION=22
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     git \
-    openssh-client \
     curl \
-    procps
+    bash \
+    openssh-client \
+    procps \
+    ncurses-bin \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd --system --gid "${GROUP_ID}" "${USERNAME}" && \
-    useradd --system --create-home --uid "${USER_ID}" --gid "${GROUP_ID}" "${USERNAME}" && \
-    echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > "/etc/sudoers.d/${USERNAME}" && \
-    chmod 0440 "/etc/sudoers.d/${USERNAME}"
+RUN usermod -l ${USERNAME} -u ${USER_ID} node \
+    && groupmod -n ${USERNAME} -g ${GROUP_ID} node \
+    && usermod -d /home/${USERNAME} -m ${USERNAME} \
+    && echo "${USERNAME} ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/${USERNAME} \
+    && chmod 0440 /etc/sudoers.d/${USERNAME}
 
-RUN curl -o- https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
+RUN npm install -g npm-check-updates
 
-RUN mkdir -p ${WORKSPACE} && chown -R ${USERNAME}:${USERNAME} ${WORKSPACE}
+RUN curl -fsSL https://raw.githubusercontent.com/transifex/cli/master/install.sh | bash
+
+RUN mkdir -p ${WORKSPACE} ${WORKSPACE}/.next && chown -R ${USERNAME}:${USERNAME} ${WORKSPACE}
 
 COPY --chown=${USERNAME}:${USERNAME} .devcontainer/container-entrypoint.sh /container-entrypoint
+RUN chmod +x /container-entrypoint
 COPY --chown=${USERNAME}:${USERNAME} .devcontainer/files/bashrc /home/${USERNAME}/.bashrc
 
 ENV PATH="/home/vscode/.local/bin:$PATH"
 
-RUN apt-get update --fix-missing
-
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_VERSION}.x | sudo -E bash - && \
-apt-get install -y nodejs
-
-RUN npm install -g npm@latest npm-check-updates
-
 WORKDIR ${WORKSPACE}
-
-# Copy package.json and package-lock.json if they exist
-COPY --chown=${USERNAME}:${USERNAME} ./package.json* ./
-
-RUN npm install
-
-RUN git config --global --get core.editor || git config --global core.editor "nano"
 
 USER ${USERNAME}
