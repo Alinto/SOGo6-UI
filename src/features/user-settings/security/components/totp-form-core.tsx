@@ -12,31 +12,53 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import QRCode from '@/components/ui/qrcode'
+import type { UserSecurity } from '@/features/user-settings/store/user-preferences-api-types'
+import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { defaultValues, schema } from './totp-schema'
 
-const TotpForm: React.FC = () => {
+import { z } from 'zod'
+import {
+  mapApiToSecuritySettings,
+  mapSecuritySettingsToApi,
+} from '../store/security-utils'
+import { schema } from './totp-schema'
+
+interface Props {
+  data: UserPreferences | undefined
+  update: (data: UserSecurity) => void
+}
+
+export function TotpSettingsForm({ data, update }: Props) {
   const formT = useTranslations('FORM_COMMONS')
   const t = useTranslations('US_SECURITY')
 
+  const fetchedData = data ? mapApiToSecuritySettings(data) : undefined
+
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues,
+    defaultValues: fetchedData,
   })
 
+  useEffect(() => {
+    if (data) {
+      form.reset(mapApiToSecuritySettings(data))
+    }
+  }, [data])
+
   function onSubmit(values: z.infer<typeof schema>) {
-    console.log(values)
+    update(mapSecuritySettingsToApi(values))
   }
   const { totp } = form.getValues()
   return (
     <Form {...form}>
       <form
         className="rounded-md border p-4 shadow-sm"
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={form.handleSubmit(onSubmit, (err) =>
+          console.log('errors sbmit', err)
+        )}
       >
         <div>
           <FormField
@@ -84,4 +106,4 @@ const TotpForm: React.FC = () => {
   )
 }
 
-export default TotpForm
+export default TotpSettingsForm

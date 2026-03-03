@@ -9,6 +9,7 @@ import {
   UserMailCategory,
   UserMailGeneral,
   UserPreferencesResponse,
+  UserSecurity,
 } from './user-preferences-api-types'
 
 const patchPreferences = (data: object) => {
@@ -107,6 +108,15 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       invalidatesTags: ['preferences'],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
+    // PATCH — security
+    updateUserPreferencesSecurity: builder.mutation<
+      UserPreferencesResponse,
+      UserSecurity
+    >({
+      query: (body) => patchPreferences({ USER_SECURITY: body }),
+      invalidatesTags: ['preferences'],
+      onQueryStarted: patchPreferencesOnQueryStarted,
+    }),
   }),
 })
 
@@ -119,4 +129,5 @@ export const {
   useUpdateUserPreferencesMailCategoryMutation,
   useUpdateUserPreferencesCalendarGeneralMutation,
   useUpdateUserPreferencesCalendarCategoryMutation,
+  useUpdateUserPreferencesSecurityMutation,
 } = userPreferencesApi

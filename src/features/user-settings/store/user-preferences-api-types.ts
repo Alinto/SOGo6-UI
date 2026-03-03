@@ -11,6 +11,8 @@ export interface UserGeneral {
 
 export interface UserSecurity {
   SOGO_U_MFA_ENABLE: boolean
+  SOGO_U_MFA_METHOD: 'totp' | null
+  SOGO_U_MFA_PARAM?: Record<string, unknown>
 }
 
 export interface UserContactGeneral {

@@ -94,3 +94,7 @@ export interface MailCategory {
 export interface MailCategoriesSettings {
   categories: MailCategory[] //SOGO_U_MAIL_CATEGORIES
 }
+
+export interface TotpSettings {
+  totp: boolean
+}
