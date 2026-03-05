@@ -4,7 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
+import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { useRouter } from '@/lib/i18n/navigation'
+import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
+import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle } from 'lucide-react'
@@ -13,10 +17,19 @@ import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { useLoginMutation } from '@/features/auth/components/store/auth.api'
-import { useAppDispatch } from '@/lib/redux/hooks'
-import { setCredentials } from '@/features/auth/components/store/auth.slice'
-import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
+
+interface JwtPayload {
+  uid: string
+  cn: string
+  email: string
+}
+
+function decodeJwtPayload(token: string): JwtPayload {
+  const [, payloadB64] = token.split('.')
+  // Convertir base64url → base64 standard
+  const base64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
+  return JSON.parse(atob(base64)) as JwtPayload
+}
 
 const createPasswordSchema = (t: (key: string) => string) =>
   z.object({
@@ -37,6 +50,7 @@ export function LoginAuthForm({
   const { push } = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
+  const mode = searchParams.get('mode') // 'ldap' ou null
 
   const dispatch = useAppDispatch()
   const [login] = useLoginMutation()
@@ -80,28 +94,31 @@ export function LoginAuthForm({
         password: data.password,
       }).unwrap()
 
-      if (result.data?.jwt_token) {
-        const credentials = {
-          token: result.data.jwt_token,
-          user: {
-            uid: email,
-            cn: email.split('@')[0],
-            email: email,
-          },
-        }
-        
-        dispatch(setCredentials(credentials))
-        push('/u/0/INBOX')
-      } else {
+      if (!result.data?.jwt_token) {
         throw new Error(t('error.invalid_credentials.string'))
       }
-    } catch (error: unknown) {  
+
+      const payload = decodeJwtPayload(result.data.jwt_token)
+
+      dispatch(
+        setCredentials({
+          token: result.data.jwt_token,
+          user: {
+            uid: payload.uid,
+            cn: payload.cn,
+            email: payload.email,
+          },
+        })
+      )
+
+      push('/u/0/INBOX')
+    } catch (error: unknown) {
       const status = getErrorStatus(error)
-      
+
       if (status === 401) {
         setServerError(t('error.invalid_credentials.string'))
       } else if (status === 404) {
-        setServerError('Route de login introuvable (404). Vérifie le Swagger backend.')
+        setServerError(t('error.route_not_found.string'))
       } else {
         setServerError(getErrorMessage(error) || t('error.generic.string'))
       }
@@ -132,6 +149,11 @@ export function LoginAuthForm({
           {t('email.label.string')}
         </Label>
         <p className="text-primary-foreground text-sm font-medium">{email}</p>
+        {mode === 'ldap' && (
+          <p className="text-primary-foreground/60 text-xs">
+            {t('auth_mode.ldap.string')}
+          </p>
+        )}
       </div>
 
       <div className="mb-6 grid gap-2">

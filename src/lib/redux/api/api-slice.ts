@@ -32,6 +32,8 @@ const tagTypes = [
   '/admin/v1/config/dynamic-form',
   '/admin/v1/config/domain-default',
   'admin/v1/config/domains',
+  'system',
+  'auth/mode',
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call
