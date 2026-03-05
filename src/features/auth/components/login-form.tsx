@@ -10,11 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useGetSystemQuery, useLazyGetAuthModeQuery } from '@/features/auth/components/store/auth.api'
 import { getLocales } from '@/lib/i18n/config'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { getErrorMessage } from '@/lib/redux/api/error-handlers'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, Languages } from 'lucide-react'
+import { AlertCircle, Languages, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import React from 'react'
 import { useForm } from 'react-hook-form'
@@ -27,7 +29,7 @@ const localeLabels: Record<string, string> = {
   es: 'Español',
 }
 
-// Langues disponibles en version demo
+// Languages available in the demo
 const availableLocales = ['en']
 
 const createLoginSchema = (t: (key: string) => string) =>
@@ -52,6 +54,9 @@ export function LoginForm({
   const [isLoading, setIsLoading] = React.useState(false)
   const [serverError, setServerError] = React.useState<string | null>(null)
 
+  const { data: systemData, isLoading: systemLoading } = useGetSystemQuery()
+  const [getAuthMode] = useLazyGetAuthModeQuery()
+
   const loginSchema = React.useMemo(() => createLoginSchema(t), [t])
 
   const {
@@ -65,6 +70,13 @@ export function LoginForm({
     },
   })
 
+  // If SOGO_S_DIRECT_LOGIN → skip email step, go directly to password
+  React.useEffect(() => {
+    if (systemData?.data?.system?.SOGO_S_DIRECT_LOGIN) {
+      push('/auth/login/pwd')
+    }
+  }, [systemData, push])
+
   const handleLocaleChange = (newLocale: string) => {
     const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`)
     push(newPathname)
@@ -75,22 +87,36 @@ export function LoginForm({
     setServerError(null)
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500))
+      const result = await getAuthMode({ username: data.email }).unwrap()
+      const { kind, location } = result.data
 
-      const provider = 'local'
-
-      if (provider === 'local') {
-        push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}`)
-      } else {
-        console.log('Redirection SSO (à implémenter)', provider)
+      switch (kind) {
+        case 'plain':
+          push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}`)
+          break
+        case 'ldap':
+          push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}&mode=ldap`)
+          break
+        case 'sso':
+          window.location.href = location
+          break
+        default:
+          setServerError(t('error.unknown_provider.string'))
       }
     } catch (error) {
-      setServerError(
-        error instanceof Error ? error.message : t('error.generic.string')
-      )
+      setServerError(getErrorMessage(error) || t('error.generic.string'))
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Wait for the system response before displaying the form
+  if (systemLoading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="text-primary-foreground h-6 w-6 animate-spin" />
+      </div>
+    )
   }
 
   return (

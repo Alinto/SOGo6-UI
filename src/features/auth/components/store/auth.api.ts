@@ -1,22 +1,26 @@
 import { apiSlice } from '@/lib/redux/api/api-slice'
-import type { User } from './auth.slice'
 
-interface LoginRequest {
+export interface LoginRequest {
   username: string
   password: string
 }
 
-interface LoginResponse {
-  data: {
-    jwt_token: string
-    user: User
-  }
+export interface LoginResponse {
+  data: { jwt_token: string }
+  error_code: string
+  error_msg: string
 }
 
-type AuthMode = 'ldap' | 'local' | 'sso'
+export interface AuthModeResponse {
+  data: { kind: 'plain' | 'sso' | 'ldap'; location: string }
+  error_code: string
+  error_msg: string
+}
 
-interface AuthModeResponse {
-  data: AuthMode
+export interface SystemResponse {
+  data: { system: { SOGO_S_DIRECT_LOGIN: boolean } }
+  error_code: string
+  error_msg: string
 }
 
 export const authApi = apiSlice.injectEndpoints({
@@ -27,16 +31,28 @@ export const authApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: credentials,
       }),
-      // Invalidate preferences cache after login to refetch user data
-      invalidatesTags: ['preferences'],
     }),
+
     getAuthMode: builder.query<AuthModeResponse, { username: string }>({
       query: ({ username }) => ({
         url: '/api/user/v1/auth/mode',
         params: { username },
       }),
+      // Pas de cache — l'email change à chaque tentative de login
+      keepUnusedDataFor: 0,
+    }),
+
+    getSystem: builder.query<SystemResponse, void>({
+      query: () => '/api/user/v1/system',
+      // Configuration statique définie par l'admin, cache 1h
+      keepUnusedDataFor: 3600,
     }),
   }),
 })
 
-export const { useLoginMutation, useGetAuthModeQuery } = authApi
+export const {
+  useLoginMutation,
+  useGetAuthModeQuery,
+  useLazyGetAuthModeQuery,
+  useGetSystemQuery,
+} = authApi
