@@ -1,31 +1,37 @@
 import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useSearchParams } from 'next/navigation'
 import React from 'react'
+import { toast } from 'sonner'
+import {
+  createDraft,
+  MAX_OPEN_DRAFTS,
+  selectCanOpenNewDraft,
+} from '../../store'
 
 const ComposeOpener: React.FC = () => {
   const t = useTranslations('COMPOSE')
   const isMobile = useIsMobile()
   const { setOpenMobile } = useSidebar()
-  const searchParams = useSearchParams()
-  const { push } = useRouter()
-  const pathname = usePathname()
+  const dispatch = useAppDispatch()
+  const canOpen = useAppSelector(selectCanOpenNewDraft)
 
   const handleOpenCompose = () => {
+    if (!canOpen) {
+      toast.error(t('max_windows_error.string', { max: MAX_OPEN_DRAFTS }))
+      return
+    }
+
     if (isMobile) {
       setOpenMobile(false)
     }
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('compose', 'true')
-    const query = params.toString()
-    push(query ? `${pathname}?${query}` : pathname)
+
+    dispatch(createDraft({ id: crypto.randomUUID() }))
   }
 
   return (
-    <>
       <SidebarMenuButton
         onClick={handleOpenCompose}
         className="h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
@@ -36,7 +42,6 @@ const ComposeOpener: React.FC = () => {
           {t('new_message.string')}
         </span>
       </SidebarMenuButton>
-    </>
   )
 }
 

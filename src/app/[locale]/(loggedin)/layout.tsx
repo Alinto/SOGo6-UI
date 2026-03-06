@@ -4,7 +4,7 @@ import AppHeader from '@/components/app-header'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import FloatingCompose from '@/features/mails/components/compose/floating-compose'
+import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import {
   NotificationProvider,
   NotificationToaster,
@@ -76,7 +76,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             )}
         </DndContext>
       </SidebarProvider>
-      <FloatingCompose />
+      <FloatingComposeContainer />
     </>
   )
 }

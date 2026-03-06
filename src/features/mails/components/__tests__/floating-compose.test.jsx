@@ -3,39 +3,53 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
-  useLocale: jest.fn(() => 'en'),
   useTranslations: jest.fn(() => (key) => key),
 }))
 
-// Mock next/navigation
-const mockSearchParams = new URLSearchParams()
-jest.mock('next/navigation', () => ({
-  useSearchParams: jest.fn(() => mockSearchParams),
+jest.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: jest.fn(() => false),
 }))
 
-// Mock i18n navigation
-const mockPush = jest.fn()
-jest.mock('@/lib/i18n/navigation', () => ({
-  useRouter: jest.fn(() => ({ push: mockPush })),
-  usePathname: jest.fn(() => '/en/mails'),
+jest.mock('framer-motion', () => ({
+  motion: {
+    div: ({
+      children,
+      style,
+      drag,
+      dragControls,
+      dragListener,
+      dragMomentum,
+      dragElastic,
+      ...props
+    }) => <div {...props}>{children}</div>,
+  },
+  useDragControls: jest.fn(() => ({
+    start: jest.fn(),
+  })),
+  useMotionValue: jest.fn(() => ({
+    set: jest.fn(),
+    get: jest.fn(() => 0),
+  })),
 }))
 
 // Mock Redux hooks
 const mockDispatch = jest.fn()
-let mockIsComposeOpen = false
+let mockState = {}
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => mockDispatch),
-  useAppSelector: jest.fn((selector) => {
-    // Return the mocked state based on the selector
-    return mockIsComposeOpen
-  }),
+  useAppSelector: jest.fn((selector) => selector(mockState)),
 }))
 
-// Mock the store actions/selectors
+// Mock the store actions
 jest.mock('../../store', () => ({
-  closeCompose: jest.fn(() => ({ type: 'mailCompose/closeCompose' })),
-  openCompose: jest.fn(() => ({ type: 'mailCompose/openCompose' })),
-  selectIsComposeOpen: jest.fn((state) => state?.mailCompose?.isComposeOpen),
+  closeDraft: jest.fn((payload) => ({
+    type: 'mailCompose/closeDraft',
+    payload,
+  })),
+  setActiveDraft: jest.fn((draftId) => ({
+    type: 'mailCompose/setActiveDraft',
+    payload: draftId,
+  })),
 }))
 
 // Mock the compose module CSS
@@ -63,134 +77,130 @@ jest.mock('../compose/compose-header', () => {
   }
 })
 
-// Mock window.open
-const mockWindowOpen = jest.fn()
-window.open = mockWindowOpen
-
 // Import after mocks
 import { FloatingCompose } from '../compose/floating-compose'
+import { closeDraft } from '../../store'
+
+const createMockState = (hasDraft = true) => ({
+  mailCompose: {
+    drafts: hasDraft
+      ? {
+          'test-draft-id': {
+            id: 'test-draft-id',
+            to: [],
+            cc: [],
+            bcc: [],
+            subject: '',
+            body: '',
+            attachments: [],
+            priority: 'normal',
+            requestReadReceipt: false,
+            isDirty: false,
+            createdAt: 1,
+            updatedAt: 1,
+          },
+        }
+      : {},
+    activeDraftId: 'test-draft-id',
+  },
+})
 
 describe('FloatingCompose Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockIsComposeOpen = false
+    mockState = createMockState(false)
   })
 
-  it('renders nothing when compose is closed', () => {
-    mockIsComposeOpen = false
-    const { container } = render(<FloatingCompose />)
+  it('renders nothing when the requested draft does not exist', () => {
+    mockState = createMockState(false)
+    const { container } = render(<FloatingCompose draftId="test-draft-id" />)
     expect(container.firstChild).toBeNull()
   })
 
-  it('renders the floating compose when compose is open', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+  it('renders the floating compose when the draft exists', () => {
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
     expect(screen.getByText('new_message.string')).toBeInTheDocument()
     expect(screen.getByTestId('custom-editor')).toBeInTheDocument()
     expect(screen.getByTestId('compose-header')).toBeInTheDocument()
   })
 
   it('renders the title bar with minimize, maximize and close buttons', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
     expect(screen.getByText('new_message.string')).toBeInTheDocument()
-    // Check for minimize, maximize and close buttons by their sr-only text
     expect(screen.getByText('minimize.string')).toBeInTheDocument()
     expect(screen.getByText('maximize.string')).toBeInTheDocument()
     expect(screen.getByText('close.string')).toBeInTheDocument()
   })
 
   it('minimizes when clicking the minimize button', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
-
-    // Initially, editor should be visible
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
     expect(screen.getByTestId('custom-editor')).toBeInTheDocument()
 
-    // Click minimize button
     const minimizeButton = screen.getByText('minimize.string').closest('button')
     fireEvent.click(minimizeButton)
 
-    // After minimizing, editor should not be visible
     expect(screen.queryByTestId('custom-editor')).not.toBeInTheDocument()
-    // Restore button should appear
     expect(screen.getByText('restore.string')).toBeInTheDocument()
   })
 
   it('restores when clicking the restore button after minimizing', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
 
-    // Click minimize button
     const minimizeButton = screen.getByText('minimize.string').closest('button')
     fireEvent.click(minimizeButton)
 
-    // Click restore button
     const restoreButton = screen.getByText('restore.string').closest('button')
     fireEvent.click(restoreButton)
 
-    // Editor should be visible again
     expect(screen.getByTestId('custom-editor')).toBeInTheDocument()
   })
 
   it('restores when clicking the title bar when minimized', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
 
-    // Click minimize button
     const minimizeButton = screen.getByText('minimize.string').closest('button')
     fireEvent.click(minimizeButton)
 
-    // Click title bar (contains the new_message.string text)
     const titleBar = screen.getByText('new_message.string').closest('div')
     fireEvent.click(titleBar)
 
-    // Editor should be visible again
     expect(screen.getByTestId('custom-editor')).toBeInTheDocument()
   })
 
-  it('dispatches closeCompose and updates URL when clicking the close button', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+  it('dispatches closeDraft when clicking the close button', () => {
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
 
     const closeButton = screen.getByText('close.string').closest('button')
     fireEvent.click(closeButton)
 
-    expect(mockDispatch).toHaveBeenCalled()
-    expect(mockPush).toHaveBeenCalled()
+    expect(closeDraft).toHaveBeenCalledWith({ draftId: 'test-draft-id' })
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'mailCompose/closeDraft',
+      payload: { draftId: 'test-draft-id' },
+    })
   })
 
   it('renders footer buttons with correct labels', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
 
     expect(screen.getByText('save_draft.string')).toBeInTheDocument()
     expect(screen.getByText('send.string')).toBeInTheDocument()
   })
 
   it('maximizes when clicking the maximize button', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
+    mockState = createMockState(true)
+    render(<FloatingCompose draftId="test-draft-id" />)
 
-    // Click maximize button
     const maximizeButton = screen.getByText('maximize.string').closest('button')
     fireEvent.click(maximizeButton)
 
-    // Now restore button should appear (for the maximized state)
     expect(screen.getByText('restore.string')).toBeInTheDocument()
-  })
-
-  it('opens compose in new page when clicking external link button', () => {
-    mockIsComposeOpen = true
-    render(<FloatingCompose />)
-
-    // Find and click the open in new page button
-    const openInNewPageButton = screen
-      .getByText('open_in_new_page.string')
-      .closest('button')
-    fireEvent.click(openInNewPageButton)
-
-    expect(mockDispatch).toHaveBeenCalled()
-    expect(mockWindowOpen).toHaveBeenCalledWith('/en/compose', '_blank')
   })
 })

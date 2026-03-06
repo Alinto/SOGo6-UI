@@ -34,19 +34,21 @@ export interface MailComposeDraft {
   updatedAt: number
 }
 
-interface MailComposeState {
+export interface MailComposeState {
   drafts: Record<string, MailComposeDraft>
   activeDraftId: string | null
-  isComposeOpen: boolean
+  openDraftIds: string[]
   isSending: boolean
   sendError: string | null
   pendingInsert: string | null
 }
 
+export const MAX_OPEN_DRAFTS = 3
+
 const initialState: MailComposeState = {
   drafts: {},
   activeDraftId: null,
-  isComposeOpen: false,
+  openDraftIds: [],
   isSending: false,
   sendError: null,
   pendingInsert: null,
@@ -68,6 +70,10 @@ const mailComposeSlice = createSlice({
         >
       }>
     ) => {
+      if (state.openDraftIds.length >= MAX_OPEN_DRAFTS) {
+        return
+      }
+
       const { id, inReplyTo, forwardOf, initialData } = action.payload
       const now = Date.now()
       state.drafts[id] = {
@@ -86,8 +92,8 @@ const mailComposeSlice = createSlice({
         createdAt: now,
         updatedAt: now,
       }
+      state.openDraftIds.push(id)
       state.activeDraftId = id
-      state.isComposeOpen = true
     },
 
     // Set active draft
@@ -95,14 +101,14 @@ const mailComposeSlice = createSlice({
       state.activeDraftId = action.payload
     },
 
-    // Open compose modal
-    openCompose: (state) => {
-      state.isComposeOpen = true
-    },
-
-    // Close compose modal
-    closeCompose: (state) => {
-      state.isComposeOpen = false
+    closeDraft: (state, action: PayloadAction<{ draftId: string }>) => {
+      state.openDraftIds = state.openDraftIds.filter(
+        (id) => id !== action.payload.draftId
+      )
+      if (state.activeDraftId === action.payload.draftId) {
+        state.activeDraftId =
+          state.openDraftIds[state.openDraftIds.length - 1] ?? null
+      }
     },
 
     // Update draft recipients
@@ -247,8 +253,10 @@ const mailComposeSlice = createSlice({
     deleteDraft: (state, action: PayloadAction<{ draftId: string }>) => {
       const { draftId } = action.payload
       delete state.drafts[draftId]
+      state.openDraftIds = state.openDraftIds.filter((id) => id !== draftId)
       if (state.activeDraftId === draftId) {
-        state.activeDraftId = null
+        state.activeDraftId =
+          state.openDraftIds[state.openDraftIds.length - 1] ?? null
       }
     },
 
@@ -270,6 +278,7 @@ const mailComposeSlice = createSlice({
     clearAllDrafts: (state) => {
       state.drafts = {}
       state.activeDraftId = null
+      state.openDraftIds = []
     },
 
     // Set pending insert (transient signal for editor content insertion)
@@ -282,8 +291,7 @@ const mailComposeSlice = createSlice({
 export const {
   createDraft,
   setActiveDraft,
-  openCompose,
-  closeCompose,
+  closeDraft,
   updateRecipients,
   updateSubject,
   updateBody,

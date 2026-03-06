@@ -1,8 +1,13 @@
+import '@testing-library/jest-dom'
+import { configureStore } from '@reduxjs/toolkit'
 import { render, screen } from '@testing-library/react'
+import { Provider } from 'react-redux'
 import userEvent from '@testing-library/user-event'
-import ComposeOpener from '../compose-opener'
 
-// Mock dependencies
+import ComposeOpener from '../compose-opener'
+import { createDraft } from '@/features/mails/store'
+import { toast } from 'sonner'
+
 jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuButton: ({ children, onClick, ...props }: any) => (
     <button onClick={onClick} {...props}>
@@ -18,52 +23,59 @@ jest.mock('@/hooks/use-mobile', () => ({
   useIsMobile: jest.fn(() => false),
 }))
 
-jest.mock('@/lib/i18n/navigation', () => ({
-  usePathname: jest.fn(() => '/en/mails'),
-  useRouter: jest.fn(() => ({
-    push: jest.fn(),
-  })),
-}))
-
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => key),
 }))
 
-jest.mock('next/navigation', () => ({
-  useSearchParams: jest.fn(() => ({
-    get: jest.fn(() => null),
-    toString: jest.fn(() => ''),
-  })),
+jest.mock('sonner', () => ({
+  toast: {
+    error: jest.fn(),
+  },
 }))
 
 import { useSidebar } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
-import { useSearchParams } from 'next/navigation'
 
 describe('ComposeOpener Component', () => {
   let mockSetOpenMobile: jest.Mock
-  let mockPush: jest.Mock
-  let mockSearchParams: any
+  let mockStore: ReturnType<typeof configureStore>
+
+  const createMockStore = (openDraftIds: string[] = []) =>
+    configureStore({
+      reducer: {
+        mailCompose: (
+          state = {
+            openDraftIds,
+            drafts: {},
+            activeDraftId: null,
+            isSending: false,
+            sendError: null,
+            pendingInsert: null,
+          }
+        ) => state,
+      },
+    })
+
+  const renderWithProvider = () =>
+    render(
+      <Provider store={mockStore}>
+        <ComposeOpener />
+      </Provider>
+    )
 
   beforeEach(() => {
     jest.clearAllMocks()
 
     mockSetOpenMobile = jest.fn()
-    mockPush = jest.fn()
-    mockSearchParams = {
-      get: jest.fn(() => null),
-      toString: jest.fn(() => ''),
-    }
+    mockStore = createMockStore()
     ;(useSidebar as jest.Mock).mockReturnValue({
       setOpenMobile: mockSetOpenMobile,
     })
-    ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
-    ;(useSearchParams as jest.Mock).mockReturnValue(mockSearchParams)
-    ;(usePathname as jest.Mock).mockReturnValue('/en/mails')
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
     ;(useIsMobile as jest.Mock).mockReturnValue(false)
+    jest.spyOn(global.crypto, 'randomUUID').mockReturnValue('generated-draft-id')
+    jest.spyOn(mockStore, 'dispatch')
   })
 
   afterEach(() => {
@@ -72,7 +84,7 @@ describe('ComposeOpener Component', () => {
 
   describe('Render Behavior', () => {
     it('should render the compose button', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       expect(button).toBeInTheDocument()
@@ -81,14 +93,14 @@ describe('ComposeOpener Component', () => {
     it('should display new_message text label on desktop', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const textElements = screen.getAllByText('new_message.string')
       expect(textElements.length).toBeGreaterThan(0)
     })
 
     it('should have sr-only label for accessibility', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const srOnlyLabels = document.querySelectorAll('.sr-only')
       expect(srOnlyLabels.length).toBeGreaterThan(0)
@@ -96,7 +108,7 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have proper styling classes', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       expect(button).toHaveClass('h-10')
@@ -107,14 +119,14 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should render Pencil icon', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const svgElements = document.querySelectorAll('svg')
       expect(svgElements.length).toBeGreaterThan(0)
     })
 
     it('should have proper group data attributes for collapsible state', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       expect(button).toHaveClass('group-data-[collapsible=icon]:justify-center')
@@ -126,14 +138,14 @@ describe('ComposeOpener Component', () => {
     it('should hide icon on desktop by default', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const icons = document.querySelectorAll('svg')
       expect(icons.length).toBeGreaterThan(0)
     })
 
     it('should have icon with proper sizing', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const svgElements = document.querySelectorAll('svg')
       if (svgElements.length > 0) {
@@ -144,7 +156,7 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have transition effect on icon', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const svgElements = document.querySelectorAll('svg')
       if (svgElements.length > 0) {
@@ -158,14 +170,14 @@ describe('ComposeOpener Component', () => {
     it('should display text label on desktop', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const textSpans = screen.getAllByText('new_message.string')
       expect(textSpans.length).toBeGreaterThan(0)
     })
 
     it('should have truncate class on label', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const textSpans = document.querySelectorAll('span')
       let hasLabelWithTruncate = false
@@ -183,7 +195,7 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have group-data attributes on label', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const textSpans = document.querySelectorAll('span')
       let hasLabelWithGroupData = false
@@ -202,48 +214,22 @@ describe('ComposeOpener Component', () => {
   })
 
   describe('Click Handler', () => {
-    it('should call push with compose param when button is clicked', async () => {
+    it('should dispatch createDraft when button is clicked', async () => {
       const user = userEvent.setup()
-      ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       await user.click(button)
 
-      expect(mockPush).toHaveBeenCalled()
-      const callArg = mockPush.mock.calls[0][0]
-      expect(callArg).toContain('compose=true')
-    })
-
-    it('should append compose param to existing query params', async () => {
-      const user = userEvent.setup()
-      ;(useSearchParams as jest.Mock).mockReturnValue({
-        get: jest.fn(() => null),
-        toString: jest.fn(() => 'existing=param'),
-      })
-
-      render(<ComposeOpener />)
-
-      const button = screen.getByRole('button')
-      await user.click(button)
-
-      expect(mockPush).toHaveBeenCalled()
-    })
-
-    it('should use correct pathname in push call', async () => {
-      const user = userEvent.setup()
-      const testPathname = '/en/calendar'
-      ;(usePathname as jest.Mock).mockReturnValue(testPathname)
-
-      render(<ComposeOpener />)
-
-      const button = screen.getByRole('button')
-      await user.click(button)
-
-      expect(mockPush).toHaveBeenCalled()
-      const callArg = mockPush.mock.calls[0][0]
-      expect(callArg).toContain(testPathname)
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: createDraft.type,
+          payload: expect.objectContaining({
+            id: expect.any(String),
+          }),
+        })
+      )
     })
   })
 
@@ -252,7 +238,7 @@ describe('ComposeOpener Component', () => {
       const user = userEvent.setup()
       ;(useIsMobile as jest.Mock).mockReturnValue(true)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       await user.click(button)
@@ -264,7 +250,7 @@ describe('ComposeOpener Component', () => {
       const user = userEvent.setup()
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       await user.click(button)
@@ -272,86 +258,71 @@ describe('ComposeOpener Component', () => {
       expect(mockSetOpenMobile).not.toHaveBeenCalled()
     })
 
-    it('should still open compose on mobile', async () => {
+    it('should still dispatch createDraft on mobile', async () => {
       const user = userEvent.setup()
       ;(useIsMobile as jest.Mock).mockReturnValue(true)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       await user.click(button)
 
-      expect(mockPush).toHaveBeenCalled()
-      const callArg = mockPush.mock.calls[0][0]
-      expect(callArg).toContain('compose=true')
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: createDraft.type,
+          payload: expect.objectContaining({
+            id: expect.any(String),
+          }),
+        })
+      )
     })
 
     it('should toggle sidebar and open compose in correct order on mobile', async () => {
       const user = userEvent.setup()
       ;(useIsMobile as jest.Mock).mockReturnValue(true)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       await user.click(button)
 
-      // Both should be called
       expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
-      expect(mockPush).toHaveBeenCalled()
-    })
-  })
-
-  describe('URL Parameter Handling', () => {
-    it('should set compose parameter to true', async () => {
-      const user = userEvent.setup()
-
-      render(<ComposeOpener />)
-
-      const button = screen.getByRole('button')
-      await user.click(button)
-
-      expect(mockPush).toHaveBeenCalled()
-      const callArg = mockPush.mock.calls[0][0]
-      expect(callArg).toMatch(/compose=true/)
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: createDraft.type,
+          payload: expect.objectContaining({
+            id: expect.any(String),
+          }),
+        })
+      )
     })
 
-    it('should preserve existing query parameters', async () => {
+    it('should show a toast and avoid dispatch when the limit is reached', async () => {
       const user = userEvent.setup()
-      mockSearchParams.toString.mockReturnValue('folder=inbox&sort=date')
+      mockStore = createMockStore(['draft-1', 'draft-2', 'draft-3'])
+      jest.spyOn(mockStore, 'dispatch')
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
-      const button = screen.getByRole('button')
-      await user.click(button)
+      await user.click(screen.getByRole('button'))
 
-      expect(mockPush).toHaveBeenCalled()
-    })
-
-    it('should handle empty query parameters', async () => {
-      const user = userEvent.setup()
-      mockSearchParams.toString.mockReturnValue('')
-
-      render(<ComposeOpener />)
-
-      const button = screen.getByRole('button')
-      await user.click(button)
-
-      expect(mockPush).toHaveBeenCalled()
-      const callArg = mockPush.mock.calls[0][0]
-      expect(callArg).toBeTruthy()
+      expect(toast.error).toHaveBeenCalled()
+      expect(mockStore.dispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: createDraft.type })
+      )
     })
   })
 
   describe('Accessibility', () => {
     it('should have proper button role', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       expect(button).toBeInTheDocument()
     })
 
     it('should have screen reader only label', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const srOnlyLabel = document.querySelector('.sr-only')
       expect(srOnlyLabel).toBeInTheDocument()
@@ -361,7 +332,7 @@ describe('ComposeOpener Component', () => {
     it('should have visible text label for context', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const textElements = screen.getAllByText('new_message.string')
       expect(textElements.length).toBeGreaterThan(0)
@@ -370,7 +341,7 @@ describe('ComposeOpener Component', () => {
     it('should have proper tooltip via text on non-mobile', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const textElements = screen.getAllByText('new_message.string')
       expect(textElements.length).toBeGreaterThan(0)
@@ -382,65 +353,45 @@ describe('ComposeOpener Component', () => {
       const mockT = jest.fn((key: string) => `translated_${key}`)
       ;(useTranslations as jest.Mock).mockReturnValue(mockT)
 
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       expect(mockT).toHaveBeenCalledWith('new_message.string')
     })
 
-    it('should use correct locale in pathname', async () => {
-      const user = userEvent.setup()
-      ;(usePathname as jest.Mock).mockReturnValue('/fr/mails')
-
-      render(<ComposeOpener />)
-
-      const button = screen.getByRole('button')
-      await user.click(button)
-
-      expect(mockPush).toHaveBeenCalled()
-      const callArg = mockPush.mock.calls[0][0]
-      expect(callArg).toContain('/fr/mails')
-    })
-
     it('should integrate with sidebar hooks', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       expect(useSidebar).toHaveBeenCalled()
     })
 
     it('should integrate with mobile detection hook', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       expect(useIsMobile).toHaveBeenCalled()
-    })
-
-    it('should integrate with navigation hooks', () => {
-      render(<ComposeOpener />)
-
-      expect(usePathname).toHaveBeenCalled()
-      expect(useRouter).toHaveBeenCalled()
-    })
-
-    it('should integrate with search params hook', () => {
-      render(<ComposeOpener />)
-
-      expect(useSearchParams).toHaveBeenCalled()
     })
   })
 
   describe('Button Interaction', () => {
     it('should be clickable', async () => {
       const user = userEvent.setup()
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       expect(button).not.toBeDisabled()
 
       await user.click(button)
-      expect(mockPush).toHaveBeenCalled()
+      expect(mockStore.dispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: createDraft.type,
+          payload: expect.objectContaining({
+            id: expect.any(String),
+          }),
+        })
+      )
     })
 
     it('should not have disabled attribute', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       expect(button).not.toBeDisabled()
@@ -448,19 +399,19 @@ describe('ComposeOpener Component', () => {
 
     it('should handle multiple clicks', async () => {
       const user = userEvent.setup()
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       await user.click(button)
       await user.click(button)
 
-      expect(mockPush).toHaveBeenCalledTimes(2)
+      expect(mockStore.dispatch).toHaveBeenCalledTimes(2)
     })
   })
 
   describe('Styling Consistency', () => {
     it('should have consistent button styling classes', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       const expectedClasses = [
@@ -477,7 +428,7 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have consistent icon styling classes', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const svgElements = document.querySelectorAll('svg')
       if (svgElements.length > 0) {
@@ -489,7 +440,7 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have proper responsive classes for collapsible sidebar', () => {
-      render(<ComposeOpener />)
+      renderWithProvider()
 
       const button = screen.getByRole('button')
       const responsiveClasses = [
@@ -505,14 +456,14 @@ describe('ComposeOpener Component', () => {
 
   describe('Fragment Wrapper', () => {
     it('should render component without extra wrapper', () => {
-      const { container } = render(<ComposeOpener />)
+      const { container } = renderWithProvider()
 
       const button = container.querySelector('button')
       expect(button).toBeInTheDocument()
     })
 
     it('should have single button element as main child', () => {
-      const { container } = render(<ComposeOpener />)
+      const { container } = renderWithProvider()
 
       const buttons = container.querySelectorAll(':scope > button')
       expect(buttons.length).toBeGreaterThan(0)

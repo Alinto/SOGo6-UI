@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom'
+import { configureStore } from '@reduxjs/toolkit'
 import { render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
+import { Provider } from 'react-redux'
 import Layout from '../layout'
 
 // Mock all imported components and hooks
@@ -32,9 +34,13 @@ jest.mock('@/components/ui/sidebar', () => ({
   ),
 }))
 
-jest.mock('@/features/mails/components/compose/floating-compose', () => {
-  return function MockFloatingCompose() {
-    return <div data-testid="floating-compose">Floating Compose</div>
+jest.mock('@/features/mails/components/compose/floating-compose-container', () => {
+  return function MockFloatingComposeContainer() {
+    return (
+      <div data-testid="floating-compose-container">
+        Floating Compose Container
+      </div>
+    )
   }
 })
 
@@ -89,6 +95,29 @@ jest.mock('react-dom', () => ({
 }))
 
 describe('Layout Component', () => {
+  const createMockStore = () =>
+    configureStore({
+      reducer: {
+        mailCompose: (
+          state = {
+            openDraftIds: [],
+            drafts: {},
+            activeDraftId: null,
+          }
+        ) => state,
+      },
+    })
+
+  const renderWithProvider = (children: React.ReactNode) => {
+    const store = createMockStore()
+
+    return render(
+      <Provider store={store}>
+        <Layout>{children}</Layout>
+      </Provider>
+    )
+  }
+
   beforeEach(() => {
     jest.clearAllMocks()
   })
@@ -96,7 +125,7 @@ describe('Layout Component', () => {
   it('should render the layout structure', () => {
     const mockChildren = <div data-testid="children-content">Test Children</div>
 
-    render(<Layout>{mockChildren}</Layout>)
+    renderWithProvider(mockChildren)
 
     expect(screen.getByTestId('notification-toaster')).toBeInTheDocument()
     expect(screen.getByTestId('notification-provider')).toBeInTheDocument()
@@ -105,24 +134,24 @@ describe('Layout Component', () => {
   })
 
   it('should render AppHeader component', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('app-header')).toBeInTheDocument()
     expect(screen.getByText('App Header')).toBeInTheDocument()
   })
 
   it('should render AppSidebar component', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('app-sidebar')).toBeInTheDocument()
     expect(screen.getByText('App Sidebar')).toBeInTheDocument()
   })
 
-  it('should render FloatingCompose component', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+  it('should render FloatingComposeContainer component', () => {
+    renderWithProvider(<div>Test</div>)
 
-    expect(screen.getByTestId('floating-compose')).toBeInTheDocument()
-    expect(screen.getByText('Floating Compose')).toBeInTheDocument()
+    expect(screen.getByTestId('floating-compose-container')).toBeInTheDocument()
+    expect(screen.getByText('Floating Compose Container')).toBeInTheDocument()
   })
 
   it('should render children content', () => {
@@ -130,14 +159,14 @@ describe('Layout Component', () => {
       <div data-testid="children-content">Test Children Content</div>
     )
 
-    render(<Layout>{mockChildren}</Layout>)
+    renderWithProvider(mockChildren)
 
     expect(screen.getByTestId('children-content')).toBeInTheDocument()
     expect(screen.getByText('Test Children Content')).toBeInTheDocument()
   })
 
   it('should have correct main container classes', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     const mainContainer = screen
       .getByTestId('sidebar-inset')
@@ -147,20 +176,20 @@ describe('Layout Component', () => {
   })
 
   it('should wrap content in DndContext', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('dnd-context')).toBeInTheDocument()
   })
 
   it('should render DragOverlay with Contact2 icon', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('drag-overlay')).toBeInTheDocument()
     expect(screen.getByTestId('contact-icon')).toBeInTheDocument()
   })
 
   it('should render portal for DragOverlay', () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('portal')).toBeInTheDocument()
   })
@@ -168,14 +197,14 @@ describe('Layout Component', () => {
   it('should setup drag and drop sensors', () => {
     const { useSensor, useSensors } = require('@dnd-kit/core')
 
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     expect(useSensor).toHaveBeenCalled()
     expect(useSensors).toHaveBeenCalled()
   })
 
   it('should establish SSE connection on mount', async () => {
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     // The component should render without errors
     // The SSE connection happens in useEffect
@@ -187,7 +216,7 @@ describe('Layout Component', () => {
   it('should use environment-based SSE configuration', async () => {
     const { getSSEConfigForEnvironment } = require('@/lib/redux/sse')
 
-    render(<Layout>{<div>Test</div>}</Layout>)
+    renderWithProvider(<div>Test</div>)
 
     // The component should render and use the config
     await waitFor(() => {
@@ -202,14 +231,14 @@ describe('Layout Component', () => {
 
   describe('Responsive Layout', () => {
     it('should have proper flex container structure', () => {
-      render(<Layout>{<div>Test</div>}</Layout>)
+      renderWithProvider(<div>Test</div>)
 
       const provider = screen.getByTestId('sidebar-provider')
       expect(provider).toBeInTheDocument()
     })
 
     it('should maintain proper height calculation for content area', () => {
-      render(<Layout>{<div>Test</div>}</Layout>)
+      renderWithProvider(<div>Test</div>)
 
       const contentArea = screen
         .getByTestId('sidebar-inset')
@@ -220,7 +249,7 @@ describe('Layout Component', () => {
 
   describe('Component Hierarchy', () => {
     it('should render components in correct order', () => {
-      const { container } = render(<Layout>{<div>Test</div>}</Layout>)
+      const { container } = renderWithProvider(<div>Test</div>)
 
       const elements = container.querySelectorAll('[data-testid]')
       const testIds = Array.from(elements).map((el) =>
@@ -234,7 +263,7 @@ describe('Layout Component', () => {
     })
 
     it('should wrap DragOverlay in portal', () => {
-      render(<Layout>{<div>Test</div>}</Layout>)
+      renderWithProvider(<div>Test</div>)
 
       const portal = screen.getByTestId('portal')
       const dragOverlay = portal.querySelector('[data-testid="drag-overlay"]')
@@ -245,7 +274,7 @@ describe('Layout Component', () => {
 
   describe('DragOverlay Styling', () => {
     it('should have correct Contact icon dimensions', () => {
-      render(<Layout>{<div>Test</div>}</Layout>)
+      renderWithProvider(<div>Test</div>)
 
       const contactIcon = screen.getByTestId('contact-icon')
       expect(contactIcon).toHaveClass('h-7')
@@ -254,7 +283,7 @@ describe('Layout Component', () => {
     })
 
     it('should have correct overlay container dimensions', () => {
-      render(<Layout>{<div>Test</div>}</Layout>)
+      renderWithProvider(<div>Test</div>)
 
       const overlayContainer = screen
         .getByTestId('portal')
@@ -273,7 +302,7 @@ describe('Layout Component', () => {
         </>
       )
 
-      render(<Layout>{children}</Layout>)
+      renderWithProvider(children)
 
       expect(screen.getByTestId('child-1')).toBeInTheDocument()
       expect(screen.getByTestId('child-2')).toBeInTheDocument()
@@ -287,7 +316,7 @@ describe('Layout Component', () => {
         </>
       )
 
-      render(<Layout>{children}</Layout>)
+      renderWithProvider(children)
 
       expect(screen.getByText('Fragment Child 1')).toBeInTheDocument()
       expect(screen.getByText('Fragment Child 2')).toBeInTheDocument()
