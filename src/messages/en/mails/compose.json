@@ -59,6 +59,10 @@
         "max_recipients_reached": {
             "string": "Maximum {max} recipients reached",
             "description": "Error shown when the maximum number of recipients has been reached"
+        },
+        "max_windows_error": {
+            "string": "Maximum {max} compose windows allowed.",
+            "description": "Error shown when the user tries to open more than three floating compose windows"
         }
     }
 }

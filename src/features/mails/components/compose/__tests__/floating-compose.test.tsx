@@ -114,8 +114,8 @@ describe('FloatingCompose Component', () => {
       const { container } = render(<FloatingCompose />)
       const mainDiv = container.firstChild as HTMLElement
 
-      expect(mainDiv).toHaveClass('fixed')
-      expect(mainDiv).toHaveClass('z-50')
+      expect(mainDiv).toHaveClass('relative')
+      expect(mainDiv).toHaveClass('z-40')
       expect(mainDiv).toHaveClass('flex')
       expect(mainDiv).toHaveClass('flex-col')
     })
@@ -135,7 +135,7 @@ describe('FloatingCompose Component', () => {
       render(<FloatingCompose />)
       const titleBar = screen.getByText('new_message.string').closest('div')
 
-      expect(titleBar).toHaveClass('cursor-pointer')
+      expect(titleBar).toHaveClass('select-none')
     })
   })
 
@@ -160,15 +160,6 @@ describe('FloatingCompose Component', () => {
         name: /maximize.string/i,
       })
       expect(maximizeButton).toBeInTheDocument()
-    })
-
-    it('should display open in new page button when not minimized', () => {
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      expect(openNewPageButton).toBeInTheDocument()
     })
 
     it('should display close button', () => {
@@ -343,56 +334,6 @@ describe('FloatingCompose Component', () => {
 
       expect(mockDispatch).toHaveBeenCalled()
     })
-
-    it('should push new route when closing', async () => {
-      const user = userEvent.setup()
-      render(<FloatingCompose />)
-
-      const closeButton =
-        screen
-          .getAllByRole('button')
-          .find((btn) => btn.getAttribute('aria-label')?.includes('close')) ||
-        screen.getByRole('button', { name: /close.string/i })
-
-      await user.click(closeButton)
-
-      expect(mockPush).toHaveBeenCalled()
-    })
-  })
-
-  describe('Open in New Page Functionality', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-      global.window.open = jest.fn()
-    })
-
-    afterEach(() => {
-      jest.restoreAllMocks()
-    })
-
-    it('should open compose in new page', async () => {
-      const user = userEvent.setup()
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      await user.click(openNewPageButton)
-
-      expect(window.open).toHaveBeenCalledWith('/en/compose', '_blank')
-    })
-
-    it('should close compose when opening in new page', async () => {
-      const user = userEvent.setup()
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      await user.click(openNewPageButton)
-
-      expect(mockDispatch).toHaveBeenCalled()
-    })
   })
 
   describe('Mobile Behavior', () => {
@@ -420,33 +361,6 @@ describe('FloatingCompose Component', () => {
     })
   })
 
-  describe('URL Parameter Synchronization', () => {
-    it('should open compose when compose param is true and not open', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(false)
-      ;(useSearchParams as jest.Mock).mockReturnValue({
-        get: jest.fn((key) => (key === 'compose' ? 'true' : null)),
-        toString: jest.fn(() => 'compose=true'),
-      })
-
-      render(<FloatingCompose />)
-
-      // The effect should dispatch openCompose
-      expect(mockDispatch).toHaveBeenCalled()
-    })
-
-    it('should handle compose param changes', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-      ;(useSearchParams as jest.Mock).mockReturnValue({
-        get: jest.fn(() => null),
-        toString: jest.fn(() => ''),
-      })
-
-      render(<FloatingCompose />)
-
-      // When compose param is not true but isComposeOpen is true, it should close
-      expect(mockDispatch).toHaveBeenCalled()
-    })
-  })
 
   describe('Accessibility', () => {
     beforeEach(() => {
@@ -580,23 +494,4 @@ describe('FloatingCompose Component', () => {
     })
   })
 
-  describe('Locale Handling', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
-    it('should use correct locale in compose path', async () => {
-      const user = userEvent.setup()
-      ;(useLocale as jest.Mock).mockReturnValue('fr')
-
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      await user.click(openNewPageButton)
-
-      expect(window.open).toHaveBeenCalledWith('/fr/compose', '_blank')
-    })
-  })
 })

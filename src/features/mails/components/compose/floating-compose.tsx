@@ -2,48 +2,32 @@
 
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
-import {
-  ExternalLink,
-  Maximize2,
-  Minimize2,
-  Minus,
-  Save,
-  Send,
-  X,
-} from 'lucide-react'
-import { useLocale, useTranslations } from 'next-intl'
-import { useSearchParams } from 'next/navigation'
+import { motion, useDragControls, useMotionValue } from 'framer-motion'
+import { Maximize2, Minimize2, Minus, Save, Send, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import * as React from 'react'
-import { closeCompose, openCompose, selectIsComposeOpen } from '../../store'
+import { closeDraft, setActiveDraft } from '../../store'
 import CustomEditor from './compose'
 import ComposeHeader from './compose-header'
 import styles from './compose.module.css'
 
-export const FloatingCompose: React.FC = () => {
+interface FloatingComposeProps {
+  draftId: string
+}
+
+export const FloatingCompose: React.FC<FloatingComposeProps> = ({ draftId }) => {
   const t = useTranslations('COMPOSE')
   const isMobile = useIsMobile()
-  const locale = useLocale()
   const [isMinimized, setIsMinimized] = React.useState(false)
   const [isMaximized, setIsMaximized] = React.useState(false)
-
-  const searchParams = useSearchParams()
   const dispatch = useAppDispatch()
-  const isComposeOpen = useAppSelector(selectIsComposeOpen)
-  const composeParam = searchParams.get('compose')
-  const { push } = useRouter()
-  const pathname = usePathname()
-
-  // Sync URL param with Redux state
-  React.useEffect(() => {
-    if (composeParam === 'true' && !isComposeOpen) {
-      dispatch(openCompose())
-    } else if (composeParam !== 'true' && isComposeOpen) {
-      dispatch(closeCompose())
-    }
-  }, [composeParam, isComposeOpen, dispatch])
+  const draft = useAppSelector((state) => state.mailCompose.drafts[draftId])
+  const dragControls = useDragControls()
+  const x = useMotionValue(0)
+  const activeDraftId = useAppSelector((state) => state.mailCompose.activeDraftId)
+  const isActive = activeDraftId === draftId
 
   // Maximize on mobile
   React.useEffect(() => {
@@ -55,67 +39,75 @@ export const FloatingCompose: React.FC = () => {
   }, [isMobile])
 
   const handleClose = () => {
-    dispatch(closeCompose())
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('compose')
-    const query = params.toString()
-    push(query ? `${pathname}?${query}` : pathname)
-  }
-
-  const handleOpenInNewPage = () => {
-    dispatch(closeCompose())
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('compose')
-    const query = params.toString()
-    push(query ? `${pathname}?${query}` : pathname)
-    // Extract locale from pathname (assumes /:locale/...)
-    const composePath = locale ? `/${locale}/compose` : '/compose'
-    window.open(composePath, '_blank')
+    dispatch(closeDraft({ draftId }))
   }
 
   const handleMinimize = () => {
     setIsMinimized(true)
     setIsMaximized(false)
+    x.set(0)
   }
 
   const handleRestore = () => {
     setIsMinimized(false)
     setIsMaximized(false)
+    x.set(0)
   }
 
   const handleMaximize = () => {
     setIsMaximized(true)
     setIsMinimized(false)
+    x.set(0)
   }
 
-  if (!isComposeOpen) return null
+  if (!draft) return null
 
   const getContainerClasses = () => {
+    const zClass = isActive
+      ? 'z-50 shadow-2xl'
+      : 'z-40 shadow-md opacity-95 hover:opacity-100'
+
     if (isMinimized) {
-      return 'right-14 bottom-0 h-12 w-80'
+      return `h-12 w-80 ${zClass}`
     }
     if (isMaximized) {
-      return 'inset-4 h-auto w-auto'
+      return `fixed inset-0 !m-auto h-[calc(100vh-2rem)] w-[calc(100vw-8rem)] max-w-[calc(100vw-8rem)] rounded-lg ${zClass}`
     }
-    return 'right-14 bottom-0 h-[600px] w-[700px] max-w-[calc(100vw-2rem)]'
+    return `h-[550px] w-[540px] max-w-[calc(100vw-2rem)] ${zClass}`
   }
 
+  const isDraggable = !isMinimized && !isMaximized
+
   return (
-    <div
+    <motion.div
+      style={{ x }}
+      drag={isDraggable ? 'x' : false}
+      dragControls={dragControls}
+      dragListener={false}
+      dragMomentum={false}
+      dragElastic={0}
+      onFocusCapture={() => dispatch(setActiveDraft(draftId))}
+      onPointerDownCapture={() => dispatch(setActiveDraft(draftId))}
       className={cn(
-        'bg-background fixed z-50 flex flex-col rounded-t-lg border shadow-2xl transition-all duration-300',
+        'bg-background pointer-events-auto flex flex-col border transition-all duration-300',
+        !isMaximized && 'relative rounded-t-lg',
         getContainerClasses(),
         isMaximized && 'rounded-lg'
       )}
     >
-      {/* Title bar - always visible */}
       <div
         className={cn(
-          'bg-primary text-primary-foreground flex h-12 shrink-0 cursor-pointer items-center justify-between rounded-t-lg px-4',
+          'bg-primary text-primary-foreground flex h-12 shrink-0 items-center justify-between rounded-t-lg px-4 select-none',
+          isDraggable && 'cursor-grab active:cursor-grabbing',
+          isMinimized && 'cursor-pointer',
           isMinimized && 'rounded-t-lg',
           isMaximized && 'rounded-t-lg'
         )}
+        onPointerDown={
+          isDraggable ? (event) => dragControls.start(event) : undefined
+        }
         onClick={isMinimized ? handleRestore : undefined}
+        style={{ touchAction: isDraggable ? 'none' : undefined }}
       >
         <span className="text-sm font-medium">{t('new_message.string')}</span>
         <div className="flex items-center gap-1">
@@ -158,15 +150,6 @@ export const FloatingCompose: React.FC = () => {
                   {isMaximized ? t('restore.string') : t('maximize.string')}
                 </span>
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8"
-                onClick={handleOpenInNewPage}
-              >
-                <ExternalLink className="h-4 w-4" />
-                <span className="sr-only">{t('open_in_new_page.string')}</span>
-              </Button>
             </>
           )}
           <Button
@@ -184,7 +167,6 @@ export const FloatingCompose: React.FC = () => {
         </div>
       </div>
 
-      {/* Content - hidden when minimized */}
       {!isMinimized && (
         <>
           <div className="flex-1 overflow-hidden">
@@ -201,7 +183,6 @@ export const FloatingCompose: React.FC = () => {
             </div>
           </div>
 
-          {/* Footer */}
           <div className="bg-muted/50 flex items-center justify-between border-t px-4 py-2">
             <Button variant="outline" size="sm">
               <Save className="mr-2 h-4 w-4" />
@@ -214,7 +195,7 @@ export const FloatingCompose: React.FC = () => {
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   )
 }
 
