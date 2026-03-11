@@ -4,6 +4,14 @@
             "string": "Calendars",
             "context": "Title for the calendars settings section"
         },
+        "accessibility": {
+            "icon": {
+                "delete": {
+                    "string": "Delete {name}",
+                    "context": "Accessibility message for the delete icon"
+                }
+            }
+        },
         "calendarCreationNotif": {
             "string": "Send notification when a calendar is created",
             "context": "Label for the calendar creation notification setting"
@@ -46,7 +54,7 @@
             "%U": "Sunday as the first day of the week",
             "%W": "Monday as the first day of the week",
             "%V": "First 4 days week",
-            "string": "How the week number is evaluated",
+            "string": "How the first week number is evaluated",
             "context": "Label for the setting that determines the week number format in calendar view (%U, %W or %V)"
         },
         "calendarDefault": {
@@ -82,6 +90,10 @@
             "string": "Default reminder for journal entries",
             "context": "Label for the setting that determines the default reminder for journal entries (e.g. -PT15M)"
         },
+        "reminderAfter": {
+            "string": "before",
+            "context": "example: 20min before"
+        },
         "noInvitation": {
             "string": "Prevent to be add as attendee by others users",
             "context": "Label for the setting prevent user to be add as attendees by others users"
@@ -96,6 +108,7 @@
         },
         "davForceSyncFromClient": {
             "string": "Force synchronization of events created from CalDAV clients",
+            "help-tooltip": "Warning: if events from the client are more recent, force the sync anyway",
             "context": "Label for the setting that determines whether to force synchronization of events created from CalDAV clients or not"
         },
         "categories": {
@@ -114,6 +127,12 @@
                         "context": "Accessibility message for the delete icon"
                     }
                 }
+            },
+            "Work": "Work",
+            "Family": "Family",
+            "Friends": "Friends",
+            "validation": {
+                "category-name-required": "Category name is required"
             }
         }
     }

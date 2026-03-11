@@ -17,7 +17,6 @@ const data: MailGeneralSettings = {
   signOnForward: false,
   composeIn: 'html',
   defaultFontSize: 'md',
-  displayRemoteImages: false,
   composeOpening: 'ask',
 }
 

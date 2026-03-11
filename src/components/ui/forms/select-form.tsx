@@ -9,7 +9,7 @@ import {
 import React from 'react'
 
 interface SelectFormProps {
-  options: { value: string; label: string }[]
+  options: { value: string; label: string; labelRight?: string }[]
   onValueChange: (_value: string) => void
   value: string
 }
@@ -37,7 +37,11 @@ const SelectForm: React.FC<SelectFormProps> = ({
       </FormControl>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            labelRight={option.labelRight}
+          >
             {option.label}
           </SelectItem>
         ))}

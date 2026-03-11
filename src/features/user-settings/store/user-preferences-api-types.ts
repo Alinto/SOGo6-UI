@@ -31,9 +31,9 @@ export interface UserCalendarGeneral {
   SOGO_U_EVENT_DEFAULT_CLASS: 'PUBLIC' | 'CONFIDENTIAL' | 'PRIVATE'
   SOGO_U_TASK_DEFAULT_CLASS: 'PUBLIC' | 'CONFIDENTIAL' | 'PRIVATE'
   SOGO_U_JOURNAL_DEFAULT_CLASS: 'PUBLIC' | 'CONFIDENTIAL' | 'PRIVATE'
-  SOGO_U_EVENT_DEFAULT_REMINDER: string
-  SOGO_U_TASK_DEFAULT_REMINDER: string
-  SOGO_U_JOURNAL_DEFAULT_REMINDER: string
+  SOGO_U_EVENT_DEFAULT_REMINDER: string | null
+  SOGO_U_TASK_DEFAULT_REMINDER: string | null
+  SOGO_U_JOURNAL_DEFAULT_REMINDER: string | null
 
   // Invitation
   SOGO_U_NO_INVITATION: boolean
@@ -47,7 +47,7 @@ export interface UserCalendarGeneral {
 export interface UserContactCategoryContent {
   name: string
   color: string
-  can_be_translated: boolean
+  is_default: boolean
 }
 
 export interface UserContactCategory {
@@ -79,9 +79,7 @@ export interface UserMailGeneral {
   SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: 'html' | 'text' //
   SOGO_U_MARK_READ_DELAY: number //
   SOGO_U_HIDE_INLINE_ATTACHMENT: boolean //
-  SOGO_U_DISPLAY_REMOTE_INLINE: boolean //
 
-  SOGO_U_DRAFT_AUTOSAVE: number
   SOGO_U_COMPOSE_MAIL_WINDOW: 'inline' | 'popup'
   SOGO_U_ATTACHMENT_POSITION: 'below' | 'above'
   SOGO_U_ALLOW_MAILFOLDER_SUBSCRIBE: boolean

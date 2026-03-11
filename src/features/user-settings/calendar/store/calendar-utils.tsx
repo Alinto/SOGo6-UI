@@ -26,9 +26,14 @@ export function calendarGeneralToApi(
     SOGO_U_EVENT_DEFAULT_CLASS: value.eventDefaultClass,
     SOGO_U_TASK_DEFAULT_CLASS: value.taskDefaultClass,
     SOGO_U_JOURNAL_DEFAULT_CLASS: value.journalDefaultClass,
-    SOGO_U_EVENT_DEFAULT_REMINDER: value.eventDefaultReminder,
-    SOGO_U_TASK_DEFAULT_REMINDER: value.taskDefaultReminder,
-    SOGO_U_JOURNAL_DEFAULT_REMINDER: value.journalDefaultReminder,
+    SOGO_U_EVENT_DEFAULT_REMINDER:
+      value.eventDefaultReminder === '-1' ? null : value.journalDefaultReminder,
+    SOGO_U_TASK_DEFAULT_REMINDER:
+      value.taskDefaultReminder === '-1' ? null : value.journalDefaultReminder,
+    SOGO_U_JOURNAL_DEFAULT_REMINDER:
+      value.journalDefaultReminder === '-1'
+        ? null
+        : value.journalDefaultReminder,
     SOGO_U_NO_INVITATION: value.noInvitation,
     SOGO_U_NO_INVITATION_WHITELIST: value.noInvitationWhitelist,
     SOGO_U_DO_NOT_SEND_INVIT_FROM_DAV: value.doNotSendInvitFromDav,
@@ -56,11 +61,11 @@ export function apiToCalendarGeneral(
     journalDefaultClass:
       value.USER_CALENDAR_GENERAL.SOGO_U_JOURNAL_DEFAULT_CLASS,
     eventDefaultReminder:
-      value.USER_CALENDAR_GENERAL.SOGO_U_EVENT_DEFAULT_REMINDER,
+      value.USER_CALENDAR_GENERAL.SOGO_U_EVENT_DEFAULT_REMINDER || '-1',
     taskDefaultReminder:
-      value.USER_CALENDAR_GENERAL.SOGO_U_TASK_DEFAULT_REMINDER,
+      value.USER_CALENDAR_GENERAL.SOGO_U_TASK_DEFAULT_REMINDER || '-1',
     journalDefaultReminder:
-      value.USER_CALENDAR_GENERAL.SOGO_U_JOURNAL_DEFAULT_REMINDER,
+      value.USER_CALENDAR_GENERAL.SOGO_U_JOURNAL_DEFAULT_REMINDER || '-1',
     noInvitation: value.USER_CALENDAR_GENERAL.SOGO_U_NO_INVITATION,
     noInvitationWhitelist:
       value.USER_CALENDAR_GENERAL.SOGO_U_NO_INVITATION_WHITELIST || [],

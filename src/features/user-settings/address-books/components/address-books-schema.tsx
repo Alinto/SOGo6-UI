@@ -1,4 +1,5 @@
 'use client'
+import { useTranslations } from 'next-intl'
 import { z, ZodObject, ZodType } from 'zod'
 import { ContactGeneralSettings } from '../../store/user-preferences-types'
 
@@ -8,15 +9,16 @@ type ContactsSettingsSchema = ZodObject<{
     : never
 }>
 
-const schema = z.object({
-  categories: z.array(
-    z.object({
-      name: z.string(),
-      color: z.string(),
-      canBeTranslated: z.boolean(),
-    })
-  ),
-  creationNotification: z.boolean(),
-}) satisfies ContactsSettingsSchema
+const createSchema = (t: ReturnType<typeof useTranslations>) =>
+  z.object({
+    categories: z.array(
+      z.object({
+        name: z.string().min(1, t('validation.category-name-required')),
+        color: z.string(),
+        isDefault: z.boolean(),
+      })
+    ),
+    creationNotification: z.boolean(),
+  }) satisfies ContactsSettingsSchema
 
-export { schema }
+export { createSchema }

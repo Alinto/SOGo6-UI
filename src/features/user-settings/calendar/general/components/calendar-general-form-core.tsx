@@ -10,7 +10,9 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import SelectForm from '@/components/ui/forms/select-form'
-import { Input } from '@/components/ui/input'
+import { HelpTooltip } from '@/components/ui/help-tooltip'
+import { ReminderPicker } from '@/components/ui/reminder-picker'
+import { TimePicker } from '@/components/ui/time-picker'
 import {
   UserCalendarGeneral,
   UserPreferences,
@@ -137,12 +139,20 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('workdayStartTime.string')}</FormLabel>
-                <Input
-                  type="time"
-                  id="time-picker-optional"
-                  step="1"
-                  defaultValue="09:00"
-                  className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                <TimePicker
+                  value={{
+                    hours: Number(field.value?.split(':')[0]),
+                    minutes: Number(field.value?.split(':')[1] ?? 0),
+                  }}
+                  onChange={(values) =>
+                    field.onChange(
+                      values.hours.toString().padStart(2, '0') +
+                        ':' +
+                        values.minutes.toString().padStart(2, '0')
+                    )
+                  }
+                  defaultHours={9}
+                  defaultMinutes={0}
                 />
               </FormItem>
             )}
@@ -153,12 +163,20 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('workdayEndTime.string')}</FormLabel>
-                <Input
-                  type="time"
-                  id="time-picker-optional"
-                  step="1"
-                  defaultValue="09:00"
-                  className="bg-background appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
+                <TimePicker
+                  value={{
+                    hours: Number(field.value?.split(':')[0]),
+                    minutes: Number(field.value?.split(':')[1] ?? 0),
+                  }}
+                  onChange={(values) =>
+                    field.onChange(
+                      values.hours.toString().padStart(2, '0') +
+                        ':' +
+                        values.minutes.toString().padStart(2, '0')
+                    )
+                  }
+                  defaultHours={9}
+                  defaultMinutes={0}
                 />
               </FormItem>
             )}
@@ -221,7 +239,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             name="calendarDefault"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('calendarWeekNumberFormat.string')}</FormLabel>
+                <FormLabel>{t('calendarDefault.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value.toString()}
@@ -294,29 +312,36 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('eventDefaultReminder.string')}</FormLabel>
-                //TODO
+                <ReminderPicker
+                  value={field.value}
+                  onChange={(val) => field.onChange(val)}
+                />
               </FormItem>
             )}
           />
-          {/* //TODO */}
           <FormField
             control={form.control}
             name="taskDefaultReminder"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('taskDefaultReminder.string')}</FormLabel>
-                //TODO
+                <ReminderPicker
+                  value={field.value}
+                  onChange={(val) => field.onChange(val)}
+                />
               </FormItem>
             )}
           />
-          {/* //TODO */}
           <FormField
             control={form.control}
             name="journalDefaultReminder"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('journalDefaultReminder.string')}</FormLabel>
-                //TODO
+                <ReminderPicker
+                  value={field.value}
+                  onChange={(val) => field.onChange(val)}
+                />
               </FormItem>
             )}
           />
@@ -381,6 +406,29 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                 <div className="min-w-0 flex-1">
                   <FormLabel className="mb-2 block wrap-break-word">
                     {t('doNotSendInvitFromDav.string')}
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="davForceSyncFromClient"
+            render={({ field }) => (
+              <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="min-w-0 flex-1">
+                  <FormLabel className="mb-2 flex items-center gap-1.5 wrap-break-word">
+                    {t('davForceSyncFromClient.string')}
+                    <HelpTooltip
+                      message={t('davForceSyncFromClient.help-tooltip')}
+                    />
                   </FormLabel>
                 </div>
               </FormItem>

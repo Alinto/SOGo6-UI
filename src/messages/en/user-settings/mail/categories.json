@@ -15,6 +15,14 @@
                     "context": "Accessibility message for the delete icon"
                 }
             }
+        },
+        "categories": {
+            "Work": "Travail",
+            "Family": "Famille",
+            "Friends": "Amis",
+            "validation": {
+                "category-name-required": "Category name is required"
+            }
         }
     }
 }

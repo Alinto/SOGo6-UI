@@ -37,6 +37,17 @@ interface Props {
 
 export function GeneralSettingsForm({ data, update }: Props) {
   const t = useTranslations('US_GENERAL')
+  const t_common = useTranslations('COMMON')
+
+  const today = new Date()
+  const day = String(today.getDate()).padStart(2, '0')
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const year_short = String(today.getFullYear()).slice(-2)
+  const month_short = today.toLocaleString('en', { month: 'short' })
+
+  const dayName = today.toLocaleString('en', { weekday: 'long' })
+  const month_long = today.toLocaleString('en', { month: 'long' })
+  const year = today.getFullYear()
 
   const fetchedData = data ? mapApiToGeneralSettings(data) : undefined
 
@@ -76,8 +87,16 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     onValueChange={field.onChange}
                     value={field.value ?? 'en'}
                     options={[
-                      { value: 'en', label: 'English' },
-                      { value: 'fr', label: 'French' },
+                      {
+                        value: 'en',
+                        label: t_common('language.english'),
+                        labelRight: '100%',
+                      },
+                      {
+                        value: 'fr',
+                        label: t_common('language.french'),
+                        labelRight: '10%',
+                      },
                     ]}
                   />
                   <FormMessage />
@@ -139,9 +158,18 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     onValueChange={field.onChange}
                     value={field.value}
                     options={[
-                      { value: DateFormats.DD_MMM_YY, label: '01-Feb-25' },
-                      { value: DateFormats.MM_DD_YY, label: '02/25/25' },
-                      { value: DateFormats.DD_MM_YY, label: '25/02/25' },
+                      {
+                        value: DateFormats.DD_MMM_YY,
+                        label: `${day}-${month_short}-${year_short}`,
+                      },
+                      {
+                        value: DateFormats.MM_DD_YY,
+                        label: `${month}/${year}/${year}`,
+                      },
+                      {
+                        value: DateFormats.DD_MM_YY,
+                        label: `${day}/${month}/${year}`,
+                      },
                     ]}
                   />
                   <FormMessage />
@@ -163,15 +191,15 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     options={[
                       {
                         value: DateFormats.FULL_LONG_US,
-                        label: 'Saturday, February 01, 2025',
+                        label: `${dayName}, ${month_long} ${day}, ${year}`,
                       },
                       {
                         value: DateFormats.FULL_LONG_EU,
-                        label: 'Saturday, 01 February 2025',
+                        label: `${dayName}, ${day} ${month_long} ${year}`,
                       },
                       {
                         value: DateFormats.MMM_DD_YYYY,
-                        label: 'Feb 01, 2025',
+                        label: `${month_long} ${day}, ${year}`,
                       },
                     ]}
                   />
@@ -245,7 +273,7 @@ export function GeneralSettingsForm({ data, update }: Props) {
               )}
             />
           </div>
-          <div className="grid gap-4 md:grid-cols-2 md:space-x-10">
+          <div className="grid grid-cols-2 gap-4 space-x-10">
             <FormField
               control={form.control}
               name="enableNotifications"
@@ -264,6 +292,29 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     <FormMessage />
                     <FormDescription className="wrap-break-word">
                       {t('descriptions.enable_notifications.string')}
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="avatarEnabled"
+              render={({ field }) => (
+                <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="min-w-0 flex-1">
+                    <FormLabel className="mb-2 block wrap-break-word">
+                      {t('labels.enable_external_avatar.string')}
+                    </FormLabel>
+                    <FormMessage />
+                    <FormDescription className="wrap-break-word">
+                      {t('descriptions.enable_external_avatar.string')}
                     </FormDescription>
                   </div>
                 </FormItem>

@@ -28,16 +28,20 @@ jest.mock('@/components/ui/form', () => ({
   FormDescription: ({ children, ...props }: any) => (
     <p {...props}>{children}</p>
   ),
-  FormField: ({ render, name }: any) =>
-    render({
+  FormField: ({ render, name, control }: any) => {
+    const value = name
+      ?.split('.')
+      .reduce((obj: any, key: string) => obj?.[key], control?._defaultValues)
+    return render({
       field: {
-        value: '',
+        value: value ?? '',
         onChange: jest.fn(),
         onBlur: jest.fn(),
         name,
         ref: jest.fn(),
       },
-    }),
+    })
+  },
   FormItem: ({ children, ...props }: any) => <div {...props}>{children}</div>,
   FormLabel: ({ children, ...props }: any) => (
     <label {...props}>{children}</label>
@@ -97,7 +101,9 @@ jest.mock('../../store/address-books-utils', () => ({
 }))
 
 jest.mock('../address-books-schema', () => ({
-  schema: { parse: jest.fn((v) => v) },
+  createSchema: jest.fn(() => ({
+    parse: jest.fn((v) => v),
+  })),
 }))
 
 jest.mock('@hookform/resolvers/zod', () => ({
@@ -209,7 +215,7 @@ describe('LabelsForm', () => {
         { name: 'Work', color: '#ef4444', canBeTranslated: false },
       ])
       render(<LabelsForm data={data} update={mockUpdate} />)
-      expect(screen.getAllByRole('textbox')).toHaveLength(2)
+      expect(screen.getAllByPlaceholderText('Key')).toHaveLength(2)
     })
 
     it('populates input values from initial categories', () => {
@@ -219,8 +225,10 @@ describe('LabelsForm', () => {
       ])
       render(<LabelsForm data={data} update={mockUpdate} />)
       const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
-      expect(inputs[0]).toHaveValue('Personal')
-      expect(inputs[1]).toHaveValue('Work')
+      expect(inputs[0]).toHaveValue('#3b82f6')
+      expect(inputs[1]).toHaveValue('Personal')
+      expect(inputs[2]).toHaveValue('#ef4444')
+      expect(inputs[3]).toHaveValue('Work')
     })
 
     it('renders a trash icon for each category', () => {
@@ -258,7 +266,7 @@ describe('LabelsForm', () => {
       // The popover content renders 10 color buttons
       const popover = screen.getByTestId('popover-content')
       const colorButtons = popover.querySelectorAll('button')
-      expect(colorButtons).toHaveLength(10)
+      expect(colorButtons).toHaveLength(15)
     })
 
     it('renders no category rows when categories array is empty', () => {
@@ -277,7 +285,7 @@ describe('LabelsForm', () => {
 
       await user.click(screen.getByRole('button', { name: /create/i }))
 
-      expect(screen.getAllByRole('textbox')).toHaveLength(1)
+      expect(screen.getAllByPlaceholderText('Key')).toHaveLength(1)
     })
 
     it('adds multiple rows on repeated clicks', async () => {
@@ -289,7 +297,7 @@ describe('LabelsForm', () => {
       await user.click(createBtn)
       await user.click(createBtn)
 
-      expect(screen.getAllByRole('textbox')).toHaveLength(3)
+      expect(screen.getAllByPlaceholderText('Key')).toHaveLength(3)
     })
 
     it('new row input starts empty', async () => {
@@ -299,7 +307,8 @@ describe('LabelsForm', () => {
       await user.click(screen.getByRole('button', { name: /create/i }))
 
       const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
-      expect(inputs[0]).toHaveValue('')
+      expect(inputs[0]).toHaveValue('#ef4444')
+      expect(inputs[1]).toHaveValue('')
     })
 
     it('appends new row after existing categories', async () => {
@@ -312,9 +321,11 @@ describe('LabelsForm', () => {
       await user.click(screen.getByRole('button', { name: /create/i }))
 
       const inputs = screen.getAllByRole('textbox') as HTMLInputElement[]
-      expect(inputs).toHaveLength(2)
-      expect(inputs[0]).toHaveValue('Personal')
-      expect(inputs[1]).toHaveValue('')
+      expect(inputs).toHaveLength(4)
+      expect(inputs[0]).toHaveValue('#3b82f6')
+      expect(inputs[1]).toHaveValue('Personal')
+      expect(inputs[2]).toHaveValue('#ef4444')
+      expect(inputs[3]).toHaveValue('')
     })
 
     it('new row has a trash icon', async () => {
@@ -340,7 +351,7 @@ describe('LabelsForm', () => {
 
       await user.click(screen.getAllByLabelText(/delete/i)[0])
 
-      expect(screen.getAllByRole('textbox')).toHaveLength(1)
+      expect(screen.getAllByPlaceholderText('Key')).toHaveLength(1)
     })
 
     it('removes all rows when each is deleted', async () => {

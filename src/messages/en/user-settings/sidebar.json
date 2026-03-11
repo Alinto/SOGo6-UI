@@ -58,10 +58,6 @@
                     "string": "Categories",
                     "context": "Link to the categories email settings in the settings sidebar"
                 },
-                "labels": {
-                    "string": "Labels",
-                    "context": "Link to the labels email settings in the settings sidebar"
-                },
                 "filters": {
                     "string": "Filters",
                     "context": "Link to the filters email settings in the settings sidebar"
@@ -70,9 +66,9 @@
                     "string": "Vacation",
                     "context": "Link to the vacation email settings in the settings sidebar"
                 },
-                "imap_accounts": {
-                    "string": "IMAP accounts",
-                    "context": "Link to the IMAP accounts email settings in the settings sidebar"
+                "external_accounts": {
+                    "string": "External accounts",
+                    "context": "Link to the external accounts email settings in the settings sidebar"
                 },
                 "forward": {
                     "string": "Forward",

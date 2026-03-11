@@ -18,7 +18,6 @@ const schema = z.object({
   mailAllowReceipt: z.boolean(),
   mailfolderSubscribe: z.boolean(),
   autoMarkAsReadDelay: z.number().min(0),
-  draftAutosave: z.number().min(0),
   composeMailWindow: z.enum(['inline', 'popup']),
   attachmentPosition: z.enum(['below', 'above']),
   countAllUnseen: z.boolean(),
@@ -32,7 +31,6 @@ const schema = z.object({
   signOnReply: z.boolean(),
   signOnForward: z.boolean(),
   composeIn: z.enum(['html', 'text']),
-  displayRemoteImages: z.boolean(),
 }) satisfies GeneralMailSettingsSchema
 
 export { schema }

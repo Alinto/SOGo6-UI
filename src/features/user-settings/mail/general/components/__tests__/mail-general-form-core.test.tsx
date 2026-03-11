@@ -102,7 +102,6 @@ const mockData = {
   composeMailWindow: 'popup',
   collectUnknownAddresses: false,
   collectUnknownAddressbookName: '',
-  draftAutosave: 30,
   countAllUnseen: false,
   sortByThreads: false,
   hideInlineAttachments: false,
@@ -114,7 +113,6 @@ const mockData = {
   signOnReply: false,
   signOnForward: false,
   composeIn: 'html',
-  displayRemoteImages: false,
   mailAllowReceipt: false,
   mailfolderSubscribe: false,
 }
@@ -131,7 +129,6 @@ beforeEach(() => {
         'compose_mail_window.inline.string': 'Inline',
         'collect_unknown_addresses.string': 'Collect unknown addresses',
         'collect_unknown_addressbook_name.string': 'Address book name',
-        'draft_auto_save.string': 'Draft auto save',
         'fetch_count_of_unseen_messages.string':
           'Fetch count of unseen messages',
         'sort_messages_by_threads.string': 'Sort messages by threads',
@@ -219,14 +216,6 @@ describe('MailGeneralSettingsForm', () => {
       expect(screen.getByText('Collect unknown addresses')).toBeInTheDocument()
     })
 
-    it('renders the draft auto save label', () => {
-      render(
-        <MailGeneralSettingsForm data={mockData as any} update={mockUpdate} />
-      )
-
-      expect(screen.getByText('Draft auto save')).toBeInTheDocument()
-    })
-
     it('renders the forward messages label', () => {
       render(
         <MailGeneralSettingsForm data={mockData as any} update={mockUpdate} />
@@ -252,14 +241,6 @@ describe('MailGeneralSettingsForm', () => {
       expect(screen.getByText('Sign on new')).toBeInTheDocument()
       expect(screen.getByText('Sign on reply')).toBeInTheDocument()
       expect(screen.getByText('Sign on forward')).toBeInTheDocument()
-    })
-
-    it('renders the display remote images label', () => {
-      render(
-        <MailGeneralSettingsForm data={mockData as any} update={mockUpdate} />
-      )
-
-      expect(screen.getByText('Display remote images')).toBeInTheDocument()
     })
 
     it('renders the allow read receipts label', () => {
@@ -288,7 +269,7 @@ describe('MailGeneralSettingsForm', () => {
       // collectUnknownAddresses, countAllUnseen, sortByThreads,
       // hideInlineAttachments, signOnNew, signOnReply, signOnForward,
       // displayRemoteImages, mailAllowReceipt, mailfolderSubscribe
-      expect(screen.getAllByRole('checkbox')).toHaveLength(10)
+      expect(screen.getAllByRole('checkbox')).toHaveLength(9)
     })
   })
 
@@ -299,18 +280,7 @@ describe('MailGeneralSettingsForm', () => {
       )
 
       // composeMailWindow, forwardMessages, startReply, placeSignature, composeIn
-      expect(screen.getAllByTestId('select')).toHaveLength(5)
-    })
-  })
-
-  describe('seconds inputs', () => {
-    it('renders two SecondsInput fields', () => {
-      render(
-        <MailGeneralSettingsForm data={mockData as any} update={mockUpdate} />
-      )
-
-      // draftAutosave + autoMarkAsReadDelay
-      expect(screen.getAllByTestId('seconds-input')).toHaveLength(2)
+      expect(screen.getAllByTestId('select')).toHaveLength(6)
     })
   })
 

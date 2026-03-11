@@ -75,7 +75,9 @@ jest.mock('../../../store/mail-utils', () => ({
 }))
 
 jest.mock('../mail-categories-schema', () => ({
-  schema: {},
+  createSchema: jest.fn(() => ({
+    parse: jest.fn((v) => v),
+  })),
 }))
 
 jest.mock('@hookform/resolvers/zod', () => ({

@@ -140,22 +140,6 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             )}
           />
         </div>
-        <div className="grid grid-cols-1 items-center gap-4 p-4">
-          <div className="col-end-1">
-            <FormLabel>{t('draft_auto_save.string')}</FormLabel>
-            <FormField
-              control={form.control}
-              name="draftAutosave"
-              render={({ field }) => (
-                <FormItem className="m-0">
-                  <FormControl>
-                    <SecondsInput {...field} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
         <div>
           <FormField
             control={form.control}
@@ -216,27 +200,6 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           /> */}
-        </div>
-        <div>
-          <FormField
-            control={form.control}
-            name="hideInlineAttachments"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    {t('hide_attachments_for_inline_images.string')}
-                  </FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
         </div>
         <div className="grid grid-cols-1 items-center gap-4 p-4">
           <div className="col-end-1">
@@ -388,6 +351,50 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             )}
           />
         </div>
+        <div className="grid grid-cols-2 gap-2 pt-4 pl-4">
+          <FormField
+            control={form.control}
+            name="attachmentPosition"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('attachment_position.title.string')}</FormLabel>
+                <SelectForm
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  options={[
+                    {
+                      value: 'above',
+                      label: t('attachment_position.above.string'),
+                    },
+                    {
+                      value: 'below',
+                      label: t('attachment_position.below.string'),
+                    },
+                  ]}
+                />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="hideInlineAttachments"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4 pt-8">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>
+                    {t('hide_attachments_for_inline_images.string')}
+                  </FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
         <div className="grid grid-cols-3 gap-2 pt-4">
           <FormField
             control={form.control}
@@ -493,25 +500,6 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
               </FormItem>
             )}
           /> */}
-        </div>
-        <div className="grid grid-cols-2 gap-2">
-          <FormField
-            control={form.control}
-            name="displayRemoteImages"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-y-0 space-x-3 p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>{t('display_remote_images.string')}</FormLabel>
-                </div>
-              </FormItem>
-            )}
-          />
         </div>
         <div className="grid grid-cols-2 gap-2">
           <FormField

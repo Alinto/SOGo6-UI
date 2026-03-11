@@ -12,7 +12,7 @@ export interface GeneralSettings {
 export interface ContactCategory {
   name: string
   color: string
-  canBeTranslated: boolean
+  isDefault: boolean
 }
 
 export type ContactGeneralSettings = {
@@ -30,10 +30,8 @@ export interface MailGeneralSettings {
   collectUnknownAddressbookName: string //SOGO_U_COLLECT_UNKNWON_ADDRESSBOOK_NAME #TODO
   mailAllowReceipt: boolean //SOGO_U_MAIL_ALLOW_RECEIPT #TODO
   mailfolderSubscribe: boolean //SOGO_U_ALLOW_MAILFOLDER_SUBSCRIBE #TODO
-  displayRemoteImages: boolean //SOGO_U_DISPLAY_REMOTE_INLINE
-  attachmentPosition: 'below' | 'above' //SOGO_U_ATTACHMENT_POSITION #TODO
+  attachmentPosition: 'below' | 'above' //SOGO_U_ATTACHMENT_POSITION 
   composeMailWindow: 'inline' | 'popup' //SOGO_U_COMPOSE_MAIL_WINDOW #TODO
-  draftAutosave: number //SOGO_U_DRAFT_AUTOSAVE #TODO
   hideInlineAttachments: boolean //SOGO_U_HIDE_INLINE_ATTACHMENT
   countAllUnseen: boolean //SOGO_U_SHOW_ALL_UNSEEN_COUNT
   sortByThreads: boolean // SOGO_U_SORT_BY_THREAD
@@ -62,9 +60,9 @@ export interface CalendarGeneralSettings {
   eventDefaultClass: 'PUBLIC' | 'CONFIDENTIAL' | 'PRIVATE' // SOGO_U_EVENT_DEFAULT_CLASS
   taskDefaultClass: 'PUBLIC' | 'CONFIDENTIAL' | 'PRIVATE' // SOGO_U_TASK_DEFAULT_CLASS
   journalDefaultClass: 'PUBLIC' | 'CONFIDENTIAL' | 'PRIVATE' // SOGO_U_JOURNAL_DEFAULT_CLASS
-  eventDefaultReminder: string | '-PT15M' // SOGO_U_EVENT_DEFAULT_REMINDER (e.g. "-PT15M")
-  taskDefaultReminder: string | '-PT15M' // SOGO_U_TASK_DEFAULT_REMINDER
-  journalDefaultReminder: string | '-PT15M' // SOGO_U_JOURNAL_DEFAULT_REMINDER
+  eventDefaultReminder: string | '0' // SOGO_U_EVENT_DEFAULT_REMINDER
+  taskDefaultReminder: string | '0' // SOGO_U_TASK_DEFAULT_REMINDER
+  journalDefaultReminder: string | '0' // SOGO_U_JOURNAL_DEFAULT_REMINDER
 
   // Invitation
   noInvitation: boolean // SOGO_U_NO_INVITATION

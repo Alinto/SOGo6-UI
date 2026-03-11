@@ -99,12 +99,8 @@ export function useNavItems(): NavItem[] {
                 url: '/user_settings/mail/categories',
               },
               {
-                title: 'US_SIDEBAR.settings.email.labels.string',
-                url: '/user_settings/mail/labels',
-              },
-              {
-                title: 'US_SIDEBAR.settings.email.imap_accounts.string',
-                url: '/user_settings/mail/imap_accounts',
+                title: 'US_SIDEBAR.settings.email.external_accounts.string',
+                url: '/user_settings/mail/external_accounts',
               },
               ...when(mailFilteringEnabled, {
                 title: 'US_SIDEBAR.settings.email.filters.string',

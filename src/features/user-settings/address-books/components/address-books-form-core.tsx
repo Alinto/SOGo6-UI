@@ -10,6 +10,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 
+import { ColorPicker } from '@/components/ui/color-picker'
 import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import { Input } from '@/components/ui/input'
 import {
@@ -18,7 +19,7 @@ import {
 } from '@/features/user-settings/store/user-preferences-api-types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AccessibleIcon } from '@radix-ui/react-accessible-icon'
-import { Check, Trash2 } from 'lucide-react'
+import { Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useEffect } from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -27,13 +28,7 @@ import {
   mapApiToContactGeneralSettings,
   mapContactsSettingsToApi,
 } from '../store/address-books-utils'
-import { schema } from './address-books-schema'
-
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { createSchema } from './address-books-schema'
 
 interface Props {
   data: UserPreferences | undefined
@@ -44,6 +39,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
   const t = useTranslations('US_ADDRESS_BOOKS')
 
   const fetchedData = data ? mapApiToContactGeneralSettings(data) : undefined
+  const schema = createSchema(t)
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
@@ -67,22 +63,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
 
   const { isDirty, isSubmitting } = form.formState
 
-
   const { control, register, handleSubmit } = form
-
-  // Predefined colors
-  const PREDEFINED_COLORS = [
-    '#3b82f6',
-    '#ef4444',
-    '#10b981',
-    '#f59e0b',
-    '#8b5cf6',
-    '#ec4899',
-    '#06b6d4',
-    '#84cc16',
-    '#f97316',
-    '#6366f1',
-  ]
 
   return (
     <Form {...form}>
@@ -101,7 +82,8 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             </div>
           </div>
         </div>
-
+        <br />
+        <h2 className="text-2xl">{t('categories.title')}</h2>
         <Button
           type="button"
           className="mt-4 mb-4"
@@ -109,7 +91,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             insert(fields.length, {
               name: '',
               color: '',
-              canBeTranslated: false,
+              isDefault: false,
             })
           }}
         >
@@ -124,32 +106,10 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                 render={({ field }) => (
                   <FormItem className="space-y-2">
                     <FormControl>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            style={{ backgroundColor: field.value }}
-                            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-gray-300 transition-colors hover:border-gray-400 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none"
-                          />
-                        </PopoverTrigger>
-                        <PopoverContent className="w-64 p-3" align="start">
-                          <div className="grid grid-cols-5 gap-2">
-                            {PREDEFINED_COLORS.map((color) => (
-                              <button
-                                key={color}
-                                type="button"
-                                onClick={() => field.onChange(color)}
-                                style={{ backgroundColor: color }}
-                                className="relative h-8 w-8 rounded-md border-2 border-gray-300 transition-all hover:scale-110 focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:outline-none"
-                              >
-                                {field.value === color && (
-                                  <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-md" />
-                                )}
-                              </button>
-                            ))}
-                          </div>
-                        </PopoverContent>
-                      </Popover>
+                      <ColorPicker
+                        value={field.value}
+                        onChange={field.onChange}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -161,21 +121,34 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                 render={({ field }) => (
                   <FormItem className="flex-1">
                     <FormControl>
-                      <Input {...field} placeholder="Key" type="text" />
+                      <Input
+                        {...field}
+                        value={
+                          label.isDefault
+                            ? t(`categories.${label.name}`)
+                            : field.value
+                        }
+                        placeholder="Key"
+                        type="text"
+                        disabled={label.isDefault}
+                      />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button onClick={() => remove(i)} size="icon" variant={'ghost'}>
-                <AccessibleIcon
-                  label={t('accessibility.icon.delete.string', {
-                    name: label.name,
-                  })}
-                >
-                  <Trash2 className="text-primary" />
-                </AccessibleIcon>
-              </Button>
+              {!label.isDefault && (
+                <Button onClick={() => remove(i)} size="icon" variant={'ghost'}>
+                  <AccessibleIcon
+                    label={t('accessibility.icon.delete.string', {
+                      name: label.name,
+                    })}
+                  >
+                    <Trash2 className="text-primary" />
+                  </AccessibleIcon>
+                </Button>
+              )}
             </div>
           ))}
         </div>

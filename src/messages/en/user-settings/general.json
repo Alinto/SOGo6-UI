@@ -43,6 +43,9 @@
             },
             "last": {
                 "string": "Last displayed module"
+            },
+            "enable_external_avatar": {
+                "string": "Enable external avatar"
             }
         },
         "descriptions": {
@@ -69,6 +72,9 @@
             },
             "enable_notifications": {
                 "string": "Receive notifications for new emails, calendar events, and more."
+            },
+            "enable_external_avatar": {
+                "string": "Enable external avatar (e.g., Gravatar)"
             }
         }
     }

@@ -298,20 +298,14 @@ describe('useNavItems', () => {
       expect(item?.url).toBe('/user_settings/mail/categories')
     })
 
-    it('always includes Labels at index 2', () => {
+    it('always includes IMAP Accounts at index 2', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
       const item = result.current[1].items?.[3].items?.[2]
-      expect(item?.title).toBe('US_SIDEBAR.settings.email.labels.string')
-      expect(item?.url).toBe('/user_settings/mail/labels')
-    })
-
-    it('always includes IMAP Accounts at index 3', () => {
-      mockProfile()
-      const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.[3]
-      expect(item?.title).toBe('US_SIDEBAR.settings.email.imap_accounts.string')
-      expect(item?.url).toBe('/user_settings/mail/imap_accounts')
+      expect(item?.title).toBe(
+        'US_SIDEBAR.settings.email.external_accounts.string'
+      )
+      expect(item?.url).toBe('/user_settings/mail/external_accounts')
     })
 
     it('always includes Notifications as the last item', () => {
@@ -330,8 +324,8 @@ describe('useNavItems', () => {
         mailFilteringEnabled: true,
       })
       const { result } = renderHook(() => useNavItems())
-      // general, categories, labels, imap_accounts, filters, vacation, forward, notifications
-      expect(result.current[1].items?.[3].items).toHaveLength(8)
+      // general, categories, imap_accounts, filters, vacation, forward, notifications
+      expect(result.current[1].items?.[3].items).toHaveLength(7)
     })
 
     it('has 5 items when all conditional flags are disabled', () => {
@@ -341,8 +335,8 @@ describe('useNavItems', () => {
         mailFilteringEnabled: false,
       })
       const { result } = renderHook(() => useNavItems())
-      // general, categories, labels, imap_accounts, notifications
-      expect(result.current[1].items?.[3].items).toHaveLength(5)
+      // general, categories, imap_accounts, notifications
+      expect(result.current[1].items?.[3].items).toHaveLength(4)
     })
   })
 

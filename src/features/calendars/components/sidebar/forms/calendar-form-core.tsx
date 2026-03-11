@@ -253,7 +253,10 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
             </FormLabel>
             <div className="space-y-2">
               {eventNotifications.map((notification, index) => (
-                <div key={index} className="flex flex-wrap items-center gap-2 min-w-0">
+                <div
+                  key={index}
+                  className="flex min-w-0 flex-wrap items-center gap-2"
+                >
                   <Select
                     value={notification.type}
                     onValueChange={(value) => {
@@ -294,7 +297,7 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                       })
                     }}
                   >
-                    <SelectTrigger className="flex-1 min-w-0 sm:min-w-[200px]">
+                    <SelectTrigger className="min-w-0 flex-1 sm:min-w-[200px]">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -362,7 +365,10 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
             </FormLabel>
             <div className="space-y-2">
               {allDayNotifications.map((notification, index) => (
-                <div key={index} className="flex flex-wrap items-center gap-2 min-w-0">
+                <div
+                  key={index}
+                  className="flex min-w-0 flex-wrap items-center gap-2"
+                >
                   <Select
                     value={notification.type}
                     onValueChange={(value) => {
@@ -405,10 +411,10 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                       })
                     }}
                   />
-                  <span className="text-sm whitespace-nowrap shrink-0">
+                  <span className="shrink-0 text-sm whitespace-nowrap">
                     {t(`forms.${formPrefix}.dayBefore.string`)}
                   </span>
-                  <span className="text-sm whitespace-nowrap shrink-0">
+                  <span className="shrink-0 text-sm whitespace-nowrap">
                     {t(`forms.${formPrefix}.at.string`)}
                   </span>
                   <Input

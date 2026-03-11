@@ -23,7 +23,6 @@ export function mapMailGeneralSettingsToApi(
       ? 'below'
       : 'above',
     SOGO_U_HIDE_INLINE_ATTACHMENT: values.hideInlineAttachments,
-    SOGO_U_DISPLAY_REMOTE_INLINE: values.displayRemoteImages,
     SOGO_U_REPLY_POSITION: values.startReply,
     SOGO_U_SIGNATURE_POSITION: values.placeSignature,
     SOGO_U_USE_SIGNATURE: [
@@ -36,7 +35,6 @@ export function mapMailGeneralSettingsToApi(
     SOGO_U_COMPOSE_MAIL_WINDOW:
       values.composeMailWindow === 'popup' ? 'popup' : 'inline',
     SOGO_U_MARK_READ_DELAY: values.autoMarkAsReadDelay,
-    SOGO_U_DRAFT_AUTOSAVE: values.draftAutosave,
     SOGO_U_MAIL_ALLOW_RECEIPT: values.mailAllowReceipt,
     SOGO_U_COLLECT_UNKNWON_ADDRESSES: values.collectUnknownAddresses,
     SOGO_U_COLLECT_UNKNWON_ADDRESSBOOK_NAME:
@@ -48,7 +46,6 @@ export function mapApiToMailGeneralSettings(
   data: UserPreferences
 ): MailGeneralSettings {
   return {
-    draftAutosave: data.USER_MAIL_GENERAL_SETTINGS?.SOGO_U_DRAFT_AUTOSAVE || 0,
     attachmentPosition:
       data.USER_MAIL_GENERAL_SETTINGS?.SOGO_U_ATTACHMENT_POSITION === 'below'
         ? 'below'
@@ -75,8 +72,6 @@ export function mapApiToMailGeneralSettings(
       'inline',
     hideInlineAttachments:
       data.USER_MAIL_GENERAL_SETTINGS?.SOGO_U_HIDE_INLINE_ATTACHMENT || false,
-    displayRemoteImages:
-      data.USER_MAIL_GENERAL_SETTINGS?.SOGO_U_DISPLAY_REMOTE_INLINE || false,
     startReply:
       data.USER_MAIL_GENERAL_SETTINGS?.SOGO_U_REPLY_POSITION || 'above',
     placeSignature:

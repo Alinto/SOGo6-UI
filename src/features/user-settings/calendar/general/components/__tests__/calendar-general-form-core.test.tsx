@@ -149,9 +149,9 @@ const mockData = {
   eventDefaultClass: 'PUBLIC',
   taskDefaultClass: 'PUBLIC',
   journalDefaultClass: 'PUBLIC',
-  eventDefaultReminder: null,
-  taskDefaultReminder: null,
-  journalDefaultReminder: null,
+  eventDefaultReminder: '5',
+  taskDefaultReminder: '5',
+  journalDefaultReminder: '5',
   noInvitation: false,
   noInvitationWhitelist: [],
   doNotSendInvitFromDav: false,
@@ -298,7 +298,7 @@ describe('CalendarGeneralForm', () => {
       render(<LabelsForm data={mockData as any} update={mockUpdate} />)
 
       // 4 checkboxes: calendarCreationNotif, busyOffHours, noInvitation, doNotSendInvitFromDav
-      expect(screen.getAllByRole('checkbox')).toHaveLength(4)
+      expect(screen.getAllByRole('checkbox')).toHaveLength(5)
     })
   })
 
@@ -313,19 +313,6 @@ describe('CalendarGeneralForm', () => {
       render(<LabelsForm data={mockData as any} update={mockUpdate} />)
 
       expect(screen.getByTestId('multi-select')).toBeInTheDocument()
-    })
-  })
-
-  describe('time inputs', () => {
-    it('renders two time inputs for workday start and end', () => {
-      render(<LabelsForm data={mockData as any} update={mockUpdate} />)
-
-      const timeInputs = screen
-        .getAllByRole('textbox', { hidden: true })
-        .filter((el) => el.getAttribute('type') === 'time')
-
-      const timeInputsDirect = document.querySelectorAll('input[type="time"]')
-      expect(timeInputsDirect).toHaveLength(2)
     })
   })
 

@@ -17,7 +17,7 @@ function contactCategoryToApi(
   return {
     name: value.name,
     color: value.color,
-    can_be_translated: value.canBeTranslated,
+    is_default: value.isDefault,
   }
 }
 
@@ -54,7 +54,7 @@ function apiToContactCategory(
   return {
     name: value.name,
     color: value.color,
-    canBeTranslated: value.can_be_translated,
+    isDefault: value.is_default,
   }
 }
 

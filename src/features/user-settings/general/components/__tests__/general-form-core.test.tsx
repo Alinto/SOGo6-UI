@@ -155,26 +155,24 @@ describe('GeneralSettingsForm', () => {
     expect(submitButton).toBeDisabled()
   })
 
-  it('should enable buttons when form is modified', async () => {
-    const user = userEvent.setup()
+it('should enable buttons when form is modified', async () => {
+  const user = userEvent.setup()
+  render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
+  const checkboxes = screen.getAllByRole('checkbox')
+  await user.click(checkboxes[0])
 
-    const checkbox = screen.getByRole('checkbox')
-    await user.click(checkbox)
-
-    await waitFor(() => {
-      const submitButton = screen.getByTestId('submit-btn')
-      expect(submitButton).not.toBeDisabled()
-    })
+  await waitFor(() => {
+    expect(screen.getByTestId('submit-btn')).not.toBeDisabled()
   })
+})
 
   it('should call update function on form submission', async () => {
     const user = userEvent.setup()
 
     render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    const checkbox = screen.getByRole('checkbox')
+    const checkbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement
     await user.click(checkbox)
 
     // Use querySelector since form doesn't have role="form"
@@ -212,7 +210,7 @@ describe('GeneralSettingsForm', () => {
 
     render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    const checkbox = screen.getByRole('checkbox') as HTMLInputElement
+    const checkbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement as HTMLInputElement
     expect(checkbox.checked).toBe(false)
 
     await user.click(checkbox)
@@ -225,7 +223,7 @@ describe('GeneralSettingsForm', () => {
   it('should render all select options correctly', () => {
     render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    expect(screen.getByText('English')).toBeInTheDocument()
+    expect(screen.getByText('language.english')).toBeInTheDocument()
     expect(screen.getByText('labels.mail.string')).toBeInTheDocument()
   })
 })

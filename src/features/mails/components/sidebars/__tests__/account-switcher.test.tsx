@@ -129,7 +129,7 @@ describe('AccountSwitcher', () => {
       const addBtn = screen.getByText('account_switcher.add_account.string').closest('button')!
       await user.click(addBtn)
 
-      expect(mockPush).toHaveBeenCalledWith('/user_settings/mail/imap_accounts')
+      expect(mockPush).toHaveBeenCalledWith('/user_settings/mail/external_accounts')
     })
   })
 
