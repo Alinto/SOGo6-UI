@@ -32,7 +32,7 @@ export default function MailHeaderMobile({
           <Avatar className="h-10 w-10 shrink-0">
             <AvatarImage src="/images/account-avatar.svg" />
             <AvatarFallback>
-              {from.name?.[0]?.toUpperCase() || from.email[0].toUpperCase()}
+              {from.name?.[0]?.toUpperCase() || from.email[0]?.toUpperCase()}
             </AvatarFallback>
           </Avatar>
           <div className="flex min-w-0 flex-1 flex-col gap-1">

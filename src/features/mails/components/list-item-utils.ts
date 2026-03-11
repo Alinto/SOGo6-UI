@@ -1,4 +1,4 @@
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string, forceLocale?: string): string {
   const date = new Date(dateString)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
@@ -18,16 +18,22 @@ export function formatDate(dateString: string): string {
   if (diffHours < 1 && isToday) {
     return `${diffMinutes} min ago`
   } else if (isToday) {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleTimeString(forceLocale || [], {
+      hour: 'numeric',
+      minute: '2-digit',
+    })
   } else if (isCurrentWeek) {
-    return date.toLocaleDateString([], { weekday: 'long' }) // e.g., "Monday"
+    return date.toLocaleDateString(forceLocale || [], { weekday: 'long' }) // e.g., "Monday"
   } else if (date.getFullYear() < now.getFullYear()) {
-    return date.toLocaleDateString([], {
+    return date.toLocaleDateString(forceLocale || [], {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
     })
   } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+    return date.toLocaleDateString(forceLocale || [], {
+      month: 'short',
+      day: 'numeric',
+    })
   }
 }

@@ -102,7 +102,7 @@ export function AccountSwitcher() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => push('/user_settings/mail/imap_accounts')}
+                  onClick={() => push('/user_settings/mail/external_accounts')}
                 >
                   <Plus className="mr-2 h-4 w-4" />
                   <span>{t('account_switcher.add_account.string')}</span>

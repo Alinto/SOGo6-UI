@@ -1,6 +1,7 @@
 'use client'
 
 import { useProfile } from '@/features/user-profile'
+import type { LucideIcon } from 'lucide-react'
 import {
   Calendar,
   Contact,
@@ -11,7 +12,6 @@ import {
   UserCog,
 } from 'lucide-react'
 import { useMemo } from 'react'
-import type { LucideIcon } from 'lucide-react'
 
 interface NavItem {
   title: string
@@ -82,10 +82,6 @@ export function useNavItems(): NavItem[] {
                 title: 'US_SIDEBAR.settings.calendars.categories.string',
                 url: '/user_settings/calendars/categories',
               },
-              {
-                title: 'US_SIDEBAR.settings.calendars.invitations.string',
-                url: '/user_settings/calendars/invitations',
-              },
             ],
           },
           {
@@ -99,12 +95,12 @@ export function useNavItems(): NavItem[] {
                 url: '/user_settings/mail/general',
               },
               {
-                title: 'US_SIDEBAR.settings.email.labels.string',
-                url: '/user_settings/mail/labels',
+                title: 'US_SIDEBAR.settings.email.categories.string',
+                url: '/user_settings/mail/categories',
               },
               {
-                title: 'US_SIDEBAR.settings.email.imap_accounts.string',
-                url: '/user_settings/mail/imap_accounts',
+                title: 'US_SIDEBAR.settings.email.external_accounts.string',
+                url: '/user_settings/mail/external_accounts',
               },
               ...when(mailFilteringEnabled, {
                 title: 'US_SIDEBAR.settings.email.filters.string',
@@ -127,6 +123,11 @@ export function useNavItems(): NavItem[] {
         ],
       },
     ],
-    [forwardEnabled, vacationEnabled, mailFilteringEnabled, passwordChangeEnabled]
+    [
+      forwardEnabled,
+      vacationEnabled,
+      mailFilteringEnabled,
+      passwordChangeEnabled,
+    ]
   )
 }

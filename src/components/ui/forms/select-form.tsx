@@ -9,7 +9,7 @@ import {
 import React from 'react'
 
 interface SelectFormProps {
-  options: { value: string; label: string }[]
+  options: { value: string; label: string; labelRight?: string }[]
   onValueChange: (_value: string) => void
   value: string
 }
@@ -20,12 +20,14 @@ const SelectForm: React.FC<SelectFormProps> = ({
   value,
 }) => {
   // Ensure value is always defined and matches an option
-  const selectedValue = value || options[0]?.value || ''
-  
+  const selectedValue = value || options[0]?.value || undefined
+
   // If value doesn't match any option, use the first option
-  const isValidValue = options.some(opt => opt.value === selectedValue)
-  const finalValue = isValidValue ? selectedValue : (options[0]?.value || '')
-  
+  const isValidValue = options.some((opt) => opt.value === selectedValue)
+  const finalValue = isValidValue
+    ? selectedValue
+    : options[0]?.value || undefined
+
   return (
     <Select onValueChange={onValueChange} value={finalValue}>
       <FormControl>
@@ -35,7 +37,11 @@ const SelectForm: React.FC<SelectFormProps> = ({
       </FormControl>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            labelRight={option.labelRight}
+          >
             {option.label}
           </SelectItem>
         ))}

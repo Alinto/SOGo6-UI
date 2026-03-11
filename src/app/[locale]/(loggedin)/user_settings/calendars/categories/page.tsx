@@ -1,8 +1,8 @@
-import { FeatureInProgress } from '@/components/feature-in-progress-page'
+import CalendarsCategoriesSettings from '@/features/user-settings/calendar/categories'
 import React from 'react'
 
 const Page: React.FC = () => {
-  return <FeatureInProgress />
+  return <CalendarsCategoriesSettings />
 }
 
 export default Page

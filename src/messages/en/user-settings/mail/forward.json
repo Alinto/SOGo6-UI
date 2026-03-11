@@ -108,7 +108,7 @@
       }
     }
   },
-  "NOTIFICATIONS": {
+  "NOTIFICATIONS_FORWARD": {
     "US_MAIL_FORWARD": {
       "success": {
         "title": {

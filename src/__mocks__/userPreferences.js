@@ -1,0 +1,48 @@
+export const UserGeneralMock = {
+  SOGO_U_LANGUAGE: 'en',
+  SOGO_U_TIME_FORMAT: '24H',
+  SOGO_U_FIRST_MODULE: 'mail',
+  SOGO_U_BROWSER_NOTIF: false,
+  SOGO_U_EXT_AVATAR_ENABLED: false,
+  SOGO_U_LONG_DATE: 'Saturday, February 01, 2025',
+  SOGO_U_SHORT_DATE: '01-Feb-25',
+  SOGO_U_TIMEZONE: 'Europe/London',
+}
+
+export const UserSecurityMock = {
+  SOGO_U_MFA_ENABLE: false,
+}
+
+export const UserContactGeneralMock = {
+  SOGO_U_ADDRESSBOOK_CREATION_NOTIF: false,
+}
+
+export const UserCalendarGeneralMock = {
+  SOGO_U_NO_INVITATION: false,
+  SOGO_U_BUSY_OFF_HOURS: false,
+  SOGO_U_CALENDAR_DEFAULT: 'Work',
+  SOGO_U_WORKDAY_END_TIME: '18:00',
+  SOGO_U_TASK_DEFAULT_CLASS: 'Normal',
+  SOGO_U_WORKDAY_START_TIME: '09:00',
+  SOGO_U_EVENT_DEFAULT_CLASS: 'Normal',
+  SOGO_U_CALENDAR_DAYS_SHOWED: [1, 2, 3, 4, 5],
+  SOGO_U_JOURNAL_DEFAULT_CLASS: 'Normal',
+  SOGO_U_TASK_DEFAULT_REMINDER: '15 minutes before',
+  SOGO_U_EVENT_DEFAULT_REMINDER: '15 minutes before',
+  SOGO_U_CALENDAR_CREATION_NOTIF: false,
+  SOGO_U_CALENDAR_VIEW_FIRST_DAY: 1,
+  SOGO_U_JOURNAL_DEFAULT_REMINDER: '15 minutes before',
+  SOGO_U_DAV_FORCE_SYNC_FROM_CLIENT: false,
+  SOGO_U_DO_NOT_SEND_INVIT_FROM_DAV: false,
+  SOGO_U_CALENDAR_WEEK_NUMBER_FORMAT: 'ISO',
+}
+
+export const UserPreferencesMock = {
+  USER_GENERAL: UserGeneralMock,
+  USER_SECURITY: UserSecurityMock,
+  USER_CONTACT_GENERAL: UserContactGeneralMock,
+  USER_CALENDAR_GENERAL: UserCalendarGeneralMock,
+  USER_CONTACT_CATEGORY: {},
+  USER_CALENDAR_CATEGORY: {},
+  USER_MAIL_GENERAL_SETTINGS: {},
+}
