@@ -25,20 +25,20 @@
             "context": "Checkbox to show recipients or sender full email in mailboxes"
         },
         "hide_attachments_for_inline_images": {
-            "string": "Do no show inline images as attachment file in the mail viewer",
+            "string": "Hide attachments for inline images",
             "context": "Checkbox to hide attachments for inline images"
         },
         "automatically_mark_messages_as_read": {
-            "string": "Mark messages as read after (defined) seconds",
+            "string": "Automatically mark messages as read",
             "context": "Checkbox to automatically mark messages as read"
         },
-        "collect_unknown_addresses": {
-            "string": "Save unknown mail addresses into an addressbook",
-            "context": "Checkbox to collect unknown mail addresses"
+        "immediately_on_display": {
+            "string": "Immediately on display",
+            "context": "Checkbox to mark messages as read immediately on display"
         },
-        "collect_unknown_addressbook_name": {
-            "string": "Addressbook name",
-            "context": "Input for the unknown email addressbook name"
+        "after_displaying_for_seconds": {
+            "string": "After displaying for XXXX seconds",
+            "context": "Checkbox to mark messages as read after displaying for seconds"
         },
         "forward_messages": {
             "title": {
@@ -80,18 +80,6 @@
             "below": {
                 "string": "below the quote",
                 "context": "Checkbox to start replying at the top"
-            }
-        },
-        "attachment_position": {
-            "title": {
-                "string": "Place the attachment",
-                "context": "Dropdown label to know where to place the attachment"
-            },
-            "above": {
-                "string": "above the mail"
-            },
-            "below": {
-                "string": "below the mail"
             }
         },
         "sign_on": {
@@ -147,24 +135,6 @@
             "inside_webmail": {
                 "string": "Open compose inside webmail",
                 "context": "Dropdown label to know where to open compose in"
-            }
-        },
-        "mail_allow_receipt": {
-            "string": "Allow mail to ask for receipts",
-            "context": "Checkbox to allow mail to ask for receipts"
-        },
-        "mail_folder_subscribe": {
-            "string": "Show subscribed mailboxes only",
-            "context": "Checkbox to show subscribed mailboxes only"
-        },
-        "compose_mail_window": {
-            "string": "Compose mail window",
-            "context": "Dropdown label to know where to open compose in",
-            "popup": {
-                "string": "Compose email in a popup"
-            },
-            "inline": {
-                "string": "Compose email inside the webmail"
             }
         }
     }

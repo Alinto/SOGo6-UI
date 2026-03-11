@@ -2,14 +2,13 @@ import { FormLoader, LazyWrapper } from '@/components/lazy-components'
 import type React from 'react'
 import { lazy } from 'react'
 
-import type { UserMailGeneral } from '@/features/user-settings/store/user-preferences-api-types'
-import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
-
 // Import types
+import type { MailGeneralSettings } from '../mail-general-types'
+import type { useUpdateMailGeneralSettingsMutation } from '../store/mail-general-settings-api'
 
 interface Props {
-  data: UserPreferences | undefined
-  update: (_data: UserMailGeneral) => void
+  data: MailGeneralSettings | undefined
+  update: ReturnType<typeof useUpdateMailGeneralSettingsMutation>[0]
 }
 
 // Lazy load the mail general form component
@@ -21,5 +20,4 @@ const LazyMailGeneralForm: React.FC<Props> = (props) => (
   </LazyWrapper>
 )
 
-export { LazyMailGeneralForm as GeneralSettingsForm }
 export default LazyMailGeneralForm

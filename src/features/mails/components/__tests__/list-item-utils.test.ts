@@ -10,9 +10,9 @@ describe('list-item-utils', () => {
       expect(result).toMatch(/^\d+ min ago$/)
     })
 
-    it("should format today's time in a time format", () => {
+    it("should format today's date as HH:mm", () => {
       const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000)
-      const result = formatDate(twoHoursAgo.toISOString(), 'en-US')
+      const result = formatDate(twoHoursAgo.toISOString())
       expect(result).toMatch(/^\d{1,2}:\d{2}\s(AM|PM)$/)
     })
 
@@ -22,7 +22,7 @@ describe('list-item-utils', () => {
       const dateFromThisWeek = new Date(
         now.getTime() - daysAgo * 24 * 60 * 60 * 1000
       )
-      const result = formatDate(dateFromThisWeek.toISOString(), 'en-US')
+      const result = formatDate(dateFromThisWeek.toISOString())
       const weekdays = [
         'Sunday',
         'Monday',
@@ -37,14 +37,16 @@ describe('list-item-utils', () => {
 
     it('should format dates from previous years as "MMM D, YYYY"', () => {
       const lastYear = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
-      const result = formatDate(lastYear.toISOString(), 'en-US')
+      const result = formatDate(lastYear.toISOString())
       // Should contain month, day, and year separated by spaces and comma
       expect(result).toMatch(/^[A-Z][a-z]{2}\s\d{1,2},\s\d{4}$/)
     })
 
     it('should format dates from this year as "MMM D"', () => {
-      const mockNow = new Date(2025, 10, 8) // November 8, 2025
+      // Mock the current date to ensure consistent test results
+      const mockNow = new Date(2025, 10, 8) // October 8, 2025
       const realDateConstructor = Date
+
       jest.spyOn(global, 'Date').mockImplementation((...args: any[]) => {
         if (args.length === 0) {
           return mockNow as any
@@ -52,10 +54,11 @@ describe('list-item-utils', () => {
         return new realDateConstructor(...args) as any
       })
 
-      // January 8, 2025 — same year, clearly outside current week
-      const sameYear = new Date(2025, 0, 8)
-      const result = formatDate(sameYear.toISOString(), 'en-US')
+      // Get a date from 2 months ago (but still this year)
+      const twoMonthsAgo = new Date(2025, 8, 8) // August 8, 2024 (before Jan 8, 2025)
+      const result = formatDate(twoMonthsAgo.toISOString())
       expect(result).toMatch(/^[A-Z][a-z]{2}\s\d{1,2}$/)
+
       jest.restoreAllMocks()
     })
 
@@ -66,9 +69,9 @@ describe('list-item-utils', () => {
 
     it('should handle edge case of exactly 1 hour ago', () => {
       const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
-      const result = formatDate(oneHourAgo.toISOString(), 'en-US')
+      const result = formatDate(oneHourAgo.toISOString())
       // Should be formatted as time, not as "60 min ago"
-      expect(result).toMatch(/^\d{1,2}:\d{2}/)
+      expect(result).toMatch(/^\d{1,2}:\d{2}\s(AM|PM)$/)
     })
 
     it('should handle future dates gracefully', () => {

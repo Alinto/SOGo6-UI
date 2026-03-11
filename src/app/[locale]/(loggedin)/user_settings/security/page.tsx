@@ -1,8 +1,14 @@
-import TotpSettings from '@/features/user-settings/security'
-import React from 'react'
+import PasswordForm from '@/features/user-settings/security/form/password-form'
+import TotpForm from '@/features/user-settings/security/form/totp-form'
 
-const Page: React.FC = () => {
-  return <TotpSettings />
+const ProfilePage = () => {
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      <h2 className="text-2xl">Security</h2>
+      <PasswordForm />
+      <TotpForm />
+    </div>
+  )
 }
 
-export default Page
+export default ProfilePage

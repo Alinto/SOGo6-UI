@@ -1,14 +1,12 @@
-import { UserPreferencesMock } from '@/__mocks__/userPreferences.js'
-import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useTranslations } from 'next-intl'
 import { GeneralSettingsForm } from '../general-form-core'
+import { GeneralSettings } from '../../general-types'
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(),
-  useLocale: () => 'en',
 }))
 
 // Mock UI components
@@ -85,7 +83,17 @@ jest.mock('@/components/ui/forms/radio-group-form', () => {
   }
 })
 
-const mockData: UserPreferences = UserPreferencesMock
+const mockData: GeneralSettings = {
+  language: 'en',
+  timezone: 'Europe/Paris',
+  shortDateStyle: '01-Feb-25',
+  longDateStyle: 'Saturday, February 01, 2025',
+  timeStyle: '15:02',
+  defaultView: 'Mail',
+  refreshFrequency: 'Every 5 minutes',
+  enableNotifications: false,
+  animationLevel: 'normal',
+}
 
 describe('GeneralSettingsForm', () => {
   const mockUpdate = jest.fn()
@@ -130,7 +138,9 @@ describe('GeneralSettingsForm', () => {
     expect(screen.getByText('Long Date Format')).toBeInTheDocument()
     expect(screen.getByText('Time Format')).toBeInTheDocument()
     expect(screen.getByText('Default View')).toBeInTheDocument()
+    expect(screen.getByText('Refresh Frequency')).toBeInTheDocument()
     expect(screen.getByText('Enable Notifications')).toBeInTheDocument()
+    expect(screen.getByText('Animation Level')).toBeInTheDocument()
   })
 
   it('should render with undefined data and default to English', () => {
@@ -155,24 +165,26 @@ describe('GeneralSettingsForm', () => {
     expect(submitButton).toBeDisabled()
   })
 
-it('should enable buttons when form is modified', async () => {
-  const user = userEvent.setup()
-  render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
+  it('should enable buttons when form is modified', async () => {
+    const user = userEvent.setup()
 
-  const checkboxes = screen.getAllByRole('checkbox')
-  await user.click(checkboxes[0])
+    render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-  await waitFor(() => {
-    expect(screen.getByTestId('submit-btn')).not.toBeDisabled()
+    const checkbox = screen.getByRole('checkbox')
+    await user.click(checkbox)
+
+    await waitFor(() => {
+      const submitButton = screen.getByTestId('submit-btn')
+      expect(submitButton).not.toBeDisabled()
+    })
   })
-})
 
   it('should call update function on form submission', async () => {
     const user = userEvent.setup()
 
     render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    const checkbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement
+    const checkbox = screen.getByRole('checkbox')
     await user.click(checkbox)
 
     // Use querySelector since form doesn't have role="form"
@@ -210,7 +222,7 @@ it('should enable buttons when form is modified', async () => {
 
     render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    const checkbox = screen.getAllByRole('checkbox')[0] as HTMLInputElement as HTMLInputElement
+    const checkbox = screen.getByRole('checkbox') as HTMLInputElement
     expect(checkbox.checked).toBe(false)
 
     await user.click(checkbox)
@@ -223,7 +235,17 @@ it('should enable buttons when form is modified', async () => {
   it('should render all select options correctly', () => {
     render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
 
-    expect(screen.getByText('language.english')).toBeInTheDocument()
-    expect(screen.getByText('labels.mail.string')).toBeInTheDocument()
+    expect(screen.getByText('English')).toBeInTheDocument()
+    expect(screen.getByText('Europe/Paris')).toBeInTheDocument()
+    expect(screen.getByText('Mail')).toBeInTheDocument()
+    expect(screen.getByText('Every 5 minutes')).toBeInTheDocument()
+  })
+
+  it('should render all radio button options', () => {
+    render(<GeneralSettingsForm data={mockData} update={mockUpdate} />)
+
+    expect(screen.getByText('None')).toBeInTheDocument()
+    expect(screen.getByText('Low')).toBeInTheDocument()
+    expect(screen.getByText('Normal')).toBeInTheDocument()
   })
 })

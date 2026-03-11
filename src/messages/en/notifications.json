@@ -1,43 +1,31 @@
 {
     "NOTIFICATIONS": {
-        "success": {
-            "string": "Success",
-            "developer_comment": "Operation completed successfully."
-        },
         "title": {
             "success": {
                 "string": "Success",
-                "developer_comment": "Operation completed successfully."
+                "devolopper_comment": "Operation completed successfully."
             },
             "error": {
                 "string": "Error",
-                "developer_comment": "An error occurred during the operation. {error}"
+                "devolopper_comment": "An error occurred during the operation."
             },
             "warning": {
                 "string": "Warning",
-                "developer_comment": "Please check the details and proceed with caution."
-            },
-            "info": {
-                "string": "Info",
-                "developer_comment": "Informational message."
+                "devolopper_comment": "Please check the details and proceed with caution."
             }
         },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",
-                "developer_comment": "The operation was successful."
+                "devolopper_comment": "The operation was successful."
             },
             "error": {
                 "string": "An error occurred during the operation.",
-                "developer_comment": "There was an error while processing your request."
+                "devolopper_comment": "There was an error while processing your request."
             },
             "warning": {
                 "string": "Please check the details and proceed with caution.",
-                "developer_comment": "This is a warning message to alert the user."
-            },
-            "info": {
-                "string": "This is an informational message.",
-                "developer_comment": "This message provides information to the user."
+                "devolopper_comment": "This is a warning message to alert the user."
             }
         }
     }

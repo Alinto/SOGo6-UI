@@ -22,7 +22,7 @@ export const NotificationProvider = () => {
       const showToast = () => {
         switch (type) {
           case 'error':
-            toast.error(`${t(title)}`, {
+            toast.error(t(title), {
               description: t(message),
               duration: duration || undefined,
               onDismiss: () => {

@@ -1,9 +1,5 @@
 {
     "US_SECURITY": {
-        "title": {
-            "string": "Security",
-            "context": "Title for the Security settings section in user settings"
-        },
         "totp": {
             "title": {
                 "string": "Two-Factor Authentication (TOTP)",

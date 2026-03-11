@@ -1,16 +1,14 @@
 import { FormLoader, LazyWrapper } from '@/components/lazy-components'
-import {
-  UserContactPreferences,
-  UserPreferences,
-} from '@/features/user-settings/store/user-preferences-api-types'
 import type React from 'react'
 import { lazy } from 'react'
 
 // Import types
+import type { AddressBook } from '../address-books-types'
+import type { useUpdateAddressBooksSettingsMutation } from '../store/address-books-api'
 
 interface Props {
-  data: UserPreferences | undefined
-  update: (_data: UserContactPreferences) => void
+  data: AddressBook[] | undefined
+  update: ReturnType<typeof useUpdateAddressBooksSettingsMutation>[0]
 }
 
 // Lazy load the address books form component

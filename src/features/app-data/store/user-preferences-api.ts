@@ -5,7 +5,7 @@ import { UserPreferences } from '../types/user-preferences'
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getPreferences: builder.query<UserPreferences, void>({
-      query: () => 'api/user/v1/preferences',
+      query: () => '/preferences',
       providesTags: ['preferences'],
     }),
   }),

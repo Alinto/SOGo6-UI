@@ -1,14 +1,13 @@
 import { FormLoader, LazyWrapper } from '@/components/lazy-components'
-import {
-  UserGeneral,
-  UserPreferences,
-} from '@/features/user-settings/store/user-preferences-api-types'
 import type React from 'react'
 import { lazy } from 'react'
 
+// Import types
+import type { GeneralSettings } from '../general-types'
+
 interface Props {
-  data: UserPreferences | undefined
-  update: (_data: UserGeneral) => void
+  data: GeneralSettings | undefined
+  update: (_data: GeneralSettings) => void
 }
 
 // Lazy load the general form component

@@ -132,6 +132,7 @@
         "string": "Failed to load IMAP accounts. Please try again later."
       }
     },
+
     "placeholders": {
       "imapServer": {
         "string": "imap.example.com"
@@ -208,7 +209,7 @@
       }
     }
   },
-  "NOTIFICATIONS_IMAP_ACCOUNTS": {
+  "NOTIFICATIONS": {
     "US_MAIL_IMAP_ACCOUNTS": {
       "success": {
         "title": {

@@ -1,6 +1,6 @@
 'use client'
 import { z, ZodObject, ZodType } from 'zod'
-import { GeneralSettings } from '../../store/user-preferences-types'
+import { GeneralSettings } from '../general-types'
 
 type GeneralSettingsSchema = ZodObject<{
   [K in keyof Partial<GeneralSettings>]: K extends keyof GeneralSettings
@@ -15,8 +15,9 @@ const schema = z.object({
   longDateStyle: z.string(),
   timeStyle: z.string(),
   defaultView: z.string(),
+  refreshFrequency: z.string(),
   enableNotifications: z.boolean(),
-  avatarEnabled: z.boolean(),
+  animationLevel: z.string(),
 }) satisfies GeneralSettingsSchema
 
 export { schema }

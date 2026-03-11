@@ -1,6 +1,5 @@
 'use client'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TimezoneSelect } from '@/components/ui/dates/timezones'
 import {
   Form,
   FormControl,
@@ -11,70 +10,40 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
+import RadioGroupForm from '@/components/ui/forms/radio-group-form'
 import SelectForm from '@/components/ui/forms/select-form'
-import type { UserGeneral } from '@/features/user-settings/store/user-preferences-api-types'
-import { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
-import {
-  DateFormats,
-  MODULES,
-  TIMEFORMAT,
-} from '@/features/user-settings/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import {
-  mapApiToGeneralSettings,
-  mapGeneralSettingsToApi,
-} from '../store/general-utils'
+import { GeneralSettings } from '../general-types'
 import { schema } from './general-schema'
 
 interface Props {
-  data: UserPreferences | undefined
-  update: (data: UserGeneral) => void
+  data: GeneralSettings | undefined
+  update: (data: GeneralSettings) => void
 }
 
 export function GeneralSettingsForm({ data, update }: Props) {
   const t = useTranslations('US_GENERAL')
-  const t_common = useTranslations('COMMON')
-
-  const today = new Date()
-  const day = String(today.getDate()).padStart(2, '0')
-  const month = String(today.getMonth() + 1).padStart(2, '0')
-  const year_short = String(today.getFullYear()).slice(-2)
-  const month_short = today.toLocaleString('en', { month: 'short' })
-
-  const dayName = today.toLocaleString('en', { weekday: 'long' })
-  const month_long = today.toLocaleString('en', { month: 'long' })
-  const year = today.getFullYear()
-
-  const fetchedData = data ? mapApiToGeneralSettings(data) : undefined
 
   const form = useForm<z.infer<typeof schema>>({
     resolver: zodResolver(schema),
-    defaultValues: fetchedData,
+    defaultValues: {
+      ...data,
+      language: data?.language || 'en',
+    },
   })
 
-  useEffect(() => {
-    if (data) {
-      form.reset(mapApiToGeneralSettings(data))
-    }
-  }, [data])
-
   function onSubmit(values: z.infer<typeof schema>) {
-    update(mapGeneralSettingsToApi(values))
+    update(values)
   }
 
   const { isDirty, isSubmitting } = form.formState
 
   return (
     <Form {...form}>
-      <form
-        onSubmit={form.handleSubmit(onSubmit, (err) =>
-          console.log('errors sbmit', err)
-        )}
-      >
+      <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="grid gap-4 space-y-5">
           <div className="grid grid-cols-2 gap-4 space-x-10">
             <FormField
@@ -87,19 +56,9 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     onValueChange={field.onChange}
                     value={field.value ?? 'en'}
                     options={[
-                      {
-                        value: 'en',
-                        label: t_common('language.english'),
-                        labelRight: '100%',
-                      },
-                      {
-                        value: 'fr',
-                        label: t_common('language.french'),
-                        labelRight: '10%',
-                      },
+                      { value: 'en', label: 'English' },
                     ]}
                   />
-                  <FormMessage />
                   <FormDescription>
                     {t('descriptions.language.string')}
                   </FormDescription>
@@ -107,25 +66,6 @@ export function GeneralSettingsForm({ data, update }: Props) {
               )}
             />
             <FormField
-              control={form.control}
-              name="timezone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('labels.timezone.string')}</FormLabel>
-                  <TimezoneSelect
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    className="w-[280px]"
-                  />
-                  <FormMessage />
-                  <FormDescription>
-                    {t('descriptions.timezone.string')}
-                  </FormDescription>
-                </FormItem>
-              )}
-            />
-
-            {/* <FormField
               control={form.control}
               name="timezone"
               render={({ field }) => (
@@ -139,13 +79,12 @@ export function GeneralSettingsForm({ data, update }: Props) {
                       { value: 'America/New_York', label: 'America/New_York' },
                     ]}
                   />
-                  <FormMessage />
                   <FormDescription>
                     {t('descriptions.timezone.string')}
                   </FormDescription>
                 </FormItem>
               )}
-            /> */}
+            />
           </div>
           <div className="grid gap-4 lg:grid-cols-3 lg:space-x-10">
             <FormField
@@ -158,21 +97,11 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     onValueChange={field.onChange}
                     value={field.value}
                     options={[
-                      {
-                        value: DateFormats.DD_MMM_YY,
-                        label: `${day}-${month_short}-${year_short}`,
-                      },
-                      {
-                        value: DateFormats.MM_DD_YY,
-                        label: `${month}/${year}/${year}`,
-                      },
-                      {
-                        value: DateFormats.DD_MM_YY,
-                        label: `${day}/${month}/${year}`,
-                      },
+                      { value: '01-Feb-25', label: '01-Feb-25' },
+                      { value: '02/25/25', label: '02/25/25' },
+                      { value: '25/02/25', label: '25/02/25' },
                     ]}
                   />
-                  <FormMessage />
                   <FormDescription>
                     {t('descriptions.short_date_style.string')}
                   </FormDescription>
@@ -190,16 +119,16 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     value={field.value}
                     options={[
                       {
-                        value: DateFormats.FULL_LONG_US,
-                        label: `${dayName}, ${month_long} ${day}, ${year}`,
+                        value: 'Saturday, February 01, 2025',
+                        label: 'Saturday, February 01, 2025',
                       },
                       {
-                        value: DateFormats.FULL_LONG_EU,
-                        label: `${dayName}, ${day} ${month_long} ${year}`,
+                        value: 'Saturday, 01 February 2025',
+                        label: 'Saturday, 01 February 2025',
                       },
                       {
-                        value: DateFormats.MMM_DD_YYYY,
-                        label: `${month_long} ${day}, ${year}`,
+                        value: 'Feb 01, 2025',
+                        label: 'Feb 01, 2025',
                       },
                     ]}
                   />
@@ -221,20 +150,19 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     value={field.value}
                     options={[
                       {
-                        value: TIMEFORMAT.HOUR_PM,
+                        value: '3:02 PM',
                         label: '3:02 PM',
                       },
                       {
-                        value: TIMEFORMAT.HOUR,
+                        value: '15:02',
                         label: '15:02',
                       },
                       {
-                        value: TIMEFORMAT.HOUR_SECONDS,
+                        value: '15:02:00',
                         label: '15:02:00',
                       },
                     ]}
                   />
-                  <FormMessage />
                   <FormDescription>
                     {t('descriptions.time_style.string')}
                   </FormDescription>
@@ -253,43 +181,55 @@ export function GeneralSettingsForm({ data, update }: Props) {
                     onValueChange={field.onChange}
                     value={field.value}
                     options={[
-                      { value: MODULES.MAIL, label: t('labels.mail.string') },
-                      {
-                        value: MODULES.CALENDAR,
-                        label: t('labels.calendar.string'),
-                      },
-                      {
-                        value: MODULES.CONTACTS,
-                        label: t('labels.contacts.string'),
-                      },
-                      { value: MODULES.LAST, label: t('labels.last.string') },
+                      { value: 'Mail', label: 'Mail' },
+                      { value: 'Calendar', label: 'Calendar' },
+                      { value: 'Contacts', label: 'Contacts' },
                     ]}
                   />
-                  <FormMessage />
                   <FormDescription>
                     {t('descriptions.default_view.string')}
                   </FormDescription>
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="refreshFrequency"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('labels.refresh_frequency.string')}</FormLabel>
+                  <SelectForm
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    options={[
+                      { value: 'Every 5 minutes', label: 'Every 5 minutes' },
+                      { value: 'Every 10 minutes', label: 'Every 10 minutes' },
+                      { value: 'Every 15 minutes', label: 'Every 15 minutes' },
+                    ]}
+                  />
+                  <FormDescription>
+                    {t('descriptions.refresh_frequency.string')}
+                  </FormDescription>
+                </FormItem>
+              )}
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4 space-x-10">
+          <div className="grid gap-4 md:grid-cols-2 md:space-x-10">
             <FormField
               control={form.control}
               name="enableNotifications"
               render={({ field }) => (
-                <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 w-full">
                   <FormControl>
                     <Checkbox
                       checked={field.value}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <div className="min-w-0 flex-1">
-                    <FormLabel className="mb-2 block wrap-break-word">
+                  <div className="flex-1 min-w-0">
+                    <FormLabel className="wrap-break-word block mb-2">
                       {t('labels.enable_notifications.string')}
                     </FormLabel>
-                    <FormMessage />
                     <FormDescription className="wrap-break-word">
                       {t('descriptions.enable_notifications.string')}
                     </FormDescription>
@@ -299,24 +239,21 @@ export function GeneralSettingsForm({ data, update }: Props) {
             />
             <FormField
               control={form.control}
-              name="avatarEnabled"
+              name="animationLevel"
               render={({ field }) => (
-                <FormItem className="flex w-full flex-row items-start space-y-0 space-x-3">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                  <div className="min-w-0 flex-1">
-                    <FormLabel className="mb-2 block wrap-break-word">
-                      {t('labels.enable_external_avatar.string')}
-                    </FormLabel>
-                    <FormMessage />
-                    <FormDescription className="wrap-break-word">
-                      {t('descriptions.enable_external_avatar.string')}
-                    </FormDescription>
-                  </div>
+                <FormItem>
+                  <FormLabel>{t('labels.animation_level.string')}</FormLabel>
+                  <RadioGroupForm
+                    horizontal
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    options={[
+                      { value: 'none', label: 'None' },
+                      { value: 'low', label: 'Low' },
+                      { value: 'normal', label: 'Normal' },
+                    ]}
+                  />
+                  <FormMessage />
                 </FormItem>
               )}
             />

@@ -19,6 +19,21 @@ describe('Select Component', () => {
     )
     expect(screen.getByText('Trigger')).toBeInTheDocument()
   })
+  it('matches snapshot', () => {
+    const { asFragment } = render(
+      <Select>
+        <SelectTrigger>Trigger</SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Label</SelectLabel>
+            <SelectItem value="item1">Item 1</SelectItem>
+            <SelectItem value="item2">Item 2</SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+    )
+    expect(asFragment()).toMatchSnapshot()
+  })
   it('renders SelectContent with children', () => {
     render(
       <Select>

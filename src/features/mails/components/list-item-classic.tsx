@@ -93,8 +93,8 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
           <AvatarImage src="/images/account-avatar.svg" />
           <AvatarFallback>
             {from.name.length
-              ? from.name[0]?.toUpperCase()
-              : from.email[0]?.toUpperCase()}
+              ? from.name[0].toUpperCase()
+              : from.email[0].toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>

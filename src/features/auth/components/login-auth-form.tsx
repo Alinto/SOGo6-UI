@@ -4,9 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
-import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
-import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
+import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { useRouter } from '@/lib/i18n/navigation'
 import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
@@ -60,8 +59,6 @@ export function LoginAuthForm({
   const [serverError, setServerError] = React.useState<string | null>(null)
 
   const passwordSchema = React.useMemo(() => createPasswordSchema(t), [t])
-
-  const [getUserPreferences] = useLazyGetUserPreferencesQuery()
 
   const {
     register,

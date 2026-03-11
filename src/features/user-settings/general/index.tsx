@@ -6,21 +6,15 @@ import React from 'react'
 import GeneralSettingsForm from './components/general-form'
 
 import { ThemeProvider } from '@/components/theme-provider'
-// import {
-//   useGetGeneralSettingsQuery,
-//   useUpdateGeneralSettingsMutation,
-// } from './store/general-settings-api'
-
 import {
-  useGetUserPreferencesQuery,
-  useUpdateUserPreferencesGeneralMutation,
-} from '@/features/user-settings/store/user-preferences-api'
+  useGetGeneralSettingsQuery,
+  useUpdateGeneralSettingsMutation,
+} from './store/general-settings-api'
 
 const GeneralSettings: React.FC = () => {
   const t = useTranslations('US_GENERAL')
-  const { data, error, isFetching } = useGetUserPreferencesQuery()
-  const [updateData] = useUpdateUserPreferencesGeneralMutation()
-
+  const { data, error, isFetching } = useGetGeneralSettingsQuery()
+  const [updateData] = useUpdateGeneralSettingsMutation()
   if (error) {
     return 'ERROR'
   }
@@ -31,7 +25,7 @@ const GeneralSettings: React.FC = () => {
       {isFetching ? (
         <PageLoader />
       ) : (
-        <GeneralSettingsForm data={data?.data} update={updateData} />
+        <GeneralSettingsForm data={data} update={updateData} />
       )}
     </div>
   )

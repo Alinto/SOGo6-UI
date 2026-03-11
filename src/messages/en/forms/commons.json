@@ -38,9 +38,6 @@
         },
         "enabled": {
             "string": "Enabled"
-        },
-        "emails": {
-            "placeholder": "Add email address and press Enter"
         }
     }
 }

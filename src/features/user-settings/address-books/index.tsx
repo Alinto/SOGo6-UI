@@ -4,16 +4,15 @@ import { useTranslations } from 'next-intl'
 import React from 'react'
 import AddressBooksSettingsForm from './components/address-books-form'
 import LabelsFormSkeleton from './components/skeleton'
-
 import {
-  useGetUserPreferencesQuery,
-  useUpdateUserPreferencesContactMutation,
-} from '@/features/user-settings/store/user-preferences-api'
+  useGetAddressBooksSettingsQuery,
+  useUpdateAddressBooksSettingsMutation,
+} from './store/address-books-api'
 
 const AddressBooksSettings: React.FC = () => {
   const t = useTranslations('US_ADDRESS_BOOKS')
-  const { data, error, isFetching } = useGetUserPreferencesQuery()
-  const [updateAddressBooks] = useUpdateUserPreferencesContactMutation()
+  const { data, error, isFetching } = useGetAddressBooksSettingsQuery()
+  const [updateAddressBooks] = useUpdateAddressBooksSettingsMutation()
   if (error) {
     return 'ERROR'
   }
@@ -23,10 +22,7 @@ const AddressBooksSettings: React.FC = () => {
       {isFetching ? (
         <LabelsFormSkeleton />
       ) : (
-        <AddressBooksSettingsForm
-          data={data?.data}
-          update={updateAddressBooks}
-        />
+        <AddressBooksSettingsForm data={data} update={updateAddressBooks} />
       )}
     </div>
   )
