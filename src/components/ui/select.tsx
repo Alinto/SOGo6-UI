@@ -16,8 +16,10 @@ const SelectValue = SelectPrimitive.Value
 // See: https://react.dev/reference/react/forwardRef#forwardref
 const SelectTrigger = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Trigger>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger> & {
+    rightContent?: React.ReactNode
+  }
+>(({ className, children, rightContent, ...props }, ref) => (
   <SelectPrimitive.Trigger
     ref={ref}
     className={cn(
@@ -26,7 +28,12 @@ const SelectTrigger = React.forwardRef<
     )}
     {...props}
   >
-    {children}
+    <div className="flex w-full items-center justify-between pr-2">
+      <span>{children}</span>
+      {rightContent && (
+        <span className="text-muted-foreground">{rightContent}</span>
+      )}
+    </div>
     <SelectPrimitive.Icon asChild>
       <ChevronDown className="h-4 w-4 opacity-50" />
     </SelectPrimitive.Icon>
@@ -115,8 +122,10 @@ SelectLabel.displayName = SelectPrimitive.Label.displayName
 
 const SelectItem = React.forwardRef<
   React.ComponentRef<typeof SelectPrimitive.Item>,
-  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
->(({ className, children, ...props }, ref) => (
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item> & {
+    labelRight?: string
+  }
+>(({ className, children, labelRight, ...props }, ref) => (
   <SelectPrimitive.Item
     ref={ref}
     className={cn(
@@ -130,7 +139,12 @@ const SelectItem = React.forwardRef<
         <Check className="h-4 w-4" />
       </SelectPrimitive.ItemIndicator>
     </span>
-    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    <div className="flex w-full justify-between pr-4">
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+      {labelRight && (
+        <span className="text-muted-foreground">{labelRight}</span>
+      )}
+    </div>
   </SelectPrimitive.Item>
 ))
 SelectItem.displayName = SelectPrimitive.Item.displayName
