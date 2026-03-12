@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Archive, Mail, MailOpen, Paperclip, Star, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
@@ -29,8 +29,9 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
 }) => {
   const t = useTranslations('MAILS_LIST')
   const { push } = useRouter()
-  const pathname = usePathname()
-  const { mail_id } = useParams()
+  const { account, folder } = useParams()
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '')
+  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const { id, from, flagged, hasAttachment } = data
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
 
@@ -39,12 +40,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
       <div
         className={`group hover:bg-secondary flex min-h-10 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${isSelectedClass} ${data.seen ? '' : 'bg-primary/15 font-semibold'}`}
         onClick={() => {
-          if (mail_id) {
-            const newPath = `${pathname}/${id}`
-            push(newPath)
-          } else {
-            push(`${pathname}/${id}`)
-          }
+          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
         }}
       >
         <span

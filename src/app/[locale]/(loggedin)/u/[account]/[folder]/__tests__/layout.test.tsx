@@ -47,6 +47,14 @@ jest.mock(
     }
   }
 )
+jest.mock('@/features/mails/components/list/list-toolbar', () => ({
+  __esModule: true,
+  default: () => <div data-testid="list-toolbar">Toolbar</div>,
+}))
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: (fn: (s: { mailLayout: { mode: string } }) => string) =>
+    fn({ mailLayout: { mode: 'full' } }),
+}))
 
 describe('Mail Folder Layout', () => {
   const mockChildren = (
@@ -87,9 +95,9 @@ describe('Mail Folder Layout', () => {
     const { container } = render(
       <Layout classic={mockClassic}>{mockChildren}</Layout>
     )
-    const contentDiv = container.querySelector('[class*="overflow-auto"]')
+    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
     expect(contentDiv).toBeInTheDocument()
-    expect(contentDiv).toHaveClass('w-full', 'overflow-auto', 'p-1')
+    expect(contentDiv).toHaveClass('w-full', 'overflow-hidden', 'p-1')
   })
 
   it('should render SidebarFastAccess component', () => {
@@ -152,7 +160,7 @@ describe('Mail Folder Layout', () => {
     const { container } = render(
       <Layout classic={mockClassic}>{mockChildren}</Layout>
     )
-    const contentDiv = container.querySelector('[class*="overflow-auto"]')
+    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
     expect(contentDiv).toBeInTheDocument()
   })
 

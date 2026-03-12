@@ -1,4 +1,5 @@
 import { mailComposeReducer } from '@/features/mails/store'
+import mailLayoutReducer from '@/features/mails/store/mail-layout-slice'
 import { notificationsReducer } from '@/features/notifications'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
@@ -21,6 +22,7 @@ const loadPreloadedState = () => {
 const staticReducers = {
   auth: authSlice,
   mailCompose: mailComposeReducer,
+  mailLayout: mailLayoutReducer,
   notifications: notificationsReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
   [sseApi.reducerPath]: sseApi.reducer,
