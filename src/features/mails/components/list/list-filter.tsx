@@ -1,6 +1,13 @@
 'use client'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { TooltipWrapper } from '@/components/ui/tooltip'
+import { setMailLayout } from '@/features/mails/store/mail-layout-slice'
+import type { MailLayoutMode } from '@/features/mails/store/mail-layout-slice'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import type { RootState } from '@/lib/redux/store'
+import { Maximize2, PanelRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
@@ -11,8 +18,12 @@ const ListFilter: React.FC = () => {
   const pathname = usePathname()
   const { push } = useRouter()
   const filter = searchParams.get('filter') || 'all'
+  const isMobile = useIsMobile()
+  const dispatch = useAppDispatch()
+  const mailLayoutMode = useAppSelector((state: RootState) => state.mailLayout.mode)
+
   return (
-    <div>
+    <div className="flex items-center gap-2">
       <ToggleGroup
         variant={'outline'}
         type="single"
@@ -59,6 +70,36 @@ const ListFilter: React.FC = () => {
           {t('filter.attachments.string')}
         </ToggleGroupItem>
       </ToggleGroup>
+
+      {!isMobile && (
+        <ToggleGroup
+          variant="outline"
+          type="single"
+          value={mailLayoutMode}
+          onValueChange={(value) => {
+            if (value) {
+              dispatch(setMailLayout(value as MailLayoutMode))
+            }
+          }}
+        >
+          <ToggleGroupItem
+            value="full"
+            aria-label={t('layout.full.string')}
+          >
+            <TooltipWrapper content={t('layout.full.string')}>
+              <Maximize2 size={16} />
+            </TooltipWrapper>
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="split"
+            aria-label={t('layout.split.string')}
+          >
+            <TooltipWrapper content={t('layout.split.string')}>
+              <PanelRight size={16} />
+            </TooltipWrapper>
+          </ToggleGroupItem>
+        </ToggleGroup>
+      )}
     </div>
   )
 }

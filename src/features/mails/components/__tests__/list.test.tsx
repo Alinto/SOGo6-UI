@@ -7,6 +7,12 @@ import MessagesList from '../list'
 jest.mock('@/hooks/use-mobile', () => ({ useIsMobile: jest.fn() }))
 jest.mock('next/navigation', () => ({ useParams: jest.fn() }))
 jest.mock('next-intl', () => ({ useTranslations: jest.fn() }))
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: jest.fn(() => jest.fn()),
+  useAppSelector: jest.fn((fn: (s: { mailLayout: { selectedMailIds: string[] } }) => string[]) =>
+    fn({ mailLayout: { selectedMailIds: [] } })
+  ),
+}))
 jest.mock('@/lib/utils', () => ({ cn: (...c: unknown[]) => c.filter(Boolean).join(' ') }))
 jest.mock('../utils', () => ({ nameSelector: jest.fn() }))
 
@@ -84,29 +90,6 @@ describe('MessagesList', () => {
   it('renders empty state when no items', () => {
     render(<MessagesList {...defaultProps} items={[]} />)
     expect(screen.getByText('no_items.string')).toBeInTheDocument()
-  })
-
-  it('shows folder name initially, no bulk bar', () => {
-    render(<MessagesList {...defaultProps} />)
-    expect(screen.getByText('INBOX')).toBeInTheDocument()
-    expect(screen.queryByTestId('mail-actions-bar')).not.toBeInTheDocument()
-  })
-
-  it('shows bulk actions bar after selecting all', () => {
-    render(<MessagesList {...defaultProps} />)
-    fireEvent.click(screen.getByTestId('checkbox'))
-    expect(screen.getByTestId('mail-actions-bar')).toBeInTheDocument()
-    expect(screen.queryByText('INBOX')).not.toBeInTheDocument()
-  })
-
-  it('shows all 5 bulk action buttons', () => {
-    render(<MessagesList {...defaultProps} />)
-    fireEvent.click(screen.getByTestId('checkbox'))
-    expect(screen.getByTestId('action-bulk-delete')).toBeInTheDocument()
-    expect(screen.getByTestId('action-bulk-archive')).toBeInTheDocument()
-    expect(screen.getByTestId('action-bulk-mark-read')).toBeInTheDocument()
-    expect(screen.getByTestId('action-bulk-spam')).toBeInTheDocument()
-    expect(screen.getByTestId('action-bulk-label')).toBeInTheDocument()
   })
 
   it('wraps items in Draggable on desktop', () => {

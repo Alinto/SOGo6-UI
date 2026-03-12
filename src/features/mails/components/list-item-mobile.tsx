@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Paperclip, Star } from 'lucide-react'
 import { useParams } from 'next/navigation'
 import React, { memo, useCallback, useRef } from 'react'
@@ -22,8 +22,9 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   onHandleCheckboxClick,
 }) => {
   const { push } = useRouter()
-  const pathname = usePathname()
-  const { mail_id, folder } = useParams()
+  const { account, folder } = useParams()
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '')
+  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const [onDelete] = useMoveToTrashMutation()
   const { id, from, flagged, hasAttachment } = data
   const containerRef = useRef<HTMLDivElement>(null)
@@ -103,12 +104,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
             onClick={() => {
               // Don't navigate if we were swiping
               if (isSwipingRef.current) return
-              if (mail_id) {
-                const newPath = `${pathname}/${id}`
-                push(newPath)
-              } else {
-                push(`${pathname}/${id}`)
-              }
+              push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
             }}
           >
             <div className="flex flex-row items-center gap-2">

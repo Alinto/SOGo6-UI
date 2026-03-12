@@ -47,6 +47,17 @@
                 "string": "Attachments"
             }
         },
+        "layout": {
+            "full": {
+                "string": "Full view"
+            },
+            "split": {
+                "string": "Split view"
+            }
+        },
+        "select_message": {
+            "string": "Select a message to read"
+        },
         "no_items": {
             "string": "No message found."
         },

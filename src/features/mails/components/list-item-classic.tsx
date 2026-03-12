@@ -1,16 +1,16 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { Paperclip, Star } from 'lucide-react'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import React, { useState } from 'react'
-import { ImapMessageList } from '../mails-types'
+import { ImapMessagesList } from '../mails-types'
 
 interface ListItemClassicProps {
-  data: ImapMessageList
+  data: ImapMessagesList
   isSelected: boolean
-  onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessageList) => void
+  onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
 }
 
 const ListItemClassic: React.FC<ListItemClassicProps> = ({
@@ -19,11 +19,20 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   onHandleCheckboxClick,
 }) => {
   const { push } = useRouter()
+  const { account, folder } = useParams()
   const pathname = usePathname()
-  const { mail_id } = useParams()
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '')
+  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const { id, from, flagged, hasAttachment } = data
   const [isHovered, setIsHovered] = useState(false)
-  const isSelectedClass = isSelected ? 'bg-primary/20' : ''
+
+  // Highlight when this mail is open in the right panel
+  const isOpenInPanel = decodeURIComponent(pathname).endsWith(`/${id}`)
+  const isSelectedClass = isSelected
+    ? 'bg-primary/20'
+    : isOpenInPanel
+      ? 'bg-secondary'
+      : ''
 
   function formatDate(dateString: string): string {
     const date = new Date(dateString)
@@ -62,20 +71,13 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   return (
     <>
       <div
-        className={`hover:bg-primary/50 flex h-14 cursor-pointer flex-row items-center gap-2 p-2 ${
+        className={`hover:bg-secondary flex h-14 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${
           isSelectedClass
         } ${data.seen ? '' : 'bg-primary/15 font-semibold'} `}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
-          if (mail_id) {
-            // If mail_id is present, we are in a detail view, so we just update the URL
-            const newPath = `${pathname}/${id}`
-            push(newPath)
-          } else {
-            // If mail_id is not present, we are in a list view, so we navigate to the detail view
-            push(`${pathname}/${id}`)
-          }
+          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
         }}
       >
         {(isHovered || isSelected) && (
@@ -121,9 +123,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
             >
               {data.subject}
             </span>
-            {hasAttachment && (
-              <Paperclip className="ml-2 h-4 w-4 flex-shrink-0" />
-            )}
+            {hasAttachment && <Paperclip className="ml-2 h-4 w-4 shrink-0" />}
           </div>
         </div>
       </div>

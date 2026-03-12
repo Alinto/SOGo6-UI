@@ -78,6 +78,7 @@ const Page = () => {
       hasNextPage={data?.hasNextPage ?? false}
       hasPreviousPage={data?.hasPreviousPage ?? false}
       isLoading={isLoading}
+      hideToolbar
     />
   )
 }
