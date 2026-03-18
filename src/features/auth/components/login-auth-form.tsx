@@ -111,6 +111,7 @@ export function LoginAuthForm({
             cn: payload.cn,
             email: payload.email,
           },
+          rememberMe: data.rememberMe,
         })
       )
 
