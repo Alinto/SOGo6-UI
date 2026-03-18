@@ -13,6 +13,7 @@ export type Action = {
   id: string
   icon: React.ReactNode
   title?: string
+  disabled?: boolean
 }
 
 export type MailActionsBarProps = {

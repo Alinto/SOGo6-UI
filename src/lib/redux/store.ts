@@ -1,5 +1,6 @@
 import { mailComposeReducer } from '@/features/mails/store'
 import mailLayoutReducer from '@/features/mails/store/mail-layout-slice'
+import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
 import { notificationsReducer } from '@/features/notifications'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
@@ -23,6 +24,7 @@ const staticReducers = {
   auth: authSlice,
   mailCompose: mailComposeReducer,
   mailLayout: mailLayoutReducer,
+  mailNavigation: mailNavigationReducer,
   notifications: notificationsReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
   [sseApi.reducerPath]: sseApi.reducer,

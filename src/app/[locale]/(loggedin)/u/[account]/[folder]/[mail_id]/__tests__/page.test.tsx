@@ -1,6 +1,21 @@
 import '@testing-library/jest-dom'
+import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
+import { apiSlice } from '@/lib/redux/api/api-slice'
+import { configureStore } from '@reduxjs/toolkit'
 import { render, screen } from '@testing-library/react'
+import { Provider } from 'react-redux'
 import MailPage from '../page'
+
+const createTestStore = (preloadedState: Record<string, unknown> = {}) =>
+  configureStore({
+    reducer: {
+      mailNavigation: mailNavigationReducer,
+      [apiSlice.reducerPath]: apiSlice.reducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(apiSlice.middleware),
+    preloadedState,
+  })
 
 // Mock des hooks Next.js
 jest.mock('next/navigation', () => ({
@@ -89,7 +104,11 @@ describe('MailPage', () => {
       isError: false,
     })
 
-    render(<MailPage />)
+    render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
     expect(screen.getByTestId('mail-skeleton')).toBeInTheDocument()
   })
 
@@ -101,7 +120,11 @@ describe('MailPage', () => {
       isError: true,
     })
 
-    const { container } = render(<MailPage />)
+    const { container } = render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
     expect(container.firstChild).toBeNull()
   })
 
@@ -116,7 +139,11 @@ describe('MailPage', () => {
     })
     useIsMobile.mockReturnValue(false)
 
-    render(<MailPage />)
+    render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
 
     expect(screen.getByTestId('mail-return-button')).toBeInTheDocument()
     expect(screen.getByTestId('mail-subject')).toBeInTheDocument()
@@ -135,7 +162,11 @@ describe('MailPage', () => {
     })
     useIsMobile.mockReturnValue(true)
 
-    render(<MailPage />)
+    render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
 
     expect(screen.getByTestId('mail-header-mobile')).toBeInTheDocument()
     expect(screen.queryByTestId('mail-header')).not.toBeInTheDocument()
@@ -149,7 +180,11 @@ describe('MailPage', () => {
       isError: false,
     })
 
-    const { container } = render(<MailPage />)
+    const { container } = render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
     expect(container.firstChild).toBeNull()
   })
 
@@ -161,7 +196,11 @@ describe('MailPage', () => {
       isError: false,
     })
 
-    render(<MailPage />)
+    render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
     expect(screen.getByTestId('mail-content')).toBeInTheDocument()
   })
 })

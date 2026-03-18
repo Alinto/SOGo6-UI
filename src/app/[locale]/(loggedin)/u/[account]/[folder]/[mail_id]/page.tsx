@@ -11,6 +11,7 @@ import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useAppSelector } from '@/lib/redux/hooks'
 import { useRouter } from '@/lib/i18n/navigation'
 
 import { Action, ActionId } from '@/features/mails/components/mail/types'
@@ -40,6 +41,27 @@ const MailPage: React.FC = () => {
   const { push } = useRouter()
   const { folder, account, mail_id } = params
   const isMobile = useIsMobile()
+  const mailNavigation = useAppSelector((state) => state.mailNavigation)
+
+  const folderKey = `${Array.isArray(account) ? account[0] : account ?? ''}/${Array.isArray(folder) ? (folder as string[]).join('/') : folder ?? ''}`
+  const isNavigationValid = mailNavigation.folderKey === folderKey
+  const currentIndex = isNavigationValid
+    ? mailNavigation.orderedIds.indexOf(mail_id)
+    : -1
+
+  const prevId =
+    currentIndex > 0 ? mailNavigation.orderedIds[currentIndex - 1] : null
+  const nextId =
+    currentIndex !== -1 &&
+    currentIndex < mailNavigation.orderedIds.length - 1
+      ? mailNavigation.orderedIds[currentIndex + 1]
+      : null
+
+  const isFirstOfPage = currentIndex === 0
+  const isLastOfPage =
+    currentIndex === mailNavigation.orderedIds.length - 1
+  const hasPrevPage = mailNavigation.page > 1
+  const hasNextPage = mailNavigation.page < mailNavigation.totalPages
 
   const { data, isLoading, isError } = useGetMailQuery({
     folder,
@@ -70,19 +92,27 @@ const MailPage: React.FC = () => {
   }
 
   const handleGoBack = () => {
-    //implement navigation to the previous mail
-    let prevId = Number(mail_id) - 1
-    prevId = prevId < 1 ? 1 : prevId
-    push(
-      `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(prevId))}`
-    )
+    if (prevId) {
+      push(
+        `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(prevId)}`
+      )
+    } else if (isNavigationValid && isFirstOfPage && hasPrevPage) {
+      push(
+        `/u/${account}/${encodeURIComponent(folder)}?page=${mailNavigation.page - 1}`
+      )
+    }
   }
 
   const handleGoNext = () => {
-    // Implement navigation to the next mail
-    push(
-      `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(Number(mail_id) + 1))}`
-    )
+    if (nextId) {
+      push(
+        `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(nextId)}`
+      )
+    } else if (isNavigationValid && isLastOfPage && hasNextPage) {
+      push(
+        `/u/${account}/${encodeURIComponent(folder)}?page=${mailNavigation.page + 1}`
+      )
+    }
   }
   const actions = {
     mainMobile: [
@@ -106,11 +136,17 @@ const MailPage: React.FC = () => {
         id: ActionId.GO_BACK,
         icon: <ChevronLeft size={18} />,
         title: t('previous-mail.string'),
+        disabled:
+          !prevId &&
+          !(isNavigationValid && isFirstOfPage && hasPrevPage),
       },
       {
         id: ActionId.GO_NEXT,
         icon: <ChevronRight size={18} />,
         title: t('next-mail.string'),
+        disabled:
+          !nextId &&
+          !(isNavigationValid && isLastOfPage && hasNextPage),
       },
     ],
   }

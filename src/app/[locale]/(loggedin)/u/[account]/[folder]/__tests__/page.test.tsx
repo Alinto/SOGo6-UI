@@ -1,7 +1,22 @@
+import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
+import { apiSlice } from '@/lib/redux/api/api-slice'
+import { configureStore } from '@reduxjs/toolkit'
 import { render, screen, waitFor } from '@testing-library/react'
+import { Provider } from 'react-redux'
 import { useParams, useSearchParams } from 'next/navigation'
 import Page from '../page'
+
+const createTestStore = (preloadedState: Record<string, unknown> = {}) =>
+  configureStore({
+    reducer: {
+      mailNavigation: mailNavigationReducer,
+      [apiSlice.reducerPath]: apiSlice.reducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(apiSlice.middleware),
+    preloadedState,
+  })
 
 // Mock dependencies
 jest.mock('next/navigation', () => ({
@@ -72,7 +87,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
     expect(screen.getByTestId('messages-list')).toBeInTheDocument()
   })
 
@@ -83,7 +102,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
     expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
   })
 
@@ -106,7 +129,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     await waitFor(() => {
       expect(screen.getByTestId('items-count')).toHaveTextContent('2')
@@ -127,7 +154,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(screen.getByTestId('current-page')).toHaveTextContent('2')
     expect(screen.getByTestId('total')).toHaveTextContent('50')
@@ -154,7 +185,11 @@ describe('Mail Folder Page', () => {
       folder: 'Sent',
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -181,7 +216,11 @@ describe('Mail Folder Page', () => {
       folder: ['Archive', 'Old'],
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -211,7 +250,11 @@ describe('Mail Folder Page', () => {
       refetch: mockRefetch,
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -237,7 +280,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(screen.getByTestId('items-count')).toHaveTextContent('0')
   })
@@ -249,7 +296,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(screen.getByTestId('items-count')).toHaveTextContent('0')
     expect(screen.getByTestId('current-page')).toHaveTextContent('1')
@@ -273,7 +324,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    const { rerender } = render(<Page />)
+    const { rerender } = render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     // Verify that the hook was called with INBOX
     expect(useGetFolderMessagesQuery).toHaveBeenLastCalledWith(
@@ -288,7 +343,11 @@ describe('Mail Folder Page', () => {
     })
 
     // Re-render the component (simulate the route change)
-    rerender(<Page />)
+    rerender(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     // Verify that the hook was called with Drafts
     await waitFor(() => {
@@ -309,7 +368,11 @@ describe('Mail Folder Page', () => {
       refetch: mockRefetch,
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     // refetch should not be called immediately when isLoading is true
     expect(mockRefetch).not.toHaveBeenCalled()
@@ -332,7 +395,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -355,7 +422,11 @@ describe('Mail Folder Page', () => {
       refetch: jest.fn(),
     })
 
-    render(<Page />)
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
 
     // When isLoading is true, the skeleton is shown regardless of data
     expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()

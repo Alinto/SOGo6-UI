@@ -2,16 +2,20 @@
 
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
+import { setMailNavigation } from '@/features/mails/store/mail-navigation-slice'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
+import { useAppDispatch } from '@/lib/redux/hooks'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const EXCLUDED_PARAMS = ['filter']
 
 const Page = () => {
-  const { folder } = useParams()
+  const { folder, account } = useParams()
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '')
+  const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
   const activeSort = searchParams.get('sort') ?? 't_asc'
@@ -35,6 +39,18 @@ const Page = () => {
     folder: folderString,
     params,
   })
+
+  useEffect(() => {
+    if (!data?.mails) return
+    dispatch(
+      setMailNavigation({
+        folderKey: `${accountString}/${folderString}`,
+        orderedIds: data.mails.map((m) => m.id),
+        page: data.page ?? 1,
+        totalPages: data.totalPages ?? 1,
+      })
+    )
+  }, [data, accountString, folderString, dispatch])
 
   const filteredMails = React.useMemo(() => {
     const mails = data?.mails ?? []

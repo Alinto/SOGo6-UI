@@ -24,6 +24,9 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({ draftId }) => 
   const [isMaximized, setIsMaximized] = React.useState(false)
   const dispatch = useAppDispatch()
   const draft = useAppSelector((state) => state.mailCompose.drafts[draftId])
+  const subject = useAppSelector(
+    (state) => state.mailCompose.drafts[draftId]?.subject ?? ''
+  )
   const dragControls = useDragControls()
   const x = useMotionValue(0)
   const activeDraftId = useAppSelector((state) => state.mailCompose.activeDraftId)
@@ -109,7 +112,9 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({ draftId }) => 
         onClick={isMinimized ? handleRestore : undefined}
         style={{ touchAction: isDraggable ? 'none' : undefined }}
       >
-        <span className="text-sm font-medium">{t('new_message.string')}</span>
+        <span className="truncate max-w-[180px] text-sm font-medium">
+          {subject.trim() || t('new_message.string')}
+        </span>
         <div className="flex items-center gap-1">
           {isMinimized ? (
             <Button

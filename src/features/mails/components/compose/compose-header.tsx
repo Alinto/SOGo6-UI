@@ -18,6 +18,7 @@ import React, { useCallback } from 'react'
 import {
   setPendingInsert,
   updateRecipients,
+  updateSubject,
 } from '../../store/mail-compose-slice'
 
 interface ComposeHeaderProps {
@@ -39,6 +40,9 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
   const dispatch = useAppDispatch()
   const activeDraftId = useAppSelector(
     (state) => state.mailCompose.activeDraftId
+  )
+  const subject = useAppSelector((state) =>
+    activeDraftId ? state.mailCompose.drafts[activeDraftId]?.subject ?? '' : ''
   )
 
   const {
@@ -106,6 +110,14 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
     const link = `${jitsiBaseUrl}/${meetId}`
     dispatch(setPendingInsert(`<a href="${link}">${link}</a>`))
   }, [jitsiBaseUrl, dispatch])
+
+  const handleSubjectChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (!activeDraftId) return
+      dispatch(updateSubject({ draftId: activeDraftId, subject: e.target.value }))
+    },
+    [activeDraftId, dispatch]
+  )
 
   const allIdentities = [
     ...(mainAccount?.identities ?? []),
@@ -236,6 +248,8 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
 
       <div className="mt-2 flex w-full items-center">
         <Input
+          value={subject}
+          onChange={handleSubjectChange}
           placeholder={t('subject.string')}
           className="w-full rounded-tr-none rounded-br-none border-r-0"
         />
