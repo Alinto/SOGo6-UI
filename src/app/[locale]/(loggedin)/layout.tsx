@@ -1,6 +1,8 @@
 'use client'
 
 import AppHeader from '@/components/app-header'
+import { useAppSelector } from '@/lib/redux/hooks'
+import { useRouter } from '@/lib/i18n/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -33,6 +35,15 @@ function ProfilePrefetch() {
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const token = useAppSelector((state) => state.auth.token)
+  const { push } = useRouter()
+
+  useEffect(() => {
+    if (!token) {
+      push('/auth/login')
+    }
+  }, [token, push])
+
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
       distance: 10,
@@ -51,6 +62,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     const config = getSSEConfigForEnvironment()
     connect(config)
   }, [connect])
+
+  if (!token) return null
 
   return (
     <>
