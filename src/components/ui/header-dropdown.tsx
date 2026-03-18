@@ -10,8 +10,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { logout } from '@/features/auth/components/store/auth.slice'
 import { useProfile } from '@/features/user-profile/hooks/use-profile'
-import { useAppSelector } from '@/lib/redux/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
 import {
@@ -30,6 +31,7 @@ const HeaderDropdown: React.FC = () => {
   const t = useTranslations('HEADER')
   const isMobile = useIsMobile()
   const { theme } = useTheme()
+  const dispatch = useAppDispatch()
   const { push } = useRouter()
   const { user, isLoading, isError } = useProfile()
 
@@ -142,7 +144,10 @@ const HeaderDropdown: React.FC = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/auth/login')}
+          onClick={() => {
+            dispatch(logout())
+            push('/auth/login')
+          }}
         >
           <LogOut className="pr-2" />
           {t('logout.string')}

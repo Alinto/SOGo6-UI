@@ -1,4 +1,5 @@
 import '@testing-library/jest-dom'
+import authReducer from '@/features/auth/components/store/auth.slice'
 import { configureStore } from '@reduxjs/toolkit'
 import { render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
@@ -95,9 +96,10 @@ jest.mock('react-dom', () => ({
 }))
 
 describe('Layout Component', () => {
-  const createMockStore = () =>
+  const createMockStore = (preloadedState = {}) =>
     configureStore({
       reducer: {
+        auth: authReducer,
         mailCompose: (
           state = {
             openDraftIds: [],
@@ -106,10 +108,21 @@ describe('Layout Component', () => {
           }
         ) => state,
       },
+      preloadedState,
     })
 
-  const renderWithProvider = (children: React.ReactNode) => {
-    const store = createMockStore()
+  const renderWithProvider = (
+    children: React.ReactNode,
+    preloadedState = {}
+  ) => {
+    const store = createMockStore({
+      auth: {
+        token: 'mock-token',
+        user: { uid: 'test-user', cn: 'Test User', email: 'test@test.com' },
+        rememberMe: false,
+      },
+      ...preloadedState,
+    })
 
     return render(
       <Provider store={store}>
