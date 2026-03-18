@@ -17,17 +17,21 @@ export const localStorageSyncMiddleware: Middleware<object, RootState> =
       const { auth } = store.getState()
       try {
         if (auth.token) {
-          // Save auth state to localStorage if token exists
-          localStorage.setItem(
-            STORAGE_KEY,
-            JSON.stringify({
-              token: auth.token,
-              user: auth.user,
-            })
-          )
+          const payload = JSON.stringify({
+            token: auth.token,
+            user: auth.user,
+            rememberMe: auth.rememberMe,
+          })
+          if (auth.rememberMe) {
+            localStorage.setItem(STORAGE_KEY, payload)
+            sessionStorage.removeItem(STORAGE_KEY)
+          } else {
+            sessionStorage.setItem(STORAGE_KEY, payload)
+            localStorage.removeItem(STORAGE_KEY)
+          }
         } else {
-          // Remove from localStorage if logged out
           localStorage.removeItem(STORAGE_KEY)
+          sessionStorage.removeItem(STORAGE_KEY)
         }
       } catch (error) {
         console.error('Error saving auth to localStorage:', error)
@@ -44,38 +48,39 @@ interface StoredAuthState {
     cn: string
     email: string
   }
+  rememberMe: boolean
 }
 
 /**
- * Loads the auth state from localStorage on startup
- * @returns The saved auth state or undefined if nothing is found
+ * Loads the auth state from localStorage or sessionStorage on startup.
+ * Checks localStorage first (rememberMe), then sessionStorage.
  */
 export const loadAuthFromStorage = (): StoredAuthState | undefined => {
-  // Prevent execution on server side
-  if (typeof window === 'undefined') {
-    return undefined
-  }
+  if (typeof window === 'undefined') return undefined
 
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (!saved) return undefined
+    const raw =
+      localStorage.getItem(STORAGE_KEY) ?? sessionStorage.getItem(STORAGE_KEY)
+    if (!raw) return undefined
 
-    const parsed = JSON.parse(saved)
-
-    // Basic structure validation
+    const parsed = JSON.parse(raw)
     if (
       parsed &&
       typeof parsed.token === 'string' &&
       parsed.user &&
       typeof parsed.user.uid === 'string'
     ) {
-      return parsed as StoredAuthState
+      return {
+        token: parsed.token,
+        user: parsed.user,
+        rememberMe: parsed.rememberMe ?? false,
+      }
     }
-
     return undefined
   } catch (error) {
-    console.error('Error loading auth from localStorage:', error)
-    localStorage.removeItem(STORAGE_KEY) // Clean corrupted data
+    console.error('Error loading auth from storage:', error)
+    localStorage.removeItem(STORAGE_KEY)
+    sessionStorage.removeItem(STORAGE_KEY)
     return undefined
   }
 }

@@ -34,7 +34,7 @@ describe('Auth Slice', () => {
       email: 'test@example.com',
     }
 
-    store.dispatch(setCredentials({ token: 'test-token', user }))
+    store.dispatch(setCredentials({ token: 'test-token', user, rememberMe: false }))
 
     const state = store.getState().auth
     expect(state.token).toBe('test-token')
@@ -55,7 +55,7 @@ describe('Auth Slice', () => {
       email: 'test@example.com',
     }
 
-    store.dispatch(setCredentials({ token: 'test-token', user }))
+    store.dispatch(setCredentials({ token: 'test-token', user, rememberMe: false }))
     store.dispatch(logout())
 
     const state = store.getState().auth
