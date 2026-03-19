@@ -439,6 +439,28 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         })(undefined, { queryFulfilled })
       },
     }),
+
+    expungeFolder: builder.mutation<
+      { mail_deleted: number },
+      { accountId: string; folderPath: string }
+    >({
+      query: ({ accountId, folderPath }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/expunge`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, { folderPath }) => [
+        { type: 'folder/messages', folder: folderPath },
+        'mails/folders',
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_expunge.successTitle.string',
+          successMessage: 'folders_expunge.successMessage.string',
+          errorTitle: 'folders_expunge.errorTitle.string',
+          errorMessage: 'folders_expunge.errorMessage.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
   }),
   overrideExisting: true,
 })
@@ -449,6 +471,7 @@ export const {
   useGetMailQuery,
   useMoveToTrashMutation,
   usePurgeFolderMutation,
+  useExpungeFolderMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints

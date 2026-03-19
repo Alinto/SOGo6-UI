@@ -15,6 +15,7 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import React from 'react'
+import { ExpungeFolderDialog } from './expunge-folder-dialog'
 import { PurgeFolderDialog } from './purge-folder-dialog'
 
 interface SidebarItemProps {
@@ -32,6 +33,15 @@ interface SidebarItemProps {
   hasSubfolders?: boolean
 }
 
+type FolderActionType =
+  | 'rename'
+  | 'mark_as_read'
+  | 'new_subfolder'
+  | 'sharing'
+  | 'purge'
+  | 'expunge'
+  | null
+
 const SidebarItem: React.FC<SidebarItemProps> = ({
   name,
   icon,
@@ -45,7 +55,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   accountId,
   hasSubfolders,
 }) => {
-  const [type, setType] = React.useState<string | null>(null)
+  const [type, setType] = React.useState<FolderActionType>(null)
   const { mailPurgeAllow } = useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
@@ -117,14 +127,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               <DropdownMenuItem onClick={() => setType('sharing')}>
                 <span>{t('folders.actions.sharing.string')}</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
               {mailPurgeAllow && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => setType('purge')}>
-                    <span>{t('folders.actions.purge.string')}</span>
-                  </DropdownMenuItem>
-                </>
+                <DropdownMenuItem onClick={() => setType('purge')}>
+                  <span>{t('folders.actions.purge.string')}</span>
+                </DropdownMenuItem>
               )}
+              <DropdownMenuItem onClick={() => setType('expunge')}>
+                <span>{t('folders.actions.expunge.string')}</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -136,6 +147,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               folderPath={folderPath}
               folderName={folderName}
               hasSubfolders={hasSubfolders ?? false}
+            />
+          )}
+          {type === 'expunge' && folderPath && folderName && accountId && (
+            <ExpungeFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
             />
           )}
         </>

@@ -36,6 +36,20 @@
                 "string": "An error occurred while purging the folder. Please try again."
             }
         },
+        "folders_expunge": {
+            "successTitle": {
+                "string": "Folder expunged"
+            },
+            "successMessage": {
+                "string": "All deleted messages have been permanently removed."
+            },
+            "errorTitle": {
+                "string": "Expunge failed"
+            },
+            "errorMessage": {
+                "string": "An error occurred while expunging the folder. Please try again."
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",

@@ -250,6 +250,21 @@
                     "errorMessage": {
                         "string": "An error occurred while purging the folder. Please try again."
                     }
+                },
+                "expunge": {
+                    "string": "Expunge",
+                    "confirmTitle": {
+                        "string": "Expunge folder"
+                    },
+                    "confirmDesc": {
+                        "string": "Are you sure you want to expunge \"{folder}\"? All messages marked as deleted will be permanently removed. This action cannot be undone."
+                    },
+                    "confirm": {
+                        "string": "Expunge"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
                 }
             },
             "inbox": {
