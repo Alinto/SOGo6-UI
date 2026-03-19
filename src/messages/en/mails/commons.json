@@ -200,7 +200,56 @@
                 },
                 "purge": {
                     "string": "Purge",
-                    "description": "Button to permanently delete all messages in the current folder"
+                    "description": "Button to permanently delete all messages in the current folder",
+                    "confirmTitle": {
+                        "string": "Purge folder"
+                    },
+                    "confirmDesc": {
+                        "string": "Are you sure you want to purge \"{folder}\"? All deleted messages will be permanently removed. This action cannot be undone."
+                    },
+                    "confirm": {
+                        "string": "Purge"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "olderThan": {
+                        "string": "Delete mails older than"
+                    },
+                    "customDate": {
+                        "string": "Custom date"
+                    },
+                    "pickDate": {
+                        "string": "Pick a date"
+                    },
+                    "applyToSubfolders": {
+                        "string": "Apply to subfolders"
+                    },
+                    "permanentlyDelete": {
+                        "string": "Permanently delete (cannot be undone)"
+                    },
+                    "confirmPermanent": {
+                        "string": "I understand this will permanently delete the selected mails and they cannot be recovered"
+                    },
+                    "datePresets": {
+                        "3months": { "string": "3 months" },
+                        "6months": { "string": "6 months" },
+                        "1year": { "string": "1 year" },
+                        "custom": { "string": "Custom date" },
+                        "all": { "string": "All mails" }
+                    },
+                    "successTitle": {
+                        "string": "Folder purged"
+                    },
+                    "successMessage": {
+                        "string": "All deleted messages have been permanently removed."
+                    },
+                    "errorTitle": {
+                        "string": "Purge failed"
+                    },
+                    "errorMessage": {
+                        "string": "An error occurred while purging the folder. Please try again."
+                    }
                 }
             },
             "inbox": {

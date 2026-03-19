@@ -22,6 +22,20 @@
                 "developer_comment": "Informational message."
             }
         },
+        "folders_purge": {
+            "successTitle": {
+                "string": "Folder purged"
+            },
+            "successMessage": {
+                "string": "All deleted messages have been permanently removed."
+            },
+            "errorTitle": {
+                "string": "Purge failed"
+            },
+            "errorMessage": {
+                "string": "An error occurred while purging the folder. Please try again."
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",

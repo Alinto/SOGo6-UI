@@ -49,6 +49,10 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
           handleClick={() => {
             push(`/u/${account}/${encodeURIComponent(folder.path)}`)
           }}
+          folderPath={folder.path}
+          folderName={folder.name}
+          accountId={String(account ?? '0')}
+          hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
         />
       </SidebarMenuItem>
     )
@@ -65,6 +69,10 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
             handleClick={() => {
               push(`/u/${account}/${encodeURIComponent(folder.path)}`)
             }}
+            folderPath={folder.path}
+            folderName={folder.name}
+            accountId={String(account ?? '0')}
+            hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
           />
         </CollapsibleTrigger>
         <CollapsibleContent className="w-full">

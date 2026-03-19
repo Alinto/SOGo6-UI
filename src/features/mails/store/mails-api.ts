@@ -400,6 +400,45 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         'mails/folders',
       ],
     }),
+
+    purgeFolder: builder.mutation<
+      { mails_deleted: number },
+      {
+        accountId: string
+        folderPath: string
+        date?: string
+        applyToSubfolders?: boolean
+        permanentlyDelete?: boolean
+      }
+    >({
+      query: ({
+        accountId,
+        folderPath,
+        date,
+        applyToSubfolders,
+        permanentlyDelete,
+      }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/purge`,
+        method: 'POST',
+        body: {
+          ...(date && { date }),
+          ...(applyToSubfolders !== undefined && { applyToSubfolders }),
+          ...(permanentlyDelete !== undefined && { permanentlyDelete }),
+        },
+      }),
+      invalidatesTags: (_result, _error, { folderPath }) => [
+        { type: 'folder/messages', folder: folderPath },
+        'mails/folders',
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_purge.successTitle.string',
+          successMessage: 'folders_purge.successMessage.string',
+          errorTitle: 'folders_purge.errorTitle.string',
+          errorMessage: 'folders_purge.errorMessage.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
   }),
   overrideExisting: true,
 })
@@ -409,6 +448,7 @@ export const {
   useGetFolderMessagesQuery,
   useGetMailQuery,
   useMoveToTrashMutation,
+  usePurgeFolderMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints
