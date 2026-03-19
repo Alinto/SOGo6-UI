@@ -15,6 +15,7 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import React from 'react'
+import { PurgeFolderDialog } from './purge-folder-dialog'
 
 interface SidebarItemProps {
   name: string
@@ -25,6 +26,10 @@ interface SidebarItemProps {
   handleClick: () => void
   onClick?: React.MouseEventHandler<HTMLDivElement>
   collapsible?: boolean
+  folderPath?: string
+  folderName?: string
+  accountId?: string
+  hasSubfolders?: boolean
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -35,6 +40,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isDefault,
   handleClick,
   onClick,
+  folderPath,
+  folderName,
+  accountId,
+  hasSubfolders,
 }) => {
   const [type, setType] = React.useState<string | null>(null)
   const { mailPurgeAllow } = useProfile()
@@ -119,9 +128,16 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* TODO: connect a Dialog to `type` for each action */}
-          {/* type === 'rename' && <RenameDialog ... /> */}
-          {/* type === 'purge' && <PurgeDialog ... /> */}
+          {type === 'purge' && folderPath && folderName && accountId && (
+            <PurgeFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+              hasSubfolders={hasSubfolders ?? false}
+            />
+          )}
         </>
       )}
     </>
