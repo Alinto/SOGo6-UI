@@ -74,5 +74,6 @@ export function useProfile() {
     mailMaxRecipient: profile?.ui?.SOGO_D_MAIL_MAX_RECIPIENT ?? 0,
     jitsiLinkEnabled: profile?.ui?.SOGO_D_JITSI_LINK_ENABLED ?? false,
     jitsiBaseUrl: profile?.ui?.SOGO_D_JITSI_BASE_URL ?? null,
+    folderSharingDisabled: profile?.ui?.SOGO_D_FOLDER_DISABLE_SHARING ?? false,
   }
 }

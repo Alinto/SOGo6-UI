@@ -50,6 +50,20 @@
                 "string": "An error occurred while expunging the folder. Please try again."
             }
         },
+        "folders_share": {
+            "successTitle": {
+                "string": "Sharing updated"
+            },
+            "successMessage": {
+                "string": "Folder sharing settings have been saved."
+            },
+            "errorTitle": {
+                "string": "Sharing failed"
+            },
+            "errorMessage": {
+                "string": "An error occurred while updating sharing settings. Please try again."
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",

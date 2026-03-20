@@ -11,12 +11,13 @@ import { SidebarMenuAction, SidebarMenuButton } from '@/components/ui/sidebar'
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MoreVertical } from 'lucide-react'
-import { DynamicIcon } from 'lucide-react/dynamic'
 import type { IconName } from 'lucide-react/dynamic'
+import { DynamicIcon } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
 import { PurgeFolderDialog } from './purge-folder-dialog'
+import { ShareFolderDialog } from './share-folder-dialog'
 
 interface SidebarItemProps {
   name: string
@@ -56,7 +57,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   hasSubfolders,
 }) => {
   const [type, setType] = React.useState<FolderActionType>(null)
-  const { mailPurgeAllow } = useProfile()
+  const { mailPurgeAllow, folderSharingDisabled } = useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
 
@@ -123,10 +124,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               <DropdownMenuItem onClick={() => setType('new_subfolder')}>
                 <span>{t('folders.actions.new_subfolder.string')}</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setType('sharing')}>
-                <span>{t('folders.actions.sharing.string')}</span>
-              </DropdownMenuItem>
+              {!folderSharingDisabled && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setType('sharing')}>
+                    <span>{t('folders.actions.sharing.string')}</span>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               {mailPurgeAllow && (
                 <DropdownMenuItem onClick={() => setType('purge')}>
@@ -151,6 +156,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           )}
           {type === 'expunge' && folderPath && folderName && accountId && (
             <ExpungeFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+            />
+          )}
+          {type === 'sharing' && folderPath && folderName && accountId && (
+            <ShareFolderDialog
               open={true}
               onOpenChange={(open) => !open && setType(null)}
               accountId={accountId}

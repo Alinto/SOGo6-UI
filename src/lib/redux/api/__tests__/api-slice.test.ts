@@ -108,6 +108,7 @@ describe('API Slice', () => {
         'vcard',
         'mail/folders',
         'folder/messages',
+        'folder/share',
         'preferences',
         'mails/folders',
         'adminConfig',
@@ -127,7 +128,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(30)
+      expect(tagTypes).toHaveLength(31)
     })
 
     it('should use readonly tag types array', async () => {

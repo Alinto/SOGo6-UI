@@ -34,6 +34,7 @@ const tagTypes = [
   'admin/v1/config/domains',
   'system',
   'auth/mode',
+  'folder/share',
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call

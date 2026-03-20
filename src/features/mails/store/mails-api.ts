@@ -8,6 +8,8 @@ import type {
   ImapMessagesAPIResponse,
   ImapMessagesBackendResponse,
   ImapAttachments,
+  FolderShareData,
+  FolderShareUser,
 } from '../mails-types'
 
 interface BackendResponse<T> {
@@ -461,6 +463,41 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         })(undefined, { queryFulfilled })
       },
     }),
+
+    getFolderShare: builder.query<FolderShareData, { accountId: string; folderPath: string }>({
+      query: ({ accountId, folderPath }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
+        method: 'GET',
+      }),
+      transformResponse: (response: BackendResponse<FolderShareData>) =>
+        response.data ?? { users: {} },
+      providesTags: (_result, _error, { folderPath }) => [
+        { type: 'folder/share', folder: folderPath },
+      ],
+    }),
+
+    setFolderShare: builder.mutation<
+      FolderShareData,
+      { accountId: string; folderPath: string; users: FolderShareUser[] }
+    >({
+      query: ({ accountId, folderPath, users }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
+        method: 'POST',
+        body: users,
+      }),
+      invalidatesTags: (_result, _error, { folderPath }) => [
+        'mails/folders',
+        { type: 'folder/share', folder: folderPath },
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_share.successTitle.string',
+          successMessage: 'folders_share.successMessage.string',
+          errorTitle: 'folders_share.errorTitle.string',
+          errorMessage: 'folders_share.errorMessage.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
   }),
   overrideExisting: true,
 })
@@ -472,6 +509,8 @@ export const {
   useMoveToTrashMutation,
   usePurgeFolderMutation,
   useExpungeFolderMutation,
+  useGetFolderShareQuery,
+  useSetFolderShareMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints
