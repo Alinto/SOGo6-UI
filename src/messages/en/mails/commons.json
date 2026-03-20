@@ -196,7 +196,64 @@
                 },
                 "sharing": {
                     "string": "Sharing",
-                    "description": "Button to share the current folder"
+                    "title": {
+                        "string": "Share folder"
+                    },
+                    "description": {
+                        "string": "Manage who has access to \"{folder}\" and their permissions."
+                    },
+                    "noUsers": {
+                        "string": "No users have access yet."
+                    },
+                    "addUser": {
+                        "label": {
+                            "string": "Add a user"
+                        },
+                        "placeholder": {
+                            "string": "email@domain.com"
+                        },
+                        "button": {
+                            "string": "Add"
+                        },
+                        "error": {
+                            "invalid": {
+                                "string": "Please enter a valid email address."
+                            },
+                            "duplicate": {
+                                "string": "This user already has access."
+                            }
+                        }
+                    },
+                    "presets": {
+                        "read": {
+                            "string": "Read"
+                        },
+                        "write": {
+                            "string": "Write"
+                        },
+                        "admin": {
+                            "string": "Admin"
+                        }
+                    },
+                    "save": {
+                        "string": "Save"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "badge": {
+                        "you": {
+                            "string": "You"
+                        },
+                        "public": {
+                            "string": "Public"
+                        }
+                    },
+                    "removeUser": {
+                        "tooltip": {
+                            "string": "Cannot remove yourself"
+                        }
+                    }
                 },
                 "purge": {
                     "string": "Purge",

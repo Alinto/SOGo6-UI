@@ -102,3 +102,38 @@ export interface ImapMessagesBackendResponse {
   hasNextPage: boolean
   hasPreviousPage: boolean
 }
+
+export interface FolderShareRights {
+  userCanViewFolder?: number
+  userCanReadMails?: number
+  userCanMarkMailsRead?: number
+  userCanWriteMails?: number
+  userCanInsertMails?: number
+  userCanPostMails?: number
+  userCanCreateSubfolders?: number
+  userCanRemoveFolder?: number
+  userCanEraseMails?: number
+  userCanExpungeFolder?: number
+  userIsAdministrator?: number
+}
+
+export interface FolderShareUser {
+  uid: string
+  c_email?: string
+  cn?: string
+  userClass: 'normal-user' | 'public-user'
+  isGroup?: number
+  rights: FolderShareRights
+}
+
+export interface FolderShareData {
+  users: Record<string, {
+    uid: string
+    c_email?: string
+    cn?: string
+    userClass: 'normal-user' | 'public-user'
+    rights: FolderShareRights
+  }>
+}
+
+export type ShareRightPreset = 'read' | 'write' | 'admin' | 'none'
