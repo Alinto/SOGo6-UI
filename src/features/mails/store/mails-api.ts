@@ -11,6 +11,7 @@ import type {
   FolderShareData,
   FolderShareUser,
 } from '../mails-types'
+import { sortImapFoldersTree } from '../utils/sort-folders'
 
 interface BackendResponse<T> {
   data: T
@@ -24,38 +25,6 @@ interface PaginationHeader {
   first_page: number
   last_page: number
   page: number
-}
-
-const FOLDER_ORDER: Record<string, number> = {
-  'inbox': 0,
-  'sent': 1,
-  'draft': 2,
-  'junk': 3,
-  'trash': 4,
-}
-
-function mapFolderResponse(folder: ImapFolder): ImapFolder {
-  return {
-    ...folder,
-    subfolders: folder.children?.map(mapFolderResponse) || [],
-  }
-}
-
-function sortFoldersRecursively(folders: ImapFolder[]): ImapFolder[] {
-  return folders
-    .sort((a, b) => {
-      const orderA = FOLDER_ORDER[a.type] ?? 99
-      const orderB = FOLDER_ORDER[b.type] ?? 99
-      return orderA === orderB 
-        ? a.name.localeCompare(b.name) 
-        : orderA - orderB
-    })
-    .map(folder => ({
-      ...folder,
-      subfolders: folder.children 
-        ? sortFoldersRecursively(folder.children.map(mapFolderResponse))
-        : [],
-    }))
 }
 
 function mapMailToListItem(mail: {
@@ -230,8 +199,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: getFoldersQuery,
       transformResponse: (response: BackendResponse<ImapFolder[]>) => {
         const folders = response.data || []
-        const mappedAndSorted = sortFoldersRecursively(folders)
-        return mappedAndSorted
+        return sortImapFoldersTree(folders)
       },
       providesTags: ['mails/folders'],
     }),

@@ -19,7 +19,7 @@ function nestFolders(flatFolders: ImapFolder[]) {
   })
 
   // Sort folders: special folders first, then alphabetically by name
-  const specialOrder = ['INBOX', 'Drafts', 'Sent', 'Trash', 'Junk']
+  const specialOrder = ['INBOX', 'Sent', 'Drafts', 'Trash', 'Junk', 'Templates']
   flatFolders.sort((a, b) => {
     const aIdx = specialOrder.indexOf(a.name)
     const bIdx = specialOrder.indexOf(b.name)

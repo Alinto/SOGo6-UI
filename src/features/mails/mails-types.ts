@@ -1,3 +1,13 @@
+export type ImapFolderType =
+  | 'INBOX'
+  | 'SENT'
+  | 'DRAFT'
+  | 'DRAFTS'
+  | 'TRASH'
+  | 'JUNK'
+  | 'TEMPLATE'
+  | 'NORMAL'
+
 export interface ImapFolder {
   name: string
   path: string
@@ -7,6 +17,7 @@ export interface ImapFolder {
   delimiter: string
   readOnly: boolean
   default?: boolean
+  type?: ImapFolderType
   subfolders?: ImapFolder[]
   children?: ImapFolder[]
 }
