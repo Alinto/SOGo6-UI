@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible'
 import {
   SidebarGroup,
   SidebarMenu,
@@ -12,9 +8,10 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
+import { useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
 import { iconSelector, nameSelector } from '../utils'
@@ -29,23 +26,39 @@ interface RecursiveFolderItemProps {
 
 function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const { push } = useRouter()
-  const { account } = useParams()
-  const pathname = usePathname()
+  const { account, folder: urlFolderParam } = useParams()
   const t = useTranslations('MAILS_COMMONS')
+
+  const urlFolder =
+    typeof urlFolderParam === 'string'
+      ? urlFolderParam
+      : Array.isArray(urlFolderParam)
+        ? urlFolderParam.join('/')
+        : ''
+
+  const isActive = urlFolder === folder.path
 
   const hasSubfolders =
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0
+
+  const descendantActive =
+    hasSubfolders &&
+    urlFolder.startsWith(folder.path + folder.delimiter)
+
+  const [open, setOpen] = useState(false)
+  const effectiveOpen = descendantActive || open
+
   const name = nameSelector(folder.name)
+  const displayName = name ? t(name) : folder.name
 
   if (!hasSubfolders) {
     return (
       <SidebarMenuItem>
         <SidebarItem
           icon={iconSelector(folder.path)}
-          id={folder.path}
           isDefault={folder.default}
-          name={name ? t(name) : folder.name}
-          isActive={pathname.includes(folder.path)}
+          name={displayName}
+          isActive={isActive}
           handleClick={() => {
             push(`/u/${account}/${encodeURIComponent(folder.path)}`)
           }}
@@ -59,22 +72,27 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   }
 
   return (
-    <Collapsible className="group/collapsible group-data-[collapsible=icon]:hidden [&[data-state=open]>svg:first-child]:rotate-90">
+    <Collapsible
+      open={effectiveOpen}
+      onOpenChange={setOpen}
+      className="group-data-[collapsible=icon]:hidden"
+    >
       <SidebarMenuItem>
-        <CollapsibleTrigger asChild>
-          <SidebarItem
-            icon="chevron-right"
-            id={folder.path}
-            name={folder.name}
-            handleClick={() => {
-              push(`/u/${account}/${encodeURIComponent(folder.path)}`)
-            }}
-            folderPath={folder.path}
-            folderName={folder.name}
-            accountId={String(account ?? '0')}
-            hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
-          />
-        </CollapsibleTrigger>
+        <SidebarItem
+          icon={iconSelector(folder.path)}
+          isDefault={folder.default}
+          isOpen={effectiveOpen}
+          name={displayName}
+          isActive={isActive}
+          handleClick={() => {
+            setOpen((prev) => !prev)
+            push(`/u/${account}/${encodeURIComponent(folder.path)}`)
+          }}
+          folderPath={folder.path}
+          folderName={folder.name}
+          accountId={String(account ?? '0')}
+          hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
+        />
         <CollapsibleContent className="w-full">
           <SidebarMenuSub className="mr-0 pr-0">
             {folder.subfolders?.map((sub) => (

@@ -51,7 +51,6 @@ jest.mock('@/components/ui/sidebar', () => ({
 }))
 
 jest.mock('@/lib/i18n/navigation', () => ({
-  usePathname: jest.fn(() => '/en/mails/INBOX'),
   useRouter: jest.fn(() => ({
     push: jest.fn(),
   })),
@@ -81,8 +80,12 @@ jest.mock('../compose-opener', () => ({
 
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
-  default: ({ name, icon, id, handleClick }: any) => (
-    <button data-testid={`sidebar-item-${id}`} onClick={handleClick}>
+  default: ({ name, folderPath, handleClick, isActive }: any) => (
+    <button
+      data-testid={`sidebar-item-${folderPath ?? name}`}
+      data-active={isActive ? 'true' : 'false'}
+      onClick={handleClick}
+    >
       {name}
     </button>
   ),
@@ -118,7 +121,7 @@ jest.mock('../../utils', () => ({
   }),
 }))
 
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import { useGetFoldersQuery } from '../../../store/mails-api'
 
@@ -171,6 +174,9 @@ describe('MailSidebar Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(useParams as jest.Mock).mockReturnValue({
+      account: 'test@example.com',
+    })
     ;(useGetFoldersQuery as jest.Mock).mockReturnValue({
       data: mockFolders,
       isFetching: false,
@@ -568,29 +574,75 @@ describe('MailSidebar Component', () => {
   })
 
   describe('Active State', () => {
-    it('should mark current folder as active', () => {
-      ;(usePathname as jest.Mock).mockReturnValue('/en/mails/INBOX')
+    it('should mark current folder as active from route folder param', () => {
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'INBOX',
+      })
 
       render(<MailSidebar />)
 
-      expect(screen.getByTestId('sidebar-item-INBOX')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-INBOX')).toHaveAttribute(
+        'data-active',
+        'true'
+      )
+      expect(screen.getByTestId('sidebar-item-Sent')).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
 
-    it('should update active state when pathname changes', () => {
+    it('should update active state when route folder param changes', () => {
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'INBOX',
+      })
       const { rerender } = render(<MailSidebar />)
 
-      ;(usePathname as jest.Mock).mockReturnValue('/en/mails/Sent')
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'Sent',
+      })
       rerender(<MailSidebar />)
 
-      expect(screen.getByTestId('sidebar-item-Sent')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-Sent')).toHaveAttribute(
+        'data-active',
+        'true'
+      )
+      expect(screen.getByTestId('sidebar-item-INBOX')).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
 
-    it('should check if pathname includes folder path', () => {
-      ;(usePathname as jest.Mock).mockReturnValue('/en/mails/Work/Projects')
+    it('should match folder path exactly, not as substring', () => {
+      const foldersWithTrash: ImapFolder[] = [
+        {
+          name: 'Trash',
+          path: 'Trash',
+          unseen: 0,
+          messages: 0,
+          flags: [],
+          delimiter: '.',
+          readOnly: false,
+          default: false,
+        },
+      ]
+      ;(useGetFoldersQuery as jest.Mock).mockReturnValue({
+        data: foldersWithTrash,
+        isFetching: false,
+      })
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'INBOX.Trash',
+      })
 
       render(<MailSidebar />)
 
-      expect(screen.getByTestId('sidebar-item-Work')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-Trash')).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
   })
 
@@ -715,10 +767,10 @@ describe('MailSidebar Component', () => {
       expect(useParams).toHaveBeenCalled()
     })
 
-    it('should use pathname for active state detection', () => {
+    it('should read folder route param for active state', () => {
       render(<MailSidebar />)
 
-      expect(usePathname).toHaveBeenCalled()
+      expect(useParams).toHaveBeenCalled()
     })
 
     it('should use router for navigation', async () => {
@@ -733,7 +785,7 @@ describe('MailSidebar Component', () => {
   })
 
   describe('Collapsible State Management', () => {
-    it('should render collapsible with correct classes for rotation', () => {
+    it('should render controlled collapsible for folders with subfolders', () => {
       const foldersWithSubfolders: ImapFolder[] = [
         {
           name: 'Parent',
@@ -764,12 +816,10 @@ describe('MailSidebar Component', () => {
         isFetching: false,
       })
 
-      const { container } = render(<MailSidebar />)
+      render(<MailSidebar />)
 
-      const collapsible = container.querySelector('[data-testid="collapsible"]')
-      expect(collapsible).toHaveClass(
-        '[&[data-state=open]>svg:first-child]:rotate-90'
-      )
+      expect(screen.getByTestId('collapsible')).toBeInTheDocument()
+      expect(screen.getByTestId('collapsible-content')).toBeInTheDocument()
     })
 
     it('should hide collapsible in icon mode', () => {

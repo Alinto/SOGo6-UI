@@ -51,7 +51,6 @@ const mockProfile = (overrides = {}) => {
 
 const defaultProps = {
   name: 'INBOX',
-  id: 'inbox',
   handleClick: jest.fn(),
 }
 

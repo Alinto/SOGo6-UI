@@ -10,9 +10,10 @@ import {
 import { SidebarMenuAction, SidebarMenuButton } from '@/components/ui/sidebar'
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { MoreVertical } from 'lucide-react'
+import { ChevronRight, MoreVertical } from 'lucide-react'
 import type { IconName } from 'lucide-react/dynamic'
 import { DynamicIcon } from 'lucide-react/dynamic'
+import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
@@ -32,6 +33,7 @@ interface SidebarItemProps {
   folderName?: string
   accountId?: string
   hasSubfolders?: boolean
+  isOpen?: boolean
 }
 
 type FolderActionType =
@@ -55,6 +57,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   folderName,
   accountId,
   hasSubfolders,
+  isOpen,
 }) => {
   const [type, setType] = React.useState<FolderActionType>(null)
   const { mailPurgeAllow, folderSharingDisabled } = useProfile()
@@ -74,11 +77,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       >
         {icon && (
           <div
-            className={`z-50 mr-2 h-5 w-5 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1 ${
-              onClick ? '[&[data-state=open]>svg:first-child]:rotate-90' : ''
-            }`}
+            className="z-50 mr-2 h-5 w-5 shrink-0 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1"
             data-collapsible="icon"
-            data-state="open"
             onClick={(e) => {
               e.stopPropagation()
               if (onClick) {
@@ -88,15 +88,22 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               }
             }}
           >
-            <DynamicIcon
-              className="h-5 w-5 transition-transform data-[state=open]:rotate-90"
-              name={icon}
-            />
+            <DynamicIcon className="h-5 w-5" name={icon} />
           </div>
         )}
-        <span className="w-9/12 truncate group-data-[collapsible=icon]:hidden">
-          {name}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center gap-1 group-data-[collapsible=icon]:hidden">
+          <span className="min-w-0 shrink truncate">{name}</span>
+          {hasSubfolders ? (
+            <ChevronRight
+              aria-hidden
+              strokeWidth={2.5}
+              className={cn(
+                'h-4 w-4 shrink-0 text-sidebar-foreground/85 transition-transform duration-200',
+                isOpen && 'rotate-90'
+              )}
+            />
+          ) : null}
+        </div>
       </SidebarMenuButton>
 
       {!disableActions && (
