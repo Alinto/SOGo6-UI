@@ -2,6 +2,7 @@ import { createApiNotificationHandler } from '@/features/notifications/api-notif
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
+  CreateFolderBody,
   ImapFolder,
   ImapMessages,
   ImapMessagesList,
@@ -466,6 +467,51 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         })(undefined, { queryFulfilled })
       },
     }),
+
+    createFolder: builder.mutation<
+      ImapFolder,
+      { accountId: string; body: CreateFolderBody }
+    >({
+      query: ({ accountId, body }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders`,
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: BackendResponse<ImapFolder>) =>
+        response.data,
+      invalidatesTags: ['mails/folders'],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_create.success.title.string',
+          successMessage: 'folders_create.success.message.string',
+          errorTitle: 'folders_create.error.title.string',
+          errorMessage: 'folders_create.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
+    deleteFolder: builder.mutation<
+      void,
+      { accountId: string; folderPath: string }
+    >({
+      query: ({ accountId, folderPath }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: (_result, _error, { folderPath }) => [
+        'mails/folders',
+        { type: 'folder/messages', folder: folderPath },
+        { type: 'folder/share', folder: folderPath },
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_delete.success.title.string',
+          successMessage: 'folders_delete.success.message.string',
+          errorTitle: 'folders_delete.error.title.string',
+          errorMessage: 'folders_delete.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
   }),
   overrideExisting: true,
 })
@@ -479,6 +525,8 @@ export const {
   useExpungeFolderMutation,
   useGetFolderShareQuery,
   useSetFolderShareMutation,
+  useCreateFolderMutation,
+  useDeleteFolderMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints

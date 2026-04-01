@@ -148,3 +148,14 @@ export interface FolderShareData {
 }
 
 export type ShareRightPreset = 'read' | 'write' | 'admin' | 'none'
+
+export interface CreateFolderBody {
+  name: string
+  parent: string // empty string "" for root-level folder
+}
+
+export interface UpdateFolderBody {
+  name?: string
+  subscribed?: number
+  type?: string
+}

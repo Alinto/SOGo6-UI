@@ -194,7 +194,8 @@ describe('Mail Folder Page', () => {
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         folder: 'Sent',
-      })
+      }),
+      { skip: false }
     )
   })
 
@@ -225,7 +226,8 @@ describe('Mail Folder Page', () => {
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         folder: 'Archive/Old',
-      })
+      }),
+      { skip: false }
     )
   })
 
@@ -262,7 +264,8 @@ describe('Mail Folder Page', () => {
           sort: 'date',
           order: 'desc',
         },
-      })
+      }),
+      { skip: false }
     )
   })
 
@@ -334,7 +337,8 @@ describe('Mail Folder Page', () => {
     expect(useGetFolderMessagesQuery).toHaveBeenLastCalledWith(
       expect.objectContaining({
         folder: 'INBOX',
-      })
+      }),
+      { skip: false }
     )
 
     // Change the folder to Drafts
@@ -354,7 +358,8 @@ describe('Mail Folder Page', () => {
       expect(useGetFolderMessagesQuery).toHaveBeenLastCalledWith(
         expect.objectContaining({
           folder: 'Drafts',
-        })
+        }),
+        { skip: false }
       )
     })
   })
@@ -404,7 +409,8 @@ describe('Mail Folder Page', () => {
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         folder: '',
-      })
+      }),
+      { skip: false }
     )
   })
 

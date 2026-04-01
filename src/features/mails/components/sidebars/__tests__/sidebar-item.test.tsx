@@ -1,7 +1,20 @@
 import { render, screen } from '@testing-library/react'
-import SidebarItem from '../sidebar-item'
 
-// --- Mocks ---
+// --- Mocks (must run before SidebarItem — pulls in dialogs using i18n navigation) ---
+
+jest.mock('@/lib/i18n/navigation', () => ({
+  useRouter: () => ({
+    push: jest.fn(),
+  }),
+}))
+
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(() => ({ account: '0', folder: 'INBOX' })),
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => jest.fn(),
+}))
 
 jest.mock('@/features/user-profile', () => ({
   useProfile: jest.fn(),
@@ -36,8 +49,7 @@ jest.mock('lucide-react/dynamic', () => ({
   DynamicIcon: ({ name }: any) => <span data-testid={`icon-${name}`} />,
 }))
 
-// --- Imports after mocks ---
-
+import SidebarItem from '../sidebar-item'
 import { useProfile } from '@/features/user-profile'
 
 // --- Helper ---

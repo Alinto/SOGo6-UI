@@ -2,9 +2,13 @@
 
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
-import { setMailNavigation } from '@/features/mails/store/mail-navigation-slice'
+import {
+  selectSkipFolderFetch,
+  setMailNavigation,
+  setSkipFolderFetch,
+} from '@/features/mails/store/mail-navigation-slice'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
-import { useAppDispatch } from '@/lib/redux/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useParams, useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import React, { useEffect } from 'react'
@@ -16,6 +20,7 @@ const Page = () => {
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
   const dispatch = useAppDispatch()
+  const skipFolderFetch = useAppSelector(selectSkipFolderFetch)
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
   const activeSort = searchParams.get('sort') ?? 't_asc'
@@ -35,10 +40,14 @@ const Page = () => {
     )
   }, [searchParams])
 
-  const { data, isLoading, error } = useGetFolderMessagesQuery({
-    folder: folderString,
-    params,
-  })
+  const { data, isLoading, error } = useGetFolderMessagesQuery(
+    { folder: folderString, params },
+    { skip: skipFolderFetch }
+  )
+
+  useEffect(() => {
+    dispatch(setSkipFolderFetch(false))
+  }, [folderString, dispatch])
 
   useEffect(() => {
     if (!data?.mails) return
@@ -74,9 +83,11 @@ const Page = () => {
     })
   }, [data, activeFilter, activeSort])
 
+  if (skipFolderFetch) return <ListSkeleton />
+
   if (isLoading) return <ListSkeleton />
 
-  if (error) {
+  if (error && !skipFolderFetch) {
     return (
       <div className="p-4 text-red-500">
         <h2>{t('error.string')}</h2>

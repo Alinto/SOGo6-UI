@@ -64,6 +64,42 @@
                 "string": "An error occurred while updating sharing settings. Please try again."
             }
         },
+        "folders_create": {
+            "success": {
+                "title": {
+                    "string": "Folder created"
+                },
+                "message": {
+                    "string": "The subfolder has been successfully created."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to create folder"
+                },
+                "message": {
+                    "string": "An error occurred while creating the folder. Please try again."
+                }
+            }
+        },
+        "folders_delete": {
+            "success": {
+                "title": {
+                    "string": "Folder deleted"
+                },
+                "message": {
+                    "string": "The folder has been moved to Trash or permanently deleted."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to delete folder"
+                },
+                "message": {
+                    "string": "An error occurred while deleting the folder. Please try again."
+                }
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",
