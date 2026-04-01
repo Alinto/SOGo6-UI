@@ -18,6 +18,7 @@ import { useTranslations } from 'next-intl'
 import React from 'react'
 import { CreateFolderDialog } from './create-folder-dialog'
 import { DeleteFolderDialog } from './delete-folder-dialog'
+import { RenameFolderDialog } from './rename-folder-dialog'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
 import { PurgeFolderDialog } from './purge-folder-dialog'
 import { ShareFolderDialog } from './share-folder-dialog'
@@ -204,6 +205,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               onOpenChange={(open) => !open && setType(null)}
               accountId={accountId}
               parentPath={folderPath}
+            />
+          )}
+          {type === 'rename' && folderPath && folderName && accountId && (
+            <RenameFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              currentName={folderName}
             />
           )}
         </>

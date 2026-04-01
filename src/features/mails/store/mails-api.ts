@@ -3,6 +3,7 @@ import { apiSlice } from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   CreateFolderBody,
+  UpdateFolderBody,
   ImapFolder,
   ImapMessages,
   ImapMessagesList,
@@ -490,6 +491,31 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    updateFolder: builder.mutation<
+      ImapFolder,
+      { accountId: string; folderPath: string; body: UpdateFolderBody }
+    >({
+      query: ({ accountId, folderPath, body }) => ({
+        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response: BackendResponse<ImapFolder>) =>
+        response.data,
+      invalidatesTags: (_result, _error, { folderPath }) => [
+        'mails/folders',
+        { type: 'folder/messages', folder: folderPath },
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_rename.success.title.string',
+          successMessage: 'folders_rename.success.message.string',
+          errorTitle: 'folders_rename.error.title.string',
+          errorMessage: 'folders_rename.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
     deleteFolder: builder.mutation<
       void,
       { accountId: string; folderPath: string }
@@ -526,6 +552,7 @@ export const {
   useGetFolderShareQuery,
   useSetFolderShareMutation,
   useCreateFolderMutation,
+  useUpdateFolderMutation,
   useDeleteFolderMutation,
 } = injectedEndpoints
 

@@ -198,6 +198,16 @@
                     "string": "Rename",
                     "description": "Button to rename the current folder"
                 },
+                "rename_dialog": {
+                    "title": { "string": "Rename folder" },
+                    "label": { "string": "Folder name" },
+                    "placeholder": { "string": "New folder name" },
+                    "submit": { "string": "Rename" },
+                    "cancel": { "string": "Cancel" },
+                    "error_required": { "string": "Folder name is required" },
+                    "error_dot": { "string": "Folder name cannot contain a dot" },
+                    "error_max": { "string": "Folder name cannot exceed 100 characters" }
+                },
                 "mark_as_read": {
                     "string": "Mark as Read",
                     "description": "Button to mark the current folder as read"
