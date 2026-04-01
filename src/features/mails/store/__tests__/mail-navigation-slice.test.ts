@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom'
 import reducer, {
-  setMailNavigation,
   clearMailNavigation,
+  setMailNavigation,
+  setSkipFolderFetch,
 } from '../mail-navigation-slice'
 
 describe('mailNavigationSlice', () => {
@@ -10,12 +11,13 @@ describe('mailNavigationSlice', () => {
   })
 
   describe('initial state', () => {
-    it('has folderKey, orderedIds, page, totalPages', () => {
+    it('has folderKey, orderedIds, page, totalPages, skipFolderFetch', () => {
       const state = reducer(undefined, { type: '@@INIT' })
       expect(state).toHaveProperty('folderKey')
       expect(state).toHaveProperty('orderedIds')
       expect(state).toHaveProperty('page')
       expect(state).toHaveProperty('totalPages')
+      expect(state).toHaveProperty('skipFolderFetch')
     })
 
     it('folderKey is null initially', () => {
@@ -32,6 +34,11 @@ describe('mailNavigationSlice', () => {
       const state = reducer(undefined, { type: '@@INIT' })
       expect(state.page).toBe(1)
       expect(state.totalPages).toBe(1)
+    })
+
+    it('skipFolderFetch is false initially', () => {
+      const state = reducer(undefined, { type: '@@INIT' })
+      expect(state.skipFolderFetch).toBe(false)
     })
   })
 
@@ -114,6 +121,15 @@ describe('mailNavigationSlice', () => {
 
       expect(state.folderKey).toBeNull()
       expect(state.orderedIds).toEqual([])
+    })
+  })
+
+  describe('setSkipFolderFetch', () => {
+    it('sets skipFolderFetch', () => {
+      const state = reducer(undefined, setSkipFolderFetch(true))
+      expect(state.skipFolderFetch).toBe(true)
+      const cleared = reducer(state, setSkipFolderFetch(false))
+      expect(cleared.skipFolderFetch).toBe(false)
     })
   })
 })

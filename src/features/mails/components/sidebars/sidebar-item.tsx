@@ -16,6 +16,8 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
+import { CreateFolderDialog } from './create-folder-dialog'
+import { DeleteFolderDialog } from './delete-folder-dialog'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
 import { PurgeFolderDialog } from './purge-folder-dialog'
 import { ShareFolderDialog } from './share-folder-dialog'
@@ -43,6 +45,7 @@ type FolderActionType =
   | 'sharing'
   | 'purge'
   | 'expunge'
+  | 'delete'
   | null
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -148,6 +151,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               <DropdownMenuItem onClick={() => setType('expunge')}>
                 <span>{t('folders.actions.expunge.string')}</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setType('delete')}
+                className="text-destructive focus:text-destructive"
+              >
+                <span>{t('folders.actions.delete.string')}</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -177,6 +187,23 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               accountId={accountId}
               folderPath={folderPath}
               folderName={folderName}
+            />
+          )}
+          {type === 'delete' && folderPath && folderName && accountId && (
+            <DeleteFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+            />
+          )}
+          {type === 'new_subfolder' && folderPath && accountId && (
+            <CreateFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              parentPath={folderPath}
             />
           )}
         </>

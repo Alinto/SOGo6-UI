@@ -5,6 +5,7 @@ interface MailNavigationState {
   orderedIds: string[]
   page: number
   totalPages: number
+  skipFolderFetch: boolean
 }
 
 const initialState: MailNavigationState = {
@@ -12,6 +13,7 @@ const initialState: MailNavigationState = {
   orderedIds: [],
   page: 1,
   totalPages: 1,
+  skipFolderFetch: false,
 }
 
 const mailNavigationSlice = createSlice({
@@ -38,9 +40,17 @@ const mailNavigationSlice = createSlice({
       state.page = 1
       state.totalPages = 1
     },
+    setSkipFolderFetch: (state, action: PayloadAction<boolean>) => {
+      state.skipFolderFetch = action.payload
+    },
   },
 })
 
-export const { setMailNavigation, clearMailNavigation } =
+export const { setMailNavigation, clearMailNavigation, setSkipFolderFetch } =
   mailNavigationSlice.actions
+
+export const selectSkipFolderFetch = (state: {
+  mailNavigation: MailNavigationState
+}) => state.mailNavigation.skipFolderFetch
+
 export default mailNavigationSlice.reducer
