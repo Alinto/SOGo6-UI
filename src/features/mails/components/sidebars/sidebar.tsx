@@ -66,6 +66,9 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
           folderName={folder.name}
           accountId={String(account ?? '0')}
           hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
+          selectable={folder.selectable}
+          unseenCount={folder.unseen_count}
+          folderType={folder.type}
         />
       </SidebarMenuItem>
     )
@@ -92,6 +95,9 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
           folderName={folder.name}
           accountId={String(account ?? '0')}
           hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
+          selectable={folder.selectable}
+          unseenCount={folder.unseen_count}
+          folderType={folder.type}
         />
         <CollapsibleContent className="w-full">
           <SidebarMenuSub className="mr-0 pr-0">

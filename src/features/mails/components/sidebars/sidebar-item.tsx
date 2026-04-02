@@ -16,6 +16,7 @@ import { DynamicIcon } from 'lucide-react/dynamic'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
+import type { ImapFolderType } from '../../mails-types'
 import { CreateFolderDialog } from './create-folder-dialog'
 import { DeleteFolderDialog } from './delete-folder-dialog'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
@@ -36,6 +37,9 @@ interface SidebarItemProps {
   accountId?: string
   hasSubfolders?: boolean
   isOpen?: boolean
+  selectable?: boolean
+  unseenCount?: number
+  folderType?: ImapFolderType
 }
 
 type FolderActionType =
@@ -61,18 +65,30 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   accountId,
   hasSubfolders,
   isOpen,
+  selectable = true,
+  unseenCount = 0,
+  folderType,
 }) => {
   const [type, setType] = React.useState<FolderActionType>(null)
   const { mailPurgeAllow, folderSharingDisabled } = useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
 
+  const showUnseenCount =
+    unseenCount != null &&
+    unseenCount > 0 &&
+    folderType !== 'SENT' &&
+    folderType !== 'DRAFT'
+
   return (
     <>
       <SidebarMenuButton
-        className={`h-10 align-middle ${
-          !isDefault ? 'group-data-[collapsible=icon]:hidden' : ''
-        } group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`}
+        className={cn(
+          `h-10 align-middle ${
+            !isDefault ? 'group-data-[collapsible=icon]:hidden' : ''
+          } group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`,
+          !selectable && 'pointer-events-none opacity-50'
+        )}
         tooltip={name}
         isActive={isActive}
         onClick={handleClick}
@@ -94,7 +110,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             <DynamicIcon className="h-5 w-5" name={icon} />
           </div>
         )}
-        <div className="flex min-w-0 flex-1 items-center gap-1 group-data-[collapsible=icon]:hidden">
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
           <span className="min-w-0 shrink truncate">{name}</span>
           {hasSubfolders ? (
             <ChevronRight
@@ -106,10 +122,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               )}
             />
           ) : null}
+          {showUnseenCount && (
+            <span className="shrink-0 text-xs font-medium text-inherit tabular-nums">
+              {unseenCount > 99 ? '99+' : unseenCount}
+            </span>
+          )}
         </div>
       </SidebarMenuButton>
 
-      {!disableActions && (
+      {!disableActions && selectable && (
         <>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

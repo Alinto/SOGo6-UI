@@ -2,7 +2,7 @@
   {
     "name": "INBOX",
     "path": "INBOX",
-    "unseen": 2,
+    "unseen_count": 2,
     "messages": 65,
     "flags": [
       "\\HasNoChildren"
@@ -15,7 +15,7 @@
   {
     "name": "Drafts",
     "path": "Drafts",
-    "unseen": 7,
+    "unseen_count": 7,
     "messages": 54,
     "flags": [
       "\\HasNoChildren",
@@ -29,7 +29,7 @@
   {
     "name": "Sent",
     "path": "Sent",
-    "unseen": 19,
+    "unseen_count": 19,
     "messages": 64,
     "flags": [
       "\\HasNoChildren",
@@ -43,7 +43,7 @@
   {
     "name": "Trash",
     "path": "Trash",
-    "unseen": 8,
+    "unseen_count": 8,
     "messages": 31,
     "flags": [
       "\\HasNoChildren",

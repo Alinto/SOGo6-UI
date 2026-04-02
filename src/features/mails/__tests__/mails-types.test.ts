@@ -20,11 +20,12 @@ describe('Mails Types', () => {
     const folder: ImapFolder = {
       name: 'INBOX',
       path: 'INBOX',
-      unseen: 5,
+      unseen_count: 5,
       messages: 10,
       flags: ['\\Seen'],
       delimiter: '/',
       readOnly: false,
+      selectable: true,
     }
     expect(folder.name).toBe('INBOX')
   })
