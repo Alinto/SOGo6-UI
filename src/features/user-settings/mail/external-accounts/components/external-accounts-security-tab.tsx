@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { z } from 'zod'
+import { MODE_CREATE, MODE_EDIT } from '../external-accounts-utils'
 import type { ImapAccountDetail } from '../types'
 import { imapAccountCreateSchema, imapAccountEditSchema } from './imap-schema'
 
@@ -21,7 +22,7 @@ type ImapEditValues = z.infer<typeof imapAccountEditSchema>
 
 interface ImapSecurityTabProps {
   form: UseFormReturn<ImapCreateValues> | UseFormReturn<ImapEditValues>
-  mode: 'edit' | 'new'
+  mode: typeof MODE_EDIT | typeof MODE_CREATE
   accountData?: ImapAccountDetail
 }
 
@@ -61,7 +62,7 @@ function ImapSecurityTabNew({
 }: {
   form: UseFormReturn<ImapCreateValues>
 }) {
-  const t = useTranslations('US_MAIL_IMAP_ACCOUNTS')
+  const t = useTranslations('US_MAIL_EXTERNAL_ACCOUNTS')
   const [showCertificatePassword, setShowCertificatePassword] = useState(false)
 
   return (

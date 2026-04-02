@@ -1,4 +1,4 @@
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import { apiSlice, MAIL_LABELS_SETTINGS_SLICE } from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type { MailLabel } from '../mail-labels-types'
 
@@ -10,7 +10,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getMailLabelsSettings: builder.query<MailLabel[], void>({
       query: () => 'settings/mail/labels',
-      providesTags: ['mail_labels_settings'],
+      providesTags: [MAIL_LABELS_SETTINGS_SLICE],
     }),
     updateMailLabelsSettings: builder.mutation<
       MailLabel[],
@@ -21,7 +21,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: payload,
       }),
-      invalidatesTags: ['mail_labels_settings'],
+      invalidatesTags: [MAIL_LABELS_SETTINGS_SLICE],
     }),
   }),
   overrideExisting: false,

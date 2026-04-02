@@ -6,7 +6,7 @@ export interface ImapAccountListItem {
 }
 
 // Detail (edit mode - read only except readReceipts)
-export interface ImapAccountDetail {
+export interface ExternalAccountDetail {
   id: string
   imapServer: string
   imapPort: number

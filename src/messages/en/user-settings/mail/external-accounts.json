@@ -1,7 +1,7 @@
 {
-  "US_MAIL_IMAP_ACCOUNTS": {
+  "US_MAIL_EXTERNAL_ACCOUNTS": {
     "title": {
-      "string": "IMAP Accounts"
+      "string": "External Accounts"
     },
     "sections": {
       "imap": {
@@ -11,18 +11,22 @@
         "string": "Outgoing Mail (SMTP)"
       },
       "identity": {
-        "string": "Identity & Authentication"
+        "string": "Identities"
       },
       "preferences": {
         "string": "Preferences"
       },
       "certificate": {
         "string": "S/MIME Certificate"
+      },
+      "receipts": {
+        "string": "Receipts",
+        "description": "When I receive a request for a return receipt"
       }
     },
     "list": {
       "title": {
-        "string": "Your IMAP Accounts"
+        "string": "Your external Accounts"
       },
       "add_button": {
         "string": "Add Account"
@@ -37,10 +41,10 @@
         "string": "Delete account {email}"
       },
       "delete_confirm_title": {
-        "string": "Delete Account?"
+        "string": "{name}"
       },
       "delete_confirm_desc": {
-        "string": "Are you sure you want to delete {email}? This action cannot be undone."
+        "string": "Are you sure you want to delete {name}? This action cannot be undone."
       },
       "cancel_button": {
         "string": "Cancel"
@@ -54,7 +58,7 @@
     },
     "edit": {
       "title": {
-        "string": "Edit IMAP Account"
+        "string": "Edit External Account"
       },
       "back_button": {
         "string": "Back to list"
@@ -65,7 +69,7 @@
     },
     "new": {
       "title": {
-        "string": "New IMAP Account"
+        "string": "New External Account"
       },
       "description": {
         "string": "Configure a new external IMAP account"
@@ -78,14 +82,40 @@
       }
     },
     "labels": {
-      "imapServer": {
-        "string": "IMAP Server"
+      "name": "Name",
+      "email": "Email",
+      "replyTo": "Reply to",
+      "signatures": "Signatures",
+      "signature": "Signature",
+      "addSignature": "Add a signature",
+      "removeSignature": "Remove signature",
+      "default": "Default",
+      "addIdentity": "Add an identity",
+      "newIdentity": "New identity",
+      "removeIdentity": "Remove identity",
+      "sameAsIncoming": "Same password as incoming",
+      "atLeastOneIdentity": "at least one identity",
+      "receipts": {
+        "never": "Never",
+        "always": "Always",
+        "ask": "Ask",
+        "neverSend": "Never send a return receipt",
+        "allowSome": "Allow return receipts for some messages",
+        "notToCc": "If I'm not in the To or Cc of the message",
+        "outsideDomain": "If the sender is outside my domain",
+        "other": "In all other cases"
       },
-      "imapPort": {
+      "server": {
+        "string": "Server"
+      },
+      "port": {
         "string": "Port"
       },
-      "imapEncryption": {
-        "string": "IMAP Encryption"
+      "encryption": {
+        "string": "Encryption"
+      },
+      "authType": {
+        "string": "Authentication type"
       },
       "smtpServer": {
         "string": "SMTP Server"
@@ -127,12 +157,8 @@
         "string": "Selected file"
       }
     },
-    "errors_api": {
-      "load_failed": {
-        "string": "Failed to load IMAP accounts. Please try again later."
-      }
-    },
     "placeholders": {
+      "nameAccount": "Work account",
       "imapServer": {
         "string": "imap.example.com"
       },
@@ -153,7 +179,8 @@
       },
       "certificatePassword": {
         "string": "Enter certificate import password"
-      }
+      },
+      "signatureName": "Name"
     },
     "description": {
       "useDefaultIdentity": {
@@ -206,10 +233,8 @@
       "security": {
         "string": "Security"
       }
-    }
-  },
-  "NOTIFICATIONS_IMAP_ACCOUNTS": {
-    "US_MAIL_IMAP_ACCOUNTS": {
+    },
+    "notifications": {
       "success": {
         "title": {
           "string": "Success"
@@ -229,18 +254,24 @@
           "string": "Error"
         },
         "load_failed": {
-          "string": "Failed to load IMAP accounts. Please try again later."
+          "string": "Failed to load external accounts. Please try again later."
         },
         "create_failed": {
-          "string": "Failed to create IMAP account. Please try again."
+          "string": "Failed to create external account. Please try again."
         },
         "update_failed": {
-          "string": "Failed to update IMAP account. Please try again."
+          "string": "Failed to update external account. Please try again."
         },
         "delete_failed": {
           "string": "Failed to delete account. Please try again."
         }
       }
+    },
+    "validation": {
+      "required": "Required",
+      "server-required": "Server address is required",
+      "server-invalid": "Must be a valid hostname or IP address",
+      "port-required": "Port is required"
     }
   }
 }
