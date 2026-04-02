@@ -26,6 +26,32 @@ interface BackendResponse<T> {
   error_msg: string
 }
 
+/** Folder payloads may still use legacy `unseen` instead of `unseen_count`. */
+type RawImapFolder = Omit<ImapFolder, 'unseen_count' | 'selectable'> & {
+  unseen_count?: number
+  unseen?: number
+  selectable?: boolean
+  subfolders?: RawImapFolder[]
+  children?: RawImapFolder[]
+}
+
+function normalizeImapFolder(folder: RawImapFolder): ImapFolder {
+  const { unseen, subfolders, children, ...rest } = folder
+  const unseen_count = folder.unseen_count ?? unseen ?? 0
+  const selectable = folder.selectable ?? true
+  return {
+    ...rest,
+    unseen_count,
+    selectable,
+    subfolders: subfolders?.map(normalizeImapFolder),
+    children: children?.map(normalizeImapFolder),
+  } as ImapFolder
+}
+
+function normalizeImapFolderTree(folders: RawImapFolder[]): ImapFolder[] {
+  return folders.map(normalizeImapFolder)
+}
+
 interface PaginationHeader {
   total: number
   total_pages: number
@@ -208,8 +234,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getFolders: builder.query<ImapFolder[], { accountId?: string }>({
       query: getFoldersQuery,
-      transformResponse: (response: BackendResponse<ImapFolder[]>) => {
-        const folders = response.data || []
+      transformResponse: (response: BackendResponse<RawImapFolder[]>) => {
+        const folders = normalizeImapFolderTree(response.data || [])
         return sortImapFoldersTree(folders)
       },
       providesTags: [MAILS_FOLDERS_SLICE],
@@ -513,8 +539,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'POST',
         body,
       }),
-      transformResponse: (response: BackendResponse<ImapFolder>) =>
-        response.data,
+      transformResponse: (response: BackendResponse<RawImapFolder>) =>
+        normalizeImapFolder(response.data),
       invalidatesTags: ['mails/folders'],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {

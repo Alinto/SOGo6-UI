@@ -11,11 +11,12 @@ export type ImapFolderType =
 export interface ImapFolder {
   name: string
   path: string
-  unseen: number
+  unseen_count: number
   messages: number
   flags: string[]
   delimiter: string
   readOnly: boolean
+  selectable: boolean
   default?: boolean
   type?: ImapFolderType
   subfolders?: ImapFolder[]
