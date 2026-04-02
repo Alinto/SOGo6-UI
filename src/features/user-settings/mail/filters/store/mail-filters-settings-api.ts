@@ -1,4 +1,7 @@
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  MAIL_FILTERS_SETTINGS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type { MailFilter } from '../mail-filters-types'
 
@@ -6,7 +9,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getMailFiltersSettings: builder.query<MailFilter[], void>({
       query: () => 'settings/mail/filters',
-      providesTags: ['mail_filters_settings'],
+      providesTags: [MAIL_FILTERS_SETTINGS_SLICE],
     }),
     updateMailFiltersSettings: builder.mutation<
       MailFilter[],
@@ -17,7 +20,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: patch,
       }),
-      invalidatesTags: ['mail_filters_settings'],
+      invalidatesTags: [MAIL_FILTERS_SETTINGS_SLICE],
     }),
   }),
   overrideExisting: false,

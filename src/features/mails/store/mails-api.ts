@@ -1,16 +1,22 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  FOLDER_MESSAGES_SLICE,
+  FOLDER_SHARE_SLICE,
+  MAIL_SLICE,
+  MAILS_FOLDERS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   CreateFolderBody,
-  ImapFolder,
-  ImapMessages,
-  ImapMessagesList,
-  ImapMessagesAPIResponse,
-  ImapMessagesBackendResponse,
-  ImapAttachments,
   FolderShareData,
   FolderShareUser,
+  ImapAttachments,
+  ImapFolder,
+  ImapMessages,
+  ImapMessagesAPIResponse,
+  ImapMessagesBackendResponse,
+  ImapMessagesList,
 } from '../mails-types'
 import { sortImapFoldersTree } from '../utils/sort-folders'
 
@@ -41,7 +47,8 @@ function mapMailToListItem(mail: {
   size?: number
   contents?: Array<{ content: string; contentType: string }>
 }): ImapMessagesList {
-  const textContent = mail.contents?.find((c) => c.contentType === 'text/plain')?.content || ''
+  const textContent =
+    mail.contents?.find((c) => c.contentType === 'text/plain')?.content || ''
   const snippet = textContent
     .replace(/\r\n/g, ' ')
     .replace(/\n/g, ' ')
@@ -71,17 +78,17 @@ function extractBodyFromContents(
   contents: Array<{ content: string; contentType: string }> | undefined
 ): string {
   if (!contents || contents.length === 0) return ''
-  
+
   try {
     // Prioritize HTML
-    const htmlContent = contents.find(c => 
-      c?.contentType === 'text/html' && typeof c?.content === 'string'
+    const htmlContent = contents.find(
+      (c) => c?.contentType === 'text/html' && typeof c?.content === 'string'
     )
     if (htmlContent?.content) return htmlContent.content
-    
+
     // Fallback plain text
-    const plainContent = contents.find(c => 
-      c?.contentType === 'text/plain' && typeof c?.content === 'string'
+    const plainContent = contents.find(
+      (c) => c?.contentType === 'text/plain' && typeof c?.content === 'string'
     )
     return plainContent?.content || ''
   } catch (error) {
@@ -100,25 +107,27 @@ function extractBodyFromContents(
  * @returns Format ImapAttachments unifié
  */
 function normalizeAttachments(
-  attachments: ImapAttachments | Array<{
-    filename: string
-    contentType: string
-    size: number
-    downloadUri: string
-    displayUri: string
-    extension: string
-  }>
+  attachments:
+    | ImapAttachments
+    | Array<{
+        filename: string
+        contentType: string
+        size: number
+        downloadUri: string
+        displayUri: string
+        extension: string
+      }>
 ): ImapAttachments {
   // Strict type guard: verify it's already a valid ImapAttachments
   if (
-    attachments && 
+    attachments &&
     typeof attachments === 'object' &&
-    'count' in attachments && 
+    'count' in attachments &&
     typeof attachments.count === 'number'
   ) {
     return attachments as ImapAttachments
   }
-  
+
   // Real backend: transform Array → ImapAttachments
   if (Array.isArray(attachments) && attachments.length > 0) {
     try {
@@ -130,7 +139,7 @@ function normalizeAttachments(
         downloadUri: att.downloadUri || '',
         displayUri: att.displayUri || '',
       }))
-      
+
       return {
         parts,
         count: parts.length,
@@ -143,12 +152,12 @@ function normalizeAttachments(
       return { parts: [], count: 0 }
     }
   }
-  
+
   // Fallback: no attachments or invalid format
   return { parts: [], count: 0 }
 }
 
-const getFoldersQuery = ({ accountId = '0' }: { accountId?: string } = {}) => 
+const getFoldersQuery = ({ accountId = '0' }: { accountId?: string } = {}) =>
   `/api/user/v1/mailboxes/${accountId}/folders`
 
 const getFolderMessagesQuery = ({
@@ -171,15 +180,16 @@ const getFolderMessagesQuery = ({
   return url
 }
 
-const getMailQuery = ({ 
+const getMailQuery = ({
   accountId = '0',
-  folder, 
-  mailId 
-}: { 
+  folder,
+  mailId,
+}: {
   accountId?: string
   folder: string
-  mailId: string 
-}) => `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`
+  mailId: string
+}) =>
+  `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`
 
 const moveToTrashQuery = ({
   accountId = '0',
@@ -202,34 +212,37 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         const folders = response.data || []
         return sortImapFoldersTree(folders)
       },
-      providesTags: ['mails/folders'],
+      providesTags: [MAILS_FOLDERS_SLICE],
     }),
-    
+
     getFolderMessages: builder.query<
       ImapMessagesBackendResponse,
-      { 
+      {
         accountId?: string
         folder: string
-        params?: Record<string, string | number | boolean> 
+        params?: Record<string, string | number | boolean>
       }
     >({
       keepUnusedDataFor: 3600,
       query: getFolderMessagesQuery,
       transformResponse: (
-        response: BackendResponse<
-          Array<{
-            uid?: string
-            id?: string
-            subject?: string
-            from?: { name: string; email: string }
-            to?: Array<{ name: string; email: string }>
-            date?: string
-            seen?: boolean
-            flagged?: boolean
-            has_attachment?: boolean
-            contents?: Array<{ content: string; contentType: string }>
-          }>
-        > | BackendResponse<ImapMessagesAPIResponse> | ImapMessagesAPIResponse,
+        response:
+          | BackendResponse<
+              Array<{
+                uid?: string
+                id?: string
+                subject?: string
+                from?: { name: string; email: string }
+                to?: Array<{ name: string; email: string }>
+                date?: string
+                seen?: boolean
+                flagged?: boolean
+                has_attachment?: boolean
+                contents?: Array<{ content: string; contentType: string }>
+              }>
+            >
+          | BackendResponse<ImapMessagesAPIResponse>
+          | ImapMessagesAPIResponse,
         meta: { response?: Response }
       ) => {
         const paginationHeader = meta?.response?.headers?.get('X-Pagination')
@@ -268,7 +281,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
         if (Array.isArray(payload)) {
           rawMails = payload
-        } else if (payload && Array.isArray((payload as ImapMessagesAPIResponse).messages)) {
+        } else if (
+          payload &&
+          Array.isArray((payload as ImapMessagesAPIResponse).messages)
+        ) {
           const body = payload as ImapMessagesAPIResponse
           rawMails = body.messages
           if (!paginationHeader) {
@@ -276,7 +292,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             totalPages = body.totalPages ?? 1
             page = body.page ?? 1
           }
-        } else if (payload && Array.isArray((payload as ImapMessagesBackendResponse).mails)) {
+        } else if (
+          payload &&
+          Array.isArray((payload as ImapMessagesBackendResponse).mails)
+        ) {
           const body = payload as ImapMessagesBackendResponse
           rawMails = body.mails
           if (!paginationHeader) {
@@ -306,57 +325,71 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         return result
       },
       providesTags: (result, error, { folder }) => [
-        { type: 'folder/messages', folder },
+        { type: FOLDER_MESSAGES_SLICE, folder },
       ],
     }),
-    
-    getMail: builder.query<ImapMessages, { 
-      accountId?: string
-      folder: string
-      mailId: string 
-    }>({
+
+    getMail: builder.query<
+      ImapMessages,
+      {
+        accountId?: string
+        folder: string
+        mailId: string
+      }
+    >({
       query: getMailQuery,
-      transformResponse: (response: BackendResponse<ImapMessages> | ImapMessages) => {
+      transformResponse: (
+        response: BackendResponse<ImapMessages> | ImapMessages
+      ) => {
         let mail = 'data' in response ? response.data : response
-        
+
         const mailId = mail.uid || mail.id || 'unknown'
-        
+
         if (mail.contents && mail.contents.length > 0 && !mail.body) {
           if (process.env.NODE_ENV === 'development') {
-            console.log(`🔄 [getMail] Extracting body from contents[] for mail: ${mailId}`)
+            console.log(
+              `🔄 [getMail] Extracting body from contents[] for mail: ${mailId}`
+            )
           }
-          
+
           mail = {
             ...mail,
-            body: extractBodyFromContents(mail.contents)
+            body: extractBodyFromContents(mail.contents),
           }
         }
-        
+
         if (mail.attachments) {
           const needsNormalization = Array.isArray(mail.attachments)
-          
+
           if (process.env.NODE_ENV === 'development' && needsNormalization) {
-            const attachmentCount = Array.isArray(mail.attachments) ? mail.attachments.length : 0
-            console.log(`🔄 [getMail] Normalizing ${attachmentCount} attachments for mail: ${mailId}`)
+            const attachmentCount = Array.isArray(mail.attachments)
+              ? mail.attachments.length
+              : 0
+            console.log(
+              `🔄 [getMail] Normalizing ${attachmentCount} attachments for mail: ${mailId}`
+            )
           }
-          
+
           mail = {
             ...mail,
-            attachments: normalizeAttachments(mail.attachments)
+            attachments: normalizeAttachments(mail.attachments),
           }
         }
         return mail
       },
       providesTags: (result, error, { mailId }) => [
-        { type: 'mail', id: mailId },
+        { type: MAIL_SLICE, id: mailId },
       ],
     }),
-    
-    moveToTrash: builder.mutation<void, { 
-      accountId?: string
-      folder: string
-      mailId: string 
-    }>({
+
+    moveToTrash: builder.mutation<
+      void,
+      {
+        accountId?: string
+        folder: string
+        mailId: string
+      }
+    >({
       query: moveToTrashQuery,
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
@@ -367,8 +400,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         })(undefined, { queryFulfilled })
       },
       invalidatesTags: (result, error, { folder }) => [
-        { type: 'folder/messages', folder },
-        'mails/folders',
+        { type: FOLDER_MESSAGES_SLICE, folder },
+        MAILS_FOLDERS_SLICE,
       ],
     }),
 
@@ -433,7 +466,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
-    getFolderShare: builder.query<FolderShareData, { accountId: string; folderPath: string }>({
+    getFolderShare: builder.query<
+      FolderShareData,
+      { accountId: string; folderPath: string }
+    >({
       query: ({ accountId, folderPath }) => ({
         url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
         method: 'GET',
@@ -441,7 +477,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       transformResponse: (response: BackendResponse<FolderShareData>) =>
         response.data ?? { users: {} },
       providesTags: (_result, _error, { folderPath }) => [
-        { type: 'folder/share', folder: folderPath },
+        { type: FOLDER_SHARE_SLICE, folder: folderPath },
       ],
     }),
 
@@ -456,7 +492,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [
         'mails/folders',
-        { type: 'folder/share', folder: folderPath },
+        { type: FOLDER_SHARE_SLICE, folder: folderPath },
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {

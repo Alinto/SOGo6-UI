@@ -115,7 +115,7 @@ export function GeneralSettingsForm({ data, update }: Props) {
                   <TimezoneSelect
                     value={field.value}
                     onValueChange={field.onChange}
-                    className="w-[280px]"
+                    className="w-70"
                   />
                   <FormMessage />
                   <FormDescription>

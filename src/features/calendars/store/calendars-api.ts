@@ -1,4 +1,8 @@
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  CALENDAR_EVENTS_SLICE,
+  CALENDARS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   Calendar,
@@ -11,7 +15,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getCalendars: builder.query<CalendarsResponse, void>({
       query: () => 'calendars',
-      providesTags: ['calendars'],
+      providesTags: [CALENDARS_SLICE],
       // async onQueryStarted(arg, { dispatch, queryFulfilled }) {
       //   await createApiNotificationHandler(dispatch, {
       //     successTitle: 'title.success.string',
@@ -23,14 +27,16 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
     getCalendarById: builder.query<Calendar | null, string>({
       query: (id) => `calendars/${id}`,
-      providesTags: (result, error, id) => [{ type: 'calendars', id }],
+      providesTags: (result, error, id) => [{ type: CALENDARS_SLICE, id }],
     }),
     getCalendarsByType: builder.query<
       Calendar[],
       'personal' | 'shared' | 'subscription'
     >({
       query: (type) => `calendars?type=${type}`,
-      providesTags: (result, error, type) => [{ type: 'calendars', id: type }],
+      providesTags: (result, error, type) => [
+        { type: CALENDARS_SLICE, id: type },
+      ],
     }),
     updateCalendar: builder.mutation<
       Calendar,
@@ -42,8 +48,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         body: patch,
       }),
       invalidatesTags: (result, error, { id }) => [
-        { type: 'calendars', id },
-        'calendars',
+        { type: CALENDARS_SLICE, id },
+        CALENDARS_SLICE,
       ],
     }),
     createCalendar: builder.mutation<Calendar, Partial<Calendar>>({
@@ -52,14 +58,14 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'POST',
         body: data,
       }),
-      invalidatesTags: ['calendars'],
+      invalidatesTags: [CALENDARS_SLICE],
     }),
 
     // Calendar Events endpoints
     getCalendarEvents: builder.query<CalendarEventsResponse, string>({
       query: (calendarId) => `calendars/${calendarId}/events`,
       providesTags: (result, error, calendarId) => [
-        { type: 'calendar_events', id: calendarId },
+        { type: CALENDAR_EVENTS_SLICE, id: calendarId },
       ],
     }),
     getCalendarEventById: builder.query<
@@ -69,7 +75,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: ({ calendarId, eventId }) =>
         `calendars/${calendarId}/events/${eventId}`,
       providesTags: (result, error, { eventId }) => [
-        { type: 'calendar_events', id: eventId },
+        { type: CALENDAR_EVENTS_SLICE, id: eventId },
       ],
     }),
     createCalendarEvent: builder.mutation<
@@ -82,8 +88,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         body: event,
       }),
       invalidatesTags: (result, error, { calendarId }) => [
-        { type: 'calendar_events', id: calendarId },
-        'calendars',
+        { type: CALENDAR_EVENTS_SLICE, id: calendarId },
+        CALENDARS_SLICE,
       ],
     }),
     updateCalendarEvent: builder.mutation<
@@ -116,9 +122,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'DELETE',
       }),
       invalidatesTags: (result, error, { calendarId, eventId }) => [
-        { type: 'calendar_events', id: eventId },
-        { type: 'calendar_events', id: calendarId },
-        'calendars',
+        { type: CALENDAR_EVENTS_SLICE, id: eventId },
+        { type: CALENDAR_EVENTS_SLICE, id: calendarId },
+        CALENDARS_SLICE,
       ],
     }),
 
@@ -201,7 +207,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
       providesTags: (result, error, { calendarIds }) =>
-        calendarIds.map((id) => ({ type: 'calendar_events', id })),
+        calendarIds.map((id) => ({ type: CALENDAR_EVENTS_SLICE, id })),
     }),
     updateCalendarVisibility: builder.mutation<
       null,
