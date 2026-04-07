@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 
 const data = {
-  REACT_APP_API_BASE_URL: process.env.REACT_APP_API_BASE_URL || '/fakeApi',
+  REACT_APP_API_BASE_URL: process.env.REACT_APP_API_BASE_URL,
+  REACT_APP_API_URL: process.env.REACT_APP_API_URL,
   NEXT_PUBLIC_ADMIN_DOMAINS:
     process.env.NEXT_PUBLIC_ADMIN_DOMAINS || 'admin.localhost',
   SSE_ENABLED: process.env.SSE_ENABLED !== 'false',

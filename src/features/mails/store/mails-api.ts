@@ -184,7 +184,7 @@ function normalizeAttachments(
 }
 
 const getFoldersQuery = ({ accountId = '0' }: { accountId?: string } = {}) =>
-  `/api/user/v1/mailboxes/${accountId}/folders`
+  `mailboxes/${accountId}/folders`
 
 const getFolderMessagesQuery = ({
   accountId = '0',
@@ -195,7 +195,7 @@ const getFolderMessagesQuery = ({
   folder: string
   params?: Record<string, string | number | boolean>
 }) => {
-  let url = `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails`
+  let url = `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails`
   if (params && Object.keys(params).length > 0) {
     const searchParams = new URLSearchParams()
     Object.entries(params).forEach(([key, value]) => {
@@ -215,7 +215,7 @@ const getMailQuery = ({
   folder: string
   mailId: string
 }) =>
-  `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`
+  `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`
 
 const moveToTrashQuery = ({
   accountId = '0',
@@ -226,7 +226,7 @@ const moveToTrashQuery = ({
   folder: string
   mailId: string
 }) => ({
-  url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`,
+  url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`,
   method: 'DELETE' as const,
 })
 
@@ -448,7 +448,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         applyToSubfolders,
         permanentlyDelete,
       }) => ({
-        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/purge`,
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/purge`,
         method: 'POST',
         body: {
           ...(date && { date }),
@@ -475,7 +475,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { accountId: string; folderPath: string }
     >({
       query: ({ accountId, folderPath }) => ({
-        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/expunge`,
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/expunge`,
         method: 'POST',
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [
@@ -497,7 +497,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { accountId: string; folderPath: string }
     >({
       query: ({ accountId, folderPath }) => ({
-        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
         method: 'GET',
       }),
       transformResponse: (response: BackendResponse<FolderShareData>) =>
@@ -512,7 +512,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { accountId: string; folderPath: string; users: FolderShareUser[] }
     >({
       query: ({ accountId, folderPath, users }) => ({
-        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
         method: 'POST',
         body: users,
       }),
@@ -535,7 +535,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { accountId: string; body: CreateFolderBody }
     >({
       query: ({ accountId, body }) => ({
-        url: `/api/user/v1/mailboxes/${accountId}/folders`,
+        url: `mailboxes/${accountId}/folders`,
         method: 'POST',
         body,
       }),
@@ -557,7 +557,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { accountId: string; folderPath: string }
     >({
       query: ({ accountId, folderPath }) => ({
-        url: `/api/user/v1/mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [

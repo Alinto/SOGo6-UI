@@ -9,7 +9,7 @@ describe('mailsApi', () => {
   describe('getFoldersQuery', () => {
     it('should return correct query URL', () => {
       const query = getFoldersQuery()
-      expect(query).toBe('/api/user/v1/mailboxes/0/folders')
+      expect(query).toBe('mailboxes/0/folders')
     })
   })
 
@@ -18,7 +18,7 @@ describe('mailsApi', () => {
       const query = getFolderMessagesQuery({
         folder: 'INBOX',
       })
-      expect(query).toBe('/api/user/v1/mailboxes/0/folders/INBOX/mails')
+      expect(query).toBe('mailboxes/0/folders/INBOX/mails')
     })
 
     it('should return correct query URL with params', () => {
@@ -26,7 +26,7 @@ describe('mailsApi', () => {
         folder: 'INBOX',
         params: { limit: 10, offset: 0 },
       })
-      expect(query).toBe('/api/user/v1/mailboxes/0/folders/INBOX/mails?limit=10&offset=0')
+      expect(query).toBe('mailboxes/0/folders/INBOX/mails?limit=10&offset=0')
     })
 
     it('should handle multiple params', () => {
@@ -35,7 +35,7 @@ describe('mailsApi', () => {
         params: { limit: 20, sort: 'date', reverse: true },
       })
       expect(query).toBe(
-        '/api/user/v1/mailboxes/0/folders/Sent/mails?limit=20&sort=date&reverse=true'
+        'mailboxes/0/folders/Sent/mails?limit=20&sort=date&reverse=true'
       )
     })
   })
@@ -46,7 +46,7 @@ describe('mailsApi', () => {
         folder: 'INBOX',
         mailId: '123',
       })
-      expect(query).toBe('/api/user/v1/mailboxes/0/folders/INBOX/mails/123')
+      expect(query).toBe('mailboxes/0/folders/INBOX/mails/123')
     })
 
     it('should encode special characters in folder and mailId', () => {
@@ -55,7 +55,7 @@ describe('mailsApi', () => {
         mailId: 'test@mail.com',
       })
       expect(query).toBe(
-        '/api/user/v1/mailboxes/0/folders/Test%20Folder/mails/test%40mail.com'
+        'mailboxes/0/folders/Test%20Folder/mails/test%40mail.com'
       )
     })
   })
@@ -67,7 +67,7 @@ describe('mailsApi', () => {
         mailId: '123',
       })
       expect(query).toEqual({
-        url: '/api/user/v1/mailboxes/0/folders/INBOX/mails/123',
+        url: 'mailboxes/0/folders/INBOX/mails/123',
         method: 'DELETE',
       })
     })
@@ -78,7 +78,7 @@ describe('mailsApi', () => {
         mailId: 'test@mail.com',
       })
       expect(query.url).toBe(
-        '/api/user/v1/mailboxes/0/folders/Test%20Folder/mails/test%40mail.com'
+        'mailboxes/0/folders/Test%20Folder/mails/test%40mail.com'
       )
     })
   })

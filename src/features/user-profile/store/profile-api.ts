@@ -5,18 +5,18 @@ import type {
 import { apiSlice, PROFILE_SLICE } from '@/lib/redux/api/api-slice'
 
 /**
- * API slice for the /api/user/v1/profile endpoint
+ * API slice for the /profile endpoint
  * Pattern: injectEndpoints into main apiSlice
  */
 export const profileApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     /**
-     * GET /api/user/v1/profile
+     * GET /profile
      * Fetches complete profile: mailboxes, preferences, UI settings
      */
     getUserProfile: builder.query<ProfileData, void>({
       query: () => ({
-        url: '/api/user/v1/profile',
+        url: 'profile',
         method: 'GET',
       }),
 

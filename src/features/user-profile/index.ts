@@ -1,6 +1,6 @@
 /**
  * User Profile feature module
- * Exports types, hooks, and API for the /api/user/v1/profile endpoint
+ * Exports types, hooks, and API for the /profile endpoint
  */
 
 // Types

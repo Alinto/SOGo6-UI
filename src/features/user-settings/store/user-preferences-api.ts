@@ -16,7 +16,7 @@ import {
 } from './user-preferences-api-types'
 
 const patchPreferences = (data: object) => ({
-  url: 'api/user/v1/preferences',
+  url: 'preferences',
   method: 'PATCH',
   body: {
     settings: {
@@ -41,7 +41,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // GET ALL PREFERENCES
     getUserPreferences: builder.query<UserPreferencesResponse, void>({
-      query: () => 'api/user/v1/preferences',
+      query: () => 'preferences',
       providesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
     }),
 

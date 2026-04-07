@@ -77,13 +77,13 @@ const tagTypes = [
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call
-let cachedBaseUrl: string | null = null
+let cachedBaseUrl: string
 
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
   // Fetch and cache base URL only once
   if (!cachedBaseUrl) {
     const envVars = await fetchEnvVars()
-    cachedBaseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
+    cachedBaseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi' //fakeApi if env var is missing
 
     // Log only in development
     if (process.env.NODE_ENV === 'development') {

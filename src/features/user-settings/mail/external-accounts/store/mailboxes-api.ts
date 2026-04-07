@@ -17,13 +17,13 @@ const mailboxesOnQueryStarted = async (
 export const userMailboxesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getUserMailboxes: builder.query<MailboxesResponse, void>({
-      query: () => 'api/user/v1/mailboxes',
+      query: () => 'mailboxes',
       providesTags: [MAILBOXES_SLICE],
     }),
 
     createUserMailbox: builder.mutation<MailboxesResponse, MailboxPOST>({
       query: ({ ...post }) => ({
-        url: `api/user/v1/mailboxes`,
+        url: 'mailboxes',
         method: 'POST',
         body: post,
       }),
@@ -33,7 +33,7 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
 
     updateUserMailbox: builder.mutation<MailboxesResponse, Mailbox>({
       query: ({ id, ...patch }) => ({
-        url: `api/user/v1/mailboxes/${id}`,
+        url: `mailboxes/${id}`,
         method: 'PATCH',
         body: { ...patch },
       }),
@@ -43,7 +43,7 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
 
     deleteUserMailbox: builder.mutation<void, { id: string }>({
       query: ({ id }) => ({
-        url: `api/user/v1/mailboxes/${id}`,
+        url: `mailboxes/${id}`,
         method: 'DELETE',
       }),
       invalidatesTags: [MAILBOXES_SLICE],
