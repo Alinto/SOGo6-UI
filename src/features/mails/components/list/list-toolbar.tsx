@@ -7,11 +7,11 @@ import ListFilterDropdown from '@/features/mails/components/list/list-filter-dro
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListSort from '@/features/mails/components/list/list-sort'
 import { nameSelector } from '@/features/mails/components/utils'
+import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
-import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
@@ -25,10 +25,11 @@ const ListToolbar: React.FC = () => {
   const tCommons = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
   const dispatch = useAppDispatch()
-  const { folder } = useParams()
+  const { folder, account } = useParams()
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '0')
 
-  const { data } = useGetFolderMessagesQuery({ folder: folderString })
+  const { data, currentPage } = useFolderMessages({ folder: folderString, accountId: accountString })
 
   const selectedIds = useAppSelector(
     (state: RootState) => state.mailLayout.selectedMailIds
@@ -97,9 +98,9 @@ const ListToolbar: React.FC = () => {
           {isMobile ? <ListFilterDropdown /> : <ListFilter />}
           {!isMobile && <ListSort />}
           <ListPagination
-            hasNextPage={data?.hasNextPage ?? false}
-            hasPreviousPage={data?.hasPreviousPage ?? false}
-            currentPage={data?.page ?? 1}
+            hasNextPage={currentPage < (data?.totalPages ?? 1)}
+            hasPreviousPage={currentPage > 1}
+            currentPage={currentPage}
             totalPages={data?.totalPages ?? 1}
           />
         </div>

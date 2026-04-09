@@ -24,6 +24,7 @@ interface MessagesListProps {
   hasNextPage?: boolean
   hasPreviousPage?: boolean
   isLoading: boolean
+  isFetching?: boolean
   type?: 'classic' | 'modern'
   hideToolbar?: boolean
 }
@@ -31,6 +32,7 @@ interface MessagesListProps {
 const MessagesList: React.FC<MessagesListProps> = ({
   items,
   isLoading,
+  isFetching = false,
   type,
   hideToolbar = false,
 }) => {
@@ -73,7 +75,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
             <span className="text-muted-foreground hidden text-sm md:inline-block" />
           </div>
         )}
-        <ul className={cn('min-h-0 flex-1 overflow-y-auto rounded', isMobile && 'pb-12')}>
+        <ul className={cn('min-h-0 flex-1 overflow-y-auto rounded transition-opacity', isMobile && 'pb-12', isFetching && 'opacity-50 pointer-events-none')}>
           {items.length === 0 && (
             <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
               {t('no_items.string')}

@@ -57,7 +57,11 @@ const ListPagination: React.FC<ListPaginationProps> = ({
   }
 
   const handleNext = () => {
-    push(`?page=${currentPage + 1}`)
+    if (currentPage < totalPages) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('page', (currentPage + 1).toString())
+      push(`${pathname}?${params.toString()}`)
+    }
   }
 
   return (

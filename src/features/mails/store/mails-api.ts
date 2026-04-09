@@ -20,6 +20,15 @@ interface BackendResponse<T> {
   error_msg: string
 }
 
+export interface MailListQueryParams {
+  page?: number | string
+  page_size?: number | string
+  sort_by?: 'date' | 'from' | 'cc' | 'size' | 'subject' | 'to'
+  sort_order?: 'asc' | 'desc'
+  fields?: string
+  fields_action?: 'include' | 'exclude'
+}
+
 /** Folder payloads may still use legacy `unseen` instead of `unseen_count`. */
 type RawImapFolder = Omit<ImapFolder, 'unseen_count' | 'selectable'> & {
   unseen_count?: number
@@ -236,10 +245,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { 
         accountId?: string
         folder: string
-        params?: Record<string, string | number | boolean> 
+        params?: MailListQueryParams & Record<string, string | number | boolean>
       }
     >({
-      keepUnusedDataFor: 3600,
+      keepUnusedDataFor: 60,
       query: getFolderMessagesQuery,
       transformResponse: (
         response: BackendResponse<
