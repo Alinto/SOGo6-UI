@@ -30,11 +30,15 @@ const ListFilter: React.FC = () => {
         value={filter}
         defaultValue="all"
         onValueChange={(value) => {
+          const newParams = new URLSearchParams(searchParams.toString())
           if (!value || value === 'all') {
-            push(pathname)
+            newParams.delete('filter')
           } else {
-            push(`?filter=${value}`)
+            newParams.set('filter', value)
           }
+          newParams.delete('page')
+          const query = newParams.toString()
+          push(query ? `${pathname}?${query}` : pathname)
         }}
       >
         <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>

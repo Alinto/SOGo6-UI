@@ -12,6 +12,16 @@ jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
 }))
 
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: jest.fn(() => jest.fn()),
+  useAppSelector: jest.fn(() => false),
+}))
+
+jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
+  selectSkipFolderFetch: (s: any) => s?.mailNavigation?.skipFolderFetch ?? false,
+  setMailNavigation: jest.fn((p) => ({ type: 'mailNavigation/setMailNavigation', payload: p })),
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
 }))
@@ -130,7 +140,8 @@ describe('Classic Page', () => {
       mockUseParams.mockReturnValue({ folder: ['Archive', 'Old'], mail_id: undefined })
       render(<Page />)
       expect(mockUseGetFolderMessagesQuery).toHaveBeenCalledWith(
-        expect.objectContaining({ folder: 'Archive/Old' })
+        expect.objectContaining({ folder: 'Archive/Old' }),
+        expect.anything()
       )
     })
   })
