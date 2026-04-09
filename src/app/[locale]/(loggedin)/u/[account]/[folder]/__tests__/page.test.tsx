@@ -233,10 +233,7 @@ describe('Mail Folder Page', () => {
 
   it('should pass search parameters to the query', () => {
     const mockRefetch = jest.fn()
-    const searchParams = new URLSearchParams([
-      ['sort', 'date'],
-      ['order', 'desc'],
-    ])
+    const searchParams = new URLSearchParams([['sort', 't_desc']])
 
     ;(useSearchParams as jest.Mock).mockReturnValue(searchParams)
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
@@ -260,10 +257,12 @@ describe('Mail Folder Page', () => {
 
     expect(useGetFolderMessagesQuery).toHaveBeenCalledWith(
       expect.objectContaining({
-        params: {
-          sort: 'date',
-          order: 'desc',
-        },
+        params: expect.objectContaining({
+          fields: 'contents',
+          fields_action: 'exclude',
+          sort_by: 'date',
+          sort_order: 'asc',
+        }),
       }),
       { skip: false }
     )
