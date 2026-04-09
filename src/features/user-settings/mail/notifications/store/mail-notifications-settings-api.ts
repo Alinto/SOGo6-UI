@@ -1,4 +1,7 @@
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  MAIL_NOTIFICATIONS_SETTINGS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type { MailNotifications } from '../mail-notifications-type'
 
@@ -6,7 +9,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getMailNotificationsSettings: builder.query<MailNotifications, void>({
       query: () => 'settings/mail/notifications',
-      providesTags: ['mail_notifications_settings'],
+      providesTags: [MAIL_NOTIFICATIONS_SETTINGS_SLICE],
     }),
     updateMailNotificationsSettings: builder.mutation<
       MailNotifications,
@@ -17,7 +20,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: patch,
       }),
-      invalidatesTags: ['mail_notifications_settings'],
+      invalidatesTags: [MAIL_NOTIFICATIONS_SETTINGS_SLICE],
     }),
   }),
   overrideExisting: false,

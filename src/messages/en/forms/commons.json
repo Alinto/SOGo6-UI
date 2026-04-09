@@ -41,6 +41,9 @@
         },
         "emails": {
             "placeholder": "Add email address and press Enter"
+        },
+        "validation": {
+            "required": "Field is required"
         }
     }
 }

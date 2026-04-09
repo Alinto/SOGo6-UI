@@ -1,5 +1,8 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  MAIL_FORWARD_SETTINGS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type { MailForward } from '../mail-forward-types'
 
@@ -7,7 +10,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getMailForwardSettings: builder.query<MailForward, void>({
       query: () => 'settings/mail/forward',
-      providesTags: ['mail_forward_settings'],
+      providesTags: [MAIL_FORWARD_SETTINGS_SLICE],
     }),
     updateMailForwardSettings: builder.mutation<
       MailForward,
@@ -18,7 +21,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: patch,
       }),
-      invalidatesTags: ['mail_forward_settings'],
+      invalidatesTags: [MAIL_FORWARD_SETTINGS_SLICE],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
           successTitle: 'US_MAIL_FORWARD.success.title.string',
@@ -36,4 +39,3 @@ export const {
   useGetMailForwardSettingsQuery,
   useUpdateMailForwardSettingsMutation,
 } = injectedEndpoints
-

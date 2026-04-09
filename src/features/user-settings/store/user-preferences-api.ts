@@ -1,6 +1,9 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
-import { apiSlice } from '@/lib/redux/api/api-slice'
-import type { MutationLifecycleApi } from '@reduxjs/toolkit/query'
+import {
+  apiSlice,
+  PREFERENCES_SLICE,
+  PROFILE_SLICE,
+} from '@/lib/redux/api/api-slice'
 import {
   UserCalendarCategory,
   UserCalendarGeneral,
@@ -12,21 +15,19 @@ import {
   UserSecurity,
 } from './user-preferences-api-types'
 
-const patchPreferences = (data: object) => {
-  return {
-    url: 'api/user/v1/preferences',
-    method: 'PATCH',
-    body: {
-      settings: {
-        ...data,
-      },
+const patchPreferences = (data: object) => ({
+  url: 'preferences',
+  method: 'PATCH',
+  body: {
+    settings: {
+      ...data,
     },
-  }
-}
+  },
+})
 
 const patchPreferencesOnQueryStarted = async (
   _arg: unknown,
-  { dispatch, queryFulfilled }: MutationLifecycleApi
+  { dispatch, queryFulfilled }: { dispatch: any; queryFulfilled: Promise<any> }
 ) => {
   await createApiNotificationHandler(dispatch, {
     successTitle: 'title.success.string',
@@ -40,8 +41,8 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // GET ALL PREFERENCES
     getUserPreferences: builder.query<UserPreferencesResponse, void>({
-      query: () => 'api/user/v1/preferences',
-      providesTags: ['preferences', 'profile'],
+      query: () => 'preferences',
+      providesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
     }),
 
     // // PATCH — same endpoint for all forms
@@ -50,7 +51,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
     //   UserGeneral
     // >({
     //   query: (body) => patchPreferences('USER_GENERAL', body),
-    //   invalidatesTags: ['preferences'],
+    //   invalidatesTags: [TAG_PREFERENCES],
     //   onQueryStarted: patchPreferencesOnQueryStarted,
     // }),
 
@@ -60,7 +61,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserGeneral
     >({
       query: (body) => patchPreferences({ USER_GENERAL: body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
     // PATCH — mail general
@@ -69,7 +70,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserMailGeneral
     >({
       query: (body) => patchPreferences({ USER_MAIL_GENERAL_SETTINGS: body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
     // PATCH — mail category
@@ -78,7 +79,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserMailCategory
     >({
       query: (body) => patchPreferences({ USER_MAIL_CATEGORY_SETTINGS: body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
     // PATCH — address-books
@@ -87,7 +88,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserContactPreferences
     >({
       query: (body) => patchPreferences({ ...body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
     // PATCH — calendar general
@@ -96,7 +97,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserCalendarGeneral
     >({
       query: (body) => patchPreferences({ USER_CALENDAR_GENERAL: body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
     // PATCH — calendar category
@@ -105,7 +106,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserCalendarCategory
     >({
       query: (body) => patchPreferences({ USER_CALENDAR_CATEGORY: body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
     // PATCH — security
@@ -114,7 +115,7 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
       UserSecurity
     >({
       query: (body) => patchPreferences({ USER_SECURITY: body }),
-      invalidatesTags: ['preferences', 'profile'],
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
       onQueryStarted: patchPreferencesOnQueryStarted,
     }),
   }),

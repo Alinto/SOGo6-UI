@@ -1,7 +1,6 @@
 import { SerializedError } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
-
 interface BackendErrorResponse {
   error_msg?: string
   error_code?: string
@@ -16,9 +15,7 @@ export function isFetchBaseQueryError(
   return typeof error === 'object' && error != null && 'status' in error
 }
 
-export function isSerializedError(
-  error: unknown
-): error is SerializedError {
+export function isSerializedError(error: unknown): error is SerializedError {
   return (
     typeof error === 'object' &&
     error != null &&
@@ -35,12 +32,20 @@ function isBackendErrorResponse(data: unknown): data is BackendErrorResponse {
   )
 }
 
+export function getExistingErrorMessage(error: unknown): string | null {
+  if (error == null) {
+    return null
+  }
+  return getErrorMessage(error)
+}
+
 export function getErrorMessage(error: unknown): string {
+  console.error('getErrorMessage error object:', error)
   if (isFetchBaseQueryError(error)) {
     if ('error' in error && typeof error.error === 'string') {
       return error.error
     }
-    
+
     if ('data' in error && error.data) {
       if (isBackendErrorResponse(error.data)) {
         return (
@@ -50,12 +55,12 @@ export function getErrorMessage(error: unknown): string {
           `Erreur ${error.status}`
         )
       }
-      
+
       if (typeof error.data === 'string') {
         return error.data
       }
     }
-    
+
     return `Erreur ${error.status}`
   }
 

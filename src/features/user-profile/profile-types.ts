@@ -1,5 +1,5 @@
 /**
- * Types for the GET /api/user/v1/profile endpoint
+ * Types for the GET /profile endpoint
  */
 
 // Raw API response structure

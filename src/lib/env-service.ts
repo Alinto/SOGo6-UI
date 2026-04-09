@@ -2,6 +2,7 @@ import React from 'react'
 
 export interface EnvVariables {
   REACT_APP_API_BASE_URL?: string
+  REACT_APP_API_URL?: string
   SSE_ENABLED?: boolean
   // Add other environment variables here as needed
 }
@@ -87,6 +88,7 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
             `%c➡️  Switching to /fakeApi (mock data)`,
             'color: #f59e0b; font-weight: bold'
           )
+          //fakeApi defined here
           data.REACT_APP_API_BASE_URL = '/fakeApi'
         } else {
           console.log(

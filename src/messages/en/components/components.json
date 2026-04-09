@@ -1,6 +1,10 @@
-
 {
     "COMPONENTS": {
+        "forms": {
+            "fixed-form-button-group": {
+                "alert": "{number} errors"
+            }
+        },
         "color-picker": {
             "custom-color": "Custom Color"
         },
