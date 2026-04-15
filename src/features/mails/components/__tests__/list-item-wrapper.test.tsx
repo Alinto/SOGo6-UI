@@ -27,6 +27,11 @@ describe('ListItem Component (Wrapper)', () => {
     flagged: false,
     hasAttachment: false,
     snippet: 'This is a test email snippet',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [] as string[],
   }
   const mockOnHandleCheckboxClick = jest.fn()
 

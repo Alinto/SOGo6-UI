@@ -30,6 +30,11 @@ jest.mock('@/components/dnd/draggable', () => ({
   __esModule: true,
   default: ({ children }: any) => <div data-testid="draggable">{children}</div>,
 }))
+jest.mock('../../store/mails-api', () => ({
+  useGetFoldersQuery: jest.fn(() => ({ data: undefined })),
+  useMailActionMutation: jest.fn(() => [jest.fn()]),
+  useMoveToTrashMutation: jest.fn(() => [jest.fn()]),
+}))
 jest.mock('../list-item', () => ({
   __esModule: true,
   default: ({ data }: any) => <div data-testid="list-item" data-id={data.id} />,
@@ -61,8 +66,38 @@ const mockUseTranslations = require('next-intl').useTranslations
 const mockNameSelector = require('../utils').nameSelector
 
 const items = [
-  { id: '1', subject: 'Mail 1', from: { name: 'A', email: 'a@a.com' }, to: [], date: '2024-01-01', seen: false, flagged: false, hasAttachment: false, snippet: '' },
-  { id: '2', subject: 'Mail 2', from: { name: 'B', email: 'b@b.com' }, to: [], date: '2024-01-02', seen: true,  flagged: true,  hasAttachment: true,  snippet: '' },
+  {
+    id: '1',
+    subject: 'Mail 1',
+    from: { name: 'A', email: 'a@a.com' },
+    to: [],
+    date: '2024-01-01',
+    seen: false,
+    flagged: false,
+    hasAttachment: false,
+    snippet: '',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
+  },
+  {
+    id: '2',
+    subject: 'Mail 2',
+    from: { name: 'B', email: 'b@b.com' },
+    to: [],
+    date: '2024-01-02',
+    seen: true,
+    flagged: true,
+    hasAttachment: true,
+    snippet: '',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
+  },
 ]
 
 const defaultProps = { items, total: 2, page: 1, totalPages: 1, isLoading: false }

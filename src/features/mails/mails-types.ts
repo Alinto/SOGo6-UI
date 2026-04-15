@@ -34,6 +34,13 @@ export interface ImapMessagesList {
   hasAttachment: boolean
   snippet: string
   size?: number
+  answered: boolean
+  forwarded: boolean
+  deleted: boolean
+  /** 1–5, 3 = normal ; 1–2 = haute priorité */
+  priority: number
+  /** Ex. `"event"`, `"contact"` (API : `mail_type`) */
+  mailType: string[]
 }
 
 export interface ImapAttachmentPart {
@@ -97,7 +104,8 @@ export interface ImapMessages {
 }
 
 export interface ImapMessagesAPIResponse {
-  messages: ImapMessagesList[]
+  /** Éléments bruts avant `mapMailToListItem` (API / fakeApi). */
+  messages: unknown[]
   total: number
   pageSize: number
   page: number

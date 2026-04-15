@@ -116,6 +116,11 @@ function updateMailsCache(
     flagged: false,
     hasAttachment: false,
     snippet: (mailData.preview as string) || '',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
   }
   console.log('Creating new mail object:', newMail)
 

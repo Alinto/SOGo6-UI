@@ -69,7 +69,8 @@ interface PaginationHeader {
   page: number
 }
 
-function mapMailToListItem(mail: {
+/** Élément message brut (liste dossier) tel que renvoyé par l’API. */
+interface RawMailListItem {
   uid?: string
   id?: string
   subject?: string
@@ -81,14 +82,42 @@ function mapMailToListItem(mail: {
   has_attachment?: boolean
   size?: number
   contents?: Array<{ content: string; contentType: string }>
-}): ImapMessagesList {
+  snippet?: string
+  answered?: boolean
+  forwarded?: boolean
+  deleted?: boolean
+  priority?: number
+  mail_type?: string | string[]
+  /** Déjà normalisé (réponse `{ mails: ImapMessagesList[] }`). */
+  mailType?: string[]
+}
+
+function normalizeListMailTypes(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.filter((v): v is string => typeof v === 'string')
+  }
+  if (typeof raw === 'string' && raw.length > 0) {
+    return [raw]
+  }
+  return []
+}
+
+function coerceListPriority(value: unknown): number {
+  const n = typeof value === 'number' ? value : Number(value)
+  return Number.isFinite(n) ? n : 3
+}
+
+function mapMailToListItem(mail: RawMailListItem): ImapMessagesList {
   const textContent =
     mail.contents?.find((c) => c.contentType === 'text/plain')?.content || ''
-  const snippet = textContent
+  const snippetFromContents = textContent
     .replace(/\r\n/g, ' ')
     .replace(/\n/g, ' ')
     .trim()
     .substring(0, 100)
+  const apiSnippet =
+    typeof mail.snippet === 'string' ? mail.snippet.trim() : ''
+  const snippet = apiSnippet || snippetFromContents
 
   return {
     id: mail.uid || mail.id || '',
@@ -99,8 +128,17 @@ function mapMailToListItem(mail: {
     seen: mail.seen || false,
     flagged: mail.flagged || false,
     hasAttachment: mail.has_attachment || false,
-    snippet: snippet,
+    snippet,
     size: mail.size,
+    answered: mail.answered ?? false,
+    forwarded: mail.forwarded ?? false,
+    deleted: mail.deleted ?? false,
+    priority: coerceListPriority(mail.priority),
+    mailType: normalizeListMailTypes(
+      mail.mail_type !== undefined && mail.mail_type !== null
+        ? mail.mail_type
+        : mail.mailType
+    ),
   }
 }
 
@@ -126,10 +164,7 @@ function extractBodyFromContents(
       (c) => c?.contentType === 'text/plain' && typeof c?.content === 'string'
     )
     return plainContent?.content || ''
-  } catch (error) {
-    if (process.env.NODE_ENV === 'development') {
-      console.error('❌ [extractBodyFromContents] Error:', error)
-    }
+  } catch {
     return ''
   }
 }
@@ -180,10 +215,7 @@ function normalizeAttachments(
         count: parts.length,
         zipUri: undefined,
       }
-    } catch (error) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('❌ [normalizeAttachments] Error:', error)
-      }
+    } catch {
       return { parts: [], count: 0 }
     }
   }
@@ -239,6 +271,24 @@ const moveToTrashQuery = ({
   method: 'DELETE' as const,
 })
 
+const mailActionQuery = ({
+  accountId = '0',
+  folder,
+  mailId,
+  action,
+  data,
+}: {
+  accountId?: string
+  folder: string
+  mailId: string
+  action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+  data?: string | string[] | null
+}) => ({
+  url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}/action`,
+  method: 'POST' as const,
+  body: { action, data },
+})
+
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getFolders: builder.query<ImapFolder[], { accountId?: string }>({
@@ -262,20 +312,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: getFolderMessagesQuery,
       transformResponse: (
         response:
-          | BackendResponse<
-              Array<{
-                uid?: string
-                id?: string
-                subject?: string
-                from?: { name: string; email: string }
-                to?: Array<{ name: string; email: string }>
-                date?: string
-                seen?: boolean
-                flagged?: boolean
-                has_attachment?: boolean
-                contents?: Array<{ content: string; contentType: string }>
-              }>
-            >
+          | BackendResponse<RawMailListItem[]>
           | BackendResponse<ImapMessagesAPIResponse>
           | ImapMessagesAPIResponse,
         meta: { response?: Response }
@@ -291,8 +328,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             total = pagination.total || 0
             totalPages = pagination.total_pages || 1
             page = pagination.page || 1
-          } catch (e) {
-            console.error('❌ Failed to parse pagination header:', e)
+            totalPages = totalPages || 1
+            total = total >= 0 ? total : 0
+          } catch {
+            // Invalid X-Pagination JSON: totals are derived from the response body when possible
           }
         }
 
@@ -301,27 +340,18 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             ? response.data
             : response
 
-        let rawMails: Array<{
-          uid?: string
-          id?: string
-          subject?: string
-          from?: { name: string; email: string }
-          to?: Array<{ name: string; email: string }>
-          date?: string
-          seen?: boolean
-          flagged?: boolean
-          has_attachment?: boolean
-          contents?: Array<{ content: string; contentType: string }>
-        }> = []
+        let rawMails: RawMailListItem[] = []
 
         if (Array.isArray(payload)) {
-          rawMails = payload
+          rawMails = payload as RawMailListItem[]
         } else if (
           payload &&
-          Array.isArray((payload as ImapMessagesAPIResponse).messages)
+          typeof payload === 'object' &&
+          'messages' in payload &&
+          Array.isArray((payload as { messages: unknown }).messages)
         ) {
           const body = payload as ImapMessagesAPIResponse
-          rawMails = body.messages
+          rawMails = body.messages as RawMailListItem[]
           if (!paginationHeader) {
             total = body.total ?? rawMails.length
             totalPages = body.totalPages ?? 1
@@ -329,10 +359,12 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           }
         } else if (
           payload &&
-          Array.isArray((payload as ImapMessagesBackendResponse).mails)
+          typeof payload === 'object' &&
+          'mails' in payload &&
+          Array.isArray((payload as { mails: unknown }).mails)
         ) {
           const body = payload as ImapMessagesBackendResponse
-          rawMails = body.mails
+          rawMails = body.mails as RawMailListItem[]
           if (!paginationHeader) {
             total = body.total ?? rawMails.length
             totalPages = body.totalPages ?? 1
@@ -378,15 +410,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       ) => {
         let mail = 'data' in response ? response.data : response
 
-        const mailId = mail.uid || mail.id || 'unknown'
-
         if (mail.contents && mail.contents.length > 0 && !mail.body) {
-          if (process.env.NODE_ENV === 'development') {
-            console.log(
-              `🔄 [getMail] Extracting body from contents[] for mail: ${mailId}`
-            )
-          }
-
           mail = {
             ...mail,
             body: extractBodyFromContents(mail.contents),
@@ -394,17 +418,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
 
         if (mail.attachments) {
-          const needsNormalization = Array.isArray(mail.attachments)
-
-          if (process.env.NODE_ENV === 'development' && needsNormalization) {
-            const attachmentCount = Array.isArray(mail.attachments)
-              ? mail.attachments.length
-              : 0
-            console.log(
-              `🔄 [getMail] Normalizing ${attachmentCount} attachments for mail: ${mailId}`
-            )
-          }
-
           mail = {
             ...mail,
             attachments: normalizeAttachments(mail.attachments),
@@ -434,6 +447,23 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'message.error.string',
         })(undefined, { queryFulfilled })
       },
+      invalidatesTags: (result, error, { folder }) => [
+        { type: FOLDER_MESSAGES_SLICE, folder },
+        MAILS_FOLDERS_SLICE,
+      ],
+    }),
+
+    mailAction: builder.mutation<
+      void,
+      {
+        accountId?: string
+        folder: string
+        mailId: string
+        action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+        data?: string | string[] | null
+      }
+    >({
+      query: mailActionQuery,
       invalidatesTags: (result, error, { folder }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
         MAILS_FOLDERS_SLICE,
@@ -592,6 +622,7 @@ export const {
   useGetFolderMessagesQuery,
   useGetMailQuery,
   useMoveToTrashMutation,
+  useMailActionMutation,
   usePurgeFolderMutation,
   useExpungeFolderMutation,
   useGetFolderShareQuery,
@@ -606,5 +637,6 @@ export {
   getFolderMessagesQuery,
   getFoldersQuery,
   getMailQuery,
+  mailActionQuery,
   moveToTrashQuery,
 }

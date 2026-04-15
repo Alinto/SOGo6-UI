@@ -3,7 +3,8 @@ import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
-import ListFilterDropdown from '../list/list-filter-dropdown'
+import React from 'react'
+import ListFilterDropdown from '../list-filter-dropdown'
 
 jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(),
@@ -30,7 +31,9 @@ jest.mock('@/components/ui/select', () => ({
     </div>
   )),
   SelectTrigger: jest.fn(({ children }) => (
-    <button data-testid="select-trigger">{children}</button>
+    <button type="button" data-testid="select-trigger">
+      {children}
+    </button>
   )),
   SelectValue: jest.fn(() => <span data-testid="select-value">All</span>),
   SelectContent: jest.fn(({ children }) => (
@@ -52,6 +55,8 @@ describe('ListFilterDropdown Component', () => {
       'filter.unread.string': 'Unread',
       'filter.starred.string': 'Starred',
       'filter.attachments.string': 'Attachments',
+      'filter.client_scope_notice.string':
+        'Filters apply only to messages loaded on this page.',
     }
     return translations[key] || key
   })
@@ -170,7 +175,6 @@ describe('ListFilterDropdown Component', () => {
 
     render(<ListFilterDropdown />)
 
-    // Verify translations were called with filter keys
     expect(mockTranslate).toHaveBeenCalledWith('filter.all.string')
     expect(mockTranslate).toHaveBeenCalledWith('filter.read.string')
     expect(mockTranslate).toHaveBeenCalledWith('filter.unread.string')
@@ -186,5 +190,18 @@ describe('ListFilterDropdown Component', () => {
     fireEvent.change(input, { target: { value: '' } })
 
     expect(mockPush).toHaveBeenCalledWith('/u/test@example.com/inbox')
+  })
+
+  it('shows client-side filter scope notice when filter is not all', () => {
+    ;(useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams('filter=unread')
+    )
+
+    render(<ListFilterDropdown />)
+    expect(
+      screen.getByText(
+        'Filters apply only to messages loaded on this page.'
+      )
+    ).toBeInTheDocument()
   })
 })

@@ -29,6 +29,11 @@ describe('ListItemClassic', () => {
     flagged: true,
     hasAttachment: true,
     snippet: 'Test snippet',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
   }
 
   const mockOnHandleCheckboxClick = jest.fn()
@@ -56,6 +61,7 @@ describe('ListItemClassic', () => {
 
     expect(screen.getByText('John Doe')).toBeInTheDocument()
     expect(screen.getByText('Test Subject')).toBeInTheDocument()
+    expect(screen.getByText('Test snippet')).toBeInTheDocument()
     expect(screen.getByText('J')).toBeInTheDocument() // Avatar fallback
   })
 

@@ -30,6 +30,11 @@ const mockData: ImapMessagesList = {
   flagged: false,
   hasAttachment: false,
   snippet: 'snippet',
+  answered: false,
+  forwarded: false,
+  deleted: false,
+  priority: 3,
+  mailType: [],
 }
 
 const defaultProps = {
