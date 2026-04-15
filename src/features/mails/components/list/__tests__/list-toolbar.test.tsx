@@ -105,6 +105,13 @@ describe('ListToolbar', () => {
       expect(screen.getByTestId('list-pagination')).toBeInTheDocument()
     })
 
+    it('hides ListPagination when a client-side URL filter is active', () => {
+      const { useSearchParams } = require('next/navigation')
+      useSearchParams.mockReturnValue(new URLSearchParams('filter=unread'))
+      render(<ListToolbar />)
+      expect(screen.queryByTestId('list-pagination')).not.toBeInTheDocument()
+    })
+
     it('renders checkbox', () => {
       render(<ListToolbar />)
       expect(screen.getByTestId('checkbox')).toBeInTheDocument()

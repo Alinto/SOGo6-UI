@@ -41,6 +41,11 @@ describe('Mails Types', () => {
       flagged: false,
       hasAttachment: false,
       snippet: 'Test snippet',
+      answered: false,
+      forwarded: false,
+      deleted: false,
+      priority: 3,
+      mailType: [],
     }
     expect(message.id).toBe('1')
   })

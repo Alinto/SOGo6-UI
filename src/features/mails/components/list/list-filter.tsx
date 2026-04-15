@@ -23,87 +23,96 @@ const ListFilter: React.FC = () => {
   const mailLayoutMode = useAppSelector((state: RootState) => state.mailLayout.mode)
 
   return (
-    <div className="flex items-center gap-2">
-      <ToggleGroup
-        variant={'outline'}
-        type="single"
-        value={filter}
-        defaultValue="all"
-        onValueChange={(value) => {
-          const newParams = new URLSearchParams(searchParams.toString())
-          if (!value || value === 'all') {
-            newParams.delete('filter')
-          } else {
-            newParams.set('filter', value)
-          }
-          newParams.delete('page')
-          const query = newParams.toString()
-          push(query ? `${pathname}?${query}` : pathname)
-        }}
-      >
-        <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>
-          {t('filter.all.string')}
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="read"
-          aria-pressed={true}
-          aria-label={t('filter.read.string')}
-          className="w-auto flex-none"
-        >
-          {t('filter.read.string')}
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="unread"
-          aria-label={t('filter.unread.string')}
-          className="w-auto flex-none"
-        >
-          {t('filter.unread.string')}
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="starred"
-          aria-label={t('filter.starred.string')}
-          className="w-auto flex-none"
-        >
-          {t('filter.starred.string')}
-        </ToggleGroupItem>
-        <ToggleGroupItem
-          value="attachments"
-          aria-label={t('filter.attachments.string')}
-          className="w-auto flex-none"
-        >
-          {t('filter.attachments.string')}
-        </ToggleGroupItem>
-      </ToggleGroup>
+    <div className="flex flex-col items-start gap-1">
+      <div className="flex flex-row flex-wrap items-center gap-2">
+        <div className="flex flex-col items-start gap-1">
+          <ToggleGroup
+            variant={'outline'}
+            type="single"
+            value={filter}
+            defaultValue="all"
+            onValueChange={(value) => {
+              const newParams = new URLSearchParams(searchParams.toString())
+              if (!value || value === 'all') {
+                newParams.delete('filter')
+              } else {
+                newParams.set('filter', value)
+              }
+              newParams.delete('page')
+              const query = newParams.toString()
+              push(query ? `${pathname}?${query}` : pathname)
+            }}
+          >
+            <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>
+              {t('filter.all.string')}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="read"
+              aria-pressed={true}
+              aria-label={t('filter.read.string')}
+              className="w-auto flex-none"
+            >
+              {t('filter.read.string')}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="unread"
+              aria-label={t('filter.unread.string')}
+              className="w-auto flex-none"
+            >
+              {t('filter.unread.string')}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="starred"
+              aria-label={t('filter.starred.string')}
+              className="w-auto flex-none"
+            >
+              {t('filter.starred.string')}
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="attachments"
+              aria-label={t('filter.attachments.string')}
+              className="w-auto flex-none"
+            >
+              {t('filter.attachments.string')}
+            </ToggleGroupItem>
+          </ToggleGroup>
+          {filter !== 'all' && (
+            <p className="text-muted-foreground max-w-xs text-xs">
+              {t('filter.client_scope_notice.string')}
+            </p>
+          )}
+        </div>
 
-      {!isMobile && (
-        <ToggleGroup
-          variant="outline"
-          type="single"
-          value={mailLayoutMode}
-          onValueChange={(value) => {
-            if (value) {
-              dispatch(setMailLayout(value as MailLayoutMode))
-            }
-          }}
-        >
-          <ToggleGroupItem
-            value="full"
-            aria-label={t('layout.full.string')}
+        {!isMobile && (
+          <ToggleGroup
+            variant="outline"
+            type="single"
+            value={mailLayoutMode}
+            onValueChange={(value) => {
+              if (value) {
+                dispatch(setMailLayout(value as MailLayoutMode))
+              }
+            }}
           >
-            <TooltipWrapper content={t('layout.full.string')}>
-              <Maximize2 size={16} />
-            </TooltipWrapper>
-          </ToggleGroupItem>
-          <ToggleGroupItem
-            value="split"
-            aria-label={t('layout.split.string')}
-          >
-            <TooltipWrapper content={t('layout.split.string')}>
-              <PanelRight size={16} />
-            </TooltipWrapper>
-          </ToggleGroupItem>
-        </ToggleGroup>
-      )}
+            <ToggleGroupItem
+              value="full"
+              aria-label={t('layout.full.string')}
+            >
+              <TooltipWrapper content={t('layout.full.string')}>
+                <Maximize2 size={16} />
+              </TooltipWrapper>
+            </ToggleGroupItem>
+            <ToggleGroupItem
+              value="split"
+              aria-label={t('layout.split.string')}
+            >
+              <TooltipWrapper content={t('layout.split.string')}>
+                <PanelRight size={16} />
+              </TooltipWrapper>
+            </ToggleGroupItem>
+          </ToggleGroup>
+        )}
+      </div>
     </div>
   )
 }

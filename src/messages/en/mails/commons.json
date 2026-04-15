@@ -59,6 +59,10 @@
                 "download_all_attachments": {
                     "string": "Download all attachments",
                     "description": "ARIA label for the download all attachments link"
+                },
+                "more_attachments_count": {
+                    "string": "+{count}",
+                    "description": "Compact label to reveal additional hidden attachments (e.g. +3)"
                 }
             },
             "header": {

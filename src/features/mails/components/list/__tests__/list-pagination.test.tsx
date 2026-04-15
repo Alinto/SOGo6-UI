@@ -64,6 +64,11 @@ describe('ListPagination', () => {
       expect(screen.getByText('2 / 5')).toBeInTheDocument()
     })
 
+    it('treats totalPages 0 as a single page (1 / 1)', () => {
+      render(<ListPagination currentPage={1} totalPages={0} />)
+      expect(screen.getByText('1 / 1')).toBeInTheDocument()
+    })
+
     it('does not render page dropdown on mobile', () => {
       const { useIsMobile } = require('@/hooks/use-mobile')
       useIsMobile.mockReturnValue(true)

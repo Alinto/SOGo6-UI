@@ -74,6 +74,17 @@ describe('ListFilter', () => {
       expect(screen.getByText('filter.all.string')).toBeInTheDocument()
     })
 
+    it('shows client-side filter scope notice when filter is not all', () => {
+      mockUseSearchParams.mockReturnValue({
+        get: (key: string) => (key === 'filter' ? 'unread' : null),
+        toString: () => 'filter=unread',
+      })
+      render(<ListFilter />)
+      expect(
+        screen.getByText('filter.client_scope_notice.string')
+      ).toBeInTheDocument()
+    })
+
     it('renders Read, Unread, Starred, Attachments options', () => {
       render(<ListFilter />)
       expect(screen.getByText('filter.read.string')).toBeInTheDocument()

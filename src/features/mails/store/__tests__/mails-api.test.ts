@@ -2,6 +2,7 @@ import {
   getFolderMessagesQuery,
   getFoldersQuery,
   getMailQuery,
+  mailActionQuery,
   moveToTrashQuery,
 } from '../mails-api'
 
@@ -24,18 +25,23 @@ describe('mailsApi', () => {
     it('should return correct query URL with params', () => {
       const query = getFolderMessagesQuery({
         folder: 'INBOX',
-        params: { limit: 10, offset: 0 },
+        params: { page: 1, page_size: 10 },
       })
-      expect(query).toBe('mailboxes/0/folders/INBOX/mails?limit=10&offset=0')
+      expect(query).toBe('mailboxes/0/folders/INBOX/mails?page=1&page_size=10')
     })
 
     it('should handle multiple params', () => {
       const query = getFolderMessagesQuery({
         folder: 'Sent',
-        params: { limit: 20, sort: 'date', reverse: true },
+        params: {
+          page: 2,
+          page_size: 20,
+          sort_by: 'date',
+          sort_order: 'desc',
+        },
       })
       expect(query).toBe(
-        'mailboxes/0/folders/Sent/mails?limit=20&sort=date&reverse=true'
+        'mailboxes/0/folders/Sent/mails?page=2&page_size=20&sort_by=date&sort_order=desc'
       )
     })
   })
@@ -80,6 +86,39 @@ describe('mailsApi', () => {
       expect(query.url).toBe(
         'mailboxes/0/folders/Test%20Folder/mails/test%40mail.com'
       )
+    })
+  })
+
+  describe('mailActionQuery', () => {
+    it('should return POST action URL and body', () => {
+      const query = mailActionQuery({
+        folder: 'INBOX',
+        mailId: '42',
+        action: 'tag',
+        data: ['\\Seen'],
+      })
+      expect(query).toEqual({
+        url: 'mailboxes/0/folders/INBOX/mails/42/action',
+        method: 'POST',
+        body: { action: 'tag', data: ['\\Seen'] },
+      })
+    })
+
+    it('should encode folder and mailId in URL', () => {
+      const query = mailActionQuery({
+        accountId: '1',
+        folder: 'A/B',
+        mailId: 'x y',
+        action: 'move',
+        data: 'Archive',
+      })
+      expect(query.url).toBe(
+        'mailboxes/1/folders/A%2FB/mails/x%20y/action'
+      )
+      expect(query.body).toEqual({
+        action: 'move',
+        data: 'Archive',
+      })
     })
   })
 })

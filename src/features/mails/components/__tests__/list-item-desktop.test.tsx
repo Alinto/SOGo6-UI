@@ -44,6 +44,11 @@ jest.mock('lucide-react', () => ({
   MailOpen: () => <span data-testid="mail-open-icon" />,
   Trash2: () => <span data-testid="trash-icon" />,
   Archive: () => <span data-testid="archive-icon" />,
+  Calendar: () => <span data-testid="calendar-icon" />,
+  ChevronsUp: () => <span data-testid="chevrons-up-icon" />,
+  Forward: () => <span data-testid="forward-icon" />,
+  Reply: () => <span data-testid="reply-icon" />,
+  User: () => <span data-testid="user-icon" />,
 }))
 
 jest.mock('../list-item-utils', () => ({
@@ -61,6 +66,11 @@ const mockData = {
   flagged: false,
   hasAttachment: true,
   snippet: 'This is a test email snippet',
+  answered: false,
+  forwarded: false,
+  deleted: false,
+  priority: 3,
+  mailType: [] as string[],
 }
 
 const defaultProps = {

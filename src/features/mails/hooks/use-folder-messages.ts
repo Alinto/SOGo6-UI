@@ -14,6 +14,7 @@ const EXCLUDED_PARAMS = ['filter']
 const MAIL_LIST_DEFAULTS: Record<string, string> = {
   fields: 'contents',
   fields_action: 'exclude',
+  page_size: '20',
 }
 
 const SORT_PARAM_MAP: Record<string, { sort_by: string; sort_order: string }> = {

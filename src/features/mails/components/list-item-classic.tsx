@@ -2,7 +2,16 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { useRouter } from '@/lib/i18n/navigation'
-import { Paperclip, Star } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  Calendar,
+  ChevronsUp,
+  Forward,
+  Paperclip,
+  Reply,
+  Star,
+  User,
+} from 'lucide-react'
 import { useParams, usePathname } from 'next/navigation'
 import React, { useState } from 'react'
 import { ImapMessagesList } from '../mails-types'
@@ -25,6 +34,10 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const { id, from, flagged, hasAttachment } = data
   const [isHovered, setIsHovered] = useState(false)
+  const showHighPriority = data.priority <= 2
+  const showSnippet = data.snippet.trim().length > 0
+  const hasEventType = data.mailType.includes('event')
+  const hasContactType = data.mailType.includes('contact')
 
   // Highlight when this mail is open in the right panel
   const isOpenInPanel = decodeURIComponent(pathname).endsWith(`/${id}`)
@@ -71,9 +84,12 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   return (
     <>
       <div
-        className={`hover:bg-secondary flex h-14 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${
-          isSelectedClass
-        } ${data.seen ? '' : 'bg-primary/15 font-semibold'} `}
+        className={cn(
+          'hover:bg-secondary flex min-h-14 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75',
+          isSelectedClass,
+          data.seen ? '' : 'bg-primary/15 font-semibold',
+          data.deleted && 'opacity-60'
+        )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
@@ -106,24 +122,70 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
             strokeWidth={1}
           />
         </div>
-        <div className="flex w-full flex-col justify-center">
-          <div className="flex w-full items-center justify-between">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+          <div className="flex w-full items-center justify-between gap-2">
             <span
-              className={`text-md truncate ${data.seen ? '' : 'font-semibold'}`}
+              className={`text-md min-w-0 truncate ${data.seen ? '' : 'font-semibold'}`}
             >
               {from.name || from.email}
             </span>
-            <span className="text-muted-foreground ml-2 text-sm whitespace-nowrap">
+            <span className="text-muted-foreground shrink-0 text-sm whitespace-nowrap">
               {formatDate(data.date)}
             </span>
           </div>
-          <div className="flex w-full items-center justify-between">
-            <span
-              className={`truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
-            >
-              {data.subject}
-            </span>
-            {hasAttachment && <Paperclip className="ml-2 h-4 w-4 shrink-0" />}
+          <div className="flex w-full min-w-0 items-start justify-between gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div
+                className={`flex min-w-0 items-center gap-1 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
+              >
+                {showHighPriority && (
+                  <ChevronsUp
+                    className="h-4 w-4 shrink-0 text-orange-600"
+                    aria-hidden
+                  />
+                )}
+                {hasEventType && (
+                  <Calendar
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                {hasContactType && (
+                  <User
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                {data.answered && (
+                  <Reply
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                {data.forwarded && (
+                  <Forward
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                <span
+                  className={cn(
+                    'min-w-0 flex-1 truncate',
+                    data.deleted && 'line-through'
+                  )}
+                >
+                  {data.subject}
+                </span>
+              </div>
+              {showSnippet && (
+                <p className="text-muted-foreground truncate text-sm">
+                  {data.snippet}
+                </p>
+              )}
+            </div>
+            {hasAttachment && (
+              <Paperclip className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
+            )}
           </div>
         </div>
       </div>

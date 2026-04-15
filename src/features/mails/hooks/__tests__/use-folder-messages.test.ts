@@ -57,6 +57,7 @@ describe('useFolderMessages', () => {
       expect(args.params).toMatchObject({
         fields: 'contents',
         fields_action: 'exclude',
+        page_size: '20',
       })
     })
 
