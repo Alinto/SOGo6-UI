@@ -4,10 +4,10 @@ describe('list-item-utils', () => {
   describe('formatDate', () => {
     const now = new Date()
 
-    it('should format date as "X min ago" for times less than 1 hour ago today', () => {
+    it('should format date as "Xm" for times less than 1 hour ago today when no translator', () => {
       const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000)
       const result = formatDate(fiveMinutesAgo.toISOString())
-      expect(result).toMatch(/^\d+ min ago$/)
+      expect(result).toMatch(/^\d+m$/)
     })
 
     it("should format today's time in a time format", () => {

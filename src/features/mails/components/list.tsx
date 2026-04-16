@@ -42,6 +42,7 @@ function findArchiveFolderPath(folders: ImapFolder[] | undefined): string | null
 
 interface MessagesListProps {
   items: ImapMessagesList[]
+  // TODO: implement pagination UI — passed from folder pages, not consumed here yet
   total?: number
   page?: number
   totalPages?: number
@@ -125,10 +126,6 @@ const MessagesList: React.FC<MessagesListProps> = ({
   const selectedIds = useAppSelector(
     (state: RootState) => state.mailLayout.selectedMailIds
   )
-  const selectedItems = useMemo(
-    () => items.filter((item) => selectedIds.includes(String(item.id))),
-    [items, selectedIds]
-  )
 
   // Reset selection when folder changes
   useEffect(() => {
@@ -156,7 +153,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
             <span className="text-muted-foreground hidden text-sm md:inline-block" />
           </div>
         )}
-        <ul className={cn('min-h-0 flex-1 overflow-y-auto rounded transition-opacity', isMobile && 'pb-12', isFetching && 'opacity-50 pointer-events-none')}>
+        <ul className={cn('min-h-0 flex-1 overflow-y-auto rounded transition-opacity', isMobile && 'pb-12', isFetching && 'opacity-60')}>
           {items.length === 0 && (
             <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
               {t('no_items.string')}
@@ -169,13 +166,14 @@ const MessagesList: React.FC<MessagesListProps> = ({
                   <ListItemClassic
                     data={item}
                     onHandleCheckboxClick={handleCheckboxClick}
-                    isSelected={selectedItems.includes(item)}
+                    isSelected={selectedIds.includes(String(item.id))}
+                    onToggleRead={handleToggleRead}
                   />
                 ) : (
                   <ListItem
                     data={item}
                     onHandleCheckboxClick={handleCheckboxClick}
-                    isSelected={selectedItems.includes(item)}
+                    isSelected={selectedIds.includes(String(item.id))}
                     onToggleRead={handleToggleRead}
                     onDelete={handleDelete}
                     onArchive={handleArchive}

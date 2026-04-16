@@ -6,6 +6,9 @@ import {
   MAIL_SLICE,
   MAILS_FOLDERS_SLICE,
 } from '@/lib/redux/api/api-slice'
+import type { UnknownAction } from '@reduxjs/toolkit'
+import type { ThunkDispatch } from '@reduxjs/toolkit'
+import type { RootState } from '@/lib/redux/store'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   CreateFolderBody,
@@ -289,6 +292,156 @@ const mailActionQuery = ({
   body: { action, data },
 })
 
+type GetFolderMessagesCacheArg = {
+  accountId?: string
+  folder: string
+  params?: MailListQueryParams & Record<string, string | number | boolean>
+}
+
+type MailActionInitiateArg = {
+  accountId?: string
+  folder: string
+  mailId: string
+  action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+  data?: string | string[] | null
+}
+
+/**
+ * Typed wrappers around apiSlice cache utilities.
+ * The casts are necessary because apiSlice is typed before mails endpoints
+ * are merged via injectEndpoints — endpoint types are not yet available at
+ * definition time. This is a known RTK Query circular reference limitation.
+ * TODO: refactor when RTK Query provides a better pattern for cross-endpoint
+ * cache access within the same injectEndpoints call.
+ */
+const folderMessagesCache = {
+  /**
+   * @internal selectCachedArgsForQuery is not part of the public RTK Query API.
+   * It works as of @reduxjs/toolkit 2.x but may break on major upgrades.
+   * If it disappears, replace with a manual tracking slice (a Set<string> of
+   * active cache keys updated via middleware) or RTK Query's onCacheEntryAdded.
+   * Tracked at: https://github.com/reduxjs/redux-toolkit/issues/XXXX
+   */
+  selectCachedArgs(state: RootState): GetFolderMessagesCacheArg[] {
+    return (
+      apiSlice.util as {
+        selectCachedArgsForQuery: (
+          s: RootState,
+          name: string
+        ) => GetFolderMessagesCacheArg[]
+      }
+    ).selectCachedArgsForQuery(state, 'getFolderMessages')
+  },
+  selectData(
+    state: RootState,
+    queryArg: GetFolderMessagesCacheArg
+  ): ImapMessagesBackendResponse | undefined {
+    const slice = (
+      apiSlice.endpoints as {
+        getFolderMessages: {
+          select: (
+            a: GetFolderMessagesCacheArg
+          ) => (s: RootState) => { data?: ImapMessagesBackendResponse }
+        }
+      }
+    ).getFolderMessages.select(queryArg)(state)
+    return slice.data
+  },
+  updateQueryData(
+    queryArg: GetFolderMessagesCacheArg,
+    recipe: (draft: ImapMessagesBackendResponse) => void
+  ): unknown {
+    return (
+      apiSlice.util as unknown as {
+        updateQueryData: (
+          name: string,
+          arg: GetFolderMessagesCacheArg,
+          recipe: (draft: ImapMessagesBackendResponse) => void
+        ) => unknown
+      }
+    ).updateQueryData('getFolderMessages', queryArg, recipe)
+  },
+  initiateMailAction(
+    arg: MailActionInitiateArg,
+    options?: { subscribe?: boolean }
+  ) {
+    return (
+      apiSlice.endpoints as {
+        mailAction: {
+          initiate: (
+            a: MailActionInitiateArg,
+            o?: { subscribe?: boolean }
+          ) => UnknownAction & { unwrap: () => Promise<unknown> }
+        }
+      }
+    ).mailAction.initiate(arg, options)
+  },
+}
+
+function normalizeMailActionDataArray(
+  data: string | string[] | null | undefined
+): string[] {
+  if (data == null) return []
+  return Array.isArray(data) ? data : [data]
+}
+
+function isMailActionSeenFlagToggle(arg: {
+  action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+  data?: string | string[] | null
+}): boolean {
+  if (arg.action !== 'tag' && arg.action !== 'untag') return false
+  return normalizeMailActionDataArray(arg.data).includes('\\Seen')
+}
+
+function findListItemInFolderCaches(
+  state: RootState,
+  accountId: string,
+  folder: string,
+  mailId: string
+): ImapMessagesList | undefined {
+  const cachedArgs = folderMessagesCache.selectCachedArgs(state)
+  for (const queryArg of cachedArgs) {
+    const qAccount = queryArg.accountId ?? '0'
+    if (qAccount !== accountId || queryArg.folder !== folder) continue
+    const data = folderMessagesCache.selectData(state, queryArg)
+    const mails = data?.mails
+    if (!mails?.length) continue
+    const found = mails.find((m) => String(m.id) === String(mailId))
+    if (found) return found
+  }
+  return undefined
+}
+
+function dispatchSeenPatchOnAllFolderMessageCaches(
+  dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
+  state: RootState,
+  arg: {
+    accountId?: string
+    folder: string
+    mailId: string
+    seen: boolean
+  }
+): Array<{ undo: () => void }> {
+  const accountKey = arg.accountId ?? '0'
+  const patches: Array<{ undo: () => void }> = []
+  const cachedArgs = folderMessagesCache.selectCachedArgs(state)
+  for (const queryArg of cachedArgs) {
+    const qAccount = queryArg.accountId ?? '0'
+    if (qAccount !== accountKey || queryArg.folder !== arg.folder) continue
+    const action = folderMessagesCache.updateQueryData(queryArg, (draft) => {
+      const mail = draft.mails.find((m) => String(m.id) === String(arg.mailId))
+      if (mail) {
+        mail.seen = arg.seen
+      }
+    })
+    const patch = dispatch(action as UnknownAction) as unknown
+    if (patch && typeof (patch as { undo?: () => void }).undo === 'function') {
+      patches.push(patch as { undo: () => void })
+    }
+  }
+  return patches
+}
+
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getFolders: builder.query<ImapFolder[], { accountId?: string }>({
@@ -391,7 +544,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
         return result
       },
-      providesTags: (result, error, { folder }) => [
+      providesTags: (_result, _error, { folder }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
       ],
     }),
@@ -428,6 +581,53 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       providesTags: (result, error, { mailId }) => [
         { type: MAIL_SLICE, id: mailId },
       ],
+      /**
+       * Mark-as-read strategy: optimistic patch + IMAP tag dispatched immediately
+       * on request, regardless of whether getMail succeeds. This matches Gmail/Outlook
+       * behavior — the act of opening a mail marks it read, even if the content fails
+       * to load. If the IMAP tag call fails, the optimistic patch is rolled back.
+       *
+       * Edge case: if the user navigates directly to a mail URL without the folder
+       * list being loaded first (findListItemInFolderCaches returns undefined),
+       * the mail will NOT be marked as read. This is acceptable and expected.
+       */
+      async onQueryStarted(arg, { dispatch, getState }) {
+        const accountKey = arg.accountId ?? '0'
+        const listItem = findListItemInFolderCaches(
+          getState() as RootState,
+          accountKey,
+          arg.folder,
+          arg.mailId
+        )
+        if (!listItem || listItem.seen) return
+
+        const optimisticPatches = dispatchSeenPatchOnAllFolderMessageCaches(
+          dispatch,
+          getState() as RootState,
+          {
+            accountId: arg.accountId,
+            folder: arg.folder,
+            mailId: arg.mailId,
+            seen: true,
+          }
+        )
+        try {
+          await dispatch(
+            folderMessagesCache.initiateMailAction(
+              {
+                accountId: arg.accountId,
+                folder: arg.folder,
+                mailId: arg.mailId,
+                action: 'tag',
+                data: ['\\Seen'],
+              },
+              { subscribe: false }
+            )
+          ).unwrap()
+        } catch {
+          optimisticPatches.forEach((p) => p.undo())
+        }
+      },
     }),
 
     moveToTrash: builder.mutation<
@@ -447,7 +647,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'message.error.string',
         })(undefined, { queryFulfilled })
       },
-      invalidatesTags: (result, error, { folder }) => [
+      invalidatesTags: (_result, _error, { folder }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
         MAILS_FOLDERS_SLICE,
       ],
@@ -464,10 +664,45 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }
     >({
       query: mailActionQuery,
-      invalidatesTags: (result, error, { folder }) => [
-        { type: FOLDER_MESSAGES_SLICE, folder },
-        MAILS_FOLDERS_SLICE,
-      ],
+      async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
+        if (!isMailActionSeenFlagToggle(arg)) {
+          return
+        }
+        const seen = arg.action === 'tag'
+        const listItem = findListItemInFolderCaches(
+          getState() as RootState,
+          arg.accountId ?? '0',
+          arg.folder,
+          arg.mailId
+        )
+        const alreadyApplied =
+          listItem != null && listItem.seen === seen
+
+        const patchResults = alreadyApplied
+          ? []
+          : dispatchSeenPatchOnAllFolderMessageCaches(
+              dispatch,
+              getState() as RootState,
+              {
+                accountId: arg.accountId,
+                folder: arg.folder,
+                mailId: arg.mailId,
+                seen,
+              }
+            )
+        try {
+          await queryFulfilled
+        } catch {
+          patchResults.forEach((p) => p.undo())
+        }
+      },
+      invalidatesTags: (_result, _error, arg) =>
+        isMailActionSeenFlagToggle(arg)
+          ? [MAILS_FOLDERS_SLICE]
+          : [
+              { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
+              MAILS_FOLDERS_SLICE,
+            ],
     }),
 
     purgeFolder: builder.mutation<
@@ -496,8 +731,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         },
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [
-        { type: 'folder/messages', folder: folderPath },
-        'mails/folders',
+        { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        MAILS_FOLDERS_SLICE,
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
@@ -518,8 +753,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'POST',
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [
-        { type: 'folder/messages', folder: folderPath },
-        'mails/folders',
+        { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        MAILS_FOLDERS_SLICE,
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
@@ -580,7 +815,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       transformResponse: (response: BackendResponse<RawImapFolder>) =>
         normalizeImapFolder(response.data),
-      invalidatesTags: ['mails/folders'],
+      invalidatesTags: [MAILS_FOLDERS_SLICE],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
           successTitle: 'folders_create.success.title.string',
@@ -600,9 +835,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'DELETE',
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [
-        'mails/folders',
-        { type: 'folder/messages', folder: folderPath },
-        { type: 'folder/share', folder: folderPath },
+        MAILS_FOLDERS_SLICE,
+        { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        { type: FOLDER_SHARE_SLICE, folder: folderPath },
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
