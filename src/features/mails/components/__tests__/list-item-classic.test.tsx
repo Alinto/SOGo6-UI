@@ -14,6 +14,10 @@ jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
 }))
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>

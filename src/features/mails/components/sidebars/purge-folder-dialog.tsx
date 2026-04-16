@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -141,6 +142,12 @@ export function PurgeFolderDialog({
       confirmPermanent: false,
     },
   })
+
+  useEffect(() => {
+    void form.trigger()
+    // Mount-only: resolver must run once so formState.isValid matches defaultValues (Purge button).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const datePreset = form.watch('datePreset')
   const permanentlyDelete = form.watch('permanentlyDelete')
