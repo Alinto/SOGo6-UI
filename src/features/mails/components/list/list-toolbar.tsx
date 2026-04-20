@@ -110,14 +110,12 @@ const ListToolbar: React.FC = () => {
         <div className="flex min-w-0 flex-row flex-wrap items-center gap-2">
           {isMobile ? <ListFilterDropdown /> : <ListFilter />}
           {!isMobile && <ListSort />}
-          {!clientFilterActive && (
-            <ListPagination
-              hasNextPage={currentPage < (data?.totalPages ?? 1)}
-              hasPreviousPage={currentPage > 1}
-              currentPage={currentPage}
-              totalPages={data?.totalPages ?? 1}
-            />
-          )}
+          <ListPagination
+            hasNextPage={currentPage < (data?.totalPages ?? 1)}
+            hasPreviousPage={currentPage > 1}
+            currentPage={currentPage}
+            totalPages={data?.totalPages ?? 1}
+          />
         </div>
       </div>
     </div>
