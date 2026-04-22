@@ -2,11 +2,10 @@
   {
     "name": "INBOX",
     "path": "INBOX",
-    "unseen_count": 2,
-    "messages": 65,
-    "flags": [
-      "\\HasNoChildren"
-    ],
+    "type": "INBOX",
+    "unseen_count": 5,
+    "messages": 45,
+    "flags": ["\\HasNoChildren"],
     "delimiter": "/",
     "readOnly": true,
     "selectable": true,
@@ -15,12 +14,10 @@
   {
     "name": "Drafts",
     "path": "Drafts",
-    "unseen_count": 7,
-    "messages": 54,
-    "flags": [
-      "\\HasNoChildren",
-      "\\Drafts"
-    ],
+    "type": "DRAFTS",
+    "unseen_count": 2,
+    "messages": 2,
+    "flags": ["\\HasNoChildren", "\\Drafts"],
     "delimiter": "/",
     "readOnly": true,
     "selectable": false,
@@ -29,12 +26,10 @@
   {
     "name": "Sent",
     "path": "Sent",
-    "unseen_count": 19,
-    "messages": 64,
-    "flags": [
-      "\\HasNoChildren",
-      "\\Sent"
-    ],
+    "type": "SENT",
+    "unseen_count": 0,
+    "messages": 3,
+    "flags": ["\\HasNoChildren", "\\Sent"],
     "delimiter": "/",
     "readOnly": true,
     "selectable": true,
@@ -43,15 +38,25 @@
   {
     "name": "Trash",
     "path": "Trash",
-    "unseen_count": 8,
-    "messages": 31,
-    "flags": [
-      "\\HasNoChildren",
-      "\\Trash"
-    ],
+    "type": "TRASH",
+    "unseen_count": 0,
+    "messages": 2,
+    "flags": ["\\HasNoChildren", "\\Trash"],
     "delimiter": "/",
     "readOnly": false,
     "selectable": false,
+    "default": true
+  },
+  {
+    "name": "Junk",
+    "path": "Junk",
+    "type": "JUNK",
+    "unseen_count": 1,
+    "messages": 1,
+    "flags": ["\\HasNoChildren", "\\Junk"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": true,
     "default": true
   }
 ]
