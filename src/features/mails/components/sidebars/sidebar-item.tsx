@@ -111,7 +111,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           </div>
         )}
         <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
-          <span className="min-w-0 shrink truncate">{name}</span>
+          <span className="min-w-0 shrink truncate leading-none">{name}</span>
           {hasSubfolders ? (
             <ChevronRight
               aria-hidden
@@ -123,7 +123,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             />
           ) : null}
           {showUnseenCount && (
-            <span className="shrink-0 text-xs font-medium text-inherit tabular-nums">
+            <span className="shrink-0 text-xs font-medium leading-none text-inherit tabular-nums">
               {unseenCount > 99 ? '99+' : unseenCount}
             </span>
           )}
