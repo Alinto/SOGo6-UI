@@ -1,74 +1,74 @@
 {
-    "name": "SOGo",
-    "build": {
-        "context": "..",
-        "dockerfile": "Dockerfile.devcontainer",
-        "args": {
-            "WORKSPACE": "SOGo",
-            "USER_ID": "1000",
-            "GROUP_ID": "1000",
-            "USERNAME": "vscode",
-            "NODE_VERSION": "22"
-        }
-    },
-    "workspaceFolder": "/SOGo",
-    "workspaceMount": "source=${localWorkspaceFolder},target=/SOGo,type=bind,consistency=cached",
+  "name": "SOGo",
+  "build": {
+    "context": "..",
+    "dockerfile": "Dockerfile.devcontainer",
+    "args": {
+      "WORKSPACE": "SOGo",
+      "USER_ID": "1000",
+      "GROUP_ID": "1000",
+      "USERNAME": "vscode",
+      "NODE_VERSION": "22"
+    }
+  },
+  "workspaceFolder": "/SOGo",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/SOGo,type=bind,consistency=cached",
 
-    "mounts": [
-        "source=sogo-node-modules,target=/SOGo/node_modules,type=volume",
-        "source=sogo-next-cache,target=/SOGo/.next,type=volume"
-    ],
+  "mounts": [
+    "source=sogo-node-modules,target=/SOGo/node_modules,type=volume",
+    "source=sogo-next-cache,target=/SOGo/.next,type=volume"
+  ],
 
-    "runArgs": [
-        "--network=host",
-        "--add-host=host.docker.internal:host-gateway",
-        "--memory=4g",
-        "--cpus=2"
-    ],
+  "runArgs": [
+    "--network=host",
+    "--add-host=host.docker.internal:host-gateway",
+    "--memory=4g",
+    "--cpus=6"
+  ],
 
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "orta.vscode-jest",
-                "dbaeumer.vscode-eslint",
-                "pulkitgangwar.nextjs-snippets",
-                "esbenp.prettier-vscode",
-                "bradlc.vscode-tailwindcss",
-                "unifiedjs.vscode-mdx",
-                "lokalise.i18n-ally"
-            ],
-            "settings": {
-                "jest.autoRun": "off",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "orta.vscode-jest",
+        "dbaeumer.vscode-eslint",
+        "pulkitgangwar.nextjs-snippets",
+        "esbenp.prettier-vscode",
+        "bradlc.vscode-tailwindcss",
+        "unifiedjs.vscode-mdx",
+        "lokalise.i18n-ally"
+      ],
+      "settings": {
+        "jest.autoRun": "off",
 
-                "eslint.run": "onSave",
+        "eslint.run": "onSave",
 
-                "tailwindCSS.files.exclude": [
-                    "**/.git/**",
-                    "**/node_modules/**",
-                    "**/.next/**"
-                ],
+        "tailwindCSS.files.exclude": [
+          "**/.git/**",
+          "**/node_modules/**",
+          "**/.next/**"
+        ],
 
-                "typescript.tsserver.maxTsServerMemory": 2048,
+        "typescript.tsserver.maxTsServerMemory": 2048,
 
-                "files.watcherExclude": {
-                    "**/node_modules/**": true,
-                    "**/.next/**": true,
-                    "**/.turbo/**": true,
-                    "**/coverage/**": true,
-                    "**/.git/objects/**": true
-                },
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/.next/**": true,
+          "**/.turbo/**": true,
+          "**/coverage/**": true,
+          "**/.git/objects/**": true
+        },
 
-                "editor.formatOnSave": true
-            }
-        }
-    },
+        "editor.formatOnSave": true
+      }
+    }
+  },
 
-    "containerEnv": {
-        "TZ": "Europe/Paris",
-        "NODE_ENV": "development",
-        "SHELL": "/bin/bash",
-        "NEXT_TELEMETRY_DISABLED": "1"
-    },
-    "postCreateCommand": "npm ci",
-    "postAttachCommand": "/container-entrypoint"
+  "containerEnv": {
+    "TZ": "Europe/Paris",
+    "NODE_ENV": "development",
+    "SHELL": "/bin/bash",
+    "NEXT_TELEMETRY_DISABLED": "1"
+  },
+  "postCreateCommand": "npm i",
+  "postAttachCommand": "/container-entrypoint"
 }
