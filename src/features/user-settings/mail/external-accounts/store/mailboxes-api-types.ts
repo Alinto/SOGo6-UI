@@ -57,7 +57,12 @@ export interface Mailbox extends MailboxPOST {
   id: string
 }
 
-export interface MailboxPOST {
+export interface MailboxProfilePatch extends SkipNotification {
+  id: string
+  identities?: MailBoxIdentity[]
+}
+
+export interface MailboxPOST extends SkipNotification {
   name: string
   mail_server: MailServerSchema
   // certificates: any
@@ -70,4 +75,8 @@ export interface MailboxesResponse {
   data: Mailbox[]
   error_code: string
   error_msg: string
+}
+
+export interface SkipNotification {
+  _skipNotification?: boolean
 }

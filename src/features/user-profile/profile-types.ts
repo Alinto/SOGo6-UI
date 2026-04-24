@@ -1,3 +1,9 @@
+import {
+  PP_DEFAULT,
+  PP_GRAVATAR,
+  PP_LIBRAVATAR,
+  PP_USERSOURCE,
+} from '@/features/user-settings/store/user-preferences-api-types'
 /**
  * Types for the GET /profile endpoint
  */
@@ -30,7 +36,7 @@ export interface Identity {
   name: string
   replyTo: string
   isDefault: boolean
-  signatures: Record<string, unknown>
+  signatures: Record<string, string>
 }
 
 export interface MailServerConfig {
@@ -53,6 +59,11 @@ export interface UserPreferences {
     SOGO_U_REFRESH_MAIL_VIEW?: 0 | 1 | 2 | 5 | 10 | 20 | 30 | 60
     SOGO_U_BROWSER_NOTIF?: boolean
     SOGO_U_EXT_AVATAR_ENABLED?: boolean
+    SOGO_U_PROFILE_PICTURE?:
+      | typeof PP_DEFAULT
+      | typeof PP_GRAVATAR
+      | typeof PP_LIBRAVATAR
+      | typeof PP_USERSOURCE
   }
   USER_SECURITY?: {
     SOGO_U_MFA_ENABLE?: boolean

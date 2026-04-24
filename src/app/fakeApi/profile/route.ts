@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 const data = {
   data: {
@@ -133,6 +133,7 @@ const data = {
       USER_GENERAL: {
         SOGO_U_BROWSER_NOTIF: false,
         SOGO_U_EXT_AVATAR_ENABLED: true,
+        SOGO_U_PROFILE_PICTURE: 'default',
         SOGO_U_FIRST_MODULE: 'mail',
         SOGO_U_LANGUAGE: 'en',
         SOGO_U_LONG_DATE: 'FULL_LONG_US',
@@ -238,4 +239,8 @@ export async function GET() {
 
 export async function OPTIONS() {
   return NextResponse.json({ allow: ['GET'] }, { status: 200 })
+}
+
+export async function PATCH(req: NextRequest) {
+  return NextResponse.json(data, { status: 200 })
 }

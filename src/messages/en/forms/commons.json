@@ -43,7 +43,9 @@
             "placeholder": "Add email address and press Enter"
         },
         "validation": {
-            "required": "Field is required"
+            "required": "Field is required",
+            "identityAtLeastOneDefault": "At least one identity must be set as default",
+            "email": "Please enter a valid email address"
         }
     }
 }
