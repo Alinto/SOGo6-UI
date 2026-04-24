@@ -4,7 +4,10 @@ import {
   PREFERENCES_SLICE,
   PROFILE_SLICE,
 } from '@/lib/redux/api/api-slice'
+import type { UnknownAction } from '@reduxjs/toolkit'
+import type { Dispatch } from 'redux'
 import {
+  SkipNotification,
   UserCalendarCategory,
   UserCalendarGeneral,
   UserContactPreferences,
@@ -12,6 +15,7 @@ import {
   UserMailCategory,
   UserMailGeneral,
   UserPreferencesResponse,
+  UserProfile,
   UserSecurity,
 } from './user-preferences-api-types'
 
@@ -26,8 +30,14 @@ const patchPreferences = (data: object) => ({
 })
 
 const patchPreferencesOnQueryStarted = async (
-  _arg: unknown,
-  { dispatch, queryFulfilled }: { dispatch: any; queryFulfilled: Promise<any> }
+  _arg: SkipNotification,
+  {
+    dispatch,
+    queryFulfilled,
+  }: {
+    dispatch: Dispatch<UnknownAction>
+    queryFulfilled: Promise<{ data: UserPreferencesResponse | void }>
+  }
 ) => {
   await createApiNotificationHandler(dispatch, {
     successTitle: 'title.success.string',
@@ -59,6 +69,14 @@ export const userPreferencesApi = apiSlice.injectEndpoints({
     updateUserPreferencesGeneral: builder.mutation<
       UserPreferencesResponse,
       UserGeneral
+    >({
+      query: (body) => patchPreferences({ USER_GENERAL: body }),
+      invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
+      onQueryStarted: patchPreferencesOnQueryStarted,
+    }),
+    updateUserPreferencesProfile: builder.mutation<
+      UserPreferencesResponse,
+      UserProfile
     >({
       query: (body) => patchPreferences({ USER_GENERAL: body }),
       invalidatesTags: [PREFERENCES_SLICE, PROFILE_SLICE],
@@ -125,6 +143,7 @@ export const {
   useGetUserPreferencesQuery,
   useLazyGetUserPreferencesQuery,
   useUpdateUserPreferencesGeneralMutation,
+  useUpdateUserPreferencesProfileMutation,
   useUpdateUserPreferencesContactMutation,
   useUpdateUserPreferencesMailGeneralMutation,
   useUpdateUserPreferencesMailCategoryMutation,

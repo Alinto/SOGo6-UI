@@ -77,6 +77,7 @@ const data = {
     USER_GENERAL: {
       SOGO_U_BROWSER_NOTIF: false,
       SOGO_U_EXT_AVATAR_ENABLED: true,
+      SOGO_U_PROFILE_PICTURE: 'default',
       SOGO_U_FIRST_MODULE: 'mail',
       SOGO_U_LANGUAGE: 'en',
       SOGO_U_LONG_DATE: 'FULL_LONG_US',

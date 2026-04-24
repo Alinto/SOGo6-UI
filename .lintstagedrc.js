@@ -25,6 +25,16 @@ const shouldHaveTest = (filePath) => {
     return false
   }
 
+  // Skip __mocks__ folder
+  if (relativePath.includes('__mocks__')) {
+    return false
+  }
+
+  // Skip types.ts files
+  if (filePath.endsWith('types.ts')) {
+    return false
+  }
+
   // Skip config files and certain directories
   const skipPatterns = [
     'config/',

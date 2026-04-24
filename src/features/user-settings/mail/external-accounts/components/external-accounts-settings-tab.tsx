@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -15,8 +14,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
-import { CustomEditorCore } from '@/features/mails/components/compose/editor-core'
-import { useController, useFieldArray, UseFormReturn } from 'react-hook-form'
+import {
+  IdentityCard,
+  SignaturesSection,
+} from '@/features/user-settings/components/identity-card'
+import { emptyIdentity } from '@/features/user-settings/components/identity-fields'
+import { useFieldArray, UseFormReturn } from 'react-hook-form'
 import {
   FAKE_PASSWORD_SENTINEL,
   MAIL_OUTGOING,
@@ -33,15 +36,7 @@ import {
   SOCKET_ENC_IMPLICIT_TLS,
   SOCKET_ENC_PLAIN,
 } from '@/features/user-settings/mail/external-accounts/store/mailboxes-api-types'
-import {
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  EyeOff,
-  Pen,
-  Plus,
-  Trash2,
-} from 'lucide-react'
+import { Eye, EyeOff, Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useEffect, useState } from 'react'
 import { schemaType } from './external-accounts-schema'
@@ -338,343 +333,6 @@ function ServerSection({
 }
 
 // ---------------------------------------------------------------------------
-// IdentityFields — the inner form fields shared by all identity cards
-// ---------------------------------------------------------------------------
-const emptyIdentity = {
-  name: '',
-  mail: '',
-  replyTo: '',
-  isDefault: false,
-  signatures: {},
-}
-
-function IdentityFields({
-  form,
-  index,
-  identityCount,
-  onSetDefault,
-}: {
-  form: UseFormReturn<schemaType>
-  index: number
-  identityCount: number
-  onSetDefault: () => void
-}) {
-  const t = useTranslations('US_MAIL_EXTERNAL_ACCOUNTS')
-
-  return (
-    <>
-      <div className="grid gap-4 md:grid-cols-3 md:space-x-10">
-        <FormField
-          control={form.control}
-          name={`identities.${index}.name`}
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>{t('labels.name')}</FormLabel>
-              <FormControl>
-                <Input {...field} type="text" placeholder="John Doe" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name={`identities.${index}.mail`}
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>{t('labels.email')}</FormLabel>
-              <FormControl>
-                <Input {...field} type="email" placeholder="user@example.com" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name={`identities.${index}.replyTo`}
-          render={({ field }) => (
-            <FormItem className="space-y-2">
-              <FormLabel>{t('labels.replyTo')}</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  type="email"
-                  placeholder="noreply@example.com"
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
-
-      {/* isDefault — only shown when there are multiple identities */}
-      {identityCount > 1 && (
-        <FormField
-          control={form.control}
-          name={`identities.${index}.isDefault`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-y-0 space-x-3">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={(checked) => {
-                    if (checked) onSetDefault()
-                  }}
-                  disabled={field.value && identityCount === 1}
-                  id={`use-default-identity-${index}`}
-                />
-              </FormControl>
-              <FormMessage />
-              <div className="space-y-1 leading-none">
-                <Label
-                  htmlFor={`use-default-identity-${index}`}
-                  className="font-normal opacity-60"
-                >
-                  {t('labels.useDefaultIdentity.string')}
-                </Label>
-                <FormDescription className="text-muted-foreground">
-                  {t('description.useDefaultIdentity.string')}
-                </FormDescription>
-              </div>
-            </FormItem>
-          )}
-        />
-      )}
-    </>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// SignatureEditor
-// ---------------------------------------------------------------------------
-function SignatureEditor({
-  form,
-  identityIndex,
-}: {
-  form: UseFormReturn<schemaType>
-  identityIndex: number
-}) {
-  const t = useTranslations('US_MAIL_EXTERNAL_ACCOUNTS')
-  const [collapsedMap, setCollapsedMap] = useState<Record<string, boolean>>({})
-  const [newKeyName, setNewKeyName] = useState('')
-
-  const { field } = useController({
-    control: form.control,
-    name: `identities.${identityIndex}.signatures`,
-  })
-
-  const signatures: Record<string, string> = field.value ?? {}
-
-  const toggleCollapse = (key: string) =>
-    setCollapsedMap((prev) => ({ ...prev, [key]: !prev[key] }))
-
-  const addSignature = () => {
-    const trimmed = newKeyName.trim()
-    if (!trimmed || trimmed in signatures) return
-    field.onChange({ ...signatures, [trimmed]: '' })
-    setNewKeyName('')
-  }
-
-  const removeSignature = (key: string) => {
-    const updated = { ...signatures }
-    delete updated[key]
-    field.onChange(updated)
-  }
-
-  const updateContent = (key: string, content: string) => {
-    field.onChange({ ...signatures, [key]: content })
-  }
-
-  return (
-    <div className="space-y-3">
-      <FormLabel>{t('labels.signatures')}</FormLabel>
-
-      {Object.entries(signatures).map(([key, content]) => (
-        <div key={key} className="border-border rounded-md border">
-          <div className="bg-muted/30 flex items-center justify-between rounded-t-md px-3 py-2">
-            <div className="flex items-center gap-2">
-              <div className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full">
-                <Pen className="h-3 w-3" />
-              </div>
-              <span className="text-sm font-medium">{key}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => toggleCollapse(key)}
-              >
-                {collapsedMap[key] ? (
-                  <ChevronDown className="text-muted-foreground h-4 w-4" />
-                ) : (
-                  <ChevronUp className="text-muted-foreground h-4 w-4" />
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6"
-                onClick={() => removeSignature(key)}
-                title={t('labels.removeSignature')}
-              >
-                <Trash2 className="text-destructive h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-
-          {!collapsedMap[key] && (
-            <div className="border-border rounded-b-md border-t">
-              <CustomEditorCore
-                data={content}
-                onChange={(newContent) => updateContent(key, newContent)} // Updates state on change
-              />
-            </div>
-            // <Textarea
-            //   value={content ?? ''}
-            //   onChange={(e) => updateContent(key, e.target.value)}
-            //   className="border-border min-h-32 w-full rounded-none rounded-b-md border-0 border-t px-3 py-2 text-sm focus-visible:ring-0"
-            // />
-          )}
-        </div>
-      ))}
-
-      <div className="flex gap-2">
-        <Input
-          value={newKeyName}
-          onChange={(e) => setNewKeyName(e.target.value)}
-          placeholder={t('placeholders.signatureName')}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              addSignature()
-            }
-          }}
-          className="flex-1"
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={addSignature}
-          disabled={!newKeyName.trim() || newKeyName.trim() in signatures}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t('labels.addSignature')}
-        </Button>
-      </div>
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// IdentityCard — single collapsible card, shared by both create & edit modes
-// ---------------------------------------------------------------------------
-interface IdentityCardProps {
-  form: UseFormReturn<schemaType>
-  index: number
-  identityCount: number
-  isCollapsed: boolean
-  onToggleCollapse: () => void
-  onSetDefault: () => void
-  onRemove: () => void
-}
-
-function IdentityCard({
-  form,
-  index,
-  identityCount,
-  isCollapsed,
-  onToggleCollapse,
-  onSetDefault,
-  onRemove,
-}: IdentityCardProps) {
-  const t = useTranslations('US_MAIL_EXTERNAL_ACCOUNTS')
-  const identityName = form.watch(`identities.${index}.name`)
-  const identityMail = form.watch(`identities.${index}.mail`)
-  const isDefault = form.watch(`identities.${index}.isDefault`)
-
-  const initials = (identityName || '?')
-    .split(' ')
-    .map((n: string) => n[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-
-  return (
-    <div className="border-border rounded-md border">
-      {/* Header */}
-      <div className="bg-muted/50 flex items-center justify-between rounded-t-md px-4 py-3">
-        <div className="flex items-center gap-3">
-          <div className="bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold">
-            {initials}
-          </div>
-          <div className="flex flex-col">
-            <span className="text-sm font-semibold">
-              {identityName || t('labels.newIdentity')}
-            </span>
-            <span className="text-muted-foreground text-xs">
-              {identityMail || '—'}
-            </span>
-          </div>
-          {isDefault && (
-            <span className="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
-              {t('labels.default')}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={onToggleCollapse}
-          >
-            {isCollapsed ? (
-              <ChevronDown className="text-muted-foreground h-4 w-4" />
-            ) : (
-              <ChevronUp className="text-muted-foreground h-4 w-4" />
-            )}
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={onRemove}
-            disabled={identityCount === 1}
-            title={
-              identityCount === 1
-                ? t('labels.atLeastOneIdentity')
-                : t('labels.removeIdentity')
-            }
-          >
-            <Trash2 className="text-destructive h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Content */}
-      {!isCollapsed && (
-        <div className="border-border space-y-4 border-t px-4 py-4">
-          <IdentityFields
-            form={form}
-            index={index}
-            identityCount={identityCount}
-            onSetDefault={onSetDefault}
-          />
-          <SignatureEditor form={form} identityIndex={index} />
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // ReceiptsEditor
 // ---------------------------------------------------------------------------
 function ReceiptsEditor({ form }: { form: UseFormReturn<schemaType> }) {
@@ -795,6 +453,7 @@ function ExternalAccountSettingsTab({
   mailboxData,
 }: ExternalAccountSettingsTabProps) {
   const t = useTranslations('US_MAIL_EXTERNAL_ACCOUNTS')
+  const t_identities = useTranslations('IDENTITY_COMPONENT')
   const [showImapPassword, setShowImapPassword] = useState(false)
   const [showSmtpPassword, setShowSmtpPassword] = useState(false)
   const [smtpSameAsImap, setSmtpSameAsImap] = useState(false)
@@ -921,7 +580,9 @@ function ExternalAccountSettingsTab({
             }
             onSetDefault={() => handleSetDefault(i)}
             onRemove={() => handleRemoveIdentity(i)}
-          />
+          >
+            <SignaturesSection form={form} identityIndex={i} />
+          </IdentityCard>
         ))}
 
         <Button
@@ -931,7 +592,7 @@ function ExternalAccountSettingsTab({
           onClick={() => appendIdentity(emptyIdentity)}
         >
           <Plus className="mr-2 h-4 w-4" />
-          {t('labels.addIdentity')}
+          {t_identities('labels.addIdentity')}
         </Button>
       </div>
 

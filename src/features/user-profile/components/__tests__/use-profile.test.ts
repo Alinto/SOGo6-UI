@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 import { renderHook } from '@testing-library/react'
 import { useAppSelector } from '@/lib/redux/hooks'
 import { useGetUserProfileQuery } from '../../store/profile-api'
-import { useProfile } from '../use-profile'
+import { useProfile } from '../../hooks/use-profile'
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: jest.fn(),

@@ -1,11 +1,29 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import { apiSlice, MAILBOXES_SLICE } from '@/lib/redux/api/api-slice'
-import { Mailbox, MailboxesResponse, MailboxPOST } from './mailboxes-api-types'
+import type { UnknownAction } from '@reduxjs/toolkit'
+import type { Dispatch } from 'redux'
+import {
+  Mailbox,
+  MailboxesResponse,
+  MailboxPOST,
+  MailboxProfilePatch,
+  SkipNotification,
+} from './mailboxes-api-types'
 
 const mailboxesOnQueryStarted = async (
-  _arg: unknown,
-  { dispatch, queryFulfilled }: { dispatch: any; queryFulfilled: Promise<any> }
+  _arg: SkipNotification,
+  {
+    dispatch,
+    queryFulfilled,
+  }: {
+    dispatch: Dispatch<UnknownAction>
+    queryFulfilled: Promise<{ data: MailboxesResponse | void }>
+  }
 ) => {
+  // Check if notification should be skipped from payload
+  const skipNotification = _arg?._skipNotification === true
+  if (skipNotification) return
+
   await createApiNotificationHandler(dispatch, {
     successTitle: 'title.success.string',
     successMessage: 'message.success.string',
@@ -21,11 +39,30 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
       providesTags: [MAILBOXES_SLICE],
     }),
 
+    getUserMailbox: builder.query<MailboxesResponse, { id: string }>({
+      query: ({ id }) => ({
+        url: `mailboxes/${id}`,
+      }),
+    }),
+
     createUserMailbox: builder.mutation<MailboxesResponse, MailboxPOST>({
       query: ({ ...post }) => ({
         url: 'mailboxes',
         method: 'POST',
         body: post,
+      }),
+      invalidatesTags: [MAILBOXES_SLICE],
+      onQueryStarted: mailboxesOnQueryStarted,
+    }),
+
+    updateUserMailboxProfile: builder.mutation<
+      MailboxesResponse,
+      MailboxProfilePatch
+    >({
+      query: ({ _skipNotification, id, ...patch }) => ({
+        url: `mailboxes/${id}`,
+        method: 'PATCH',
+        body: { ...patch },
       }),
       invalidatesTags: [MAILBOXES_SLICE],
       onQueryStarted: mailboxesOnQueryStarted,
@@ -41,8 +78,11 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
       onQueryStarted: mailboxesOnQueryStarted,
     }),
 
-    deleteUserMailbox: builder.mutation<void, { id: string }>({
-      query: ({ id }) => ({
+    deleteUserMailbox: builder.mutation<
+      void,
+      { id: string; _skipNotification?: boolean }
+    >({
+      query: ({ id, _skipNotification }) => ({
         url: `mailboxes/${id}`,
         method: 'DELETE',
       }),
@@ -54,8 +94,10 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
 
 export const {
   useGetUserMailboxesQuery,
+  useGetUserMailboxQuery,
   useLazyGetUserMailboxesQuery,
   useCreateUserMailboxMutation,
   useUpdateUserMailboxMutation,
+  useUpdateUserMailboxProfileMutation,
   useDeleteUserMailboxMutation,
 } = userMailboxesApi
