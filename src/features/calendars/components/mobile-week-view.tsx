@@ -179,7 +179,8 @@ export function MobileWeekView({
                     >
                       {dayEvents.slice(0, 3).map((event, idx) => {
                         const color =
-                          calendarColorMap[event.calendar_id] || defaultColor
+                          calendarColorMap[event.calendar_id ?? ''] ||
+                          defaultColor
                         return (
                           <div
                             key={`${event.id}-${idx}`}

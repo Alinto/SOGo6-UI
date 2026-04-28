@@ -5,21 +5,69 @@ import {
   Bell,
   Calendar,
   Clock,
+  ExternalLink,
   FileText,
+  Globe,
+  Lock,
   MapPin,
+  User,
   Users,
   Video,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import React, { memo } from 'react'
+import { cn } from '@/lib/utils'
 import { CalendarEvent } from '../../calendars-types'
 
 interface VisualizationProps {
   data: CalendarEvent
 }
 
+const getStatusClassName = (status: NonNullable<CalendarEvent['status']>) =>
+  cn(
+    status === 'confirmed' && 'border-green-200 bg-green-100 text-green-800',
+    status === 'tentative' && 'border-orange-200 bg-orange-100 text-orange-800',
+    status === 'cancelled' && 'border-red-200 bg-red-100 text-red-800'
+  )
+
 const Visualization: React.FC<VisualizationProps> = ({ data }) => {
   const t = useTranslations('CALENDARS')
+  const visibility = data.visibility ?? 'public'
+  const showAs = data.show_as ?? 'busy'
+  const status = data.status ?? 'confirmed'
+
+  const visibilityLabel =
+    visibility === 'private'
+      ? t('visualization.visibility.values.private.string')
+      : visibility === 'confidential'
+        ? t('visualization.visibility.values.confidential.string')
+        : t('visualization.visibility.values.public.string')
+
+  const showAsLabel =
+    showAs === 'free'
+      ? t('visualization.showAs.values.free.string')
+      : showAs === 'tentative'
+        ? t('visualization.showAs.values.tentative.string')
+        : showAs === 'out-of-office'
+          ? t('visualization.showAs.values.outOfOffice.string')
+          : t('visualization.showAs.values.busy.string')
+
+  const statusLabel =
+    status === 'tentative'
+      ? t('visualization.status.values.tentative.string')
+      : status === 'cancelled'
+        ? t('visualization.status.values.cancelled.string')
+        : t('visualization.status.values.confirmed.string')
+
+  const recurrenceFrequencyLabel = data.recurrence
+    ? data.recurrence.frequency === 'daily'
+      ? t('visualization.frequency.daily.string')
+      : data.recurrence.frequency === 'weekly'
+        ? t('visualization.frequency.weekly.string')
+        : data.recurrence.frequency === 'monthly'
+          ? t('visualization.frequency.monthly.string')
+          : t('visualization.frequency.yearly.string')
+    : null
 
   const startDate = new Date(data.start_date)
   const endDate = new Date(data.end_date)
@@ -204,7 +252,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
                 {t('visualization.recurrence.string')}
               </h3>
               <p className="text-muted-foreground">
-                {t(`visualization.frequency.${data.recurrence.frequency}`)}
+                {recurrenceFrequencyLabel}
                 {data.recurrence.interval && data.recurrence.interval > 1 && (
                   <>
                     {' '}
@@ -217,9 +265,118 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
             </div>
           </div>
         )}
+
+        {data.organizer && (
+          <>
+            <Separator />
+            <div className="flex items-start gap-3">
+              <User className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+              <div>
+                <h3 className="font-semibold">
+                  {t('visualization.organizer.string')}
+                </h3>
+                <p className="text-muted-foreground">
+                  {data.organizer.name ?? data.organizer.email}
+                </p>
+                {data.organizer.name && (
+                  <p className="text-muted-foreground text-sm">
+                    {data.organizer.email}
+                  </p>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+
+        {data.categories && data.categories.length > 0 && (
+          <>
+            <Separator />
+            <div className="flex items-start gap-3">
+              <FileText className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+              <div className="flex-1">
+                <h3 className="mb-2 font-semibold">
+                  {t('visualization.categories.string')}
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {data.categories.map((category) => (
+                    <Badge key={category} variant="secondary">
+                      {category}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {data.url && (
+          <>
+            <Separator />
+            <div className="flex items-start gap-3">
+              <ExternalLink className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+              <div>
+                <h3 className="font-semibold">
+                  {t('visualization.url.string')}
+                </h3>
+                <a
+                  href={data.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary break-all hover:underline"
+                >
+                  {data.url}
+                </a>
+              </div>
+            </div>
+          </>
+        )}
+
+        <Separator />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex items-start gap-3">
+            {visibility === 'public' ? (
+              <Globe className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+            ) : (
+              <Lock className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+            )}
+            <div>
+              <h3 className="font-semibold">
+                {t('visualization.visibility.string')}
+              </h3>
+              <p className="text-muted-foreground">{visibilityLabel}</p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3">
+            <Clock className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+            <div>
+              <h3 className="font-semibold">
+                {t('visualization.showAs.string')}
+              </h3>
+              <p className="text-muted-foreground">{showAsLabel}</p>
+            </div>
+          </div>
+        </div>
+
+        {status !== 'confirmed' && (
+          <>
+            <Separator />
+            <div className="flex items-start gap-3">
+              <Calendar className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
+              <div>
+                <h3 className="font-semibold">
+                  {t('visualization.status.string')}
+                </h3>
+                <Badge variant="outline" className={getStatusClassName(status)}>
+                  {statusLabel}
+                </Badge>
+              </div>
+            </div>
+          </>
+        )}
       </CardContent>
     </Card>
   )
 }
 
-export default Visualization
+export default memo(Visualization)

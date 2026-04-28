@@ -11,7 +11,7 @@ import { SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { MoreVertical } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import React, { useMemo } from 'react'
+import React, { memo, useMemo } from 'react'
 import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
@@ -157,7 +157,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 onClose={() => setDialogOpen(false)}
               />
             )}
-            {type === 'delete' && <DeleteAction id={id} />}
+            {type === 'delete' && (
+              <DeleteAction id={id} onClose={() => setDialogOpen(false)} />
+            )}
             {type === 'link' && <LinkAction id={id} />}
             {type === 'sharing' && (
               <WorkInProgress title={t('sidebar.sharing.string')} />
@@ -172,4 +174,4 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   )
 }
 
-export default SidebarItem
+export default memo(SidebarItem)

@@ -7,10 +7,10 @@ import { AgendaView } from '@/features/calendars/components/agenda-view'
 import { EventForm } from '@/features/calendars/components/event-form'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
 import { useIsMobile } from '@/hooks/useMediaQuery'
-import { getDateFnsLocale } from '@/lib/i18n/date-locales'
+import { DATE_LOCALES } from '@/lib/i18n/date-locales'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
+import { memo, useEffect } from 'react'
 import {
   dateFnsLocalizer,
   type DateLocalizer,
@@ -29,6 +29,14 @@ type CalendarEventWithDate = CalendarEvent & {
   end: Date
 }
 
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: DATE_LOCALES,
+})
+
 const DnDCalendar = withDragAndDrop<CalendarEventWithDate>(ShadcnBigCalendar)
 
 interface CalendarViewProps {
@@ -38,12 +46,14 @@ interface CalendarViewProps {
   selectedSlot: SlotInfo | null
   calendarColorMap: Record<string, string | undefined>
   defaultColor: string
+  defaultCalendarId?: string
 
   onViewChange: (view: View) => void
   onNavigate: (date: Date) => void
   onSelectSlot: (slot: SlotInfo) => void
   onSelectedSlotClose: () => void
-  onCreateEvent: (data: { title: string; start: string; end: string }) => void
+  onSelectEvent?: (event: CalendarEvent) => void
+  onDeleteEvent?: (event: CalendarEventWithDate) => Promise<void>
   onEventDrop: (args: EventInteractionArgs<CalendarEventWithDate>) => void
   onEventResize: (args: EventInteractionArgs<CalendarEventWithDate>) => void
 }
@@ -51,12 +61,12 @@ interface CalendarViewProps {
 // Extracted dialog component to avoid duplication
 function EventDialog({
   selectedSlot,
+  calendarKey,
   onClose,
-  onSubmit,
 }: {
   selectedSlot: SlotInfo | null
+  calendarKey: string
   onClose: () => void
-  onSubmit: (data: { title: string; start: string; end: string }) => void
 }) {
   const t = useTranslations('CALENDARS')
 
@@ -70,9 +80,9 @@ function EventDialog({
         </DialogHeader>
         {selectedSlot && (
           <EventForm
+            calendarKey={calendarKey}
             start={selectedSlot.start}
             end={selectedSlot.end}
-            onSubmit={onSubmit}
             onCancel={onClose}
           />
         )}
@@ -81,40 +91,24 @@ function EventDialog({
   )
 }
 
-export default function CalendarView({
+function CalendarView({
   view,
   date,
   events,
   selectedSlot,
   calendarColorMap,
   defaultColor,
+  defaultCalendarId,
   onViewChange,
   onNavigate,
   onSelectSlot,
   onSelectedSlotClose,
-  onCreateEvent,
+  onSelectEvent,
   onEventDrop,
   onEventResize,
 }: CalendarViewProps) {
   const locale = useLocale()
   const isMobile = useIsMobile()
-
-  const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
-
-  const localizer = useMemo(
-    () =>
-      dateFnsLocalizer({
-        format: (date: Date, formatStr: string) =>
-          format(date, formatStr, { locale: dateFnsLocale }),
-        parse: (dateStr: string, formatStr: string) =>
-          parse(dateStr, formatStr, new Date(), { locale: dateFnsLocale }),
-        startOfWeek: (date: Date) =>
-          startOfWeek(date, { locale: dateFnsLocale }),
-        getDay,
-        locales: { [locale]: dateFnsLocale },
-      }),
-    [locale, dateFnsLocale]
-  )
 
   // Inject dynamic CSS for calendar colors
   useEffect(() => {
@@ -156,7 +150,8 @@ export default function CalendarView({
   }, [defaultColor, calendarColorMap])
 
   const eventStyleGetter = (event: CalendarEventWithDate) => {
-    const calendarColor = calendarColorMap[event.calendar_id] || defaultColor
+    const calendarColor =
+      calendarColorMap[event.calendar_id ?? ''] || defaultColor
     return {
       style: {
         backgroundColor: calendarColor,
@@ -175,8 +170,8 @@ export default function CalendarView({
       <div className="flex h-full flex-col">
         <EventDialog
           selectedSlot={selectedSlot}
+          calendarKey={defaultCalendarId ?? ''}
           onClose={onSelectedSlotClose}
-          onSubmit={onCreateEvent}
         />
 
         {view === Views.AGENDA ? (
@@ -196,6 +191,7 @@ export default function CalendarView({
             defaultColor={defaultColor}
             onNavigate={onNavigate}
             onViewChange={onViewChange}
+            onEventClick={onSelectEvent}
           />
         )}
       </div>
@@ -207,8 +203,8 @@ export default function CalendarView({
     <div className="flex h-full flex-col">
       <EventDialog
         selectedSlot={selectedSlot}
+        calendarKey={defaultCalendarId ?? ''}
         onClose={onSelectedSlotClose}
-        onSubmit={onCreateEvent}
       />
 
       {view === Views.AGENDA ? (
@@ -233,6 +229,7 @@ export default function CalendarView({
             resizableAccessor={() => true}
             events={events}
             onSelectSlot={onSelectSlot}
+            onSelectEvent={onSelectEvent}
             onEventDrop={onEventDrop}
             onEventResize={onEventResize}
             eventPropGetter={eventStyleGetter}
@@ -267,3 +264,5 @@ export default function CalendarView({
     </div>
   )
 }
+
+export default memo(CalendarView)

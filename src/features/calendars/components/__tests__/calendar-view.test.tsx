@@ -58,17 +58,13 @@ jest.mock('@/features/calendars/components/agenda-view', () => ({
 }))
 
 jest.mock('@/features/calendars/components/event-form', () => ({
-  EventForm: function MockEventForm({ onSubmit }: any) {
+  EventForm: function MockEventForm({ onCancel }: { onCancel: () => void }) {
     return (
       <form
         data-testid="event-form"
         onSubmit={(e) => {
           e.preventDefault()
-          onSubmit({
-            title: 'Test Event',
-            start: '2025-01-01T10:00',
-            end: '2025-01-01T11:00',
-          })
+          onCancel()
         }}
       >
         <button data-testid="event-form-submit" type="submit">
@@ -124,7 +120,6 @@ describe('CalendarView Component', () => {
     onNavigate: jest.fn(),
     onSelectSlot: jest.fn(),
     onSelectedSlotClose: jest.fn(),
-    onCreateEvent: jest.fn(),
     onEventDrop: jest.fn(),
     onEventResize: jest.fn(),
   }
@@ -197,12 +192,12 @@ describe('CalendarView Component', () => {
     expect(screen.getByTestId('event-form')).toBeInTheDocument()
   })
 
-  it('should call onCreateEvent when form is submitted', async () => {
-    const onCreateEvent = jest.fn()
+  it('should call onSelectedSlotClose when mock event form is submitted', async () => {
+    const onSelectedSlotClose = jest.fn()
     const selectedSlot = {
       start: mockDate,
       end: addHours(mockDate, 1),
-      action: 'select',
+      action: 'select' as const,
       bounds: { x: 0, y: 0, right: 0, bottom: 0 },
       box: { x: 0, y: 0, right: 0, bottom: 0 },
     }
@@ -211,7 +206,7 @@ describe('CalendarView Component', () => {
       <CalendarView
         {...defaultProps}
         selectedSlot={selectedSlot}
-        onCreateEvent={onCreateEvent}
+        onSelectedSlotClose={onSelectedSlotClose}
       />
     )
 
@@ -219,11 +214,7 @@ describe('CalendarView Component', () => {
     fireEvent.click(submitButton)
 
     await waitFor(() => {
-      expect(onCreateEvent).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'Test Event',
-        })
-      )
+      expect(onSelectedSlotClose).toHaveBeenCalled()
     })
   })
 

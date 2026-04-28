@@ -190,7 +190,114 @@
       },
       "minutesBefore": {
         "string": "{count} minutes before"
+      },
+      "organizer": {
+        "string": "Organizer"
+      },
+      "categories": {
+        "string": "Categories"
+      },
+      "url": {
+        "string": "URL"
+      },
+      "visibility": {
+        "string": "Visibility",
+        "values": {
+          "public": {
+            "string": "Public"
+          },
+          "private": {
+            "string": "Private"
+          },
+          "confidential": {
+            "string": "Confidential"
+          }
+        }
+      },
+      "showAs": {
+        "string": "Show as",
+        "values": {
+          "busy": {
+            "string": "Busy"
+          },
+          "free": {
+            "string": "Free"
+          },
+          "tentative": {
+            "string": "Tentative"
+          },
+          "outOfOffice": {
+            "string": "Out of office"
+          }
+        }
+      },
+      "status": {
+        "string": "Status",
+        "values": {
+          "confirmed": {
+            "string": "Confirmed"
+          },
+          "tentative": {
+            "string": "Tentative"
+          },
+          "cancelled": {
+            "string": "Cancelled"
+          }
+        }
       }
+    },
+    "eventForm": {
+      "title": {
+        "label": "Event title",
+        "placeholder": "Enter event title"
+      },
+      "allDay": {
+        "label": "All day"
+      },
+      "startDate": {
+        "label": "Start date"
+      },
+      "startTime": {
+        "label": "Start time"
+      },
+      "endDate": {
+        "label": "End date"
+      },
+      "endTime": {
+        "label": "End time"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Add event details"
+      },
+      "location": {
+        "label": "Location",
+        "placeholder": "Add location"
+      },
+      "visibility": {
+        "label": "Visibility",
+        "placeholder": "Select visibility",
+        "options": {
+          "public": "Public",
+          "private": "Private",
+          "confidential": "Confidential"
+        }
+      },
+      "showAs": {
+        "label": "Show as",
+        "placeholder": "Select availability",
+        "options": {
+          "busy": "Busy",
+          "free": "Free"
+        }
+      },
+      "url": {
+        "label": "URL",
+        "placeholder": "https://example.com"
+      },
+      "cancel": "Cancel",
+      "create": "Create Event",
+      "update": "Update Event"
     },
     "forms": {
       "createCalendar": {
