@@ -11,7 +11,7 @@ import { useCreateCalendarMutation } from '@/features/calendars/store/calendars-
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import React, { memo } from 'react'
 import { useForm } from 'react-hook-form'
 import { schema, type CalendarAddFormData } from './add-schema'
 import CalendarFormCore from './calendar-form-core'
@@ -42,11 +42,16 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
 
   const handleSubmit = async (values: CalendarAddFormData) => {
     try {
-      await createCalendar(values).unwrap()
+      await createCalendar({
+        name: values.name,
+        color: values.color,
+        description: values.description || undefined,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }).unwrap()
       setOpen(false)
       form.reset()
-    } catch (error) {
-      console.error('Failed to create calendar:', error)
+    } catch {
+      // Notifications are handled by RTK Query onQueryStarted.
     }
   }
 
@@ -92,4 +97,4 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
   )
 }
 
-export default AddCalendar
+export default memo(AddCalendar)

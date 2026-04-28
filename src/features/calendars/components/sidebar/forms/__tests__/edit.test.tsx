@@ -11,6 +11,7 @@ jest.mock('next-intl', () => ({
 // Mock RTK Query
 jest.mock('@/features/calendars/store/calendars-api', () => ({
   useUpdateCalendarMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useDeleteCalendarMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }))
 
 // Mock UI components

@@ -49,7 +49,7 @@ export function AgendaView({
         {upcomingEvents.map((event) => {
           const eventDate = new Date(event.start)
           const eventEndDate = new Date(event.end)
-          const color = calendarColorMap[event.calendar_id] || '#3b82f6'
+          const color = calendarColorMap[event.calendar_id ?? ''] || '#3b82f6'
 
           return (
             <div

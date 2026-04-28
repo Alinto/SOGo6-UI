@@ -1,20 +1,27 @@
 'use client'
 
 import {
+  useCreateCalendarEventMutation,
+  useDeleteCalendarEventMutation,
   useGetCalendarsQuery,
   useGetEventsInTimeRangeQuery,
   useUpdateCalendarEventMutation,
   type Calendar,
+  type CalendarEventCreateBody,
+  type CalendarEventUpdateBody,
   type CalendarEvent,
 } from '@/features/calendars'
+import { endOfDay, startOfDay } from 'date-fns'
 import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import type { SlotInfo } from 'react-big-calendar'
 import { View, Views } from 'react-big-calendar'
+import type { EventInteractionArgs } from 'react-big-calendar/lib/addons/dragAndDrop'
 
-type CalendarEventWithDate = CalendarEvent & {
+type RBCEvent = CalendarEvent & {
   start: Date
   end: Date
+  allDay: boolean
 }
 
 /**
@@ -60,19 +67,17 @@ function convertDateToTimezone(
 interface UseCalendarStateReturn {
   view: View
   date: Date
-  events: CalendarEventWithDate[]
+  events: RBCEvent[]
   selectedSlot: SlotInfo | null
   timezone: string
-  calendarsData:
-    | { personal?: Calendar[]; shared?: Calendar[]; subscriptions?: Calendar[] }
-    | undefined
+  calendarsData: Calendar[] | undefined
   calendarColorMap: Record<string, string | undefined>
   defaultColor: string
   defaultCalendar: Calendar | undefined
 
   setView: (_view: View) => void
   setDate: (_date: Date) => void
-  setEvents: (_events: CalendarEventWithDate[]) => void
+  setEvents: (_events: RBCEvent[]) => void
   setSelectedSlot: (_slot: SlotInfo | null) => void
   setTimezone: (_tz: string) => void
 
@@ -86,18 +91,21 @@ interface UseCalendarStateReturn {
     title: string
     start: string
     end: string
-  }) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleEventDrop: (_args: any) => void
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  handleEventResize: (_args: any) => void
+  }) => Promise<void>
+  handleUpdateEvent: (
+    _event: CalendarEvent,
+    _body: CalendarEventUpdateBody
+  ) => Promise<void>
+  handleDeleteEvent: (_event: CalendarEvent) => Promise<void>
+  handleEventDrop: (_args: EventInteractionArgs<RBCEvent>) => void
+  handleEventResize: (_args: EventInteractionArgs<RBCEvent>) => void
 }
 
 export function useCalendarState(): UseCalendarStateReturn {
   const locale = useLocale()
   const [view, setView] = useState<View>(Views.WEEK)
   const [date, setDate] = useState(new Date())
-  const [events, setEvents] = useState<CalendarEventWithDate[]>([])
+  const [events, setEvents] = useState<RBCEvent[]>([])
   const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null)
   const [timezone, setTimezone] = useState<string>(
     Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -106,91 +114,81 @@ export function useCalendarState(): UseCalendarStateReturn {
   // Remove manual cache management and shouldFetch state
 
   const { data: calendarsData } = useGetCalendarsQuery()
+  const [createCalendarEvent] = useCreateCalendarEventMutation()
   const [updateCalendarEvent] = useUpdateCalendarEventMutation()
+  const [deleteCalendarEvent] = useDeleteCalendarEventMutation()
 
-  // Get all calendar IDs
-  const allCalendarIds = useMemo(() => {
-    if (!calendarsData) return []
-    const ids: string[] = []
-    if (calendarsData.personal)
-      ids.push(...calendarsData.personal.map((c) => c.id))
-    if (calendarsData.shared) ids.push(...calendarsData.shared.map((c) => c.id))
-    if (calendarsData.subscriptions)
-      ids.push(...calendarsData.subscriptions.map((c) => c.id))
-    return ids
+  const allCalendarKeys = useMemo(() => {
+    return (
+      calendarsData
+        ?.map((calendar) => calendar.key ?? calendar.id)
+        .filter((key): key is string => Boolean(key)) ?? []
+    )
   }, [calendarsData])
 
   // Create a map of calendar ID to color
   const calendarColorMap = useMemo(() => {
     if (!calendarsData) return {}
     const colorMap: Record<string, string | undefined> = {}
-    if (calendarsData.personal) {
-      calendarsData.personal.forEach((cal) => {
-        colorMap[cal.id] = cal.color || undefined
-      })
-    }
-    if (calendarsData.shared) {
-      calendarsData.shared.forEach((cal) => {
-        colorMap[cal.id] = cal.color || undefined
-      })
-    }
-    if (calendarsData.subscriptions) {
-      calendarsData.subscriptions.forEach((cal) => {
-        colorMap[cal.id] = cal.color || undefined
-      })
-    }
+    calendarsData.forEach((cal) => {
+      const key = cal.key ?? cal.id
+      if (key) colorMap[key] = cal.color || undefined
+    })
     return colorMap
   }, [calendarsData])
 
-  // Calculate date range for fetching events based on view with 2 buffers
+  // Ranges must stay within backend MAX_EVENT_FETCH_DAYS (31)
   const dateRange = useMemo(() => {
     const start = new Date(date)
     const end = new Date(date)
 
     switch (view) {
       case Views.DAY: {
-        // For day view: current day + 2 days before and 2 days after
-        start.setDate(start.getDate() - 2)
-        end.setDate(end.getDate() + 2)
+        // ±1 day buffer → 3 days
+        start.setDate(start.getDate() - 1)
+        end.setDate(end.getDate() + 1)
         break
       }
       case Views.WEEK: {
-        // For week view: current week + 2 weeks before and 2 weeks after
+        // Current week + 1 week buffer on each side → 21 days
         const dayOfWeek = start.getDay()
-        start.setDate(start.getDate() - dayOfWeek - 14) // 2 weeks before Sunday
-        end.setDate(end.getDate() + (6 - dayOfWeek) + 14) // 2 weeks after Saturday
+        start.setDate(start.getDate() - dayOfWeek - 7)
+        end.setDate(end.getDate() + (6 - dayOfWeek) + 7)
         break
       }
-      case Views.MONTH:
+      case Views.MONTH: {
+        // Current calendar month only (28–31 days)
+        // Leading/trailing days from adjacent months in the grid may not load; navigate to load them.
+        start.setDate(1)
+        end.setDate(1)
+        end.setMonth(end.getMonth() + 1)
+        end.setDate(0)
+        break
+      }
       case Views.AGENDA:
       default: {
-        // For month/agenda view: current month + 2 months before and 2 months after
-        start.setDate(1)
-        start.setMonth(start.getMonth() - 2)
-        end.setDate(1)
-        end.setMonth(end.getMonth() + 3)
-        end.setDate(0) // Last day of previous month
+        // 30 days from selected day
+        end.setDate(end.getDate() + 30)
         break
       }
     }
 
     return {
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
+      startDate: startOfDay(start).toISOString(),
+      endDate: endOfDay(end).toISOString(),
     }
   }, [date, view])
 
   // RTK Query will handle caching and refetching automatically based on query parameters
 
-  // Fetch events from all calendars using RTK Query's built-in caching
   const { data: fetchedEvents } = useGetEventsInTimeRangeQuery(
     {
-      calendarIds: allCalendarIds,
+      calendarIds: allCalendarKeys,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
     },
     {
-      skip: allCalendarIds.length === 0,
+      skip: allCalendarKeys.length === 0,
     }
   )
 
@@ -198,21 +196,33 @@ export function useCalendarState(): UseCalendarStateReturn {
   // Recalculate when timezone changes to properly display events in new timezone
   useEffect(() => {
     if (fetchedEvents) {
-      const transformedEvents: CalendarEventWithDate[] = fetchedEvents.map(
-        (event) => ({
-          ...event,
-          start: convertDateToTimezone(event.start_date, timezone, locale),
-          end: convertDateToTimezone(event.end_date, timezone, locale),
-        })
-      )
+      const transformedEvents: RBCEvent[] = fetchedEvents.flatMap((event) => {
+        const startDate = event.start_date ?? event.date_start
+        const endDate = event.end_date ?? event.date_end
+
+        if (!startDate || !endDate) return []
+
+        return [
+          {
+            ...event,
+            id: event.id ?? `${event.uid}-${startDate}`,
+            calendar_id: event.calendar_id ?? event.calendar_key ?? '',
+            start_date: startDate,
+            date_start: startDate,
+            end_date: endDate,
+            date_end: endDate,
+            start: convertDateToTimezone(startDate, timezone, locale),
+            end: convertDateToTimezone(endDate, timezone, locale),
+            allDay: event.all_day ?? false,
+          },
+        ]
+      })
       setEvents(transformedEvents)
     }
   }, [fetchedEvents, timezone, locale])
 
-  // Get default calendar color
-  const defaultCalendar = calendarsData?.personal?.find(
-    (cal: Calendar) => cal.default
-  )
+  const defaultCalendar =
+    calendarsData?.find((cal: Calendar) => cal.is_default) ?? calendarsData?.[0]
   const defaultColor = defaultCalendar?.color || '#3174ad'
 
   const handleNavigate = (newDate: Date) => {
@@ -269,88 +279,139 @@ export function useCalendarState(): UseCalendarStateReturn {
     setSelectedSlot(slotInfo)
   }
 
-  const handleCreateEvent = (data: {
+  const handleCreateEvent = async (data: {
     title: string
     start: string
     end: string
   }) => {
-    // TODO: Create event via API mutation
-    // For now, just add to local state
-    const newEvent: CalendarEventWithDate = {
-      id: `temp-${Date.now()}`,
-      calendar_id: defaultCalendar?.id || '',
+    const calendarKey = defaultCalendar?.key ?? defaultCalendar?.id
+    if (!calendarKey) return
+
+    const body: CalendarEventCreateBody = {
       title: data.title,
-      start_date: data.start,
-      end_date: data.end,
-      start: convertDateToTimezone(data.start, timezone, locale),
-      end: convertDateToTimezone(data.end, timezone, locale),
+      date_start: data.start,
+      date_end: data.end,
       all_day: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
     }
-    setEvents([...events, newEvent])
+
+    await createCalendarEvent({ calendarKey, body }).unwrap()
     setSelectedSlot(null)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEventDrop = (args: any) => {
-    const { event, start, end } = args
-    const updatedEvents = events.map((existingEvent) =>
-      existingEvent.id === event.id
-        ? {
-            ...existingEvent,
-            start,
-            end,
-            start_date: start.toISOString(),
-            end_date: end.toISOString(),
-          }
-        : existingEvent
+  const handleUpdateEvent = async (
+    event: CalendarEvent,
+    body: CalendarEventUpdateBody
+  ) => {
+    const eventKey = event.key ?? event.id ?? event.uid
+    if (!eventKey) return
+
+    await updateCalendarEvent({ eventKey, body }).unwrap()
+  }
+
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    const eventKey = event.key ?? event.id ?? event.uid
+    if (!eventKey) return
+
+    await deleteCalendarEvent(eventKey).unwrap()
+    setEvents((currentEvents) =>
+      currentEvents.filter(
+        (currentEvent) =>
+          (currentEvent.key ?? currentEvent.id ?? currentEvent.uid) !== eventKey
+      )
     )
-    setEvents(updatedEvents)
+  }
+
+  const handleEventDrop = (args: EventInteractionArgs<RBCEvent>) => {
+    const { event, start, end } = args
+    const allDay =
+      (args as EventInteractionArgs<RBCEvent> & { allDay?: boolean }).allDay ??
+      event.all_day ??
+      false
+    const nextStart = new Date(start)
+    const nextEnd = new Date(end)
+    const previousEvents = events
+    const nextStartIso = nextStart.toISOString()
+    const nextEndIso = nextEnd.toISOString()
+
+    setEvents((currentEvents) =>
+      currentEvents.map((existingEvent) =>
+        existingEvent.id === event.id
+          ? {
+              ...existingEvent,
+              start: nextStart,
+              end: nextEnd,
+              start_date: nextStartIso,
+              date_start: nextStartIso,
+              end_date: nextEndIso,
+              date_end: nextEndIso,
+              allDay,
+              all_day: allDay,
+            }
+          : existingEvent
+      )
+    )
 
     // Call API to update the event
+    const eventKey = event.key ?? event.id ?? event.uid
+    if (!eventKey) return
+
     updateCalendarEvent({
-      calendarId: event.calendar_id,
-      eventId: event.id,
-      event: {
-        start_date: start.toISOString(),
-        end_date: end.toISOString(),
+      eventKey,
+      body: {
+        date_start: nextStartIso,
+        date_end: nextEndIso,
+        all_day: allDay,
       },
-    }).catch((error) => {
-      console.error('Failed to update event on drag:', error)
-      // Revert the UI change on error
-      setEvents(events)
+      silentSuccess: true,
+    }).catch(() => {
+      setEvents(previousEvents)
     })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleEventResize = (args: any) => {
+  const handleEventResize = (args: EventInteractionArgs<RBCEvent>) => {
     const { event, start, end } = args
-    const updatedEvents = events.map((existingEvent) =>
-      existingEvent.id === event.id
-        ? {
-            ...existingEvent,
-            start,
-            end,
-            start_date: start.toISOString(),
-            end_date: end.toISOString(),
-          }
-        : existingEvent
+    const allDay =
+      (args as EventInteractionArgs<RBCEvent> & { allDay?: boolean }).allDay ??
+      event.all_day ??
+      false
+    const nextStart = new Date(start)
+    const nextEnd = new Date(end)
+    const previousEvents = events
+    const nextStartIso = nextStart.toISOString()
+    const nextEndIso = nextEnd.toISOString()
+
+    setEvents((currentEvents) =>
+      currentEvents.map((existingEvent) =>
+        existingEvent.id === event.id
+          ? {
+              ...existingEvent,
+              start: nextStart,
+              end: nextEnd,
+              start_date: nextStartIso,
+              date_start: nextStartIso,
+              end_date: nextEndIso,
+              date_end: nextEndIso,
+              allDay,
+              all_day: allDay,
+            }
+          : existingEvent
+      )
     )
-    setEvents(updatedEvents)
 
     // Call API to update the event
+    const eventKey = event.key ?? event.id ?? event.uid
+    if (!eventKey) return
+
     updateCalendarEvent({
-      calendarId: event.calendar_id,
-      eventId: event.id,
-      event: {
-        start_date: start.toISOString(),
-        end_date: end.toISOString(),
+      eventKey,
+      body: {
+        date_start: nextStartIso,
+        date_end: nextEndIso,
+        all_day: allDay,
       },
-    }).catch((error) => {
-      console.error('Failed to update event on resize:', error)
-      // Revert the UI change on error
-      setEvents(events)
+      silentSuccess: true,
+    }).catch(() => {
+      setEvents(previousEvents)
     })
   }
 
@@ -376,6 +437,8 @@ export function useCalendarState(): UseCalendarStateReturn {
     navigateToToday,
     handleSelectSlot,
     handleCreateEvent,
+    handleUpdateEvent,
+    handleDeleteEvent,
     handleEventDrop,
     handleEventResize,
   }

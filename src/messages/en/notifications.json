@@ -100,6 +100,114 @@
                 }
             }
         },
+        "calendar_create": {
+            "success": {
+                "title": {
+                    "string": "Calendar created"
+                },
+                "message": {
+                    "string": "The calendar has been successfully created."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Creation failed"
+                },
+                "message": {
+                    "string": "Failed to create the calendar. Please try again."
+                }
+            }
+        },
+        "calendar_update": {
+            "success": {
+                "title": {
+                    "string": "Calendar updated"
+                },
+                "message": {
+                    "string": "The calendar has been successfully updated."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Update failed"
+                },
+                "message": {
+                    "string": "Failed to update the calendar. Please try again."
+                }
+            }
+        },
+        "calendar_delete": {
+            "success": {
+                "title": {
+                    "string": "Calendar deleted"
+                },
+                "message": {
+                    "string": "The calendar has been successfully deleted."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Deletion failed"
+                },
+                "message": {
+                    "string": "Failed to delete the calendar. Please try again."
+                }
+            }
+        },
+        "calendar_event_create": {
+            "success": {
+                "title": {
+                    "string": "Event created"
+                },
+                "message": {
+                    "string": "The event has been successfully created."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Creation failed"
+                },
+                "message": {
+                    "string": "Failed to create the event. Please try again."
+                }
+            }
+        },
+        "calendar_event_update": {
+            "success": {
+                "title": {
+                    "string": "Event updated"
+                },
+                "message": {
+                    "string": "The event has been successfully updated."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Update failed"
+                },
+                "message": {
+                    "string": "Failed to update the event. Please try again."
+                }
+            }
+        },
+        "calendar_event_delete": {
+            "success": {
+                "title": {
+                    "string": "Event deleted"
+                },
+                "message": {
+                    "string": "The event has been successfully deleted."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Deletion failed"
+                },
+                "message": {
+                    "string": "Failed to delete the event. Please try again."
+                }
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",

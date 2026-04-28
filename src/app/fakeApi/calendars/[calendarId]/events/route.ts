@@ -1,6 +1,6 @@
 import type {
+  ApiCalendarEventsResponse,
   CalendarEvent,
-  CalendarEventsResponse,
 } from '@/features/calendars/calendars-types'
 import { NextResponse } from 'next/server'
 
@@ -95,6 +95,9 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         status: 'confirmed',
         visibility: 'public',
         show_as: 'busy',
+        categories: ['Work', 'Important'],
+        related_to: [],
+        url: 'https://example.com/team-standup',
         organizer: {
           email: 'manager@example.com',
           name: 'Sarah Manager',
@@ -168,6 +171,7 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         status: 'confirmed',
         visibility: 'private',
         show_as: 'busy',
+        related_to: [],
         reminders: [
           { method: 'popup', minutes_before: 60 },
           { method: 'email', minutes_before: 1440 },
@@ -196,6 +200,9 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         visibility: 'public',
         show_as: 'busy',
         color: '#4285f4',
+        categories: ['Work', 'Review'],
+        related_to: [],
+        url: 'https://example.com/project-review',
         organizer: {
           email: 'project-manager@example.com',
           name: 'Project Manager',
@@ -255,6 +262,8 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         status: 'confirmed',
         visibility: 'public',
         show_as: 'busy',
+        categories: ['Client', 'Important'],
+        related_to: [],
         organizer: {
           email: 'sales@example.com',
           name: 'Sales Team',
@@ -297,6 +306,9 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         status: 'confirmed',
         visibility: 'public',
         show_as: 'out-of-office',
+        categories: ['Company'],
+        related_to: [],
+        url: 'https://example.com/annual-conference',
         organizer: {
           email: 'hr@example.com',
           name: 'HR Department',
@@ -329,6 +341,8 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         status: 'confirmed',
         visibility: 'public',
         show_as: 'busy',
+        categories: ['Work'],
+        related_to: [],
         organizer: {
           email: 'scrum-master@example.com',
           name: 'Scrum Master',
@@ -375,6 +389,9 @@ function generateEventsWithDynamicDates(): Record<string, CalendarEvent[]> {
         status: 'confirmed',
         visibility: 'public',
         show_as: 'busy',
+        categories: ['Planning'],
+        related_to: [],
+        url: 'https://example.com/weekly-planning',
         organizer: {
           email: 'team-lead@example.com',
           name: 'Team Lead',
@@ -437,6 +454,9 @@ Please review the attached documents before the meeting.`,
         visibility: 'confidential',
         show_as: 'busy',
         transparency: 'opaque',
+        categories: ['Strategy', 'Confidential'],
+        related_to: [],
+        url: 'https://example.com/q4-strategy',
         organizer: {
           email: 'ceo@example.com',
           name: 'Jane CEO',
@@ -570,13 +590,45 @@ export async function GET(
   { params }: { params: Promise<{ calendarId: string }> }
 ) {
   const { calendarId } = await params
+  const { searchParams } = new URL(request.url)
+  const startDateTime =
+    searchParams.get('start_date_time') ?? searchParams.get('start_date')
+  const endDateTime =
+    searchParams.get('end_date_time') ?? searchParams.get('end_date')
+  const search = searchParams.get('search')?.toLowerCase()
   // Generate events dynamically on each request to ensure dates are always relative to today
   const eventsData = generateEventsWithDynamicDates()
-  const events = eventsData[calendarId] || []
+  let events = eventsData[calendarId] || []
 
-  const response: CalendarEventsResponse = {
-    events,
-    total_count: events.length,
+  if (startDateTime) {
+    const startBoundary = new Date(startDateTime).getTime()
+    events = events.filter(
+      (event) => new Date(event.end_date).getTime() >= startBoundary
+    )
+  }
+
+  if (endDateTime) {
+    const endBoundary = new Date(endDateTime).getTime()
+    events = events.filter(
+      (event) => new Date(event.start_date).getTime() <= endBoundary
+    )
+  }
+
+  if (search) {
+    events = events.filter((event) =>
+      [event.title, event.description, event.location].some((value) =>
+        value?.toLowerCase().includes(search)
+      )
+    )
+  }
+
+  const response: ApiCalendarEventsResponse = {
+    data: {
+      events,
+      total_count: events.length,
+    },
+    error_code: 'S000000',
+    error_msg: 'No Error',
   }
 
   return NextResponse.json(response)
