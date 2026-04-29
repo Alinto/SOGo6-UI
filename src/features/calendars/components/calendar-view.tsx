@@ -27,6 +27,7 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 type CalendarEventWithDate = CalendarEvent & {
   start: Date
   end: Date
+  allDay: boolean
 }
 
 const localizer = dateFnsLocalizer({
