@@ -694,3 +694,23 @@ button.rbc-input::-moz-focus-inner {
 .rbc-agenda-view {
   min-height: 60vh;
 }
+
+/* SOGo desktop calendar (wrapper in calendar-view): block pointer events on
+   date headers so DnD ghost does not show over non-droppable areas. Scoped to
+   wrapper only. Descendants included because pointer-events is not inherited. */
+.sogo-calendar-wrapper .rbc-time-header .rbc-header,
+.sogo-calendar-wrapper .rbc-time-header .rbc-header * {
+  pointer-events: none;
+  user-select: none;
+}
+
+.sogo-calendar-wrapper .rbc-month-header .rbc-header,
+.sogo-calendar-wrapper .rbc-month-header .rbc-header * {
+  pointer-events: none;
+  user-select: none;
+}
+
+.sogo-calendar-wrapper .sogo-month-date-header {
+  pointer-events: none;
+  user-select: none;
+}

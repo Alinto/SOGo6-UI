@@ -26,7 +26,7 @@ import {
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Contact2 } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { startTransition, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 
 function ProfilePrefetch() {
@@ -37,12 +37,19 @@ function ProfilePrefetch() {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const token = useAppSelector((state) => state.auth.token)
   const { push } = useRouter()
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    if (!token) {
+    startTransition(() => {
+      setIsHydrated(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (isHydrated && !token) {
       push('/auth/login')
     }
-  }, [token, push])
+  }, [isHydrated, token, push])
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -63,7 +70,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     connect(config)
   }, [connect])
 
-  if (!token) return null
+  if (!isHydrated || !token) return null
 
   return (
     <>

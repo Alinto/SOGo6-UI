@@ -1,10 +1,18 @@
 import fs from 'fs'
 import path from 'path'
 
-const buildEslintCommand = (filenames) =>
-  `next lint --fix --file ${filenames
+const buildEslintCommand = (filenames) => {
+  const lintable = filenames.filter((f) => {
+    const rel = path.relative(process.cwd(), f)
+    return !rel.includes('__tests__') && !rel.includes('.test.')
+  })
+  if (lintable.length === 0) {
+    return 'true'
+  }
+  return `next lint --fix --file ${lintable
     .map((f) => path.relative(process.cwd(), f))
     .join(' --file ')}`
+}
 
 const getTestFilePath = (filePath) => {
   const parsedPath = path.parse(filePath)
@@ -79,36 +87,21 @@ const buildTestCommands = (filenames) => {
     )
   }
 
-  // Check if any files are at root level (config files, package.json, etc.)
-  const rootLevelFiles = filenames.filter((f) => {
-    const relativePath = path.relative(process.cwd(), f)
-    return !relativePath.includes(path.sep)
-  })
-
-  const commands = []
-
-  // Job 1: If root-level files are modified, run full test suite
-  if (rootLevelFiles.length > 0) {
-    console.log('✓ Root-level files modified. Running full test suite first...')
-    commands.push('npm run test:coverage')
-  }
-
-  // Job 2: Run related tests for modified files in src/ folder
   const srcFiles = filenames.filter((f) => {
     const relativePath = path.relative(process.cwd(), f)
     return relativePath.startsWith('src/') && shouldHaveTest(f)
   })
 
-  if (srcFiles.length > 0) {
-    const relatedTestCommand = `npm run test:related -- ${srcFiles
-      .map((f) => path.relative(process.cwd(), f))
-      .join(' ')}`
-
-    console.log('✓ Running related tests for src/ files...')
-    commands.push(relatedTestCommand)
+  if (srcFiles.length === 0) {
+    return []
   }
 
-  return commands
+  const relatedTestCommand = `npm run test:related -- ${srcFiles
+    .map((f) => path.relative(process.cwd(), f))
+    .join(' ')}`
+
+  console.log('✓ Running related tests for src/ files...')
+  return [relatedTestCommand]
 }
 
 export default {

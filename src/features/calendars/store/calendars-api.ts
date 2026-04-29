@@ -316,10 +316,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       transformResponse: (response: ApiCalendarEventResponse | CalendarEvent) =>
         normalizeCalendarEvent('data' in response ? response.data : response),
-      invalidatesTags: (result, error, { calendarKey }) => [
-        { type: CALENDAR_EVENTS_SLICE, id: calendarKey },
-        CALENDARS_SLICE,
-      ],
+      invalidatesTags: [CALENDAR_EVENTS_SLICE],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         await notifyCreateCalendarEvent(dispatch, queryFulfilled)
       },
