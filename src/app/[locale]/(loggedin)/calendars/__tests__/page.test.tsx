@@ -1,10 +1,21 @@
 import { render } from '@testing-library/react'
-import CalendarPage from '../page'
+
+const mockDispatch = jest.fn()
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
   useLocale: () => 'en',
   useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
+  useAppSelector: (
+    selector: (state: { calendarUi: { createEventRequested: boolean } }) => unknown
+  ) =>
+    selector({
+      calendarUi: { createEventRequested: false },
+    }),
 }))
 
 // Mock calendar hooks
@@ -53,7 +64,12 @@ jest.mock('@/features/calendars/components/calendar-view', () => ({
   default: () => <div data-testid="calendar-view">Calendar View</div>,
 }))
 
+import CalendarPage from '../page'
+
 describe('CalendarPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
   it('should render without crashing', () => {
     const { container } = render(<CalendarPage />)
     expect(container).toBeInTheDocument()

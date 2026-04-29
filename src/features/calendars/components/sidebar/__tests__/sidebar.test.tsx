@@ -47,6 +47,13 @@ jest.mock('../skeleton', () => ({
   },
 }))
 
+jest.mock('../create-event-opener', () => ({
+  __esModule: true,
+  default: function MockCreateEventOpener() {
+    return <div data-testid="create-event-opener" />
+  },
+}))
+
 import Sidebar from '../sidebar'
 
 describe('Sidebar', () => {

@@ -12,15 +12,33 @@ import CalendarView from '@/features/calendars/components/calendar-view'
 import Visualization from '@/features/calendars/components/visualization'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
+import { clearCreateEventRequest } from '@/features/calendars/store/calendar-ui-slice'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import { memo, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 
 const CalendarPage = () => {
   const t = useTranslations('CALENDARS')
   const calendarState = useCalendarState()
   const { isCalendarVisible } = useCalendarVisibility()
+  const dispatch = useAppDispatch()
+  const createEventRequested = useAppSelector(
+    (state) => state.calendarUi.createEventRequested
+  )
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
+
+  useEffect(() => {
+    if (createEventRequested) {
+      calendarState.setSelectedSlot({
+        start: new Date(),
+        end: new Date(),
+        slots: [],
+        action: 'click',
+      })
+      dispatch(clearCreateEventRequest())
+    }
+  }, [calendarState, createEventRequested, dispatch])
 
   const visibleEvents = useMemo(() => {
     return calendarState.events.filter((event) =>
@@ -49,14 +67,6 @@ const CalendarPage = () => {
           onNavigatePrevious={calendarState.navigateToPrevious}
           onNavigateToday={calendarState.navigateToToday}
           onNavigateNext={calendarState.navigateToNext}
-          onCreateEvent={() =>
-            calendarState.setSelectedSlot({
-              start: new Date(),
-              end: new Date(),
-              slots: [],
-              action: 'click',
-            })
-          }
           timezone={calendarState.timezone}
           onTimezoneChange={calendarState.setTimezone}
         />

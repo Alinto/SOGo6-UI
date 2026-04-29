@@ -13,7 +13,7 @@ import { useIsMobile } from '@/hooks/useMediaQuery'
 import { getDateFnsLocale } from '@/lib/i18n/date-locales'
 import { cn } from '@/lib/utils'
 import { addDays, format, isSameMonth, startOfWeek } from 'date-fns'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { View, Views } from 'react-big-calendar'
@@ -25,7 +25,6 @@ export interface CalendarToolbarProps {
   onNavigatePrevious: () => void
   onNavigateToday: () => void
   onNavigateNext: () => void
-  onCreateEvent: () => void
   timezone: string
   onTimezoneChange: (timezone: string) => void
   className?: string
@@ -38,7 +37,6 @@ export function CalendarToolbar({
   onNavigatePrevious,
   onNavigateToday,
   onNavigateNext,
-  onCreateEvent,
   timezone,
   onTimezoneChange,
   className,
@@ -154,11 +152,6 @@ export function CalendarToolbar({
             className="w-[280px]"
           />
         )}
-
-        <Button onClick={onCreateEvent} size={isMobile ? 'sm' : 'default'}>
-          <Plus className={cn('h-4 w-4', !isMobile && 'mr-2')} />
-          {!isMobile && t('createEvent.string')}
-        </Button>
       </div>
 
       {/* Mobile: Date display on second row */}
