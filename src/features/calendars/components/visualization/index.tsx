@@ -356,6 +356,18 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
               <p className="text-muted-foreground">{showAsLabel}</p>
             </div>
           </div>
+
+          {data.color && (
+            <div className="flex items-center gap-2">
+              <div
+                className="border-border h-4 w-4 rounded-full border"
+                style={{ backgroundColor: data.color }}
+              />
+              <span className="text-muted-foreground text-sm">
+                {data.color}
+              </span>
+            </div>
+          )}
         </div>
 
         {status !== 'confirmed' && (

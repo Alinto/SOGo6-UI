@@ -110,12 +110,24 @@ export type CalendarEventCreateBody = {
   location?: string
   all_day?: boolean
   timezone?: string
-  status?: string
-  visibility?: string
-  show_as?: string
+  status?: 'confirmed' | 'tentative' | 'cancelled'
+  visibility?: 'public' | 'private' | 'confidential'
+  show_as?: 'busy' | 'free' | 'out-of-office' | 'tentative'
   url?: string
+  color?: string
   categories?: string[]
   attendees?: EventAttendee[]
+  reminders?: EventReminder[]
+  recurrence_rule?: {
+    frequency: string
+    interval?: number
+    until?: string
+    count?: number
+    by_day?: string[]
+    by_month_day?: number[]
+    by_month?: number[]
+    week_start?: string
+  } | null
 }
 
 export type CalendarEventUpdateBody = Partial<CalendarEventCreateBody>

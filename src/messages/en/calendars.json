@@ -266,6 +266,10 @@
       "endTime": {
         "label": "End time"
       },
+      "timezone": {
+        "label": "Timezone (event)",
+        "description": "Timezone in which this event's dates are interpreted"
+      },
       "description": {
         "label": "Description",
         "placeholder": "Add event details"
@@ -288,7 +292,74 @@
         "placeholder": "Select availability",
         "options": {
           "busy": "Busy",
-          "free": "Free"
+          "free": "Free",
+          "outOfOffice": "Out of office",
+          "tentative": "Tentative"
+        }
+      },
+      "status": {
+        "label": "Status",
+        "placeholder": "Select status",
+        "options": {
+          "confirmed": "Confirmed",
+          "tentative": "Tentative",
+          "cancelled": "Cancelled"
+        }
+      },
+      "color": {
+        "label": "Color",
+        "reset": "Reset"
+      },
+      "categories": {
+        "label": "Categories",
+        "placeholder": "Add a category and press Enter",
+        "remove": "Remove {category}"
+      },
+      "attendees": {
+        "label": "Attendees",
+        "add": "Add attendee",
+        "emailPlaceholder": "email@example.com",
+        "namePlaceholder": "Name (optional)",
+        "remove": "Remove attendee"
+      },
+      "reminders": {
+        "label": "Reminders",
+        "add": "Add reminder",
+        "minutesBefore": "min before",
+        "remove": "Remove reminder",
+        "methods": {
+          "popup": "Popup",
+          "email": "Email",
+          "notification": "Notification"
+        }
+      },
+      "recurrence": {
+        "repeat": "Repeat",
+        "every": "Every",
+        "on": "On",
+        "onDay": "On day",
+        "ofTheMonth": "of the month",
+        "ends": "Ends",
+        "occurrences": "occurrences",
+        "days": {
+          "mo": "Mon",
+          "tu": "Tue",
+          "we": "Wed",
+          "th": "Thu",
+          "fr": "Fri",
+          "sa": "Sat",
+          "su": "Sun"
+        },
+        "frequencies": {
+          "daily": "Day(s)",
+          "weekly": "Week(s)",
+          "monthly": "Month(s)",
+          "yearly": "Year(s)"
+        },
+        "endTypes": {
+          "never": "Never",
+          "on": "On",
+          "after": "After"
         }
       },
       "url": {

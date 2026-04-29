@@ -39,6 +39,29 @@ const localizer = dateFnsLocalizer({
 
 const DnDCalendar = withDragAndDrop<CalendarEventWithDate>(ShadcnBigCalendar)
 
+const calendarSlotSelectionGuardComponents = {
+  week: {
+    header: ({ label }: { date: Date; label: string }) => (
+      <div
+        className="rbc-header-content"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {label}
+      </div>
+    ),
+  },
+  month: {
+    dateHeader: ({ label }: { date: Date; label: string }) => (
+      <span
+        className="sogo-month-date-header"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {label}
+      </span>
+    ),
+  },
+}
+
 interface CalendarViewProps {
   view: View
   date: Date
@@ -72,8 +95,8 @@ function EventDialog({
 
   return (
     <Dialog open={selectedSlot !== null} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="border-b px-6 pt-6 pb-4">
           <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
             {t('events.create.string')}
           </h2>
@@ -150,16 +173,18 @@ function CalendarView({
   }, [defaultColor, calendarColorMap])
 
   const eventStyleGetter = (event: CalendarEventWithDate) => {
-    const calendarColor =
-      calendarColorMap[event.calendar_id ?? ''] || defaultColor
+    const color =
+      event.color || calendarColorMap[event.calendar_id ?? ''] || defaultColor
+
     return {
       style: {
-        backgroundColor: calendarColor,
+        backgroundColor: color,
         borderRadius: '4px',
-        opacity: 0.9,
+        opacity: event.status === 'cancelled' ? 0.5 : 0.9,
         color: '#fff',
-        border: `1px solid ${calendarColor}`,
+        border: `1px solid ${color}`,
         display: 'block',
+        textDecoration: event.status === 'cancelled' ? 'line-through' : 'none',
       },
     }
   }
@@ -217,48 +242,51 @@ function CalendarView({
         </div>
       ) : (
         <div className="flex h-full flex-1 flex-col overflow-hidden">
-          <DnDCalendar
-            localizer={localizer}
-            selectable
-            date={date}
-            onNavigate={onNavigate}
-            view={view}
-            onView={onViewChange}
-            resizable
-            draggableAccessor={() => true}
-            resizableAccessor={() => true}
-            events={events}
-            onSelectSlot={onSelectSlot}
-            onSelectEvent={onSelectEvent}
-            onEventDrop={onEventDrop}
-            onEventResize={onEventResize}
-            eventPropGetter={eventStyleGetter}
-            toolbar={false}
-            culture={locale}
-            formats={{
-              timeGutterFormat: (
-                date: Date,
-                culture: string | undefined,
-                localizer: DateLocalizer | undefined
-              ) => (localizer ? localizer.format(date, 'h a', culture) : ''),
-              eventTimeRangeFormat: (
-                { start, end }: { start: Date; end: Date },
-                culture: string | undefined,
-                localizer: DateLocalizer | undefined
-              ) =>
-                localizer
-                  ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
-                  : '',
-              agendaTimeRangeFormat: (
-                { start, end }: { start: Date; end: Date },
-                culture: string | undefined,
-                localizer: DateLocalizer | undefined
-              ) =>
-                localizer
-                  ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
-                  : '',
-            }}
-          />
+          <div className="sogo-calendar-wrapper h-full min-h-0 w-full flex-1">
+            <DnDCalendar
+              localizer={localizer}
+              components={calendarSlotSelectionGuardComponents}
+              selectable
+              date={date}
+              onNavigate={onNavigate}
+              view={view}
+              onView={onViewChange}
+              resizable
+              draggableAccessor={() => true}
+              resizableAccessor={() => true}
+              events={events}
+              onSelectSlot={onSelectSlot}
+              onSelectEvent={onSelectEvent}
+              onEventDrop={onEventDrop}
+              onEventResize={onEventResize}
+              eventPropGetter={eventStyleGetter}
+              toolbar={false}
+              culture={locale}
+              formats={{
+                timeGutterFormat: (
+                  date: Date,
+                  culture: string | undefined,
+                  localizer: DateLocalizer | undefined
+                ) => (localizer ? localizer.format(date, 'h a', culture) : ''),
+                eventTimeRangeFormat: (
+                  { start, end }: { start: Date; end: Date },
+                  culture: string | undefined,
+                  localizer: DateLocalizer | undefined
+                ) =>
+                  localizer
+                    ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
+                    : '',
+                agendaTimeRangeFormat: (
+                  { start, end }: { start: Date; end: Date },
+                  culture: string | undefined,
+                  localizer: DateLocalizer | undefined
+                ) =>
+                  localizer
+                    ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
+                    : '',
+              }}
+            />
+          </div>
         </div>
       )}
     </div>
