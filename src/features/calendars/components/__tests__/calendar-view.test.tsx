@@ -116,6 +116,7 @@ describe('CalendarView Component', () => {
     selectedSlot: null,
     calendarColorMap: { 'cal-1': '#FF0000' },
     defaultColor: '#0000FF',
+    calendars: [],
     onViewChange: jest.fn(),
     onNavigate: jest.fn(),
     onSelectSlot: jest.fn(),

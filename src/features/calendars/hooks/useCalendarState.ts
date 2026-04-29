@@ -181,7 +181,7 @@ export function useCalendarState(): UseCalendarStateReturn {
 
   // RTK Query will handle caching and refetching automatically based on query parameters
 
-  const { data: fetchedEvents } = useGetEventsInTimeRangeQuery(
+  const { currentData } = useGetEventsInTimeRangeQuery(
     {
       calendarIds: allCalendarKeys,
       startDate: dateRange.startDate,
@@ -195,8 +195,8 @@ export function useCalendarState(): UseCalendarStateReturn {
   // Transform fetched events to have Date objects
   // Recalculate when timezone changes to properly display events in new timezone
   useEffect(() => {
-    if (fetchedEvents) {
-      const transformedEvents: RBCEvent[] = fetchedEvents.flatMap((event) => {
+    if (currentData) {
+      const transformedEvents: RBCEvent[] = currentData.flatMap((event) => {
         const startDate = event.start_date ?? event.date_start
         const endDate = event.end_date ?? event.date_end
 
@@ -219,7 +219,7 @@ export function useCalendarState(): UseCalendarStateReturn {
       })
       setEvents(transformedEvents)
     }
-  }, [fetchedEvents, timezone, locale])
+  }, [currentData, timezone, locale])
 
   const defaultCalendar =
     calendarsData?.find((cal: Calendar) => cal.is_default) ?? calendarsData?.[0]

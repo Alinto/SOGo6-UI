@@ -29,6 +29,7 @@ describe('useCalendarState', () => {
     mockUseGetCalendarsQuery.mockReturnValue({ data: [] })
     mockUseGetEventsInTimeRangeQuery.mockReturnValue({
       data: undefined,
+      currentData: undefined,
       isLoading: false,
     })
   })
@@ -72,6 +73,20 @@ describe('useCalendarState', () => {
       })
       mockUseGetEventsInTimeRangeQuery.mockReturnValue({
         data: [
+          {
+            id: 'e1',
+            calendar_id: 'k1',
+            title: 'E',
+            all_day: false,
+            start_date: '2020-01-10T10:00:00.000Z',
+            end_date: '2020-01-10T11:00:00.000Z',
+            date_start: '2020-01-10T10:00:00.000Z',
+            date_end: '2020-01-10T11:00:00.000Z',
+            created_at: '2020-01-01T00:00:00.000Z',
+            updated_at: '2020-01-01T00:00:00.000Z',
+          },
+        ],
+        currentData: [
           {
             id: 'e1',
             calendar_id: 'k1',

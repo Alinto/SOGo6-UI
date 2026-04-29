@@ -332,7 +332,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       transformResponse: (response: ApiCalendarEventResponse | CalendarEvent) =>
         normalizeCalendarEvent('data' in response ? response.data : response),
-      invalidatesTags: [CALENDAR_EVENTS_SLICE],
+      invalidatesTags: (result, error, arg) =>
+        arg.silentSuccess ? [] : [CALENDAR_EVENTS_SLICE],
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         if (arg.silentSuccess) {
           try {
@@ -383,30 +384,43 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         const allEvents: CalendarEvent[] = []
         await Promise.all(
           calendarIds.map(async (calendarId) => {
-            const result = await baseQuery({
-              url: calendarEventsUrl(calendarId),
-              method: 'GET',
-              params: {
-                start_date_time: startDate,
-                end_date_time: endDate,
-              },
-            })
+            try {
+              const result = await baseQuery({
+                url: calendarEventsUrl(calendarId),
+                method: 'GET',
+                params: {
+                  start_date_time: startDate,
+                  end_date_time: endDate,
+                },
+              })
 
-            if (result.error) return
+              if (result.error) {
+                console.warn(
+                  `[Calendar] Failed to fetch events for ${calendarId}:`,
+                  result.error
+                )
+                return
+              }
 
-            const { events } = normalizeCalendarEventsResponse(
-              result.data as
-                | ApiCalendarEventsResponse
-                | CalendarEventsResponse
-                | CalendarEvent[]
-            )
+              const { events } = normalizeCalendarEventsResponse(
+                result.data as
+                  | ApiCalendarEventsResponse
+                  | CalendarEventsResponse
+                  | CalendarEvent[]
+              )
 
-            allEvents.push(
-              ...events.map((event) => ({
-                ...event,
-                calendar_id: event.calendar_id ?? calendarId,
-              }))
-            )
+              allEvents.push(
+                ...events.map((event) => ({
+                  ...event,
+                  calendar_id: event.calendar_id ?? calendarId,
+                }))
+              )
+            } catch (e) {
+              console.warn(
+                `[Calendar] Exception fetching events for ${calendarId}:`,
+                e
+              )
+            }
           })
         )
 
