@@ -1,4 +1,4 @@
-import { fetchEnvVars } from '@/lib/env-service'
+import { clearEnvCache, fetchEnvVars } from '@/lib/env-service'
 import type { RootState } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
@@ -77,17 +77,34 @@ const tagTypes = [
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call
-let cachedBaseUrl: string
+let cachedBaseUrl: string | undefined
+
+const ENV_RESOLVE_MS = 8000
 
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
-  // Fetch and cache base URL only once
   if (!cachedBaseUrl) {
-    const envVars = await fetchEnvVars()
-    cachedBaseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi' //fakeApi if env var is missing
+    try {
+      const envVars = await Promise.race([
+        fetchEnvVars(),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('fetchEnvVars timeout')),
+            ENV_RESOLVE_MS
+          )
+        ),
+      ])
+      cachedBaseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
 
-    // Log only in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🌐 API Base URL initialized:', cachedBaseUrl)
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🌐 API Base URL initialized:', cachedBaseUrl)
+      }
+    } catch (error) {
+      console.warn(
+        '⚠️ Could not resolve API base URL, using /fakeApi',
+        error
+      )
+      cachedBaseUrl = '/fakeApi'
+      clearEnvCache()
     }
   }
 

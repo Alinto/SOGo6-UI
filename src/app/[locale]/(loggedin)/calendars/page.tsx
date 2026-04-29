@@ -40,7 +40,7 @@ const CalendarPage = () => {
   }
 
   return (
-    <main className="flex h-screen w-full flex-col overflow-x-hidden">
+    <main className="flex h-full w-full flex-col overflow-hidden">
       <div className="shrink-0">
         <CalendarToolbar
           view={calendarState.view}
@@ -69,6 +69,7 @@ const CalendarPage = () => {
           selectedSlot={calendarState.selectedSlot}
           calendarColorMap={calendarState.calendarColorMap}
           defaultColor={calendarState.defaultColor}
+          calendars={calendarState.calendarsData ?? []}
           defaultCalendarId={
             calendarState.defaultCalendar?.key ?? calendarState.defaultCalendar?.id
           }

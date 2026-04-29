@@ -63,7 +63,13 @@ describe('CalendarPage', () => {
     const { container } = render(<CalendarPage />)
     const main = container.querySelector('main')
     expect(main).toBeInTheDocument()
-    expect(main).toHaveClass('flex', 'h-screen', 'w-full', 'flex-col')
+    expect(main).toHaveClass(
+      'flex',
+      'h-full',
+      'w-full',
+      'flex-col',
+      'overflow-hidden'
+    )
   })
 
   it('should render CalendarToolbar', () => {

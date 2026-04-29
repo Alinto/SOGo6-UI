@@ -4,6 +4,7 @@ import '@testing-library/jest-dom'
 const mockFetchEnvVars = jest.fn()
 jest.mock('@/lib/env-service', () => ({
   fetchEnvVars: mockFetchEnvVars,
+  clearEnvCache: jest.fn(),
 }))
 
 // Mock @reduxjs/toolkit/query/react

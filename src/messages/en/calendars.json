@@ -247,6 +247,10 @@
       }
     },
     "eventForm": {
+      "calendar": {
+        "label": "Calendar",
+        "placeholder": "Select calendar"
+      },
       "title": {
         "label": "Event title",
         "placeholder": "Enter event title"

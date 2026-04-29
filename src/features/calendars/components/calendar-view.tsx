@@ -2,7 +2,7 @@
 
 import ShadcnBigCalendar from '@/components/calendar'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
-import { type CalendarEvent } from '@/features/calendars'
+import { type Calendar, type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
 import { EventForm } from '@/features/calendars/components/event-form'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
@@ -70,6 +70,7 @@ interface CalendarViewProps {
   calendarColorMap: Record<string, string | undefined>
   defaultColor: string
   defaultCalendarId?: string
+  calendars: Calendar[]
 
   onViewChange: (view: View) => void
   onNavigate: (date: Date) => void
@@ -85,10 +86,12 @@ interface CalendarViewProps {
 function EventDialog({
   selectedSlot,
   calendarKey,
+  calendars,
   onClose,
 }: {
   selectedSlot: SlotInfo | null
   calendarKey: string
+  calendars: Calendar[]
   onClose: () => void
 }) {
   const t = useTranslations('CALENDARS')
@@ -104,6 +107,7 @@ function EventDialog({
         {selectedSlot && (
           <EventForm
             calendarKey={calendarKey}
+            calendars={calendars}
             start={selectedSlot.start}
             end={selectedSlot.end}
             onCancel={onClose}
@@ -122,6 +126,7 @@ function CalendarView({
   calendarColorMap,
   defaultColor,
   defaultCalendarId,
+  calendars,
   onViewChange,
   onNavigate,
   onSelectSlot,
@@ -196,6 +201,7 @@ function CalendarView({
         <EventDialog
           selectedSlot={selectedSlot}
           calendarKey={defaultCalendarId ?? ''}
+          calendars={calendars}
           onClose={onSelectedSlotClose}
         />
 
@@ -229,6 +235,7 @@ function CalendarView({
       <EventDialog
         selectedSlot={selectedSlot}
         calendarKey={defaultCalendarId ?? ''}
+        calendars={calendars}
         onClose={onSelectedSlotClose}
       />
 
@@ -245,6 +252,7 @@ function CalendarView({
           <div className="sogo-calendar-wrapper h-full min-h-0 w-full flex-1">
             <DnDCalendar
               localizer={localizer}
+              style={{ height: '100%' }}
               components={calendarSlotSelectionGuardComponents}
               selectable
               date={date}

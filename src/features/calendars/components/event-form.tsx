@@ -21,6 +21,7 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  type Calendar,
   type CalendarEvent,
   type CalendarEventCreateBody,
   useCreateCalendarEventMutation,
@@ -30,7 +31,7 @@ import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, MapPin, Plus, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { memo, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { type Resolver, useFieldArray, useForm } from 'react-hook-form'
 import * as z from 'zod'
 import {
@@ -46,6 +47,7 @@ const recurrenceFrequencies = [
 ] as const satisfies readonly RecurrenceRuleValue['frequency'][]
 
 const formSchema = z.object({
+  calendar_key: z.string().min(1),
   title: z.string().min(1),
   start: z.string(),
   end: z.string(),
@@ -91,6 +93,7 @@ const formSchema = z.object({
 
 type EventFormProps = {
   calendarKey: string
+  calendars?: Calendar[]
   start?: Date
   end?: Date
   event?: CalendarEvent | null
@@ -110,6 +113,7 @@ const toIsoDate = (value: string, allDay: boolean) =>
 
 export function EventForm({
   calendarKey,
+  calendars,
   start,
   end,
   event,
@@ -133,6 +137,7 @@ export function EventForm({
   const form = useForm<EventFormValues>({
     resolver: zodResolver(formSchema) as Resolver<EventFormValues>,
     defaultValues: {
+      calendar_key: event?.calendar_id ?? calendarKey,
       title: event?.title ?? '',
       start: formatInputDate(startDate, isAllDay),
       end: formatInputDate(endDate, isAllDay),
@@ -184,9 +189,28 @@ export function EventForm({
   } = useFieldArray({ control: form.control, name: 'attendees' })
 
   const allDay = form.watch('all_day')
+  const watchedCalendarKey = form.watch('calendar_key')
+
+  const selectedCalendar = useMemo(
+    () =>
+      calendars?.find(
+        (cal) => (cal.key ?? cal.id) === watchedCalendarKey
+      ),
+    [calendars, watchedCalendarKey]
+  )
+  const calendarColor = selectedCalendar?.color ?? '#3B82F6'
+
+  const isFirstCalendarKeyEffect = useRef(true)
+  useEffect(() => {
+    if (isFirstCalendarKeyEffect.current) {
+      isFirstCalendarKeyEffect.current = false
+      return
+    }
+    form.setValue('color', '')
+  }, [watchedCalendarKey, form])
 
   const handleSubmit = async (values: EventFormValues) => {
-    const targetCalendarKey = event?.calendar_id ?? calendarKey
+    const targetCalendarKey = values.calendar_key
     if (!targetCalendarKey) return
 
     const body: CalendarEventCreateBody = {
@@ -201,7 +225,7 @@ export function EventForm({
       show_as: values.show_as,
       status: values.status,
       url: values.url || undefined,
-      color: values.color || undefined,
+      color: values.color || calendarColor,
       categories: values.categories.length > 0 ? values.categories : undefined,
       reminders: values.reminders.length > 0 ? values.reminders : undefined,
       attendees:
@@ -242,6 +266,52 @@ export function EventForm({
         className={cn('flex max-h-[calc(90vh-88px)] w-full flex-col')}
       >
         <div className={cn('flex-1 space-y-4 overflow-y-auto px-6 py-4')}>
+          {calendars && calendars.length > 0 ? (
+            <FormField
+              control={form.control}
+              name="calendar_key"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('eventForm.calendar.label')}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t('eventForm.calendar.placeholder')}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {calendars.map((cal) => {
+                        const calKey = cal.key ?? cal.id ?? ''
+                        if (!calKey) return null
+                        return (
+                          <SelectItem key={calKey} value={calKey}>
+                            <span
+                              className={cn('flex items-center gap-2')}
+                            >
+                              <span
+                                className={cn(
+                                  'border-border h-3 w-3 shrink-0 rounded-full border'
+                                )}
+                                style={{
+                                  backgroundColor: cal.color ?? '#3B82F6',
+                                }}
+                              />
+                              {cal.name}
+                            </span>
+                          </SelectItem>
+                        )
+                      })}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+          ) : null}
           <FormField
             control={form.control}
             name="title"
@@ -471,7 +541,7 @@ export function EventForm({
                   <div className={cn('flex items-center gap-2')}>
                     <input
                       type="color"
-                      value={field.value || '#3B82F6'}
+                      value={field.value || calendarColor}
                       onChange={(e) => field.onChange(e.target.value)}
                       className={cn(
                         'border-input bg-background h-9 w-9 cursor-pointer rounded border p-0.5'
@@ -718,7 +788,7 @@ export function EventForm({
           <Button variant="outline" type="button" onClick={onCancel}>
             {t('eventForm.cancel')}
           </Button>
-          <Button type="submit" disabled={isSubmitting || !calendarKey}>
+          <Button type="submit" disabled={isSubmitting || !watchedCalendarKey}>
             {isEditing ? t('eventForm.update') : t('eventForm.create')}
           </Button>
         </div>
