@@ -2,9 +2,10 @@
 
 import AppHeader from '@/components/app-header'
 import { useAppSelector } from '@/lib/redux/hooks'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from 'next/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
+import ModuleRail, { type ModuleId } from '@/components/sidebar/module-rail'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import {
@@ -26,7 +27,7 @@ import {
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Contact2 } from 'lucide-react'
-import React, { startTransition, useEffect, useState } from 'react'
+import React, { startTransition, useCallback, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 
 function ProfilePrefetch() {
@@ -36,7 +37,7 @@ function ProfilePrefetch() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const token = useAppSelector((state) => state.auth.token)
-  const { push } = useRouter()
+  const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
@@ -47,9 +48,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isHydrated && !token) {
-      push('/auth/login')
+      router.push('/auth/login')
     }
-  }, [isHydrated, token, push])
+  }, [isHydrated, token, router])
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -65,6 +66,20 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const sensors = useSensors(mouseSensor, touchSensor)
   const [connect] = useConnectSSEMutation()
 
+  const handleGlobalModuleSelect = useCallback(
+    (id: ModuleId) => {
+      const routes: Record<ModuleId, string> = {
+        'address-book': '/address_books',
+        calendar: '/calendars',
+        tasks: '/tasks',
+        notes: '/notes',
+      }
+
+      router.push(routes[id])
+    },
+    [router]
+  )
+
   useEffect(() => {
     const config = getSSEConfigForEnvironment()
     connect(config)
@@ -78,23 +93,26 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <DemoWarningToast />
       <NotificationToaster />
       <NotificationProvider />
-      <SidebarProvider>
-        <DndContext sensors={sensors}>
-          <AppSidebar />
-          <SidebarInset className="flex h-screen flex-col">
-            <AppHeader />
-            <div className="flex-1 gap-4 border-y">{children}</div>
-          </SidebarInset>
-          {typeof window !== 'undefined' &&
-            ReactDOM.createPortal(
-              <DragOverlay modifiers={[snapCenterToCursor]}>
-                <div className="h-10 w-10">
-                  <Contact2 className="h-7 w-7 text-gray-700" />
-                </div>
-              </DragOverlay>,
-              document.body
-            )}
-        </DndContext>
+      <SidebarProvider name="right-global-rail" width="2.5rem" defaultOpen>
+        <SidebarProvider name="left-global-sidebar">
+          <DndContext sensors={sensors}>
+            <AppSidebar />
+            <SidebarInset className="flex h-screen flex-col">
+              <AppHeader />
+              <div className="flex-1 gap-4 border-y">{children}</div>
+            </SidebarInset>
+            {typeof window !== 'undefined' &&
+              ReactDOM.createPortal(
+                <DragOverlay modifiers={[snapCenterToCursor]}>
+                  <div className="h-10 w-10">
+                    <Contact2 className="h-7 w-7 text-gray-700" />
+                  </div>
+                </DragOverlay>,
+                document.body
+              )}
+          </DndContext>
+        </SidebarProvider>
+        <ModuleRail onModuleSelect={handleGlobalModuleSelect} />
       </SidebarProvider>
       <FloatingComposeContainer />
     </>
