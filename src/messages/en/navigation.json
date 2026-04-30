@@ -1,0 +1,16 @@
+{
+  "NAVIGATION": {
+    "address_book": {
+      "string": "Address Book"
+    },
+    "calendar": {
+      "string": "Calendar"
+    },
+    "tasks": {
+      "string": "Tasks"
+    },
+    "notes": {
+      "string": "Notes"
+    }
+  }
+}
