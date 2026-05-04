@@ -64,6 +64,19 @@ jest.mock('@/features/calendars/components/calendar-view', () => ({
   default: () => <div data-testid="calendar-view">Calendar View</div>,
 }))
 
+jest.mock('@/features/calendars', () => {
+  const actual = jest.requireActual<typeof import('@/features/calendars')>(
+    '@/features/calendars'
+  )
+  return {
+    ...actual,
+    useGetCalendarEventByIdQuery: () => ({
+      data: undefined,
+      isFetching: false,
+    }),
+  }
+})
+
 import CalendarPage from '../page'
 
 describe('CalendarPage', () => {

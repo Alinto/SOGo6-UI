@@ -548,6 +548,9 @@
           "string": "Cancel"
         }
       },
+      "editEvent": {
+        "string": "Edit event"
+      },
       "deleteCalendar": {
         "title": {
           "string": "Delete Calendar"
