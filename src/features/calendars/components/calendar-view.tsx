@@ -212,6 +212,7 @@ function CalendarView({
               events={events}
               date={date}
               calendarColorMap={calendarColorMap}
+              onEventClick={onSelectEvent}
             />
           </div>
         ) : (
@@ -246,6 +247,7 @@ function CalendarView({
             events={events}
             date={date}
             calendarColorMap={calendarColorMap}
+            onEventClick={onSelectEvent}
           />
         </div>
       ) : (

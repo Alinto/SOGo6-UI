@@ -111,6 +111,44 @@ const normalizeInputValue = (value: string, allDay: boolean) =>
 const toIsoDate = (value: string, allDay: boolean) =>
   new Date(allDay ? `${value}T00:00:00` : value).toISOString()
 
+function calendarRowKey(cal: Calendar): string {
+  return (cal.key ?? cal.id ?? '').trim()
+}
+
+function calendarMatchesRaw(cal: Calendar, raw: string): boolean {
+  const row = calendarRowKey(cal)
+  const v = raw.trim()
+  if (!row || !v) return false
+  return row === v || cal.key === v || cal.id === v
+}
+
+/** Value that matches SelectItem values so Radix shows the correct calendar label. */
+function resolveCalendarKeyForForm(
+  calendars: Calendar[] | undefined,
+  event: CalendarEvent | null | undefined,
+  fallbackCalendarKey: string
+): string {
+  const candidates: string[] = []
+  const push = (x: string | null | undefined) => {
+    const s = typeof x === 'string' ? x.trim() : ''
+    if (s.length > 0 && !candidates.includes(s)) candidates.push(s)
+  }
+  push(event?.calendar_id ?? undefined)
+  push(event?.calendar_key ?? undefined)
+  push(fallbackCalendarKey)
+
+  if (!calendars?.length) {
+    return candidates[0] ?? ''
+  }
+
+  for (const raw of candidates) {
+    const match = calendars.find((cal) => calendarMatchesRaw(cal, raw))
+    if (match) return calendarRowKey(match)
+  }
+
+  return candidates[0] ?? ''
+}
+
 export function EventForm({
   calendarKey,
   calendars,
@@ -134,10 +172,27 @@ export function EventForm({
     : (end ?? startDate)
   const [categoryInput, setCategoryInput] = useState('')
 
+  const resolvedCalendarKey = useMemo(
+    () => resolveCalendarKeyForForm(calendars, event ?? null, calendarKey),
+    [calendars, calendarKey, event]
+  )
+
+  const calendarsForSelect = useMemo(() => {
+    if (!calendars?.length) return calendars
+    const resolved = resolvedCalendarKey
+    const idx = calendars.findIndex(
+      (cal) => calendarRowKey(cal) === resolved
+    )
+    if (idx <= 0) return calendars
+    const next = [...calendars]
+    const [active] = next.splice(idx, 1)
+    return [active, ...next]
+  }, [calendars, resolvedCalendarKey])
+
   const form = useForm<EventFormValues>({
     resolver: zodResolver(formSchema) as Resolver<EventFormValues>,
     defaultValues: {
-      calendar_key: event?.calendar_id ?? calendarKey,
+      calendar_key: resolvedCalendarKey,
       title: event?.title ?? '',
       start: formatInputDate(startDate, isAllDay),
       end: formatInputDate(endDate, isAllDay),
@@ -194,16 +249,30 @@ export function EventForm({
   const selectedCalendar = useMemo(
     () =>
       calendars?.find(
-        (cal) => (cal.key ?? cal.id) === watchedCalendarKey
+        (cal) => calendarRowKey(cal) === watchedCalendarKey.trim()
       ),
     [calendars, watchedCalendarKey]
   )
   const calendarColor = selectedCalendar?.color ?? '#3B82F6'
 
   const isFirstCalendarKeyEffect = useRef(true)
+  const skipNextCalendarColorClear = useRef(false)
+
+  useEffect(() => {
+    if (!resolvedCalendarKey) return
+    const current = form.getValues('calendar_key')
+    if (current === resolvedCalendarKey) return
+    skipNextCalendarColorClear.current = true
+    form.setValue('calendar_key', resolvedCalendarKey)
+  }, [resolvedCalendarKey, form])
+
   useEffect(() => {
     if (isFirstCalendarKeyEffect.current) {
       isFirstCalendarKeyEffect.current = false
+      return
+    }
+    if (skipNextCalendarColorClear.current) {
+      skipNextCalendarColorClear.current = false
       return
     }
     form.setValue('color', '')
@@ -285,7 +354,7 @@ export function EventForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {calendars.map((cal) => {
+                      {(calendarsForSelect ?? calendars).map((cal) => {
                         const calKey = cal.key ?? cal.id ?? ''
                         if (!calKey) return null
                         return (
