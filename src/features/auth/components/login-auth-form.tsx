@@ -43,6 +43,10 @@ const createPasswordSchema = (t: (key: string) => string) =>
 
 type PasswordFormData = z.infer<ReturnType<typeof createPasswordSchema>>
 
+/** Optional prefill for demo / QA (set in `.env.development`; empty in production). */
+const demoLoginPasswordPrefill =
+  process.env.NEXT_PUBLIC_DEMO_LOGIN_PASSWORD ?? ''
+
 export function LoginAuthForm({
   className,
   ...props
@@ -72,7 +76,7 @@ export function LoginAuthForm({
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      password: 'sogo',
+      password: demoLoginPasswordPrefill,
       rememberMe: false,
     },
   })

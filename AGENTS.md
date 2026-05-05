@@ -253,6 +253,7 @@ Additional documentation in `docs/`:
 Key environment variables:
 
 - `NEXT_PUBLIC_ADMIN_DOMAINS` - Comma-separated admin domain list
+- `NEXT_PUBLIC_DEMO_LOGIN_PASSWORD` - Optional; when set, pre-fills the password field on `/auth/login/pwd` (client-visible; use only for demo/QA builds)
 - See `.env.example` for full list
 
 ---
