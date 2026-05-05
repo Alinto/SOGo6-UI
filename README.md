@@ -65,22 +65,24 @@ Open [http://localhost:3000](http://localhost:3000).
 | `REACT_APP_API_URL` | Optional secondary URL (see `/env`). |
 | `NEXT_PUBLIC_ADMIN_DOMAINS` | Comma-separated admin hostnames. Server default if unset: `admin.localhost`. |
 | `SSE_ENABLED` | Exposed via `/env`: **`true` when the variable is unset**; only the string **`false`** explicitly disables SSE. |
-| `NEXT_PUBLIC_DEMO_LOGIN_PASSWORD` | Prefills the password field on **`/auth/login/pwd`** (see below). |
+| `NEXT_PUBLIC_LOGIN_PREFILL_EMAIL` | Prefills the email field on **`/auth/login`** (optional). |
+| `NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD` | Prefills the password field on **`/auth/login/pwd`** (optional). |
 
-### Password prefill (dev / demo)
+### Login prefill (dev / QA)
 
 Sign-in is two steps: email (`/auth/login`) then password (`/auth/login/pwd`).
 
 To **save time locally**, set for example:
 
 ```env
-NEXT_PUBLIC_DEMO_LOGIN_PASSWORD=sogo
+NEXT_PUBLIC_LOGIN_PREFILL_EMAIL=sogo-tests1@example.org
+NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD=sogo
 ```
 
-- The value must **match the password of the account** you use on **your** SOGo instance (often `sogo` on a demo install — it is **not** read automatically from the SOGo server).
-- **`NEXT_PUBLIC_*`** is embedded in the browser bundle: **visible in DevTools**. Use only for dev / disposable accounts, **not** real production passwords.
+- Values must **match the account** you use on **your** SOGo instance (they are **not** read from the SOGo server).
+- **`NEXT_PUBLIC_*`** is embedded in the browser bundle: **visible in DevTools**. Use only for dev / disposable accounts, **not** production secrets.
 
-Implementation: `src/features/auth/components/login-auth-form.tsx`.
+Implementation: `src/features/auth/components/login-form.tsx` (email) and `src/features/auth/components/login-auth-form.tsx` (password).
 
 ## Multi-domain routing
 

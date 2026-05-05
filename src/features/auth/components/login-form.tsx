@@ -42,6 +42,9 @@ const createLoginSchema = (t: (key: string) => string) =>
 
 type LoginFormData = z.infer<ReturnType<typeof createLoginSchema>>
 
+/** Optional email prefill for local dev / QA (`NEXT_PUBLIC_*` is exposed in the client bundle). */
+const loginPrefillEmail = process.env.NEXT_PUBLIC_LOGIN_PREFILL_EMAIL ?? ''
+
 export function LoginForm({
   className,
   ...props
@@ -66,7 +69,7 @@ export function LoginForm({
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'sogo-tests1@example.org',
+      email: loginPrefillEmail,
     },
   })
 
