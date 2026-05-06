@@ -33,9 +33,7 @@ const Page: React.FC = () => {
 
   const clientFilterActive = activeFilter !== 'all'
 
-  const containerClassName = `${
-    mail_id ? 'hidden lg:flex' : 'flex'
-  } w-full lg:w-1/2 xl:w-1/2 2xl:w-1/3`
+  const containerClassName = `${mail_id ? 'hidden lg:flex' : 'flex'} w-full`
 
   if (isLoading) {
     return (
