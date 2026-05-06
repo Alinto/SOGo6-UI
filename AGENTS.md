@@ -253,8 +253,7 @@ Additional documentation in `docs/`:
 Key environment variables:
 
 - `NEXT_PUBLIC_ADMIN_DOMAINS` - Comma-separated admin domain list
-- `NEXT_PUBLIC_LOGIN_PREFILL_EMAIL` - Optional; when set, pre-fills the email field on `/auth/login` (client-visible; dev/QA only)
-- `NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD` - Optional; when set, pre-fills the password field on `/auth/login/pwd` (client-visible; dev/QA only)
+- `LOGIN_PREFILL_EMAIL` / `LOGIN_PREFILL_PASSWORD` - Optional; runtime login prefill served via `GET /env` (dev/demo; readable by anyone who can hit `/env`). Legacy `NEXT_PUBLIC_LOGIN_PREFILL_*` on the server is still merged in `/env` if `LOGIN_*` are unset.
 - See `README.md` and `.env.development` (or `.env.local`) for typical dev values
 
 ---

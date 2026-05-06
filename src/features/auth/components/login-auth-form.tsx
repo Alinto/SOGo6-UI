@@ -8,6 +8,7 @@ import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
 import { useRouter } from '@/lib/i18n/navigation'
+import { useEnvVars } from '@/lib/env-service'
 import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
@@ -43,10 +44,6 @@ const createPasswordSchema = (t: (key: string) => string) =>
 
 type PasswordFormData = z.infer<ReturnType<typeof createPasswordSchema>>
 
-/** Optional password prefill for local dev / QA (`NEXT_PUBLIC_*` is exposed in the client bundle). */
-const loginPrefillPassword =
-  process.env.NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD ?? ''
-
 export function LoginAuthForm({
   className,
   ...props
@@ -59,6 +56,7 @@ export function LoginAuthForm({
 
   const dispatch = useAppDispatch()
   const [login] = useLoginMutation()
+  const { envVars } = useEnvVars()
 
   const [isLoading, setIsLoading] = React.useState(false)
   const [serverError, setServerError] = React.useState<string | null>(null)
@@ -76,12 +74,19 @@ export function LoginAuthForm({
   } = useForm<PasswordFormData>({
     resolver: zodResolver(passwordSchema),
     defaultValues: {
-      password: loginPrefillPassword,
+      password: '',
       rememberMe: false,
     },
   })
 
   const rememberMe = watch('rememberMe')
+
+  React.useEffect(() => {
+    const pre = envVars?.LOGIN_PREFILL_PASSWORD
+    if (pre !== undefined && pre !== '') {
+      setValue('password', pre)
+    }
+  }, [envVars, setValue])
 
   React.useEffect(() => {
     if (!email) {

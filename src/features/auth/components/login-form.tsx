@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useGetSystemQuery, useLazyGetAuthModeQuery } from '@/features/auth/components/store/auth.api'
+import { useEnvVars } from '@/lib/env-service'
 import { getLocales } from '@/lib/i18n/config'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { getErrorMessage } from '@/lib/redux/api/error-handlers'
@@ -42,9 +43,6 @@ const createLoginSchema = (t: (key: string) => string) =>
 
 type LoginFormData = z.infer<ReturnType<typeof createLoginSchema>>
 
-/** Optional email prefill for local dev / QA (`NEXT_PUBLIC_*` is exposed in the client bundle). */
-const loginPrefillEmail = process.env.NEXT_PUBLIC_LOGIN_PREFILL_EMAIL ?? ''
-
 export function LoginForm({
   className,
   ...props
@@ -59,19 +57,28 @@ export function LoginForm({
 
   const { data: systemData, isLoading: systemLoading } = useGetSystemQuery()
   const [getAuthMode] = useLazyGetAuthModeQuery()
+  const { envVars } = useEnvVars()
 
   const loginSchema = React.useMemo(() => createLoginSchema(t), [t])
 
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: loginPrefillEmail,
+      email: '',
     },
   })
+
+  React.useEffect(() => {
+    const pre = envVars?.LOGIN_PREFILL_EMAIL?.trim()
+    if (pre) {
+      setValue('email', pre)
+    }
+  }, [envVars, setValue])
 
   // If SOGO_S_DIRECT_LOGIN → skip email step, go directly to password
   React.useEffect(() => {

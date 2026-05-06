@@ -65,24 +65,26 @@ Open [http://localhost:3000](http://localhost:3000).
 | `REACT_APP_API_URL` | Optional secondary URL (see `/env`). |
 | `NEXT_PUBLIC_ADMIN_DOMAINS` | Comma-separated admin hostnames. Server default if unset: `admin.localhost`. |
 | `SSE_ENABLED` | Exposed via `/env`: **`true` when the variable is unset**; only the string **`false`** explicitly disables SSE. |
-| `NEXT_PUBLIC_LOGIN_PREFILL_EMAIL` | Prefills the email field on **`/auth/login`** (optional). |
-| `NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD` | Prefills the password field on **`/auth/login/pwd`** (optional). |
+| `LOGIN_PREFILL_EMAIL` | Prefills the email field on **`/auth/login`** (optional). Read at **runtime** by `GET /env` — works with container env (e.g. Rancher) without rebuilding the image. |
+| `LOGIN_PREFILL_PASSWORD` | Prefills the password on **`/auth/login/pwd`** (same as above). |
+
+`GET /env` also falls back to legacy `NEXT_PUBLIC_LOGIN_PREFILL_EMAIL` / `NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD` on the **server** if the `LOGIN_*` vars are unset (local `.env` compatibility).
 
 ### Login prefill (dev / QA)
 
 Sign-in is two steps: email (`/auth/login`) then password (`/auth/login/pwd`).
 
-To **save time locally**, set for example:
+Prefill values are loaded from **`/env`** after the app starts. Set them on the **server** / container, for example:
 
 ```env
-NEXT_PUBLIC_LOGIN_PREFILL_EMAIL=sogo-tests1@example.org
-NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD=sogo
+LOGIN_PREFILL_EMAIL=sogo-tests1@example.org
+LOGIN_PREFILL_PASSWORD=sogo
 ```
 
-- Values must **match the account** you use on **your** SOGo instance (they are **not** read from the SOGo server).
-- **`NEXT_PUBLIC_*`** is embedded in the browser bundle: **visible in DevTools**. Use only for dev / disposable accounts, **not** production secrets.
+- They must **match the account** you use on **your** SOGo instance (not read from SOGo automatically).
+- Anyone who can call **`/env`** can read these strings — use only for **dev / demo / disposable** accounts.
 
-Implementation: `src/features/auth/components/login-form.tsx` (email) and `src/features/auth/components/login-auth-form.tsx` (password).
+Implementation: `src/app/env/route.ts` (exposure) and `src/features/auth/components/login-form.tsx` / `login-auth-form.tsx` (apply after `useEnvVars`).
 
 ## Multi-domain routing
 
