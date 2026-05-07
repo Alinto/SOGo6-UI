@@ -37,20 +37,38 @@ export const useAvatarSource = ({
   const t = useTranslations('FORM_PROFILE')
 
   useEffect(() => {
+    let cancelled = false
+
     const generateHash = async (str: string): Promise<string> => {
-      const buf = await crypto.subtle.digest(
-        'SHA-256',
-        new TextEncoder().encode(str)
-      )
-      return Array.from(new Uint8Array(buf))
-        .map((b) => b.toString(16).padStart(2, '0'))
-        .join('')
+      try {
+        const subtle = globalThis.crypto?.subtle
+        if (!subtle?.digest) return ''
+        const buf = await subtle.digest(
+          'SHA-256',
+          new TextEncoder().encode(str)
+        )
+        return Array.from(new Uint8Array(buf))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('')
+      } catch {
+        return ''
+      }
+    }
+
+    const applyFallback = () => {
+      setAvatarSource({
+        type: 'fallback',
+        alt: t('profilePictureSource.useDefault'),
+      })
     }
 
     const resolve = async () => {
-      const emailHash = email
-        ? await generateHash(email.trim().toLowerCase())
-        : ''
+      const needsHash =
+        pictureSource === PP_GRAVATAR || pictureSource === PP_LIBRAVATAR
+      const emailHash =
+        needsHash && email ? await generateHash(email.trim().toLowerCase()) : ''
+
+      if (cancelled) return
 
       switch (pictureSource) {
         case PP_GRAVATAR:
@@ -76,15 +94,18 @@ export const useAvatarSource = ({
           break
         case PP_DEFAULT:
         default:
-          setAvatarSource({
-            type: 'fallback',
-            alt: t('profilePictureSource.useDefault'),
-          })
+          applyFallback()
       }
     }
 
-    resolve()
-  }, [pictureSource, email, userSourceBase64])
+    resolve().catch(() => {
+      if (!cancelled) applyFallback()
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [pictureSource, email, userSourceBase64, t])
 
   return avatarSource
 }
