@@ -4,24 +4,13 @@ export type MailLayoutMode = 'full' | 'split'
 
 const STORAGE_KEY = 'sogo_mail_layout'
 
-const loadInitialMode = (): MailLayoutMode => {
-  if (typeof window === 'undefined') return 'full'
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved === 'split' || saved === 'full') return saved
-  } catch {
-    // ignore read errors
-  }
-  return 'full'
-}
-
 interface MailLayoutState {
   mode: MailLayoutMode
   selectedMailIds: string[]
 }
 
 const initialState: MailLayoutState = {
-  mode: loadInitialMode(),
+  mode: 'full',
   selectedMailIds: [],
 }
 
