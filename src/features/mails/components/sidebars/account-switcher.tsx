@@ -37,9 +37,9 @@ export function AccountSwitcher() {
     const mailbox = allMailboxes.find((m) => m.id === mailboxId)
     if (!mailbox) return ''
     if (mailboxId === '0') {
-      return defaultIdentity?.mail || mailbox.identities[0]?.mail || ''
+      return defaultIdentity?.mail || mailbox.identities?.[0]?.mail || ''
     }
-    return mailbox.name || mailbox.identities[0]?.mail || ''
+    return mailbox.name || mailbox.identities?.[0]?.mail || ''
   }
 
   const selectedMailbox = allMailboxes[currentIndex] ?? allMailboxes[0]
