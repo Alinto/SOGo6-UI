@@ -1,53 +1,60 @@
 import {
-  getEventsForCalendar,
+  getAllEvents,
   readDelta,
   writeDelta,
 } from '@/app/fakeApi/utils/calendar-events-store'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { NextRequest, NextResponse } from 'next/server'
 
-/**
- * GET /fakeApi/calendars/[calendarId]/events/[eventId]
- */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ calendarId: string; eventId: string }> }
-) {
-  const { calendarId, eventId } = await params
-  const events = getEventsForCalendar(request, calendarId)
-  const event = events.find((e) => e.id === eventId)
-
-  if (!event) {
-    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+function findEvent(
+  req: NextRequest,
+  eventId: string
+): { event: CalendarEvent; calendarId: string } | null {
+  const all = getAllEvents(req)
+  for (const [calendarId, events] of Object.entries(all)) {
+    const event = events.find((e) => e.id === eventId)
+    if (event) return { event, calendarId }
   }
-
-  return NextResponse.json(event)
+  return null
 }
 
 /**
- * PATCH /fakeApi/calendars/[calendarId]/events/[eventId]
+ * GET /fakeApi/events/[eventId]
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ eventId: string }> }
+) {
+  const { eventId } = await params
+  const found = findEvent(request, eventId)
+  if (!found) {
+    return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+  }
+  return NextResponse.json(found.event)
+}
+
+/**
+ * PATCH /fakeApi/events/[eventId]
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ calendarId: string; eventId: string }> }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
-  const { calendarId, eventId } = await params
+  const { eventId } = await params
   const body = await request.json()
 
-  const events = getEventsForCalendar(request, calendarId)
-  const existing = events.find((e) => e.id === eventId)
-
-  if (!existing) {
+  const found = findEvent(request, eventId)
+  if (!found) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
 
   const updatedEvent: CalendarEvent = {
-    ...existing,
+    ...found.event,
     ...body,
     id: eventId,
-    calendar_id: calendarId,
+    calendar_id: found.calendarId,
     updated_at: new Date().toISOString(),
-    sequence: (existing.sequence ?? 0) + 1,
+    sequence: (found.event.sequence ?? 0) + 1,
   }
 
   const delta = readDelta(request)
@@ -59,27 +66,21 @@ export async function PATCH(
 }
 
 /**
- * DELETE /fakeApi/calendars/[calendarId]/events/[eventId]
+ * DELETE /fakeApi/events/[eventId]
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ calendarId: string; eventId: string }> }
+  { params }: { params: Promise<{ eventId: string }> }
 ) {
-  const { calendarId, eventId } = await params
+  const { eventId } = await params
 
-  const events = getEventsForCalendar(request, calendarId)
-  const exists = events.some((e) => e.id === eventId)
-
-  if (!exists) {
+  const found = findEvent(request, eventId)
+  if (!found) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
 
   const delta = readDelta(request)
-
-  // Remove from upserts if it was a user-created event
   delete delta.upserts[eventId]
-
-  // Mark as deleted (covers seed events + re-created events)
   if (!delta.deletedIds.includes(eventId)) {
     delta.deletedIds.push(eventId)
   }
@@ -93,7 +94,7 @@ export async function DELETE(
 }
 
 /**
- * OPTIONS /fakeApi/calendars/[calendarId]/events/[eventId]
+ * OPTIONS /fakeApi/events/[eventId]
  */
 export async function OPTIONS() {
   return NextResponse.json(

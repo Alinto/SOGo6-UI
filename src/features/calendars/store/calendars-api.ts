@@ -426,8 +426,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
         return { data: allEvents }
       },
-      providesTags: (result, error, { calendarIds }) =>
-        calendarIds.map((id) => ({ type: CALENDAR_EVENTS_SLICE, id })),
+      providesTags: (result, error, { calendarIds }) => [
+        CALENDAR_EVENTS_SLICE,
+        ...calendarIds.map((id) => ({ type: CALENDAR_EVENTS_SLICE, id })),
+      ],
     }),
     updateCalendarVisibility: builder.mutation<
       null,

@@ -52,7 +52,8 @@ function mergeEventDetailWithListSelection(
   return {
     ...listEvent,
     ...detail,
-    calendar_id: calendarRef || (listEvent.calendar_id ?? detail.calendar_id ?? null),
+    calendar_id:
+      calendarRef || (listEvent.calendar_id ?? detail.calendar_id ?? null),
     calendar_key: calendarRef || listEvent.calendar_key || detail.calendar_key,
   }
 }
@@ -158,7 +159,8 @@ const CalendarPage = () => {
           defaultColor={calendarState.defaultColor}
           calendars={calendarState.calendarsData ?? []}
           defaultCalendarId={
-            calendarState.defaultCalendar?.key ?? calendarState.defaultCalendar?.id
+            calendarState.defaultCalendar?.key ??
+            calendarState.defaultCalendar?.id
           }
           onViewChange={calendarState.handleViewChange}
           onNavigate={calendarState.handleNavigate}
@@ -182,9 +184,7 @@ const CalendarPage = () => {
         <DialogContent
           className={cn(
             'max-h-[90vh] sm:max-w-2xl',
-            dialogMode === 'edit'
-              ? 'overflow-hidden p-0'
-              : 'overflow-y-auto'
+            dialogMode === 'edit' ? 'overflow-hidden p-0' : 'overflow-y-auto'
           )}
         >
           {selectedEvent && displayEvent && dialogMode === 'view' && (
@@ -228,7 +228,9 @@ const CalendarPage = () => {
           {selectedEvent && displayEvent && dialogMode === 'edit' && (
             <>
               <DialogHeader className={cn('border-b px-6 pt-6 pb-4')}>
-                <DialogTitle className={cn('text-xl font-semibold tracking-tight')}>
+                <DialogTitle
+                  className={cn('text-xl font-semibold tracking-tight')}
+                >
                   {selectedEvent.title}
                 </DialogTitle>
               </DialogHeader>
