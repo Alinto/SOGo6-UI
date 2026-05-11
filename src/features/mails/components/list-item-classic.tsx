@@ -84,7 +84,6 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
           </span>
         )}
         <Avatar className={!isHovered && !isSelected ? 'h-6 w-6' : 'hidden'}>
-          <AvatarImage src="/images/account-avatar.svg" />
           <AvatarFallback>
             {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
           </AvatarFallback>

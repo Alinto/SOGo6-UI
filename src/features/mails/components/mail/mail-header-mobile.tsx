@@ -19,8 +19,10 @@ export default function MailHeaderMobile({
   const [open, setOpen] = useState(false)
   const [expandRecipients, setExpandRecipients] = useState(false)
 
-  const totalTo = to.length
-  const totalCc = cc?.length ?? 0
+  const safeTo = to ?? []
+  const safeCc = cc ?? []
+  const totalTo = safeTo.length
+  const totalCc = safeCc.length
 
   const formattedTime = formatMailTime(date)
 
@@ -83,7 +85,7 @@ export default function MailHeaderMobile({
           <ChevronDown className="h-6 w-6 shrink-0" />
           to{' '}
           <span className="text-foreground truncate">
-            {to[0]?.name || to[0]?.email}
+            {safeTo[0]?.name || safeTo[0]?.email}
           </span>
           {totalTo > 1 && (
             <span className="text-foreground">+{totalTo - 1}</span>
@@ -99,7 +101,7 @@ export default function MailHeaderMobile({
           <div className="flex flex-col gap-1">
             <span className="text-xs font-bold">To</span>
             <div className="flex flex-wrap items-center gap-1">
-              {to.map((contact, idx) => (
+              {safeTo.map((contact, idx) => (
                 <ContactBadge contact={contact} key={contact.email + idx} />
               ))}
             </div>
@@ -110,7 +112,7 @@ export default function MailHeaderMobile({
             <div className="flex flex-col gap-1">
               <span className="text-xs font-bold">Cc</span>
               <div className="flex flex-wrap items-center gap-1">
-                {cc!.map((contact, idx) => (
+                {safeCc.map((contact, idx) => (
                   <ContactBadge contact={contact} key={contact.email + idx} />
                 ))}
               </div>

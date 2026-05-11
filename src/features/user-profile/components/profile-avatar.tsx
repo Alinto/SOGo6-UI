@@ -62,7 +62,7 @@ export const ProfileAvatar = memo(function ProfileAvatar({
     const initials =
       fallbackUsername
         ?.split(' ')
-        .map((n: string) => n[0])
+        .map((n: string) => n[0] ?? '')
         .join('')
         .toUpperCase() || 'U'
     return initials
@@ -72,9 +72,6 @@ export const ProfileAvatar = memo(function ProfileAvatar({
     <Avatar className={`${sizeClass} ${className || ''}`}>
       {avatarSource.type === 'image' && avatarSource.src && (
         <AvatarImage src={avatarSource.src} alt={avatarSource.alt} />
-      )}
-      {avatarSource.type === 'fallback' && (
-        <AvatarImage src="/images/account-avatar.svg" />
       )}
       <AvatarFallback className={`text-header-foreground ${textSizeClass}`}>
         {useInitialsFallback ? getFallbackInitials() : fallbackUsername}

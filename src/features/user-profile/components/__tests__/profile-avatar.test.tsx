@@ -88,10 +88,9 @@ describe('ProfileAvatar', () => {
       })
     })
 
-    it('renders the default svg avatar image', () => {
+    it('does not render a placeholder img in fallback mode (initials only)', () => {
       render(<ProfileAvatar pictureSource={PP_DEFAULT} />)
-      const img = screen.getByRole('img')
-      expect(img).toHaveAttribute('src', '/images/account-avatar.svg')
+      expect(screen.queryByRole('img')).not.toBeInTheDocument()
     })
 
     it('renders fallbackUsername in AvatarFallback by default', () => {
