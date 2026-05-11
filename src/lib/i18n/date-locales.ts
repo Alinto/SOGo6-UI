@@ -6,7 +6,8 @@ import { getDefaultLocale, getLocales } from './config'
  * Mapping between next-intl locales and date-fns locales
  * Synchronized with i18n config
  */
-const DATE_LOCALES: Record<string, Locale> = {
+/** next-intl locale key → date-fns locale (used by RBC + getDateFnsLocale) */
+export const DATE_LOCALES: Record<string, Locale> = {
   en: enUS,
   de: de,
   fr: fr,

@@ -1,4 +1,3 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import React from 'react'
 
 import {
@@ -10,10 +9,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { logout } from '@/features/auth/components/store/auth.slice'
+import { ProfileAvatar } from '@/features/user-profile/components/profile-avatar'
 import { useProfile } from '@/features/user-profile/hooks/use-profile'
-import { useAppSelector } from '@/lib/redux/hooks'
+import { PP_DEFAULT } from '@/features/user-settings/store/user-preferences-api-types'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import {
   BookA,
   CalendarCog,
@@ -31,23 +33,20 @@ const HeaderDropdown: React.FC = () => {
   const t = useTranslations('HEADER')
   const isMobile = useIsMobile()
   const { theme } = useTheme()
+  const dispatch = useAppDispatch()
   const { push } = useRouter()
-  const { user, isLoading, isError } = useProfile()
+  const { user, isLoading, isError, preferences } = useProfile()
 
   // Fallback to auth.user if profile API failed
   const authUser = useAppSelector((state) => state.auth.user)
   const displayUser = isError ? authUser : user
 
-  // Extract initials from name (e.g. "John Doe" → "JD")
-  const fallbackUsername =
-    displayUser?.cn
-      ?.split(' ')
-      .map((n: string) => n[0])
-      .join('')
-      .toUpperCase() || 'U'
-
   const userName = displayUser?.cn || t('account.defaultUser.string')
   const userEmail = displayUser?.email || ''
+
+  // Get profile picture source from user preferences (defaults to PP_DEFAULT)
+  const profilePictureSource =
+    preferences?.USER_GENERAL?.SOGO_U_PROFILE_PICTURE || PP_DEFAULT
 
   // Loading state
   if (isLoading) {
@@ -71,10 +70,13 @@ const HeaderDropdown: React.FC = () => {
           data-testid="header-dropdown-trigger"
           className="flex items-center gap-4 space-x-2 pl-4"
         >
-          <Avatar>
-            <AvatarImage src="/images/account-avatar.svg" />
-            <AvatarFallback>{fallbackUsername}</AvatarFallback>
-          </Avatar>
+          <ProfileAvatar
+            pictureSource={profilePictureSource}
+            email={userEmail}
+            fallbackUsername={displayUser?.cn}
+            useInitialsFallback={true}
+            size="sm"
+          />
           {!isMobile && (
             <div className="text-muted-foreground dark:text-foreground text-sm">
               <div>{userName}</div>
@@ -145,7 +147,10 @@ const HeaderDropdown: React.FC = () => {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer"
-          onClick={() => push('/auth/login')}
+          onClick={() => {
+            dispatch(logout())
+            push('/auth/login')
+          }}
         >
           <LogOut className="pr-2" />
           {t('logout.string')}

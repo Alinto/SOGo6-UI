@@ -343,6 +343,24 @@
   }
 }
 
+@layer base {
+[data-sidebar="menu-item"]:hover > [data-sidebar="menu-button"],
+[data-sidebar="menu-item"]:has(> [data-sidebar="menu-action"]:hover) > [data-sidebar="menu-button"] {
+  background-color: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-accent-foreground));
+  border-radius: calc(var(--radius) - 0.125rem);
+}
+
+[data-sidebar="menu-item"]:has([data-sidebar="menu-action"][data-state="open"]) > [data-sidebar="menu-button"] {
+  background-color: hsl(var(--sidebar-accent));
+  color: hsl(var(--sidebar-accent-foreground));
+}
+
+[data-sidebar="menu-item"]:hover > [data-sidebar="menu-action"] {
+  opacity: 1!important;
+}
+}
+
 /* Force dyslexic font on all elements when dyslexia theme is active */
 /* This must be outside @layer base to have higher specificity than Tailwind utilities */
 html.dyslexia,

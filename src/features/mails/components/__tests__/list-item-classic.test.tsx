@@ -1,23 +1,26 @@
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { ImapMessagesList } from '../../mails-types'
 import ListItemClassic from '../list-item-classic'
 
-// Mock next/navigation hooks
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(),
-  usePathname: jest.fn(),
 }))
 
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(),
+  usePathname: jest.fn(),
+}))
+
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
 }))
 
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>
-const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
+const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>
 
 describe('ListItemClassic', () => {
   const mockData: ImapMessagesList = {
@@ -30,6 +33,11 @@ describe('ListItemClassic', () => {
     flagged: true,
     hasAttachment: true,
     snippet: 'Test snippet',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
   }
 
   const mockOnHandleCheckboxClick = jest.fn()
@@ -57,6 +65,7 @@ describe('ListItemClassic', () => {
 
     expect(screen.getByText('John Doe')).toBeInTheDocument()
     expect(screen.getByText('Test Subject')).toBeInTheDocument()
+    expect(screen.getByText('Test snippet')).toBeInTheDocument()
     expect(screen.getByText('J')).toBeInTheDocument() // Avatar fallback
   })
 

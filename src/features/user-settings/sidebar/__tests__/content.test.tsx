@@ -1,115 +1,463 @@
-import navItems from '../content'
+import { renderHook } from '@testing-library/react'
 
-describe('navItems', () => {
-  it('should export an array of navigation items', () => {
-    expect(Array.isArray(navItems)).toBe(true)
-    expect(navItems).toHaveLength(2)
+// --- Mocks ---
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: jest.fn(),
+}))
+
+jest.mock('lucide-react', () => ({
+  Calendar: 'Calendar',
+  Contact: 'Contact',
+  Mail: 'Mail',
+  SettingsIcon: 'SettingsIcon',
+  ShieldUser: 'ShieldUser',
+  User: 'User',
+  UserCog: 'UserCog',
+}))
+
+// --- Imports after mocks ---
+
+import { useProfile } from '@/features/user-profile'
+import { useNavItems } from '../content'
+
+// --- Helper ---
+
+const mockProfile = (overrides = {}) => {
+  ;(useProfile as jest.Mock).mockReturnValue({
+    forwardEnabled: true,
+    vacationEnabled: true,
+    mailFilteringEnabled: true,
+    passwordChangeEnabled: true,
+    ...overrides,
+  })
+}
+
+// --- Tests ---
+
+describe('useNavItems', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
   })
 
-  it('should have account section with correct structure', () => {
-    const accountSection = navItems[0]
-    expect(accountSection.title).toBe('US_SIDEBAR.account.title.string')
-    expect(accountSection.isActive).toBe(true)
-    expect(accountSection.collapsedIcon).toBeDefined()
-    expect(accountSection.items).toHaveLength(2)
+  // --- Top-level structure ---
 
-    const profileItem = accountSection.items[0]
-    expect(profileItem.title).toBe('US_SIDEBAR.account.profile.string')
-    expect(profileItem.url).toBe('/user_settings/profile')
-    expect(profileItem.icon).toBeDefined()
+  describe('Top-level structure', () => {
+    it('returns an array', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(Array.isArray(result.current)).toBe(true)
+    })
 
-    const securityItem = accountSection.items[1]
-    expect(securityItem.title).toBe('US_SIDEBAR.account.security.string')
-    expect(securityItem.url).toBe('/user_settings/security')
-    expect(securityItem.icon).toBeDefined()
+    it('returns exactly 2 sections', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current).toHaveLength(2)
+    })
+
+    it('first section is the account section', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[0].title).toBe('US_SIDEBAR.account.title.string')
+    })
+
+    it('second section is the settings section', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].title).toBe('US_SIDEBAR.settings.title.string')
+    })
+
+    it('both sections are active', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[0].isActive).toBe(true)
+      expect(result.current[1].isActive).toBe(true)
+    })
+
+    it('account section has a collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[0].collapsedIcon).toBeDefined()
+    })
+
+    it('settings section has a collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].collapsedIcon).toBeDefined()
+    })
   })
 
-  it('should have settings section with correct structure', () => {
-    const settingsSection = navItems[1]
-    expect(settingsSection.title).toBe('US_SIDEBAR.settings.title.string')
-    expect(settingsSection.isActive).toBe(true)
-    expect(settingsSection.collapsedIcon).toBeDefined()
-    expect(settingsSection.items).toHaveLength(4)
+  // --- Account section ---
 
-    // General settings
-    const generalItem = settingsSection.items[0]
-    expect(generalItem.title).toBe('US_SIDEBAR.settings.general.string')
-    expect(generalItem.url).toBe('/user_settings/general')
-    expect(generalItem.icon).toBeDefined()
-    expect(generalItem.collapsedIcon).toBeDefined()
+  describe('Account section', () => {
+    it('always includes the Profile item', () => {
+      mockProfile({ passwordChangeEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      const profileItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.profile.string'
+      )
+      expect(profileItem).toBeDefined()
+    })
 
-    // Address books
-    const addressBooksItem = settingsSection.items[1]
-    expect(addressBooksItem.title).toBe(
-      'US_SIDEBAR.settings.address_books.string'
-    )
-    expect(addressBooksItem.url).toBe('/user_settings/address_books')
-    expect(addressBooksItem.icon).toBeDefined()
+    it('Profile item has the correct url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const profileItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.profile.string'
+      )
+      expect(profileItem?.url).toBe('/user_settings/profile')
+    })
 
-    // Calendars subsection
-    const calendarsItem = settingsSection.items[2]
-    expect(calendarsItem.title).toBe(
-      'US_SIDEBAR.settings.calendars.title.string'
-    )
-    expect(calendarsItem.icon).toBeDefined()
-    expect(calendarsItem.collapsedIcon).toBeDefined()
-    expect(calendarsItem.isActive).toBe(true)
-    expect(calendarsItem.items).toHaveLength(3)
+    it('Profile item has an icon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const profileItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.profile.string'
+      )
+      expect(profileItem?.icon).toBeDefined()
+    })
 
-    const calendarsGeneral = calendarsItem.items[0]
-    expect(calendarsGeneral.title).toBe(
-      'US_SIDEBAR.settings.calendars.general.string'
-    )
-    expect(calendarsGeneral.url).toBe('/user_settings/calendars/general')
+    it('includes Security item when passwordChangeEnabled is true', () => {
+      mockProfile({ passwordChangeEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      const securityItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.security.string'
+      )
+      expect(securityItem).toBeDefined()
+    })
 
-    const calendarsCategories = calendarsItem.items[1]
-    expect(calendarsCategories.title).toBe(
-      'US_SIDEBAR.settings.calendars.categories.string'
-    )
-    expect(calendarsCategories.url).toBe('/user_settings/calendars/categories')
+    it('Security item has the correct url', () => {
+      mockProfile({ passwordChangeEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      const securityItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.security.string'
+      )
+      expect(securityItem?.url).toBe('/user_settings/security')
+    })
 
-    const calendarsInvitations = calendarsItem.items[2]
-    expect(calendarsInvitations.title).toBe(
-      'US_SIDEBAR.settings.calendars.invitations.string'
-    )
-    expect(calendarsInvitations.url).toBe(
-      '/user_settings/calendars/invitations'
-    )
+    it('Security item has an icon', () => {
+      mockProfile({ passwordChangeEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      const securityItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.security.string'
+      )
+      expect(securityItem?.icon).toBeDefined()
+    })
 
-    // Email subsection
-    const emailItem = settingsSection.items[3]
-    expect(emailItem.title).toBe('US_SIDEBAR.settings.email.title.string')
-    expect(emailItem.icon).toBeDefined()
-    expect(emailItem.collapsedIcon).toBeDefined()
-    expect(emailItem.isActive).toBe(true)
-    expect(emailItem.items).toHaveLength(7)
+    it('excludes Security item when passwordChangeEnabled is false', () => {
+      mockProfile({ passwordChangeEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      const securityItem = result.current[0].items?.find(
+        (i) => i.title === 'US_SIDEBAR.account.security.string'
+      )
+      expect(securityItem).toBeUndefined()
+    })
 
-    const emailItems = emailItem.items
-    expect(emailItems[0].title).toBe('US_SIDEBAR.settings.email.general.string')
-    expect(emailItems[0].url).toBe('/user_settings/mail/general')
+    it('has 2 items when passwordChangeEnabled is true', () => {
+      mockProfile({ passwordChangeEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[0].items).toHaveLength(2)
+    })
 
-    expect(emailItems[1].title).toBe('US_SIDEBAR.settings.email.labels.string')
-    expect(emailItems[1].url).toBe('/user_settings/mail/labels')
+    it('has 1 item when passwordChangeEnabled is false', () => {
+      mockProfile({ passwordChangeEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[0].items).toHaveLength(1)
+    })
+  })
 
-    expect(emailItems[2].title).toBe(
-      'US_SIDEBAR.settings.email.imap_accounts.string'
-    )
-    expect(emailItems[2].url).toBe('/user_settings/mail/imap_accounts')
+  // --- Settings section top-level items ---
 
-    expect(emailItems[3].title).toBe('US_SIDEBAR.settings.email.filters.string')
-    expect(emailItems[3].url).toBe('/user_settings/mail/filters')
+  describe('Settings section top-level items', () => {
+    it('has exactly 4 top-level items', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items).toHaveLength(4)
+    })
 
-    expect(emailItems[4].title).toBe(
-      'US_SIDEBAR.settings.email.vacation.string'
-    )
-    expect(emailItems[4].url).toBe('/user_settings/mail/vacation')
+    it('first item is General with correct url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[0]
+      expect(item?.title).toBe('US_SIDEBAR.settings.general.string')
+      expect(item?.url).toBe('/user_settings/general')
+    })
 
-    expect(emailItems[5].title).toBe('US_SIDEBAR.settings.email.forward.string')
-    expect(emailItems[5].url).toBe('/user_settings/mail/forward')
+    it('General item has icon and collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[0]
+      expect(item?.icon).toBeDefined()
+      expect(item?.collapsedIcon).toBeDefined()
+    })
 
-    expect(emailItems[6].title).toBe(
-      'US_SIDEBAR.settings.email.notifications.string'
-    )
-    expect(emailItems[6].url).toBe('/user_settings/mail/notifications')
+    it('second item is Address Books with correct url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[1]
+      expect(item?.title).toBe('US_SIDEBAR.settings.address_books.string')
+      expect(item?.url).toBe('/user_settings/address_books')
+    })
+
+    it('Address Books item has an icon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[1]
+      expect(item?.icon).toBeDefined()
+    })
+
+    it('third item is Calendars subsection', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[2].title).toBe(
+        'US_SIDEBAR.settings.calendars.title.string'
+      )
+    })
+
+    it('fourth item is Email subsection', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[3].title).toBe(
+        'US_SIDEBAR.settings.email.title.string'
+      )
+    })
+  })
+
+  // --- Calendars subsection ---
+
+  describe('Calendars subsection', () => {
+    it('has icon and collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const calendars = result.current[1].items?.[2]
+      expect(calendars?.icon).toBeDefined()
+      expect(calendars?.collapsedIcon).toBeDefined()
+    })
+
+    it('is active', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[2].isActive).toBe(true)
+    })
+
+    it('has exactly 2 sub-items', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[2].items).toHaveLength(2)
+    })
+
+    it('first sub-item is Calendars General with correct url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[2].items?.[0]
+      expect(item?.title).toBe('US_SIDEBAR.settings.calendars.general.string')
+      expect(item?.url).toBe('/user_settings/calendars/general')
+    })
+
+    it('second sub-item is Calendars Categories with correct url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[2].items?.[1]
+      expect(item?.title).toBe(
+        'US_SIDEBAR.settings.calendars.categories.string'
+      )
+      expect(item?.url).toBe('/user_settings/calendars/categories')
+    })
+  })
+
+  // --- Email subsection ---
+
+  describe('Email subsection', () => {
+    it('has icon and collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const email = result.current[1].items?.[3]
+      expect(email?.icon).toBeDefined()
+      expect(email?.collapsedIcon).toBeDefined()
+    })
+
+    it('is active', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[3].isActive).toBe(true)
+    })
+
+    it('always includes General at index 0', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.[0]
+      expect(item?.title).toBe('US_SIDEBAR.settings.email.general.string')
+      expect(item?.url).toBe('/user_settings/mail/general')
+    })
+
+    it('always includes Categories at index 1', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.[1]
+      expect(item?.title).toBe('US_SIDEBAR.settings.email.categories.string')
+      expect(item?.url).toBe('/user_settings/mail/categories')
+    })
+
+    it('always includes IMAP Accounts at index 2', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.[2]
+      expect(item?.title).toBe(
+        'US_SIDEBAR.settings.email.external_accounts.string'
+      )
+      expect(item?.url).toBe('/user_settings/mail/external_accounts')
+    })
+
+    it('always includes Notifications as the last item', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const items = result.current[1].items?.[3].items ?? []
+      const last = items[items.length - 1]
+      expect(last?.title).toBe('US_SIDEBAR.settings.email.notifications.string')
+      expect(last?.url).toBe('/user_settings/mail/notifications')
+    })
+
+    it('has 8 items when all conditional flags are enabled', () => {
+      mockProfile({
+        forwardEnabled: true,
+        vacationEnabled: true,
+        mailFilteringEnabled: true,
+      })
+      const { result } = renderHook(() => useNavItems())
+      // general, categories, imap_accounts, filters, vacation, forward, notifications
+      expect(result.current[1].items?.[3].items).toHaveLength(7)
+    })
+
+    it('has 5 items when all conditional flags are disabled', () => {
+      mockProfile({
+        forwardEnabled: false,
+        vacationEnabled: false,
+        mailFilteringEnabled: false,
+      })
+      const { result } = renderHook(() => useNavItems())
+      // general, categories, imap_accounts, notifications
+      expect(result.current[1].items?.[3].items).toHaveLength(4)
+    })
+  })
+
+  // --- Email conditional items ---
+
+  describe('Email conditional items (mailFilteringEnabled)', () => {
+    it('includes Filters when mailFilteringEnabled is true', () => {
+      mockProfile({ mailFilteringEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.filters.string'
+      )
+      expect(item).toBeDefined()
+      expect(item?.url).toBe('/user_settings/mail/filters')
+    })
+
+    it('excludes Filters when mailFilteringEnabled is false', () => {
+      mockProfile({ mailFilteringEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.filters.string'
+      )
+      expect(item).toBeUndefined()
+    })
+  })
+
+  describe('Email conditional items (vacationEnabled)', () => {
+    it('includes Vacation when vacationEnabled is true', () => {
+      mockProfile({ vacationEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.vacation.string'
+      )
+      expect(item).toBeDefined()
+      expect(item?.url).toBe('/user_settings/mail/vacation')
+    })
+
+    it('excludes Vacation when vacationEnabled is false', () => {
+      mockProfile({ vacationEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.vacation.string'
+      )
+      expect(item).toBeUndefined()
+    })
+  })
+
+  describe('Email conditional items (forwardEnabled)', () => {
+    it('includes Forward when forwardEnabled is true', () => {
+      mockProfile({ forwardEnabled: true })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.forward.string'
+      )
+      expect(item).toBeDefined()
+      expect(item?.url).toBe('/user_settings/mail/forward')
+    })
+
+    it('excludes Forward when forwardEnabled is false', () => {
+      mockProfile({ forwardEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.forward.string'
+      )
+      expect(item).toBeUndefined()
+    })
+  })
+
+  // --- Memoisation ---
+
+  describe('Memoisation', () => {
+    it('returns the same reference when profile values do not change', () => {
+      mockProfile()
+      const { result, rerender } = renderHook(() => useNavItems())
+      const first = result.current
+      rerender()
+      expect(result.current).toBe(first)
+    })
+
+    it('returns a new reference when passwordChangeEnabled changes', () => {
+      mockProfile({ passwordChangeEnabled: true })
+      const { result, rerender } = renderHook(() => useNavItems())
+      const first = result.current
+
+      mockProfile({ passwordChangeEnabled: false })
+      rerender()
+
+      expect(result.current).not.toBe(first)
+    })
+
+    it('returns a new reference when forwardEnabled changes', () => {
+      mockProfile({ forwardEnabled: true })
+      const { result, rerender } = renderHook(() => useNavItems())
+      const first = result.current
+
+      mockProfile({ forwardEnabled: false })
+      rerender()
+
+      expect(result.current).not.toBe(first)
+    })
+
+    it('returns a new reference when vacationEnabled changes', () => {
+      mockProfile({ vacationEnabled: true })
+      const { result, rerender } = renderHook(() => useNavItems())
+      const first = result.current
+
+      mockProfile({ vacationEnabled: false })
+      rerender()
+
+      expect(result.current).not.toBe(first)
+    })
+
+    it('returns a new reference when mailFilteringEnabled changes', () => {
+      mockProfile({ mailFilteringEnabled: true })
+      const { result, rerender } = renderHook(() => useNavItems())
+      const first = result.current
+
+      mockProfile({ mailFilteringEnabled: false })
+      rerender()
+
+      expect(result.current).not.toBe(first)
+    })
   })
 })

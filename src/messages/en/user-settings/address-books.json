@@ -1,12 +1,12 @@
 {
     "US_ADDRESS_BOOKS": {
         "create": {
-                "string": "Add contact category",
-                "context": "Button text to add a new address book category"
+            "string": "Add contact category",
+            "context": "Button text to add a new address book category"
         },
         "title": {
-            "string": "Categories",
-            "context": "Title for the address books categories settings page"
+            "string": "Address Books",
+            "context": "Title for the address books settings page"
         },
         "accessibility": {
             "icon": {
@@ -15,6 +15,23 @@
                     "context": "Accessibility message for the delete icon"
                 }
             }
+        },
+        "notification": {
+            "title": "Notifications",
+            "string": "Send email notification when an address book is created",
+            "context": "Label for the notification setting"
+        },
+        "categories": {
+            "title": "Categories",
+            "Work": "Work",
+            "Family": "Family",
+            "Friends": "Friends"
+        },
+        "color": {
+            "title": "Couleur"
+        },
+        "validation": {
+            "category-name-required": "Category name is required"
         }
     }
 }

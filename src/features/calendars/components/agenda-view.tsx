@@ -1,6 +1,7 @@
 'use client'
 
 import { type CalendarEvent } from '@/features/calendars'
+import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { useTranslations } from 'next-intl'
 
@@ -13,12 +14,14 @@ interface AgendaViewProps {
   events: CalendarEventWithDate[]
   date: Date
   calendarColorMap: Record<string, string | undefined>
+  onEventClick?: (event: CalendarEvent) => void
 }
 
 export function AgendaView({
   events,
   date,
   calendarColorMap,
+  onEventClick,
 }: AgendaViewProps) {
   const t = useTranslations('CALENDARS')
 
@@ -49,12 +52,32 @@ export function AgendaView({
         {upcomingEvents.map((event) => {
           const eventDate = new Date(event.start)
           const eventEndDate = new Date(event.end)
-          const color = calendarColorMap[event.calendar_id] || '#3b82f6'
+          const timeRangeLabel = `${format(eventDate, 'h:mm a')}\u2009\u2013\u2009${format(eventEndDate, 'h:mm a')}`
+          const color = calendarColorMap[event.calendar_id ?? ''] || '#3b82f6'
+
+          const rowKey = `${event.calendar_id ?? ''}-${event.id ?? event.key ?? event.start.toISOString()}`
 
           return (
             <div
-              key={event.id}
-              className="border-border bg-card hover:bg-accent flex gap-4 rounded-lg border p-4 transition-colors"
+              key={rowKey}
+              role={onEventClick ? 'button' : undefined}
+              tabIndex={onEventClick ? 0 : undefined}
+              className={cn(
+                'border-border bg-card flex gap-4 rounded-lg border p-4 transition-colors',
+                onEventClick &&
+                  'hover:bg-muted/50 cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
+              )}
+              onClick={() => onEventClick?.(event)}
+              onKeyDown={(e) => {
+                if (
+                  !onEventClick ||
+                  (e.key !== 'Enter' && e.key !== ' ')
+                ) {
+                  return
+                }
+                e.preventDefault()
+                onEventClick(event)
+              }}
             >
               {/* Date Indicator */}
               <div className="flex min-w-fit flex-col items-center justify-start">
@@ -77,9 +100,7 @@ export function AgendaView({
                 <p className="text-muted-foreground mt-1 text-xs">
                   {format(eventDate, 'EEEE, MMMM d, yyyy')}
                 </p>
-                <p className="text-muted-foreground text-xs">
-                  {format(eventDate, 'h:mm a')} - {format(eventEndDate, 'h:mm a')}
-                </p>
+                <p className="text-muted-foreground text-xs">{timeRangeLabel}</p>
                 {event.description && (
                   <p className="text-muted-foreground mt-2 line-clamp-2 text-xs">
                     {event.description}

@@ -59,6 +59,10 @@
                 "download_all_attachments": {
                     "string": "Download all attachments",
                     "description": "ARIA label for the download all attachments link"
+                },
+                "more_attachments_count": {
+                    "string": "+{count}",
+                    "description": "Compact label to reveal additional hidden attachments (e.g. +3)"
                 }
             },
             "header": {
@@ -103,6 +107,10 @@
                     }
                 }
             }
+        },
+        "error": {
+            "string": "Error",
+            "description": "Generic error title used when mails fail to load"
         },
         "search": {
             "placeholder": {
@@ -158,6 +166,20 @@
             "string": "From",
             "description": "Label for the 'From' field in email search options"
         },
+        "account_switcher": {
+            "add_account": {
+                "string": "Add account",
+                "description": "Button to add an external mail account in the sidebar account switcher"
+            },
+            "new_folder": {
+                "string": "New folder",
+                "description": "Label for the new folder action in the account switcher menu"
+            },
+            "delegate": {
+                "string": "Delegate",
+                "description": "Label for the delegate action in the account switcher menu (not yet implemented)"
+            }
+        },
         "to": {
             "string": "To",
             "description": "Label for the 'To' field in email search options"
@@ -186,7 +208,186 @@
                 },
                 "sharing": {
                     "string": "Sharing",
-                    "description": "Button to share the current folder"
+                    "title": {
+                        "string": "Share folder"
+                    },
+                    "description": {
+                        "string": "Manage who has access to \"{folder}\" and their permissions."
+                    },
+                    "noUsers": {
+                        "string": "No users have access yet."
+                    },
+                    "addUser": {
+                        "label": {
+                            "string": "Add a user"
+                        },
+                        "placeholder": {
+                            "string": "email@domain.com"
+                        },
+                        "button": {
+                            "string": "Add"
+                        },
+                        "error": {
+                            "invalid": {
+                                "string": "Please enter a valid email address."
+                            },
+                            "duplicate": {
+                                "string": "This user already has access."
+                            }
+                        }
+                    },
+                    "presets": {
+                        "read": {
+                            "string": "Read"
+                        },
+                        "write": {
+                            "string": "Write"
+                        },
+                        "admin": {
+                            "string": "Admin"
+                        }
+                    },
+                    "save": {
+                        "string": "Save"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "badge": {
+                        "you": {
+                            "string": "You"
+                        },
+                        "public": {
+                            "string": "Public"
+                        }
+                    },
+                    "removeUser": {
+                        "tooltip": {
+                            "string": "Cannot remove yourself"
+                        }
+                    }
+                },
+                "purge": {
+                    "string": "Purge",
+                    "description": "Button to permanently delete all messages in the current folder",
+                    "confirmTitle": {
+                        "string": "Purge folder"
+                    },
+                    "confirmDesc": {
+                        "string": "Are you sure you want to purge \"{folder}\"? All deleted messages will be permanently removed. This action cannot be undone."
+                    },
+                    "confirm": {
+                        "string": "Purge"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "olderThan": {
+                        "string": "Delete mails older than"
+                    },
+                    "customDate": {
+                        "string": "Custom date"
+                    },
+                    "pickDate": {
+                        "string": "Pick a date"
+                    },
+                    "applyToSubfolders": {
+                        "string": "Apply to subfolders"
+                    },
+                    "permanentlyDelete": {
+                        "string": "Permanently delete (cannot be undone)"
+                    },
+                    "confirmPermanent": {
+                        "string": "I understand this will permanently delete the selected mails and they cannot be recovered"
+                    },
+                    "datePresets": {
+                        "3months": { "string": "3 months" },
+                        "6months": { "string": "6 months" },
+                        "1year": { "string": "1 year" },
+                        "custom": { "string": "Custom date" },
+                        "all": { "string": "All mails" }
+                    },
+                    "successTitle": {
+                        "string": "Folder purged"
+                    },
+                    "successMessage": {
+                        "string": "All deleted messages have been permanently removed."
+                    },
+                    "errorTitle": {
+                        "string": "Purge failed"
+                    },
+                    "errorMessage": {
+                        "string": "An error occurred while purging the folder. Please try again."
+                    }
+                },
+                "expunge": {
+                    "string": "Expunge",
+                    "confirmTitle": {
+                        "string": "Expunge folder"
+                    },
+                    "confirmDesc": {
+                        "string": "Are you sure you want to expunge \"{folder}\"? All messages marked as deleted will be permanently removed. This action cannot be undone."
+                    },
+                    "confirm": {
+                        "string": "Expunge"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
+                },
+                "delete": {
+                    "string": "Delete folder",
+                    "description": "Label for the delete folder action in the folder context menu",
+                    "confirmTitle": {
+                        "string": "Delete folder",
+                        "description": "Title of the delete folder confirmation dialog"
+                    },
+                    "confirmDesc": {
+                        "string": "Are you sure you want to delete \"{folder}\"? It will be moved to Trash. If it is already in Trash, it will be permanently deleted.",
+                        "description": "Description of the delete folder confirmation dialog"
+                    },
+                    "confirm": {
+                        "string": "Delete",
+                        "description": "Confirm button label in the delete folder dialog"
+                    },
+                    "cancel": {
+                        "string": "Cancel",
+                        "description": "Cancel button label in the delete folder dialog"
+                    }
+                },
+                "new_subfolder_dialog": {
+                    "title": {
+                        "string": "New subfolder",
+                        "description": "Title of the create subfolder dialog"
+                    },
+                    "label": {
+                        "string": "Folder name",
+                        "description": "Label for the folder name input"
+                    },
+                    "placeholder": {
+                        "string": "e.g. Work, Archives…",
+                        "description": "Placeholder for the folder name input"
+                    },
+                    "submit": {
+                        "string": "Create",
+                        "description": "Submit button label in the create subfolder dialog"
+                    },
+                    "cancel": {
+                        "string": "Cancel",
+                        "description": "Cancel button label in the create subfolder dialog"
+                    },
+                    "error_required": {
+                        "string": "Folder name is required",
+                        "description": "Validation error when folder name is empty"
+                    },
+                    "error_dot": {
+                        "string": "Folder name cannot contain a dot",
+                        "description": "Validation error when folder name contains a dot character"
+                    },
+                    "error_max": {
+                        "string": "Folder name must be at most 100 characters",
+                        "description": "Validation error when folder name exceeds max length"
+                    }
                 }
             },
             "inbox": {

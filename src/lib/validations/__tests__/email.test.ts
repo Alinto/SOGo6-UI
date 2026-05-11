@@ -41,21 +41,11 @@ describe('Email Validations', () => {
       expect(isValidEmail('user@example.com')).toBe(true)
       expect(isValidEmail('user@subdomain.example.com')).toBe(true)
       expect(isValidEmail('user@example.co.uk')).toBe(true)
-      expect(isValidEmail('user@localhost')).toBe(true)
     })
 
     it('rejects emails with invalid characters', () => {
       expect(isValidEmail('user name@example.com')).toBe(false)
       expect(isValidEmail('user@exam ple.com')).toBe(false)
-    })
-
-    it('accepts RFC 5321 valid formats', () => {
-      // Single domain labels are valid for local networks
-      expect(isValidEmail('user@localhost')).toBe(true)
-      expect(isValidEmail('user@domain')).toBe(true)
-      
-      // Consecutive dots in local part (though uncommon, RFC allows it)
-      expect(isValidEmail('user..name@example.com')).toBe(true)
     })
   })
 

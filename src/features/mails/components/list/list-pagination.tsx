@@ -32,6 +32,11 @@ const ListPagination: React.FC<ListPaginationProps> = ({
   const isMobile = useIsMobile()
   const searchParams = useSearchParams()
   const t = useTranslations('MAILS_LIST')
+  const effectiveTotalPages = totalPages > 0 ? totalPages : 1
+  const effectivePage = Math.min(
+    Math.max(1, currentPage),
+    effectiveTotalPages
+  )
   const handlePrev = () => {
     if (currentPage > 1) {
       const params = new URLSearchParams(searchParams.toString())
@@ -57,7 +62,11 @@ const ListPagination: React.FC<ListPaginationProps> = ({
   }
 
   const handleNext = () => {
-    push(`?page=${currentPage + 1}`)
+    if (currentPage < effectiveTotalPages) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('page', (currentPage + 1).toString())
+      push(`${pathname}?${params.toString()}`)
+    }
   }
 
   return (
@@ -66,9 +75,9 @@ const ListPagination: React.FC<ListPaginationProps> = ({
         variant={'outline'}
         size={'icon'}
         onClick={handlePrev}
-        disabled={!hasPreviousPage || currentPage === 1}
+        disabled={!hasPreviousPage || effectivePage === 1}
         aria-label={t('pagination.previous.string')}
-        aria-disabled={currentPage === 1}
+        aria-disabled={effectivePage === 1}
       >
         <ChevronLeft />
       </Button>
@@ -79,17 +88,17 @@ const ListPagination: React.FC<ListPaginationProps> = ({
               variant="outline"
               size={'sm'}
               // eslint-disable-next-line react/jsx-no-literals
-            >{`${currentPage} / ${totalPages}`}</Button>
+            >{`${effectivePage} / ${effectiveTotalPages}`}</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="scrollbar-thin-gray max-h-60 w-10 overflow-auto">
             <DropdownMenuRadioGroup
-              value={currentPage.toString()}
+              value={effectivePage.toString()}
               onValueChange={(value) => {
                 const page = parseInt(value, 10)
                 if (!isNaN(page)) onPageChange(page)
               }}
             >
-              {Array.from({ length: totalPages }, (_, i) => (
+              {Array.from({ length: effectiveTotalPages }, (_, i) => (
                 <DropdownMenuRadioItem
                   key={i + 1}
                   className="cursor-pointer"
@@ -107,7 +116,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
         variant={'outline'}
         onClick={handleNext}
         aria-label={t('pagination.next.string')}
-        disabled={!hasNextPage || currentPage === totalPages}
+        disabled={!hasNextPage || effectivePage === effectiveTotalPages}
       >
         <ChevronRight />
       </Button>

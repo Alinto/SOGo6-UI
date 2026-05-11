@@ -1,39 +1,76 @@
 'use client'
 
+import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
 import MailListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
-import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
-import { useParams } from 'next/navigation'
-import React from 'react'
+import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
+import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
+import { useAppDispatch } from '@/lib/redux/hooks'
+import { useParams, useSearchParams } from 'next/navigation'
+import React, { useEffect, useMemo } from 'react'
 
-interface PageProps {
-  params: {
-    locale: string
-    account: string
-    messagesFolder: string
-  }
-}
-
-const Page: React.FC<PageProps> = () => {
-  const { folder, mail_id } = useParams()
+const Page: React.FC = () => {
+  const { folder, mail_id, account } = useParams()
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
-  const { data, isFetching } = useGetFolderMessagesQuery({
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '')
+  const dispatch = useAppDispatch()
+  const searchParams = useSearchParams()
+  const activeFilter = searchParams.get('filter') ?? 'all'
+  const { data, isLoading, isFetching, error, refetch } = useFolderMessages({
     folder: folderString,
+    accountId: accountString,
   })
-  if (isFetching) {
+
+  useEffect(() => {
+    dispatch(setSkipFolderFetch(false))
+  }, [folderString, dispatch])
+
+  const filteredMails = useMemo(
+    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
+    [data, activeFilter]
+  )
+
+  const clientFilterActive = activeFilter !== 'all'
+
+  const containerClassName = `${mail_id ? 'hidden lg:flex' : 'flex'} w-full`
+
+  if (isLoading) {
     return (
-      <div
-        className={`${mail_id ? 'hidden lg:flex' : 'flex'} w-full lg:w-1/2 xl:w-1/2 2xl:w-1/3`}
-      >
+      <div className={containerClassName}>
         <MailListSkeleton />
       </div>
     )
   }
+
+  if (error) {
+    return (
+      <div className={containerClassName}>
+        <FolderMessagesErrorFallback
+          error={error}
+          refetch={() => {
+            void refetch()
+          }}
+          accountId={accountString}
+        />
+      </div>
+    )
+  }
+
   return (
-    <div
-      className={`${mail_id ? 'hidden lg:flex' : 'flex'} w-full lg:w-1/2 xl:w-1/2 2xl:w-1/3`}
-    >
-      <MessagesList type="classic" items={data} isLoading={isFetching} />
+    <div className={containerClassName}>
+      <MessagesList
+        type="classic"
+        items={filteredMails}
+        page={clientFilterActive ? 1 : (data?.page ?? 1)}
+        total={clientFilterActive ? filteredMails.length : (data?.total ?? 0)}
+        totalPages={clientFilterActive ? 1 : (data?.totalPages ?? 1)}
+        hasNextPage={clientFilterActive ? false : (data?.hasNextPage ?? false)}
+        hasPreviousPage={clientFilterActive ? false : (data?.hasPreviousPage ?? false)}
+        isLoading={false}
+        isFetching={isFetching}
+        hideToolbar
+      />
     </div>
   )
 }

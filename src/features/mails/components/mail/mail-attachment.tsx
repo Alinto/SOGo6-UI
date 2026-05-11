@@ -17,20 +17,12 @@ const API_BASE_URL = (() => {
   if (typeof window !== 'undefined') {
     const envVars = getCachedEnvVars()
     const fromEnv = envVars?.REACT_APP_API_BASE_URL
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🔍 [mail-attachment] REACT_APP_API_BASE_URL from env:', fromEnv)
-    }
-    
+
     // Fallback to localhost:5000 if not defined or if it's /fakeApi
     return fromEnv && fromEnv !== '/fakeApi' ? fromEnv : 'http://localhost:5000'
   }
   return 'http://localhost:5000'
 })()
-
-if (process.env.NODE_ENV === 'development') {
-  console.log('✅ [mail-attachment] API_BASE_URL configured:', API_BASE_URL)
-}
 
 /**
  * Builds the complete URL for an attachment
@@ -43,29 +35,16 @@ if (process.env.NODE_ENV === 'development') {
 function buildAttachmentUrl(uri: string): string {
   // Edge case: Empty or undefined URI
   if (!uri) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn('⚠️ [buildAttachmentUrl] Empty URI provided')
-    }
     return ''
   }
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔍 [buildAttachmentUrl] Input URI:', uri)
-  }
-  
+
   // If the URL is already absolute (http:// or https://), return it as is
   if (uri.startsWith('http://') || uri.startsWith('https://')) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ [buildAttachmentUrl] Already absolute URL')
-    }
     return uri
   }
-  
+
   // If the URL is relative to /fakeApi, return it as is (Next.js route)
   if (uri.startsWith('/fakeApi')) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log('✅ [buildAttachmentUrl] FakeAPI route detected')
-    }
     return uri
   }
   
@@ -86,15 +65,7 @@ function buildAttachmentUrl(uri: string): string {
   const encodedUri = encodedSegments.join('/')
   
   const result = `${normalizedBase}/${encodedUri}`
-  
-  if (process.env.NODE_ENV === 'development') {
-    console.log('🔗 [buildAttachmentUrl]')
-    console.log('  Base:', normalizedBase)
-    console.log('  URI normalized:', normalizedUri)
-    console.log('  URI encoded:', encodedUri)
-    console.log('  Final URL:', result)
-  }
-  
+
   return result
 }
 
@@ -207,7 +178,9 @@ export function AttachmentDisplay({
             className="bg-muted hover:bg-card cursor-pointer rounded border px-3 py-1 text-xs"
             onClick={() => setShowAll(true)}
           >
-            +{hiddenCount}
+            {t('mail_display.content.more_attachments_count.string', {
+              count: hiddenCount,
+            })}
           </Button>
         )}
       </div>

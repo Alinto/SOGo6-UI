@@ -1,7 +1,6 @@
 import * as userPreferencesApi from '@/features/app-data/store/user-preferences-api'
 import * as useIsMobileModule from '@/hooks/use-mobile'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import Layout from '../layout'
 
 // Mock the dependencies
@@ -30,23 +29,14 @@ jest.mock('@/features/mails/components/sidebars/fast-access/content', () => {
     return <div data-testid="fast-access-content">{name}</div>
   }
 })
-jest.mock(
-  '@/features/mails/components/sidebars/fast-access/sidebar-fast-access',
-  () => {
-    return function MockSidebarFastAccess({ handleOpen }: any) {
-      return (
-        <div data-testid="sidebar-fast-access">
-          <button
-            data-testid="fast-access-btn"
-            onClick={() => handleOpen('address-book')}
-          >
-            Address Book
-          </button>
-        </div>
-      )
-    }
-  }
-)
+jest.mock('@/features/mails/components/list/list-toolbar', () => ({
+  __esModule: true,
+  default: () => <div data-testid="list-toolbar">Toolbar</div>,
+}))
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: (fn: (s: { mailLayout: { mode: string } }) => string) =>
+    fn({ mailLayout: { mode: 'full' } }),
+}))
 
 describe('Mail Folder Layout', () => {
   const mockChildren = (
@@ -87,26 +77,9 @@ describe('Mail Folder Layout', () => {
     const { container } = render(
       <Layout classic={mockClassic}>{mockChildren}</Layout>
     )
-    const contentDiv = container.querySelector('[class*="overflow-auto"]')
+    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
     expect(contentDiv).toBeInTheDocument()
-    expect(contentDiv).toHaveClass('w-full', 'overflow-auto', 'p-1')
-  })
-
-  it('should render SidebarFastAccess component', () => {
-    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
-    expect(screen.getByTestId('sidebar-fast-access')).toBeInTheDocument()
-  })
-
-  it('should toggle fast access sidebar when button is clicked', async () => {
-    const user = userEvent.setup()
-    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
-
-    const fastAccessBtn = screen.getByTestId('fast-access-btn')
-    await user.click(fastAccessBtn)
-
-    await waitFor(() => {
-      expect(screen.getByTestId('fast-access-content')).toBeInTheDocument()
-    })
+    expect(contentDiv).toHaveClass('w-full', 'overflow-hidden', 'p-1')
   })
 
   it('should show SidebarTrigger on desktop', () => {
@@ -125,19 +98,6 @@ describe('Mail Folder Layout', () => {
     expect(trigger).not.toBeInTheDocument()
   })
 
-  it('should handle fast access toggle for the same panel', async () => {
-    const user = userEvent.setup()
-    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
-
-    const fastAccessBtn = screen.getByTestId('fast-access-btn')
-
-    // First click - opens
-    await user.click(fastAccessBtn)
-    await waitFor(() => {
-      expect(screen.getByTestId('fast-access-content')).toBeInTheDocument()
-    })
-  })
-
   it('should render with correct sidebar provider configuration', () => {
     const { container } = render(
       <Layout classic={mockClassic}>{mockChildren}</Layout>
@@ -145,14 +105,14 @@ describe('Mail Folder Layout', () => {
     const sidebarProviders = container.querySelectorAll(
       '[data-testid="sidebar-provider"]'
     )
-    expect(sidebarProviders.length).toBeGreaterThanOrEqual(2)
+    expect(sidebarProviders.length).toBe(1)
   })
 
   it('should use header height CSS variable', () => {
     const { container } = render(
       <Layout classic={mockClassic}>{mockChildren}</Layout>
     )
-    const contentDiv = container.querySelector('[class*="overflow-auto"]')
+    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
     expect(contentDiv).toBeInTheDocument()
   })
 

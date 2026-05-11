@@ -9,11 +9,13 @@ export interface User {
 interface AuthState {
   token: string | null
   user: User | null
+  rememberMe: boolean
 }
 
 const initialState: AuthState = {
   token: null,
   user: null,
+  rememberMe: false,
 }
 
 const authSlice = createSlice({
@@ -22,14 +24,17 @@ const authSlice = createSlice({
   reducers: {
     setCredentials: (
       state,
-      action: PayloadAction<{ token: string; user: User }>
+      action: PayloadAction<{ token: string; user: User; rememberMe: boolean }>
     ) => {
       state.token = action.payload.token
       state.user = action.payload.user
+      state.rememberMe = action.payload.rememberMe
     },
+    // On logout, the localStorage-sync middleware clears both localStorage and sessionStorage
     logout: (state) => {
       state.token = null
       state.user = null
+      state.rememberMe = false
     },
   },
 })

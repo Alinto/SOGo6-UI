@@ -1,14 +1,18 @@
 'use client'
 
 import AppHeader from '@/components/app-header'
+import { useAppSelector } from '@/lib/redux/hooks'
+import { useRouter } from 'next/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
+import ModuleRail, { type ModuleId } from '@/components/sidebar/module-rail'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import FloatingCompose from '@/features/mails/components/compose/floating-compose'
+import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import {
   NotificationProvider,
   NotificationToaster,
 } from '@/features/notifications'
+import { useGetUserProfileQuery } from '@/features/user-profile'
 import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
@@ -23,10 +27,31 @@ import {
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Contact2 } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { startTransition, useCallback, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 
+function ProfilePrefetch() {
+  useGetUserProfileQuery()
+  return null
+}
+
 export default function Layout({ children }: { children: React.ReactNode }) {
+  const token = useAppSelector((state) => state.auth.token)
+  const router = useRouter()
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  useEffect(() => {
+    startTransition(() => {
+      setIsHydrated(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (isHydrated && !token) {
+      router.push('/auth/login')
+    }
+  }, [isHydrated, token, router])
+
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
       distance: 10,
@@ -41,36 +66,55 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const sensors = useSensors(mouseSensor, touchSensor)
   const [connect] = useConnectSSEMutation()
 
+  const handleGlobalModuleSelect = useCallback(
+    (id: ModuleId) => {
+      const routes: Record<ModuleId, string> = {
+        'address-book': '/address_books',
+        calendar: '/calendars',
+        tasks: '/tasks',
+        notes: '/notes',
+      }
+
+      router.push(routes[id])
+    },
+    [router]
+  )
+
   useEffect(() => {
-    // Connect SSE with environment-based configuration
     const config = getSSEConfigForEnvironment()
     connect(config)
   }, [connect])
 
+  if (!isHydrated || !token) return null
+
   return (
     <>
+      <ProfilePrefetch />
       <DemoWarningToast />
       <NotificationToaster />
       <NotificationProvider />
-      <SidebarProvider>
-        <DndContext sensors={sensors}>
-          <AppSidebar />
-          <SidebarInset className="flex h-screen flex-col">
-            <AppHeader />
-            <div className="flex-1 gap-4 border-y">{children}</div>
-          </SidebarInset>
-          {typeof window !== 'undefined' &&
-            ReactDOM.createPortal(
-              <DragOverlay modifiers={[snapCenterToCursor]}>
-                <div className="h-10 w-10">
-                  <Contact2 className="h-7 w-7 text-gray-700" />
-                </div>
-              </DragOverlay>,
-              document.body
-            )}
-        </DndContext>
+      <SidebarProvider name="right-global-rail" width="2.5rem" defaultOpen>
+        <SidebarProvider name="left-global-sidebar">
+          <DndContext sensors={sensors}>
+            <AppSidebar />
+            <SidebarInset className="flex h-screen flex-col">
+              <AppHeader />
+              <div className="flex-1 gap-4 border-y">{children}</div>
+            </SidebarInset>
+            {typeof window !== 'undefined' &&
+              ReactDOM.createPortal(
+                <DragOverlay modifiers={[snapCenterToCursor]}>
+                  <div className="h-10 w-10">
+                    <Contact2 className="h-7 w-7 text-gray-700" />
+                  </div>
+                </DragOverlay>,
+                document.body
+              )}
+          </DndContext>
+        </SidebarProvider>
+        <ModuleRail onModuleSelect={handleGlobalModuleSelect} />
       </SidebarProvider>
-      <FloatingCompose />
+      <FloatingComposeContainer />
     </>
   )
 }

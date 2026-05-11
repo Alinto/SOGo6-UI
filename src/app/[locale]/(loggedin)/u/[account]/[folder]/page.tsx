@@ -1,57 +1,63 @@
 'use client'
 
+import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
-import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
+import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
+import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
+import { useAppDispatch } from '@/lib/redux/hooks'
 import { useParams, useSearchParams } from 'next/navigation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const Page = () => {
-  const { folder } = useParams()
+  const { folder, account } = useParams()
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '')
+  const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
-
-  const params = React.useMemo(() => {
-    const searchParamsKeys = Array.from(searchParams.keys())
-    return searchParamsKeys.reduce(
-      (acc, key) => {
-        const value = searchParams.get(key)
-        if (value !== null) {
-          acc[key] = value
-        }
-        return acc
-      },
-      {} as Record<string, string>
-    )
-  }, [searchParams])
-
-  const { data, isLoading, error } = useGetFolderMessagesQuery({
+  const activeFilter = searchParams.get('filter') ?? 'all'
+  const { data, isLoading, isFetching, error, refetch } = useFolderMessages({
     folder: folderString,
-    params,
+    accountId: accountString,
   })
 
-  if (isLoading) {
-    return <ListSkeleton />
-  }
+  useEffect(() => {
+    dispatch(setSkipFolderFetch(false))
+  }, [folderString, dispatch])
+
+  const filteredMails = React.useMemo(
+    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
+    [data, activeFilter]
+  )
+
+  const clientFilterActive = activeFilter !== 'all'
+
+  if (isLoading) return <ListSkeleton />
 
   if (error) {
     return (
-      <div className="p-4 text-red-500">
-        <h2>Error</h2>
-        <pre>{JSON.stringify(error, null, 2)}</pre>
-      </div>
+      <FolderMessagesErrorFallback
+        error={error}
+        refetch={() => {
+          void refetch()
+        }}
+        accountId={accountString}
+      />
     )
   }
 
   return (
     <MessagesList
-      items={data?.mails ?? []}
-      page={data?.page ?? 1}
-      total={data?.total ?? 0}
-      totalPages={data?.totalPages ?? 1}
-      hasNextPage={data?.hasNextPage ?? false}
-      hasPreviousPage={data?.hasPreviousPage ?? false}
+      items={filteredMails}
+      page={clientFilterActive ? 1 : (data?.page ?? 1)}
+      total={clientFilterActive ? filteredMails.length : (data?.total ?? 0)}
+      totalPages={clientFilterActive ? 1 : (data?.totalPages ?? 1)}
+      hasNextPage={clientFilterActive ? false : (data?.hasNextPage ?? false)}
+      hasPreviousPage={clientFilterActive ? false : (data?.hasPreviousPage ?? false)}
       isLoading={isLoading}
+      isFetching={isFetching}
+      hideToolbar
     />
   )
 }

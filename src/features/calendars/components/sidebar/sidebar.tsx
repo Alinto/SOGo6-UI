@@ -5,10 +5,12 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import React, { memo, useMemo } from 'react'
 import { useGetCalendarsQuery } from '../../store/calendars-api'
+import CreateEventOpener from './create-event-opener'
 import AddCalendar from './forms/add'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
@@ -17,24 +19,45 @@ const Sidebar: React.FC = () => {
   const { data, isFetching } = useGetCalendarsQuery()
   const t = useTranslations('CALENDARS')
 
+  const groupedCalendars = useMemo(() => {
+    const calendars = data ?? []
+    return {
+      personals: calendars.filter(
+        (calendar) =>
+          calendar.type === 'personal' ||
+          calendar.source_type === 'personal' ||
+          (!calendar.type &&
+            calendar.source_type !== 'shared' &&
+            calendar.source_type !== 'subscription')
+      ),
+      shared: calendars.filter(
+        (calendar) =>
+          calendar.type === 'shared' || calendar.source_type === 'shared'
+      ),
+      subscriptions: calendars.filter(
+        (calendar) =>
+          calendar.type === 'subscription' ||
+          calendar.source_type === 'subscription'
+      ),
+    }
+  }, [data])
+
   if (isFetching) {
     return <SidebarSkeleton />
   }
 
-  const {
-    personals = [],
-    shared = [],
-    subscriptions = [],
-  } = data
-    ? {
-        personals: data.personal || [],
-        shared: data.shared || [],
-        subscriptions: data.subscriptions || [],
-      }
-    : { personals: [], shared: [], subscriptions: [] }
+  const { personals, shared, subscriptions } = groupedCalendars
 
   return (
     <>
+      <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <CreateEventOpener />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
+
       <SidebarGroup className="px-0">
         <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
         <AddCalendar type="personals" />
@@ -42,10 +65,10 @@ const Sidebar: React.FC = () => {
           <SidebarMenu>
             {personals.map((calendar) => (
               <SidebarItem
-                key={calendar.id}
+                key={calendar.key ?? calendar.id}
                 icon="calendar"
-                isDefault={calendar.default}
-                id={calendar.id}
+                isDefault={calendar.is_default ?? calendar.default}
+                id={calendar.key ?? calendar.id ?? ''}
                 name={calendar.name}
                 color={calendar.color}
                 onClick={() => {}}
@@ -60,9 +83,9 @@ const Sidebar: React.FC = () => {
         <SidebarMenu>
           {shared.map((calendar) => (
             <SidebarItem
-              key={calendar.id}
+              key={calendar.key ?? calendar.id}
               icon="calendar"
-              id={calendar.id}
+              id={calendar.key ?? calendar.id ?? ''}
               name={calendar.name}
               color={calendar.color}
               onClick={() => {}}
@@ -79,9 +102,9 @@ const Sidebar: React.FC = () => {
         <SidebarMenu>
           {subscriptions.map((calendar) => (
             <SidebarItem
-              key={calendar.id}
+              key={calendar.key ?? calendar.id}
               icon="calendar"
-              id={calendar.id}
+              id={calendar.key ?? calendar.id ?? ''}
               name={calendar.name}
               color={calendar.color}
               onClick={() => {}}
@@ -93,4 +116,4 @@ const Sidebar: React.FC = () => {
   )
 }
 
-export default Sidebar
+export default memo(Sidebar)

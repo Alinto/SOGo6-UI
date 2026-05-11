@@ -1,0 +1,15 @@
+---
+description: Internationalisation rules for SOGo. Apply when creating or editing React components, forms, or any UI text.
+globs: src/**/*.tsx, src/**/*.ts
+alwaysApply: false
+---
+
+# i18n Conventions — SOGo
+
+## Hard rule
+NEVER hardcode strings in JSX. ESLint rule `react/jsx-no-literals` will fail the build.
+
+## Correct pattern
+```tsx
+const t = useTranslations('NAMESPACE')
+return <span>{t('MY_KEY')}</span>

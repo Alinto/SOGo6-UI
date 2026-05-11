@@ -24,7 +24,14 @@ export default function MailActionsBar({
             variant="ghost"
             size="icon"
             tooltip={action.title}
-            onClick={onAction ? () => onAction(idx, action) : undefined}
+            disabled={action.disabled}
+            onClick={
+              action.disabled
+                ? undefined
+                : onAction
+                  ? () => onAction(idx, action)
+                  : undefined
+            }
             data-testid={
               action.title
                 ? `mail-action-btn-${action.title?.toLowerCase().replace(/\s/g, '-')}`

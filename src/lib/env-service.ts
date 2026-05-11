@@ -2,8 +2,12 @@ import React from 'react'
 
 export interface EnvVariables {
   REACT_APP_API_BASE_URL?: string
+  REACT_APP_API_URL?: string
   SSE_ENABLED?: boolean
-  // Add other environment variables here as needed
+  /** Runtime prefill for /auth/login (from LOGIN_PREFILL_EMAIL or legacy NEXT_PUBLIC_* on server). */
+  LOGIN_PREFILL_EMAIL?: string
+  /** Runtime prefill for /auth/login/pwd (from LOGIN_PREFILL_PASSWORD or legacy NEXT_PUBLIC_* on server). */
+  LOGIN_PREFILL_PASSWORD?: string
 }
 
 let envCache: EnvVariables | null = null
@@ -18,12 +22,14 @@ const checkApiHealth = async (apiUrl: string): Promise<boolean> => {
     return true // fakeApi is always available
   }
 
+  const healthUrl = `${apiUrl.replace(/\/$/, '')}/system`
+
   try {
     // Try to reach the API with a short timeout
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
 
-    await fetch(apiUrl, {
+    await fetch(healthUrl, {
       method: 'HEAD',
       signal: controller.signal,
       mode: 'no-cors', // Allow cross-origin requests without CORS
@@ -41,12 +47,12 @@ const checkApiHealth = async (apiUrl: string): Promise<boolean> => {
       errorMessage.includes('Failed to fetch')
     ) {
       console.info(
-        `%cAPI health check failed for ${apiUrl} (unreachable or timeout)`,
+        `%cAPI health check failed for ${healthUrl} (unreachable or timeout)`,
         'color: #94a3b8'
       )
     } else {
       console.info(
-        `%cAPI health check failed for ${apiUrl}`,
+        `%cAPI health check failed for ${healthUrl}`,
         'color: #94a3b8',
         error
       )
@@ -66,7 +72,18 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
 
   fetchPromise = (async () => {
     try {
-      const response = await fetch('/env')
+      const envController = new AbortController()
+      const envTimeout = setTimeout(() => envController.abort(), 5000)
+
+      let response: Response
+      try {
+        response = await fetch('/env', { signal: envController.signal })
+        clearTimeout(envTimeout)
+      } catch {
+        clearTimeout(envTimeout)
+        throw new Error('fetch /env timeout or network error')
+      }
+
       const data = await response.json()
       // Check if the configured API is healthy (only in development)
       const configuredApiUrl = data.REACT_APP_API_BASE_URL || '/fakeApi'
@@ -87,6 +104,7 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
             `%c➡️  Switching to /fakeApi (mock data)`,
             'color: #f59e0b; font-weight: bold'
           )
+          //fakeApi defined here
           data.REACT_APP_API_BASE_URL = '/fakeApi'
         } else {
           console.log(

@@ -30,7 +30,33 @@
                 "string": "Next page"
             }
         },
+        "list_load_error": {
+            "folder_not_found": {
+                "string": "This folder no longer exists.",
+                "description": "Message when folder messages request returns 404"
+            },
+            "mail_unavailable": {
+                "string": "Mail server is temporarily unavailable.",
+                "description": "Message when folder messages request returns 503"
+            },
+            "retry": {
+                "string": "Try again",
+                "description": "Button label to refetch folder messages after 503"
+            },
+            "open_inbox": {
+                "string": "Open Inbox",
+                "description": "Button label to navigate to INBOX after folder 404"
+            },
+            "generic": {
+                "string": "Unable to load messages. Please try again later.",
+                "description": "Generic folder list load error (e.g. 500)"
+            }
+        },
         "filter": {
+            "client_scope_notice": {
+                "string": "Filters apply only to messages loaded on this page.",
+                "description": "Hint that URL filters are client-side on the current server page"
+            },
             "all": {
                 "string": "All"
             },
@@ -47,8 +73,38 @@
                 "string": "Attachments"
             }
         },
+        "layout": {
+            "full": {
+                "string": "Full view"
+            },
+            "split": {
+                "string": "Split view"
+            }
+        },
+        "select_message": {
+            "string": "Select a message to read"
+        },
         "no_items": {
             "string": "No message found."
+        },
+        "actions": {
+            "mark_as_read": {
+                "string": "Mark as read"
+            },
+            "mark_as_unread": {
+                "string": "Mark as unread"
+            },
+            "delete": {
+                "string": "Move to trash"
+            },
+            "archive": {
+                "string": "Archive"
+            }
+        },
+        "time": {
+            "minutes_ago": {
+                "string": "{count}m ago"
+            }
         }
     }
 }

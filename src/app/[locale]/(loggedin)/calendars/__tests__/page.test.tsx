@@ -1,10 +1,21 @@
 import { render } from '@testing-library/react'
-import CalendarPage from '../page'
+
+const mockDispatch = jest.fn()
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
   useLocale: () => 'en',
   useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
+  useAppSelector: (
+    selector: (state: { calendarUi: { createEventRequested: boolean } }) => unknown
+  ) =>
+    selector({
+      calendarUi: { createEventRequested: false },
+    }),
 }))
 
 // Mock calendar hooks
@@ -53,7 +64,25 @@ jest.mock('@/features/calendars/components/calendar-view', () => ({
   default: () => <div data-testid="calendar-view">Calendar View</div>,
 }))
 
+jest.mock('@/features/calendars', () => {
+  const actual = jest.requireActual<typeof import('@/features/calendars')>(
+    '@/features/calendars'
+  )
+  return {
+    ...actual,
+    useGetCalendarEventByIdQuery: () => ({
+      data: undefined,
+      isFetching: false,
+    }),
+  }
+})
+
+import CalendarPage from '../page'
+
 describe('CalendarPage', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
   it('should render without crashing', () => {
     const { container } = render(<CalendarPage />)
     expect(container).toBeInTheDocument()
@@ -63,7 +92,13 @@ describe('CalendarPage', () => {
     const { container } = render(<CalendarPage />)
     const main = container.querySelector('main')
     expect(main).toBeInTheDocument()
-    expect(main).toHaveClass('flex', 'h-screen', 'w-full', 'flex-col')
+    expect(main).toHaveClass(
+      'flex',
+      'h-full',
+      'w-full',
+      'flex-col',
+      'overflow-hidden'
+    )
   })
 
   it('should render CalendarToolbar', () => {

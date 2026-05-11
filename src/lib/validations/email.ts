@@ -17,12 +17,13 @@
  * isValidEmail('invalid.email') // false
  * isValidEmail('a'.repeat(65) + '@example.com') // false (local part too long)
  */
+
+import { EMAIL_RE } from '@/lib/validations/regex'
+
 export const isValidEmail = (email: string): boolean => {
   // RFC 5321 compliant regex
-  const emailRegex =
-    /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/
 
-  if (!emailRegex.test(email)) return false
+  if (!EMAIL_RE.test(email)) return false
 
   // RFC 5321 length constraints
   if (email.length > 254) return false
@@ -77,7 +78,3 @@ export const validateAndNormalize = (email: string): string | null => {
   const normalized = normalizeEmail(email)
   return isValidEmail(normalized) ? normalized : null
 }
-
-
-
-

@@ -4,6 +4,7 @@ import '@testing-library/jest-dom'
 const mockFetchEnvVars = jest.fn()
 jest.mock('@/lib/env-service', () => ({
   fetchEnvVars: mockFetchEnvVars,
+  clearEnvCache: jest.fn(),
 }))
 
 // Mock @reduxjs/toolkit/query/react
@@ -108,6 +109,7 @@ describe('API Slice', () => {
         'vcard',
         'mail/folders',
         'folder/messages',
+        'folder/share',
         'preferences',
         'mails/folders',
         'adminConfig',
@@ -127,7 +129,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(28)
+      expect(tagTypes).toHaveLength(32)
     })
 
     it('should use readonly tag types array', async () => {

@@ -7,39 +7,22 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { DynamicIcon } from 'lucide-react/dynamic'
-import { useSearchParams } from 'next/navigation'
-import React from 'react'
-
-import { useRouter } from '@/lib/i18n/navigation'
 import type { IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import React from 'react'
 
 const sortList: { label: string; value: string; icon: IconName }[] = [
-  {
-    label: 'MAILS_LIST.sort.date.ascending.string',
-    value: 't_asc',
-    icon: 'clock-arrow-down',
-  },
-  {
-    label: 'MAILS_LIST.sort.date.descending.string',
-    value: 't_desc',
-    icon: 'clock-arrow-up',
-  },
-  {
-    label: 'MAILS_LIST.sort.size.ascending.string',
-    value: 's_asc',
-    icon: 'arrow-down-narrow-wide',
-  },
-  {
-    label: 'MAILS_LIST.sort.size.descending.string',
-    value: 's_desc',
-    icon: 'arrow-down-wide-narrow',
-  },
+  { label: 'MAILS_LIST.sort.date.ascending.string',  value: 't_asc',  icon: 'clock-arrow-down' },
+  { label: 'MAILS_LIST.sort.date.descending.string', value: 't_desc', icon: 'clock-arrow-up' },
+  { label: 'MAILS_LIST.sort.size.ascending.string',  value: 's_asc',  icon: 'arrow-down-narrow-wide' },
+  { label: 'MAILS_LIST.sort.size.descending.string', value: 's_desc', icon: 'arrow-down-wide-narrow' },
 ]
 
 const ListSort: React.FC = () => {
-  const { push } = useRouter()
+  const router = useRouter()
   const params = useSearchParams()
+  const pathname = usePathname()
   const t = useTranslations()
   const sort = params.get('sort') || 't_asc'
 
@@ -50,19 +33,14 @@ const ListSort: React.FC = () => {
     } else {
       newParams.set('sort', value)
     }
-    const newUrl = `?${newParams.toString()}`
-    push(newUrl)
+    router.replace(`${pathname}?${newParams.toString()}`)
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size={'sm'}>
-          <DynamicIcon
-            name={
-              sortList.find((s) => s.value === sort)?.icon ?? 'clock-arrow-down'
-            }
-          />
+          <DynamicIcon name={sortList.find((s) => s.value === sort)?.icon ?? 'clock-arrow-down'} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="scrollbar-thin-gray max-h-60 w-auto overflow-auto">

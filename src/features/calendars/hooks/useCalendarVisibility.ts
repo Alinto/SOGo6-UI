@@ -23,14 +23,10 @@ export function useCalendarVisibility() {
     if (!calendarsData) return new Set<string>()
 
     const hiddenIds = new Set<string>()
-    ;['personal', 'shared', 'subscriptions'].forEach((type) => {
-      const calendars = calendarsData[type as keyof typeof calendarsData]
-      if (Array.isArray(calendars)) {
-        calendars.forEach((cal) => {
-          if (cal.u_hidden === true) {
-            hiddenIds.add(cal.id)
-          }
-        })
+    calendarsData.forEach((calendar) => {
+      if (calendar.u_hidden === true) {
+        const key = calendar.key ?? calendar.id
+        if (key) hiddenIds.add(key)
       }
     })
     return hiddenIds

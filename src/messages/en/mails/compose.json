@@ -1,5 +1,13 @@
 {
     "COMPOSE": {
+        "from": {
+            "string": "From",
+            "description": "Label for the sender identity selector in the compose form"
+        },
+        "to": {
+            "string": "To",
+            "description": "Label for the recipient field in the compose form"
+        },
         "new_message": {
             "string": "New Message",
             "description": "Button for composing a new message in sidebar"
@@ -43,6 +51,18 @@
         "open_in_new_page": {
             "string": "Open in new page",
             "description": "Open the compose window in a new page"
+        },
+        "jitsi": {
+            "string": "Insert Jitsi meeting link",
+            "description": "Button to insert a Jitsi video meeting link into the message body"
+        },
+        "max_recipients_reached": {
+            "string": "Maximum {max} recipients reached",
+            "description": "Error shown when the maximum number of recipients has been reached"
+        },
+        "max_windows_error": {
+            "string": "Maximum {max} compose windows allowed.",
+            "description": "Error shown when the user tries to open more than three floating compose windows"
         }
     }
 }

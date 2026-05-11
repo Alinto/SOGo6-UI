@@ -29,6 +29,7 @@ const InputWithError = React.forwardRef<
         )}
         {...props}
       />
+      {errors && (
       <ErrorMessage
         errors={errors}
         name={errorName}
@@ -36,6 +37,7 @@ const InputWithError = React.forwardRef<
           <div className="text-destructive text-sm">{t(message)}</div>
         )}
       />
+      )}
     </>
   )
 })

@@ -1,3 +1,5 @@
+'use client'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,48 +8,50 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuAction, SidebarMenuButton } from '@/components/ui/sidebar'
+import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { MoreVertical } from 'lucide-react'
-import { DynamicIcon, IconName } from 'lucide-react/dynamic'
+import { ChevronRight, MoreVertical } from 'lucide-react'
+import type { IconName } from 'lucide-react/dynamic'
+import { DynamicIcon } from 'lucide-react/dynamic'
+import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
+import type { ImapFolderType } from '../../mails-types'
+import { CreateFolderDialog } from './create-folder-dialog'
+import { DeleteFolderDialog } from './delete-folder-dialog'
+import { ExpungeFolderDialog } from './expunge-folder-dialog'
+import { PurgeFolderDialog } from './purge-folder-dialog'
+import { ShareFolderDialog } from './share-folder-dialog'
 
 interface SidebarItemProps {
   name: string
-  id: string
-  disableActions?: boolean
-  editAction?: boolean
-  importAction?: boolean
-  sharingAction?: boolean
-  linkAction?: boolean
-  exportAction?: boolean
-  downloadAction?: boolean
   icon?: IconName
   isActive?: boolean
   isDefault?: boolean
+  disableActions?: boolean
   handleClick: () => void
-  collapsible?: boolean
   onClick?: React.MouseEventHandler<HTMLDivElement>
+  collapsible?: boolean
+  folderPath?: string
+  folderName?: string
+  accountId?: string
+  hasSubfolders?: boolean
+  isOpen?: boolean
+  selectable?: boolean
+  unseenCount?: number
+  folderType?: ImapFolderType
 }
 
-/**
- * SidebarItem component renders an interactive item for the sidebar menu,
- * displaying an icon and label, and optionally providing a dropdown menu
- * with additional actions such as renaming, marking as read, creating a subfolder,
- * and sharing. It supports both desktop and mobile layouts, and can be customized
- * via props for active state, disabling actions, and handling click events.
- *
- * @param {SidebarItemProps} props - The properties for the SidebarItem component.
- * @param {string} props.name - The display name of the sidebar item.
- * @param {string} [props.icon] - The name of the icon to display.
- * @param {boolean} [props.disableActions] - If true, disables the dropdown actions menu.
- * @param {boolean} [props.isActive] - If true, highlights the item as active.
- * @param {(e?: React.MouseEvent) => void} [props.handleClick] - Handler for main item click.
- * @param {(e: React.MouseEvent) => void} [props.onClick] - Optional handler for icon button click.
- * @param {...any} props - Additional props are spread to the icon button.
- *
- * @returns {JSX.Element} The rendered sidebar item component.
- */
+type FolderActionType =
+  | 'rename'
+  | 'mark_as_read'
+  | 'new_subfolder'
+  | 'sharing'
+  | 'purge'
+  | 'expunge'
+  | 'delete'
+  | null
+
 const SidebarItem: React.FC<SidebarItemProps> = ({
   name,
   icon,
@@ -55,17 +59,36 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   isActive,
   isDefault,
   handleClick,
-  // onClick is used to handle clicks on the icon button for collapsible items only
   onClick,
-  ...props
+  folderPath,
+  folderName,
+  accountId,
+  hasSubfolders,
+  isOpen,
+  selectable = true,
+  unseenCount = 0,
+  folderType,
 }) => {
-  const [, setType] = React.useState('')
+  const [type, setType] = React.useState<FolderActionType>(null)
+  const { mailPurgeAllow, folderSharingDisabled } = useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
+
+  const showUnseenCount =
+    unseenCount != null &&
+    unseenCount > 0 &&
+    folderType !== 'SENT' &&
+    folderType !== 'DRAFT'
+
   return (
     <>
       <SidebarMenuButton
-        className={`h-10 align-middle ${!isDefault ? 'group-data-[collapsible=icon]:hidden' : ''} group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`}
+        className={cn(
+          `h-10 align-middle ${
+            !isDefault ? 'group-data-[collapsible=icon]:hidden' : ''
+          } group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`,
+          !selectable && 'pointer-events-none opacity-50'
+        )}
         tooltip={name}
         isActive={isActive}
         onClick={handleClick}
@@ -73,9 +96,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       >
         {icon && (
           <div
-            className={`z-50 mr-2 h-5 w-5 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1 ${onClick ? '[&[data-state=open]>svg:first-child]:rotate-90' : ''}`}
+            className="z-50 mr-2 h-5 w-5 shrink-0 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1"
             data-collapsible="icon"
-            data-state="open"
             onClick={(e) => {
               e.stopPropagation()
               if (onClick) {
@@ -84,46 +106,128 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 handleClick()
               }
             }}
-            {...props}
           >
-            <DynamicIcon
-              className="h-5 w-5 transition-transform data-[state=open]:rotate-90"
-              name={icon}
-            />
+            <DynamicIcon className="h-5 w-5" name={icon} />
           </div>
         )}
-        <span className="w-9/12 truncate group-data-[collapsible=icon]:hidden">
-          {name}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
+          <span className="min-w-0 shrink truncate leading-none">{name}</span>
+          {hasSubfolders ? (
+            <ChevronRight
+              aria-hidden
+              strokeWidth={2.5}
+              className={cn(
+                'h-4 w-4 shrink-0 text-sidebar-foreground/85 transition-transform duration-200',
+                isOpen && 'rotate-90'
+              )}
+            />
+          ) : null}
+          {showUnseenCount && (
+            <span className="shrink-0 text-xs font-medium leading-none text-inherit tabular-nums">
+              {unseenCount > 99 ? '99+' : unseenCount}
+            </span>
+          )}
+        </div>
       </SidebarMenuButton>
 
-      {!disableActions && (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuAction dataSidebar={`menu-button-${name}`} showOnHover>
-              <MoreVertical />
-            </SidebarMenuAction>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-56 rounded-lg"
-            side={isMobile ? 'bottom' : 'right'}
-            align={isMobile ? 'end' : 'start'}
-          >
-            <DropdownMenuItem onClick={() => setType('edit')}>
-              <span>{t('folders.actions.rename.string')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setType('delete')}>
-              <span>{t('folders.actions.mark_as_read.string')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setType('link')}>
-              <span>{t('folders.actions.new_subfolder.string')}</span>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => setType('sharing')}>
-              <span>{t('folders.actions.sharing.string')}</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      {!disableActions && selectable && (
+        <>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <SidebarMenuAction
+                dataSidebar={`menu-button-${name}`}
+                showOnHover
+              >
+                <MoreVertical />
+              </SidebarMenuAction>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              className="w-56 rounded-lg"
+              side={isMobile ? 'bottom' : 'right'}
+              align={isMobile ? 'end' : 'start'}
+            >
+              <DropdownMenuItem onClick={() => setType('rename')}>
+                <span>{t('folders.actions.rename.string')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setType('mark_as_read')}>
+                <span>{t('folders.actions.mark_as_read.string')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setType('new_subfolder')}>
+                <span>{t('folders.actions.new_subfolder.string')}</span>
+              </DropdownMenuItem>
+              {!folderSharingDisabled && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setType('sharing')}>
+                    <span>{t('folders.actions.sharing.string')}</span>
+                  </DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuSeparator />
+              {mailPurgeAllow && (
+                <DropdownMenuItem onClick={() => setType('purge')}>
+                  <span>{t('folders.actions.purge.string')}</span>
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem onClick={() => setType('expunge')}>
+                <span>{t('folders.actions.expunge.string')}</span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => setType('delete')}
+                className="text-destructive focus:text-destructive"
+              >
+                <span>{t('folders.actions.delete.string')}</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {type === 'purge' && folderPath && folderName && accountId && (
+            <PurgeFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+              hasSubfolders={hasSubfolders ?? false}
+            />
+          )}
+          {type === 'expunge' && folderPath && folderName && accountId && (
+            <ExpungeFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+            />
+          )}
+          {type === 'sharing' && folderPath && folderName && accountId && (
+            <ShareFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+            />
+          )}
+          {type === 'delete' && folderPath && folderName && accountId && (
+            <DeleteFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              folderPath={folderPath}
+              folderName={folderName}
+            />
+          )}
+          {type === 'new_subfolder' && folderPath && accountId && (
+            <CreateFolderDialog
+              open={true}
+              onOpenChange={(open) => !open && setType(null)}
+              accountId={accountId}
+              parentPath={folderPath}
+            />
+          )}
+        </>
       )}
     </>
   )

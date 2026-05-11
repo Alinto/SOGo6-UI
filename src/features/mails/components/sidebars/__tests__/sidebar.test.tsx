@@ -51,7 +51,6 @@ jest.mock('@/components/ui/sidebar', () => ({
 }))
 
 jest.mock('@/lib/i18n/navigation', () => ({
-  usePathname: jest.fn(() => '/en/mails/INBOX'),
   useRouter: jest.fn(() => ({
     push: jest.fn(),
   })),
@@ -81,8 +80,12 @@ jest.mock('../compose-opener', () => ({
 
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
-  default: ({ name, icon, id, handleClick }: any) => (
-    <button data-testid={`sidebar-item-${id}`} onClick={handleClick}>
+  default: ({ name, folderPath, handleClick, isActive }: any) => (
+    <button
+      data-testid={`sidebar-item-${folderPath ?? name}`}
+      data-active={isActive ? 'true' : 'false'}
+      onClick={handleClick}
+    >
       {name}
     </button>
   ),
@@ -118,7 +121,7 @@ jest.mock('../../utils', () => ({
   }),
 }))
 
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import { useGetFoldersQuery } from '../../../store/mails-api'
 
@@ -127,41 +130,45 @@ describe('MailSidebar Component', () => {
     {
       name: 'INBOX',
       path: 'INBOX',
-      unseen: 5,
+      unseen_count: 5,
       messages: 50,
       flags: [],
       delimiter: '/',
       readOnly: false,
+      selectable: true,
       default: true,
     },
     {
       name: 'Sent',
       path: 'Sent',
-      unseen: 0,
+      unseen_count: 0,
       messages: 30,
       flags: [],
       delimiter: '/',
       readOnly: false,
+      selectable: true,
       default: false,
     },
     {
       name: 'Work',
       path: 'Work',
-      unseen: 2,
+      unseen_count: 2,
       messages: 15,
       flags: [],
       delimiter: '/',
       readOnly: false,
+      selectable: true,
       default: false,
       subfolders: [
         {
           name: 'Projects',
           path: 'Work/Projects',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [],
         },
@@ -171,6 +178,9 @@ describe('MailSidebar Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    ;(useParams as jest.Mock).mockReturnValue({
+      account: 'test@example.com',
+    })
     ;(useGetFoldersQuery as jest.Mock).mockReturnValue({
       data: mockFolders,
       isFetching: false,
@@ -313,11 +323,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'Test Folder',
           path: 'Test Folder',
-          unseen: 0,
+          unseen_count: 0,
           messages: 10,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
         },
       ]
@@ -356,11 +367,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'Simple',
           path: 'Simple',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
         },
       ]
@@ -380,21 +392,23 @@ describe('MailSidebar Component', () => {
         {
           name: 'Parent',
           path: 'Parent',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Child',
               path: 'Parent/Child',
-              unseen: 0,
+              unseen_count: 0,
               messages: 2,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
             },
           ],
@@ -417,21 +431,23 @@ describe('MailSidebar Component', () => {
         {
           name: 'Parent',
           path: 'Parent',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Child',
               path: 'Parent/Child',
-              unseen: 0,
+              unseen_count: 0,
               messages: 2,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
             },
           ],
@@ -454,31 +470,34 @@ describe('MailSidebar Component', () => {
         {
           name: 'Level1',
           path: 'Level1',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Level2',
               path: 'Level1/Level2',
-              unseen: 0,
+              unseen_count: 0,
               messages: 3,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
               subfolders: [
                 {
                   name: 'Level3',
                   path: 'Level1/Level2/Level3',
-                  unseen: 0,
+                  unseen_count: 0,
                   messages: 1,
                   flags: [],
                   delimiter: '/',
                   readOnly: false,
+                  selectable: true,
                   default: false,
                 },
               ],
@@ -520,11 +539,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'CustomFolder',
           path: 'CustomFolder',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
         },
       ]
@@ -547,11 +567,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'CustomFolder',
           path: 'CustomFolder',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
         },
       ]
@@ -568,29 +589,76 @@ describe('MailSidebar Component', () => {
   })
 
   describe('Active State', () => {
-    it('should mark current folder as active', () => {
-      ;(usePathname as jest.Mock).mockReturnValue('/en/mails/INBOX')
+    it('should mark current folder as active from route folder param', () => {
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'INBOX',
+      })
 
       render(<MailSidebar />)
 
-      expect(screen.getByTestId('sidebar-item-INBOX')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-INBOX')).toHaveAttribute(
+        'data-active',
+        'true'
+      )
+      expect(screen.getByTestId('sidebar-item-Sent')).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
 
-    it('should update active state when pathname changes', () => {
+    it('should update active state when route folder param changes', () => {
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'INBOX',
+      })
       const { rerender } = render(<MailSidebar />)
 
-      ;(usePathname as jest.Mock).mockReturnValue('/en/mails/Sent')
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'Sent',
+      })
       rerender(<MailSidebar />)
 
-      expect(screen.getByTestId('sidebar-item-Sent')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-Sent')).toHaveAttribute(
+        'data-active',
+        'true'
+      )
+      expect(screen.getByTestId('sidebar-item-INBOX')).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
 
-    it('should check if pathname includes folder path', () => {
-      ;(usePathname as jest.Mock).mockReturnValue('/en/mails/Work/Projects')
+    it('should match folder path exactly, not as substring', () => {
+      const foldersWithTrash: ImapFolder[] = [
+        {
+          name: 'Trash',
+          path: 'Trash',
+          unseen_count: 0,
+          messages: 0,
+          flags: [],
+          delimiter: '.',
+          readOnly: false,
+          selectable: true,
+          default: false,
+        },
+      ]
+      ;(useGetFoldersQuery as jest.Mock).mockReturnValue({
+        data: foldersWithTrash,
+        isFetching: false,
+      })
+      ;(useParams as jest.Mock).mockReturnValue({
+        account: 'test@example.com',
+        folder: 'INBOX.Trash',
+      })
 
       render(<MailSidebar />)
 
-      expect(screen.getByTestId('sidebar-item-Work')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-Trash')).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
   })
 
@@ -611,11 +679,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'Test',
           path: 'Test',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: undefined,
         },
@@ -636,11 +705,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'Test',
           path: 'Test',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [],
         },
@@ -661,11 +731,12 @@ describe('MailSidebar Component', () => {
         {
           name: 'Test [Important]',
           path: 'Test [Important]',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
         },
       ]
@@ -715,10 +786,10 @@ describe('MailSidebar Component', () => {
       expect(useParams).toHaveBeenCalled()
     })
 
-    it('should use pathname for active state detection', () => {
+    it('should read folder route param for active state', () => {
       render(<MailSidebar />)
 
-      expect(usePathname).toHaveBeenCalled()
+      expect(useParams).toHaveBeenCalled()
     })
 
     it('should use router for navigation', async () => {
@@ -733,26 +804,28 @@ describe('MailSidebar Component', () => {
   })
 
   describe('Collapsible State Management', () => {
-    it('should render collapsible with correct classes for rotation', () => {
+    it('should render controlled collapsible for folders with subfolders', () => {
       const foldersWithSubfolders: ImapFolder[] = [
         {
           name: 'Parent',
           path: 'Parent',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Child',
               path: 'Parent/Child',
-              unseen: 0,
+              unseen_count: 0,
               messages: 2,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
             },
           ],
@@ -764,12 +837,10 @@ describe('MailSidebar Component', () => {
         isFetching: false,
       })
 
-      const { container } = render(<MailSidebar />)
+      render(<MailSidebar />)
 
-      const collapsible = container.querySelector('[data-testid="collapsible"]')
-      expect(collapsible).toHaveClass(
-        '[&[data-state=open]>svg:first-child]:rotate-90'
-      )
+      expect(screen.getByTestId('collapsible')).toBeInTheDocument()
+      expect(screen.getByTestId('collapsible-content')).toBeInTheDocument()
     })
 
     it('should hide collapsible in icon mode', () => {
@@ -777,21 +848,23 @@ describe('MailSidebar Component', () => {
         {
           name: 'Parent',
           path: 'Parent',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Child',
               path: 'Parent/Child',
-              unseen: 0,
+              unseen_count: 0,
               messages: 2,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
             },
           ],
@@ -835,21 +908,23 @@ describe('MailSidebar Component', () => {
         {
           name: 'Parent',
           path: 'Parent',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Child',
               path: 'Parent/Child',
-              unseen: 0,
+              unseen_count: 0,
               messages: 2,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
             },
           ],
@@ -871,21 +946,23 @@ describe('MailSidebar Component', () => {
         {
           name: 'Parent',
           path: 'Parent',
-          unseen: 0,
+          unseen_count: 0,
           messages: 5,
           flags: [],
           delimiter: '/',
           readOnly: false,
+          selectable: true,
           default: false,
           subfolders: [
             {
               name: 'Child',
               path: 'Parent/Child',
-              unseen: 0,
+              unseen_count: 0,
               messages: 2,
               flags: [],
               delimiter: '/',
               readOnly: false,
+              selectable: true,
               default: false,
             },
           ],

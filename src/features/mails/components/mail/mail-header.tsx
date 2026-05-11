@@ -58,7 +58,7 @@ export default function MailHeader({
         <Avatar className="h-12 w-12">
           <AvatarImage src="/images/account-avatar.svg" />
           <AvatarFallback>
-            {from.name?.[0]?.toUpperCase() || from.email[0].toUpperCase()}
+            {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
           </AvatarFallback>
         </Avatar>
       </div>

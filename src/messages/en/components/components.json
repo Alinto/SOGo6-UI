@@ -1,0 +1,27 @@
+{
+    "COMPONENTS": {
+        "forms": {
+            "fixed-form-button-group": {
+                "alert": "{number} errors"
+            }
+        },
+        "color-picker": {
+            "custom-color": "Custom Color"
+        },
+        "duration-picker": {
+            "noReminder": "No reminder",
+            "5min": "5 min before",
+            "10min": "10 min before",
+            "15min": "15 min before",
+            "30min": "30 min before",
+            "45min": "45 min before",
+            "1h": "1 hour before",
+            "2h": "2 hour before",
+            "5h": "5 hour before",
+            "15h": "15 hour before",
+            "1d": "1 day before",
+            "2d": "2 days before",
+            "1w": "1 week before"
+        }
+    }
+}

@@ -26,14 +26,18 @@ export interface EventReminder {
 
 // Calendar event
 export interface CalendarEvent {
-  id: string
-  calendar_id: string
+  key?: string
+  id: string | null
+  calendar_key?: string
+  calendar_id: string | null
   uid?: string // iCalendar UID
   title: string
   description?: string
   location?: string
-  start_date: string // ISO datetime
-  end_date: string // ISO datetime
+  date_start?: string // Backend ISO datetime
+  date_end?: string // Backend ISO datetime
+  start_date?: string // Frontend-normalized ISO datetime
+  end_date?: string // Frontend-normalized ISO datetime
   all_day: boolean
   timezone?: string
 
@@ -78,6 +82,9 @@ export interface CalendarEvent {
 
   // Additional properties
   color?: string
+  categories?: string[]
+  related_to?: string[]
+  url?: string | null
   transparency?: 'opaque' | 'transparent'
   locked?: boolean
   source?: string // URL for imported events
@@ -89,24 +96,90 @@ export interface CalendarEventsResponse {
   total_count?: number
 }
 
-export interface Calendar {
-  id: string
-  name: string
-  description: string
+export type CalendarEventQueryArgs = {
+  start_date_time?: string
+  end_date_time?: string
+  search?: string
+}
+
+export type CalendarEventCreateBody = {
+  title: string
+  date_start: string
+  date_end: string
+  description?: string
+  location?: string
+  all_day?: boolean
+  timezone?: string
+  status?: 'confirmed' | 'tentative' | 'cancelled'
+  visibility?: 'public' | 'private' | 'confidential'
+  show_as?: 'busy' | 'free' | 'out-of-office' | 'tentative'
+  url?: string
   color?: string
-  type: 'personal' | 'shared' | 'subscription'
+  categories?: string[]
+  attendees?: EventAttendee[]
+  reminders?: EventReminder[]
+  recurrence_rule?: {
+    frequency: string
+    interval?: number
+    until?: string
+    count?: number
+    by_day?: string[]
+    by_month_day?: number[]
+    by_month?: number[]
+    week_start?: string
+  } | null
+}
+
+export type CalendarEventUpdateBody = Partial<CalendarEventCreateBody>
+
+export interface ApiCalendarEventResponse {
+  data: CalendarEvent
+  error_code: string
+  error_msg: string
+}
+
+export interface ApiCalendarEventsResponse {
+  data: {
+    events: CalendarEvent[]
+    total_count: number
+  }
+  error_code: string
+  error_msg: string
+}
+
+export type Calendar = {
+  // --- Real backend fields (CalendarSchema) ---
+  key?: string
+  name: string
+  color?: string
+  description: string | null
+  timezone?: string
+  is_default?: boolean
+  source_type?: string
+  ctag?: number
+  share_token?: string | null
+  created_at?: string
+  updated_at?: string
+
+  // --- Frontend-normalized field ---
+  id?: string
+
+  // --- UI-only field, never sent to the backend ---
+  u_hidden?: boolean
+
+  // --- Legacy fakeApi fields kept for existing components. ---
+  visible?: boolean
+  type?: 'personal' | 'shared' | 'subscription'
   default?: boolean
   read_only?: boolean
   owner?: string
+  owner_uid?: string
   permissions?: 'read' | 'readwrite'
   url?: string // For subscription calendars
   event_duration?: number // in minutes
   event_notifications?: EventReminder[]
   all_day_notifications?: EventReminder[]
   show_as_busy?: boolean
-  u_hidden?: boolean // Whether the calendar is hidden from view
-  created_at?: string
-  updated_at?: string
 }
 
 export interface CalendarsResponse {
@@ -116,3 +189,30 @@ export interface CalendarsResponse {
 }
 
 export type CalendarType = 'personal' | 'shared' | 'subscription'
+
+export type CalendarCreateBody = {
+  name: string
+  color?: string
+  description?: string | null
+  timezone?: string
+}
+
+export type CalendarUpdateBody = {
+  name?: string
+  color?: string
+  description?: string | null
+  timezone?: string
+  is_default?: boolean
+}
+
+export type ApiCalendarsResponse = {
+  data: { calendars: Calendar[]; total_count: number }
+  error_code: string
+  error_msg: string
+}
+
+export type ApiCalendarResponse = {
+  data: Calendar
+  error_code: string
+  error_msg: string
+}

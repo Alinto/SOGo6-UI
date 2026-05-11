@@ -190,7 +190,189 @@
       },
       "minutesBefore": {
         "string": "{count} minutes before"
+      },
+      "organizer": {
+        "string": "Organizer"
+      },
+      "categories": {
+        "string": "Categories"
+      },
+      "url": {
+        "string": "URL"
+      },
+      "visibility": {
+        "string": "Visibility",
+        "values": {
+          "public": {
+            "string": "Public"
+          },
+          "private": {
+            "string": "Private"
+          },
+          "confidential": {
+            "string": "Confidential"
+          }
+        }
+      },
+      "showAs": {
+        "string": "Show as",
+        "values": {
+          "busy": {
+            "string": "Busy"
+          },
+          "free": {
+            "string": "Free"
+          },
+          "tentative": {
+            "string": "Tentative"
+          },
+          "outOfOffice": {
+            "string": "Out of office"
+          }
+        }
+      },
+      "status": {
+        "string": "Status",
+        "values": {
+          "confirmed": {
+            "string": "Confirmed"
+          },
+          "tentative": {
+            "string": "Tentative"
+          },
+          "cancelled": {
+            "string": "Cancelled"
+          }
+        }
       }
+    },
+    "eventForm": {
+      "calendar": {
+        "label": "Calendar",
+        "placeholder": "Select calendar"
+      },
+      "title": {
+        "label": "Event title",
+        "placeholder": "Enter event title"
+      },
+      "allDay": {
+        "label": "All day"
+      },
+      "startDate": {
+        "label": "Start date"
+      },
+      "startTime": {
+        "label": "Start time"
+      },
+      "endDate": {
+        "label": "End date"
+      },
+      "endTime": {
+        "label": "End time"
+      },
+      "timezone": {
+        "label": "Timezone (event)",
+        "description": "Timezone in which this event's dates are interpreted"
+      },
+      "description": {
+        "label": "Description",
+        "placeholder": "Add event details"
+      },
+      "location": {
+        "label": "Location",
+        "placeholder": "Add location"
+      },
+      "visibility": {
+        "label": "Visibility",
+        "placeholder": "Select visibility",
+        "options": {
+          "public": "Public",
+          "private": "Private",
+          "confidential": "Confidential"
+        }
+      },
+      "showAs": {
+        "label": "Show as",
+        "placeholder": "Select availability",
+        "options": {
+          "busy": "Busy",
+          "free": "Free",
+          "outOfOffice": "Out of office",
+          "tentative": "Tentative"
+        }
+      },
+      "status": {
+        "label": "Status",
+        "placeholder": "Select status",
+        "options": {
+          "confirmed": "Confirmed",
+          "tentative": "Tentative",
+          "cancelled": "Cancelled"
+        }
+      },
+      "color": {
+        "label": "Color",
+        "reset": "Reset"
+      },
+      "categories": {
+        "label": "Categories",
+        "placeholder": "Add a category and press Enter",
+        "remove": "Remove {category}"
+      },
+      "attendees": {
+        "label": "Attendees",
+        "add": "Add attendee",
+        "emailPlaceholder": "email@example.com",
+        "namePlaceholder": "Name (optional)",
+        "remove": "Remove attendee"
+      },
+      "reminders": {
+        "label": "Reminders",
+        "add": "Add reminder",
+        "minutesBefore": "min before",
+        "remove": "Remove reminder",
+        "methods": {
+          "popup": "Popup",
+          "email": "Email",
+          "notification": "Notification"
+        }
+      },
+      "recurrence": {
+        "repeat": "Repeat",
+        "every": "Every",
+        "on": "On",
+        "onDay": "On day",
+        "ofTheMonth": "of the month",
+        "ends": "Ends",
+        "occurrences": "occurrences",
+        "days": {
+          "mo": "Mon",
+          "tu": "Tue",
+          "we": "Wed",
+          "th": "Thu",
+          "fr": "Fri",
+          "sa": "Sat",
+          "su": "Sun"
+        },
+        "frequencies": {
+          "daily": "Day(s)",
+          "weekly": "Week(s)",
+          "monthly": "Month(s)",
+          "yearly": "Year(s)"
+        },
+        "endTypes": {
+          "never": "Never",
+          "on": "On",
+          "after": "After"
+        }
+      },
+      "url": {
+        "label": "URL",
+        "placeholder": "https://example.com"
+      },
+      "cancel": "Cancel",
+      "create": "Create Event",
+      "update": "Update Event"
     },
     "forms": {
       "createCalendar": {
@@ -365,6 +547,9 @@
         "cancel": {
           "string": "Cancel"
         }
+      },
+      "editEvent": {
+        "string": "Edit event"
       },
       "deleteCalendar": {
         "title": {

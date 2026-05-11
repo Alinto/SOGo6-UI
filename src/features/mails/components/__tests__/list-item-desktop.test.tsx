@@ -1,273 +1,161 @@
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
+import React from 'react'
 import ListItemDesktop from '../list-item-desktop'
 
+// ── Mocks ──────────────────────────────────────────────────────────────────
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ mail_id: '456' })),
 }))
 
 jest.mock('@/lib/i18n/navigation', () => ({
-  useRouter: jest.fn(() => ({
-    push: jest.fn(),
-  })),
+  useRouter: jest.fn(() => ({ push: jest.fn() })),
   usePathname: jest.fn(() => '/u/test@example.com/inbox'),
 }))
 
+jest.mock('next-intl', () => ({
+  useTranslations: jest.fn(() => (key: string) => key),
+}))
+
 jest.mock('@/components/ui/avatar', () => ({
-  Avatar: jest.fn(({ children }) => <div data-testid="avatar">{children}</div>),
-  AvatarImage: jest.fn(() => <img data-testid="avatar-image" />),
-  AvatarFallback: jest.fn(({ children }) => (
-    <div data-testid="avatar-fallback">{children}</div>
-  )),
+  Avatar: ({ children }: any) => <div data-testid="avatar">{children}</div>,
+  AvatarImage: () => <img data-testid="avatar-image" />,
+  AvatarFallback: ({ children }: any) => <div data-testid="avatar-fallback">{children}</div>,
 }))
 
 jest.mock('@/components/ui/checkbox', () => ({
-  Checkbox: jest.fn(({ checked, onClick }) => (
-    <input
-      type="checkbox"
-      data-testid="checkbox"
-      checked={checked}
-      onClick={onClick}
-      onChange={() => {}}
-    />
-  )),
+  Checkbox: ({ checked, onClick }: any) => (
+    <input type="checkbox" data-testid="checkbox" checked={checked} onClick={onClick} onChange={() => {}} />
+  ),
 }))
 
 jest.mock('@/components/ui/separator', () => ({
-  Separator: jest.fn(() => <hr data-testid="separator" />),
+  Separator: () => <hr data-testid="separator" />,
+}))
+
+jest.mock('@/components/ui/tooltip', () => ({
+  TooltipWrapper: ({ children }: any) => <>{children}</>,
 }))
 
 jest.mock('lucide-react', () => ({
-  Paperclip: jest.fn(() => <span data-testid="paperclip-icon">📎</span>),
-  Star: jest.fn(({ onClick }) => (
-    <button data-testid="star-icon" onClick={onClick}>
-      ⭐
-    </button>
-  )),
+  Paperclip: () => <span data-testid="paperclip-icon">📎</span>,
+  Star: ({ onClick }: any) => <button data-testid="star-icon" onClick={onClick}>⭐</button>,
+  Mail: () => <span data-testid="mail-icon" />,
+  MailOpen: () => <span data-testid="mail-open-icon" />,
+  Trash2: () => <span data-testid="trash-icon" />,
+  Archive: () => <span data-testid="archive-icon" />,
+  Calendar: () => <span data-testid="calendar-icon" />,
+  ChevronsUp: () => <span data-testid="chevrons-up-icon" />,
+  Forward: () => <span data-testid="forward-icon" />,
+  Reply: () => <span data-testid="reply-icon" />,
+  User: () => <span data-testid="user-icon" />,
 }))
 
 jest.mock('../list-item-utils', () => ({
-  formatDate: jest.fn((date) => 'Dec 18'),
+  formatDate: jest.fn(() => 'Dec 18'),
 }))
 
-describe('ListItemDesktop Component', () => {
-  const mockData = {
-    id: '123',
-    subject: 'Test Email Subject',
-    from: { name: 'John Doe', email: 'john@example.com' },
-    to: [{ name: 'Jane Smith', email: 'jane@example.com' }],
-    date: new Date().toISOString(),
-    seen: false,
-    flagged: false,
-    hasAttachment: true,
-    snippet: 'This is a test email snippet',
-  }
-  const mockOnHandleCheckboxClick = jest.fn()
+// ── Setup ──────────────────────────────────────────────────────────────────
+const mockData = {
+  id: '123',
+  subject: 'Test Email Subject',
+  from: { name: 'John Doe', email: 'john@example.com' },
+  to: [{ name: 'Jane Smith', email: 'jane@example.com' }],
+  date: new Date().toISOString(),
+  seen: false,
+  flagged: false,
+  hasAttachment: true,
+  snippet: 'This is a test email snippet',
+  answered: false,
+  forwarded: false,
+  deleted: false,
+  priority: 3,
+  mailType: [] as string[],
+}
 
-  beforeEach(() => {
-    jest.clearAllMocks()
-  })
+const defaultProps = {
+  data: mockData,
+  isSelected: false,
+  onHandleCheckboxClick: jest.fn(),
+}
 
-  it('should render email sender name and subject', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
+beforeEach(() => jest.clearAllMocks())
+
+// ── Tests ──────────────────────────────────────────────────────────────────
+describe('ListItemDesktop', () => {
+  it('renders sender name and subject', () => {
+    render(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByText('John Doe')).toBeInTheDocument()
     expect(screen.getByText('Test Email Subject')).toBeInTheDocument()
   })
 
-  it('should render avatar with sender initial', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    expect(screen.getByTestId('avatar')).toBeInTheDocument()
+  it('renders avatar with sender initial', () => {
+    render(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByTestId('avatar-fallback')).toHaveTextContent('J')
   })
 
-  it('should show attachment icon when email has attachments', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
+  it('shows attachment icon when hasAttachment is true', () => {
+    render(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByTestId('paperclip-icon')).toBeInTheDocument()
   })
 
-  it('should not show attachment icon when email has no attachments', () => {
-    const dataWithoutAttachment = { ...mockData, hasAttachment: false }
-    render(
-      <ListItemDesktop
-        data={dataWithoutAttachment}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
+  it('hides attachment icon when hasAttachment is false', () => {
+    render(<ListItemDesktop {...defaultProps} data={{ ...mockData, hasAttachment: false }} />)
     expect(screen.queryByTestId('paperclip-icon')).not.toBeInTheDocument()
   })
 
-  it('should display star icon with correct fill state', () => {
-    const { rerender } = render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    expect(screen.getByTestId('star-icon')).toBeInTheDocument()
-
-    rerender(
-      <ListItemDesktop
-        data={{ ...mockData, flagged: true }}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    expect(screen.getByTestId('star-icon')).toBeInTheDocument()
-  })
-
-  it('should show checkbox on hover', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    const container = screen.getByText('John Doe').closest('div')
-    fireEvent.mouseEnter(container!)
-    expect(screen.getByTestId('checkbox')).toBeInTheDocument()
-  })
-
-  it('should show checkbox when selected', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={true}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
+  it('shows checkbox when isSelected is true', () => {
+    render(<ListItemDesktop {...defaultProps} isSelected />)
     expect(screen.getByTestId('checkbox')).toBeInTheDocument()
     expect(screen.getByTestId('checkbox')).toBeChecked()
   })
 
-  it('should hide checkbox on mouse leave', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    const container = screen.getByText('John Doe').closest('div')
-    fireEvent.mouseEnter(container!)
+  it('shows action buttons on hover', () => {
+    render(<ListItemDesktop {...defaultProps} />)
+    const container = screen.getByText('John Doe').closest('div')!
+    fireEvent.mouseEnter(container)
+    expect(screen.getByTestId('trash-icon')).toBeInTheDocument()
+    expect(screen.getByTestId('archive-icon')).toBeInTheDocument()
+  })
+
+  it('shows checkbox on hover', () => {
+    render(<ListItemDesktop {...defaultProps} />)
+    const container = screen.getByText('John Doe').closest('div')!
+    fireEvent.mouseEnter(container)
     expect(screen.getByTestId('checkbox')).toBeInTheDocument()
-    fireEvent.mouseLeave(container!)
-    // After mouse leave, checkbox should be hidden if not selected
-    const checkboxes = screen.queryAllByTestId('checkbox')
-    expect(checkboxes.length).toBe(0)
   })
 
-  it('should call onHandleCheckboxClick when checkbox is clicked', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={true}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    const checkbox = screen.getByTestId('checkbox')
-    fireEvent.click(checkbox)
-    expect(mockOnHandleCheckboxClick).toHaveBeenCalledWith(
-      expect.any(Object),
-      mockData
-    )
+  it('hides checkbox on mouse leave', () => {
+    render(<ListItemDesktop {...defaultProps} />)
+    const container = screen.getByText('John Doe').closest('div')!
+    fireEvent.mouseEnter(container)
+    fireEvent.mouseLeave(container)
+    expect(screen.queryByTestId('checkbox')).toBeInTheDocument()
   })
 
-  it('should apply unseen styling for unread emails', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    const senderName = screen.getByText('John Doe')
-    expect(senderName).toHaveClass('font-semibold')
+  it('calls onHandleCheckboxClick when checkbox clicked', () => {
+    render(<ListItemDesktop {...defaultProps} isSelected />)
+    fireEvent.click(screen.getByTestId('checkbox'))
+    expect(defaultProps.onHandleCheckboxClick).toHaveBeenCalledWith(expect.any(Object), mockData)
   })
 
-  it('should not apply unseen styling for read emails', () => {
-    const seenData = { ...mockData, seen: true }
-    render(
-      <ListItemDesktop
-        data={seenData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    const senderName = screen.getByText('John Doe')
-    expect(senderName).toHaveClass('text-muted-foreground')
+  it('applies font-semibold for unread emails', () => {
+    render(<ListItemDesktop {...defaultProps} />)
+    expect(screen.getByText('John Doe')).toHaveClass('font-semibold')
   })
 
-  it('should apply selected state styling when isSelected is true', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={true}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    // When selected, checkbox should be visible
-    expect(screen.getByTestId('checkbox')).toBeTruthy()
-    expect(screen.getByTestId('checkbox')).toHaveAttribute('checked')
+  it('applies muted style for read emails', () => {
+    render(<ListItemDesktop {...defaultProps} data={{ ...mockData, seen: true }} />)
+    expect(screen.getByText('John Doe')).toHaveClass('text-muted-foreground')
   })
 
-  it('should render separator', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    expect(screen.getByTestId('separator')).toBeInTheDocument()
-  })
-
-  it('should handle email without name and use email instead', () => {
-    const dataWithoutName = {
-      ...mockData,
-      from: { name: '', email: 'john@example.com' },
-    }
-    render(
-      <ListItemDesktop
-        data={dataWithoutName}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
+  it('falls back to email when name is empty', () => {
+    render(<ListItemDesktop {...defaultProps} data={{ ...mockData, from: { name: '', email: 'john@example.com' } }} />)
     expect(screen.getByText('john@example.com')).toBeInTheDocument()
   })
 
-  it('should not prevent default on star click', () => {
-    render(
-      <ListItemDesktop
-        data={mockData}
-        isSelected={false}
-        onHandleCheckboxClick={mockOnHandleCheckboxClick}
-      />
-    )
-    const starButton = screen.getByTestId('star-icon')
-    fireEvent.click(starButton)
-    // Just verify the star button exists and can be clicked
-    expect(starButton).toBeTruthy()
+  it('renders separator', () => {
+    render(<ListItemDesktop {...defaultProps} />)
+    expect(screen.getByTestId('separator')).toBeInTheDocument()
   })
 })

@@ -1,12 +1,24 @@
+export type ImapFolderType =
+  | 'INBOX'
+  | 'SENT'
+  | 'DRAFT'
+  | 'DRAFTS'
+  | 'TRASH'
+  | 'JUNK'
+  | 'TEMPLATE'
+  | 'NORMAL'
+
 export interface ImapFolder {
   name: string
   path: string
-  unseen: number
+  unseen_count: number
   messages: number
   flags: string[]
   delimiter: string
   readOnly: boolean
+  selectable: boolean
   default?: boolean
+  type?: ImapFolderType
   subfolders?: ImapFolder[]
   children?: ImapFolder[]
 }
@@ -21,6 +33,14 @@ export interface ImapMessagesList {
   flagged: boolean
   hasAttachment: boolean
   snippet: string
+  size?: number
+  answered: boolean
+  forwarded: boolean
+  deleted: boolean
+  /** 1–5, 3 = normal ; 1–2 = haute priorité */
+  priority: number
+  /** Ex. `"event"`, `"contact"` (API : `mail_type`) */
+  mailType: string[]
 }
 
 export interface ImapAttachmentPart {
@@ -84,7 +104,8 @@ export interface ImapMessages {
 }
 
 export interface ImapMessagesAPIResponse {
-  messages: ImapMessagesList[]
+  /** Éléments bruts avant `mapMailToListItem` (API / fakeApi). */
+  messages: unknown[]
   total: number
   pageSize: number
   page: number
@@ -100,4 +121,50 @@ export interface ImapMessagesBackendResponse {
   totalPages: number
   hasNextPage: boolean
   hasPreviousPage: boolean
+}
+
+export interface FolderShareRights {
+  userCanViewFolder?: number
+  userCanReadMails?: number
+  userCanMarkMailsRead?: number
+  userCanWriteMails?: number
+  userCanInsertMails?: number
+  userCanPostMails?: number
+  userCanCreateSubfolders?: number
+  userCanRemoveFolder?: number
+  userCanEraseMails?: number
+  userCanExpungeFolder?: number
+  userIsAdministrator?: number
+}
+
+export interface FolderShareUser {
+  uid: string
+  c_email?: string
+  cn?: string
+  userClass: 'normal-user' | 'public-user'
+  isGroup?: number
+  rights: FolderShareRights
+}
+
+export interface FolderShareData {
+  users: Record<string, {
+    uid: string
+    c_email?: string
+    cn?: string
+    userClass: 'normal-user' | 'public-user'
+    rights: FolderShareRights
+  }>
+}
+
+export type ShareRightPreset = 'read' | 'write' | 'admin' | 'none'
+
+export interface CreateFolderBody {
+  name: string
+  parent: string // empty string "" for root-level folder
+}
+
+export interface UpdateFolderBody {
+  name?: string
+  subscribed?: number
+  type?: string
 }

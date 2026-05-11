@@ -22,10 +22,10 @@ describe('Calendars Layout', () => {
     expect(layoutDiv).toHaveClass('h-[calc(100vh-var(--header-height))]')
   })
 
-  it('should have overflow-auto class for scrolling', () => {
+  it('should have overflow-hidden to avoid double scroll with RBC', () => {
     const { container } = render(<Layout>{mockChildren}</Layout>)
     const layoutDiv = container.firstChild as HTMLElement
-    expect(layoutDiv).toHaveClass('overflow-auto')
+    expect(layoutDiv).toHaveClass('overflow-hidden')
   })
 
   it('should have vertical padding class', () => {
@@ -50,7 +50,7 @@ describe('Calendars Layout', () => {
     const layoutDiv = container.firstChild as HTMLElement
     expect(layoutDiv).toHaveClass(
       'h-[calc(100vh-var(--header-height))]',
-      'overflow-auto',
+      'overflow-hidden',
       'py-2'
     )
   })

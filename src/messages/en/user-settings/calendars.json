@@ -1,0 +1,139 @@
+{
+    "US_CALENDARS": {
+        "title": {
+            "string": "Calendars",
+            "context": "Title for the calendars settings section"
+        },
+        "accessibility": {
+            "icon": {
+                "delete": {
+                    "string": "Delete {name}",
+                    "context": "Accessibility message for the delete icon"
+                }
+            }
+        },
+        "calendarCreationNotif": {
+            "string": "Send notification when a calendar is created",
+            "context": "Label for the calendar creation notification setting"
+        },
+        "calendarViewFirstDay": {
+            "0": "Sunday",
+            "1": "Monday",
+            "2": "Tuesday",
+            "3": "Wednesday",
+            "4": "Thursday",
+            "5": "Friday",
+            "6": "Saturday",
+            "string": "First day of the week in calendar view",
+            "context": "Label for the setting that determines the first day of the week in calendar view (0=Sunday..6=Saturday)"
+        },
+        "workdayStartTime": {
+            "string": "Workday start time",
+            "context": "Label for the setting that determines the start time of the workday (e.g. 09:00)"
+        },
+        "workdayEndTime": {
+            "string": "Workday end time",
+            "context": "Label for the setting that determines the end time of the workday (e.g. 18:00)"
+        },
+        "busyOffHours": {
+            "string": "Show as busy during off hours",
+            "context": "Label for the setting that determines whether to show as busy during off hours"
+        },
+        "calendarDaysShowed": {
+            "0": "Sunday",
+            "1": "Monday",
+            "2": "Tuesday",
+            "3": "Wednesday",
+            "4": "Thursday",
+            "5": "Friday",
+            "6": "Saturday",
+            "string": "Days showed in calendar view",
+            "context": "Label for the setting that determines which days are showed in calendar view (array of 0=Sunday..6=Saturday)"
+        },
+        "calendarWeekNumberFormat": {
+            "%U": "Sunday as the first day of the week",
+            "%W": "Monday as the first day of the week",
+            "%V": "First 4 days week",
+            "string": "How the first week number is evaluated",
+            "context": "Label for the setting that determines the week number format in calendar view (%U, %W or %V)"
+        },
+        "calendarDefault": {
+            "string": "Default Calendar chosen when creating a new event",
+            "context": "Label for the setting that determines the default calendar"
+        },
+        "calendarStatus": {
+            "PUBLIC": "Public",
+            "CONFIDENTIAL": "Confidential",
+            "PRIVATE": "Private"
+        },
+        "eventDefaultClass": {
+            "string": "Default classification for events",
+            "context": "Label for the setting that determines the default classification for events (PUBLIC, CONFIDENTIAL or PRIVATE)"
+        },
+        "taskDefaultClass": {
+            "string": "Default classification for tasks",
+            "context": "Label for the setting that determines the default classification for tasks (PUBLIC, CONFIDENTIAL or PRIVATE)"
+        },
+        "journalDefaultClass": {
+            "string": "Default classification for journal entries",
+            "context": "Label for the setting that determines the default classification for journal entries (PUBLIC, CONFIDENTIAL or PRIVATE)"
+        },
+        "eventDefaultReminder": {
+            "string": "Default reminder for events",
+            "context": "Label for the setting that determines the default reminder for events (e.g. -PT15M)"
+        },
+        "taskDefaultReminder": {
+            "string": "Default reminder for tasks",
+            "context": "Label for the setting that determines the default reminder for tasks (e.g. -PT15M)"
+        },
+        "journalDefaultReminder": {
+            "string": "Default reminder for journal entries",
+            "context": "Label for the setting that determines the default reminder for journal entries (e.g. -PT15M)"
+        },
+        "reminderAfter": {
+            "string": "before",
+            "context": "example: 20min before"
+        },
+        "noInvitation": {
+            "string": "Prevent to be add as attendee by others users",
+            "context": "Label for the setting prevent user to be add as attendees by others users"
+        },
+        "noInvitationWhitelist": {
+            "string": "Invitation whitelist",
+            "context": "Label for the setting that determines the whitelist of email addresses to which invitations will be sent even if 'Do not send invitations' is enabled"
+        },
+        "doNotSendInvitFromDav": {
+            "string": "Do not send invitations for events created from CalDAV clients",
+            "context": "Label for the setting that determines whether to send invitations for events created from CalDAV clients or not"
+        },
+        "davForceSyncFromClient": {
+            "string": "Force synchronization of events created from CalDAV clients",
+            "help-tooltip": "Warning: if events from the client are more recent, force the sync anyway",
+            "context": "Label for the setting that determines whether to force synchronization of events created from CalDAV clients or not"
+        },
+        "categories": {
+            "create": {
+                "string": "Add calendar category",
+                "context": "Button text to add a new calendar category"
+            },
+            "title": {
+                "string": "Categories",
+                "context": "Title for the calendar categories settings page"
+            },
+            "accessibility": {
+                "icon": {
+                    "delete": {
+                        "string": "Delete {name}",
+                        "context": "Accessibility message for the delete icon"
+                    }
+                }
+            },
+            "Work": "Work",
+            "Family": "Family",
+            "Friends": "Friends",
+            "validation": {
+                "category-name-required": "Category name is required"
+            }
+        }
+    }
+}

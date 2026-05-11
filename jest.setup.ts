@@ -1,4 +1,20 @@
 import '@testing-library/jest-dom'
+import { webcrypto } from 'crypto'
+import { TextDecoder, TextEncoder } from 'util'
+
+// Polyfill crypto.subtle for Node/jsdom test environment
+if (!globalThis.crypto?.subtle) {
+  Object.defineProperty(globalThis, 'crypto', {
+    value: webcrypto,
+    writable: false,
+  })
+}
+
+// Polyfill TextEncoder/TextDecoder for Node/jsdom test environment
+if (!globalThis.TextEncoder) {
+  globalThis.TextEncoder = TextEncoder
+  globalThis.TextDecoder = TextDecoder as typeof globalThis.TextDecoder
+}
 
 // Mock matchMedia
 Object.defineProperty(window, 'matchMedia', {

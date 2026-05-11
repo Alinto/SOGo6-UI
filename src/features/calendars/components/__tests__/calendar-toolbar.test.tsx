@@ -78,7 +78,6 @@ describe('CalendarToolbar', () => {
     onNavigatePrevious: jest.fn(),
     onNavigateToday: jest.fn(),
     onNavigateNext: jest.fn(),
-    onCreateEvent: jest.fn(),
     timezone: 'UTC',
     onTimezoneChange: jest.fn(),
   }
@@ -90,20 +89,11 @@ describe('CalendarToolbar', () => {
   it('should render the toolbar with all elements', () => {
     render(<CalendarToolbar {...mockProps} />)
 
-    expect(screen.getByText('Create Event')).toBeInTheDocument()
+    expect(screen.queryByText('Create Event')).not.toBeInTheDocument()
     expect(screen.getByText('Today')).toBeInTheDocument()
     expect(screen.getByTestId('chevron-left')).toBeInTheDocument()
     expect(screen.getByTestId('chevron-right')).toBeInTheDocument()
     expect(screen.getByTestId('timezone-select')).toBeInTheDocument()
-  })
-
-  it('should call onCreateEvent when create button is clicked', () => {
-    render(<CalendarToolbar {...mockProps} />)
-
-    const createButton = screen.getByText('Create Event').closest('button')
-    fireEvent.click(createButton!)
-
-    expect(mockProps.onCreateEvent).toHaveBeenCalledTimes(1)
   })
 
   it('should call onNavigatePrevious when previous button is clicked', () => {

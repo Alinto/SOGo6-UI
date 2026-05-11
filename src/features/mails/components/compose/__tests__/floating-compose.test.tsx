@@ -22,11 +22,37 @@ jest.mock('@/lib/i18n/navigation', () => ({
   })),
 }))
 
+const createMockState = (hasDraft = false, isActive = false) => ({
+  mailCompose: {
+    drafts: hasDraft
+      ? {
+          'draft-1': {
+            id: 'draft-1',
+            subject: '',
+            to: [],
+            cc: [],
+            bcc: [],
+            body: '',
+            attachments: [],
+            isDirty: false,
+            createdAt: 0,
+            updatedAt: 0,
+          },
+        }
+      : {},
+    activeDraftId: isActive ? 'draft-1' : null,
+    openDraftIds: [],
+    isSending: false,
+    sendError: null,
+    pendingInsert: null,
+  },
+})
+
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
   useAppSelector: jest.fn((selector) => {
-    // Default return false for isComposeOpen
-    return false
+    const state = createMockState(false)
+    return selector(state)
   }),
 }))
 
@@ -84,6 +110,9 @@ describe('FloatingCompose Component', () => {
     ;(useLocale as jest.Mock).mockReturnValue('en')
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
     ;(useIsMobile as jest.Mock).mockReturnValue(false)
+    ;(useAppSelector as jest.Mock).mockImplementation((selector: (s: any) => any) =>
+      selector(createMockState(true, false))
+    )
   })
 
   afterEach(() => {
@@ -92,16 +121,16 @@ describe('FloatingCompose Component', () => {
 
   describe('Render Behavior', () => {
     it('should not render when compose is not open', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(false)
+      ;(useAppSelector as jest.Mock).mockImplementation((selector: (s: any) => any) =>
+        selector(createMockState(false))
+      )
 
-      const { container } = render(<FloatingCompose />)
+      const { container } = render(<FloatingCompose draftId="draft-1" />)
       expect(container.firstChild).toBeNull()
     })
 
     it('should render floating compose window when open', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       expect(screen.getByText('new_message.string')).toBeInTheDocument()
       expect(screen.getByTestId('custom-editor')).toBeInTheDocument()
@@ -109,43 +138,33 @@ describe('FloatingCompose Component', () => {
     })
 
     it('should have proper styling classes when open', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-
-      const { container } = render(<FloatingCompose />)
+      const { container } = render(<FloatingCompose draftId="draft-1" />)
       const mainDiv = container.firstChild as HTMLElement
 
-      expect(mainDiv).toHaveClass('fixed')
-      expect(mainDiv).toHaveClass('z-50')
+      expect(mainDiv).toHaveClass('relative')
+      expect(mainDiv).toHaveClass('z-40')
       expect(mainDiv).toHaveClass('flex')
       expect(mainDiv).toHaveClass('flex-col')
     })
   })
 
   describe('Title Bar', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should display title text', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
       expect(screen.getByText('new_message.string')).toBeInTheDocument()
     })
 
     it('should have clickable title bar when minimized', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
       const titleBar = screen.getByText('new_message.string').closest('div')
 
-      expect(titleBar).toHaveClass('cursor-pointer')
+      expect(titleBar).toHaveClass('select-none')
     })
   })
 
   describe('Control Buttons', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should display minimize button when not minimized', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -154,7 +173,7 @@ describe('FloatingCompose Component', () => {
     })
 
     it('should display maximize button when not maximized', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const maximizeButton = screen.getByRole('button', {
         name: /maximize.string/i,
@@ -162,24 +181,15 @@ describe('FloatingCompose Component', () => {
       expect(maximizeButton).toBeInTheDocument()
     })
 
-    it('should display open in new page button when not minimized', () => {
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      expect(openNewPageButton).toBeInTheDocument()
-    })
-
     it('should display close button', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const closeButton = screen.getByRole('button', { name: /close.string/i })
       expect(closeButton).toBeInTheDocument()
     })
 
     it('should have proper styling on control buttons', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -190,13 +200,9 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Minimize Functionality', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should hide content when minimized', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -208,7 +214,7 @@ describe('FloatingCompose Component', () => {
 
     it('should show restore button when minimized', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -223,7 +229,7 @@ describe('FloatingCompose Component', () => {
 
     it('should restore content when clicking restore button', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -240,9 +246,7 @@ describe('FloatingCompose Component', () => {
 
     it('should apply minimized container classes', async () => {
       const user = userEvent.setup()
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -258,7 +262,7 @@ describe('FloatingCompose Component', () => {
 
     it('should restore by clicking title bar when minimized', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -275,12 +279,8 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Maximize Functionality', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should display maximize button', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const maximizeButton = screen.getByRole('button', {
         name: /maximize.string/i,
@@ -290,7 +290,7 @@ describe('FloatingCompose Component', () => {
 
     it('should toggle to restore button when maximized', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const maximizeButton = screen.getByRole('button', {
         name: /maximize.string/i,
@@ -305,7 +305,7 @@ describe('FloatingCompose Component', () => {
 
     it('should restore from maximized state', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const maximizeButton = screen.getByRole('button', {
         name: /maximize.string/i,
@@ -325,13 +325,9 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Close Functionality', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should dispatch closeCompose action when close button is clicked', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const closeButton =
         screen
@@ -340,69 +336,15 @@ describe('FloatingCompose Component', () => {
         screen.getByRole('button', { name: /close.string/i })
 
       await user.click(closeButton)
-
-      expect(mockDispatch).toHaveBeenCalled()
-    })
-
-    it('should push new route when closing', async () => {
-      const user = userEvent.setup()
-      render(<FloatingCompose />)
-
-      const closeButton =
-        screen
-          .getAllByRole('button')
-          .find((btn) => btn.getAttribute('aria-label')?.includes('close')) ||
-        screen.getByRole('button', { name: /close.string/i })
-
-      await user.click(closeButton)
-
-      expect(mockPush).toHaveBeenCalled()
-    })
-  })
-
-  describe('Open in New Page Functionality', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-      global.window.open = jest.fn()
-    })
-
-    afterEach(() => {
-      jest.restoreAllMocks()
-    })
-
-    it('should open compose in new page', async () => {
-      const user = userEvent.setup()
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      await user.click(openNewPageButton)
-
-      expect(window.open).toHaveBeenCalledWith('/en/compose', '_blank')
-    })
-
-    it('should close compose when opening in new page', async () => {
-      const user = userEvent.setup()
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      await user.click(openNewPageButton)
 
       expect(mockDispatch).toHaveBeenCalled()
     })
   })
 
   describe('Mobile Behavior', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should maximize on mobile', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(true)
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       // Component should auto-maximize on mobile
       // The component uses useEffect to set isMaximized to true on mobile
@@ -411,7 +353,7 @@ describe('FloatingCompose Component', () => {
 
     it('should not be maximized on desktop', () => {
       ;(useIsMobile as jest.Mock).mockReturnValue(false)
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const maximizeButton = screen.getByRole('button', {
         name: /maximize.string/i,
@@ -420,55 +362,24 @@ describe('FloatingCompose Component', () => {
     })
   })
 
-  describe('URL Parameter Synchronization', () => {
-    it('should open compose when compose param is true and not open', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(false)
-      ;(useSearchParams as jest.Mock).mockReturnValue({
-        get: jest.fn((key) => (key === 'compose' ? 'true' : null)),
-        toString: jest.fn(() => 'compose=true'),
-      })
-
-      render(<FloatingCompose />)
-
-      // The effect should dispatch openCompose
-      expect(mockDispatch).toHaveBeenCalled()
-    })
-
-    it('should handle compose param changes', () => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-      ;(useSearchParams as jest.Mock).mockReturnValue({
-        get: jest.fn(() => null),
-        toString: jest.fn(() => ''),
-      })
-
-      render(<FloatingCompose />)
-
-      // When compose param is not true but isComposeOpen is true, it should close
-      expect(mockDispatch).toHaveBeenCalled()
-    })
-  })
 
   describe('Accessibility', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should have sr-only labels for icon buttons', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const srLabels = document.querySelectorAll('.sr-only')
       expect(srLabels.length).toBeGreaterThan(0)
     })
 
     it('should have proper button roles', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const buttons = screen.getAllByRole('button')
       expect(buttons.length).toBeGreaterThan(0)
     })
 
     it('should have descriptive aria labels', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const srOnlyElements = document.querySelectorAll('.sr-only')
       expect(srOnlyElements.length).toBeGreaterThan(0)
@@ -476,25 +387,21 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Content Rendering', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should render ComposeHeader when not minimized', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       expect(screen.getByTestId('compose-header')).toBeInTheDocument()
     })
 
     it('should render CustomEditor when not minimized', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       expect(screen.getByTestId('custom-editor')).toBeInTheDocument()
     })
 
     it('should not render footer content when minimized', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const minimizeButton = screen.getByRole('button', {
         name: /minimize.string/i,
@@ -506,7 +413,7 @@ describe('FloatingCompose Component', () => {
     })
 
     it('should render footer buttons when not minimized', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       expect(
         screen.getByRole('button', { name: /save_draft.string/i })
@@ -518,12 +425,8 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Container Classes', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should apply correct classes when normal size', () => {
-      const { container } = render(<FloatingCompose />)
+      const { container } = render(<FloatingCompose draftId="draft-1" />)
       const mainDiv = container.firstChild as HTMLElement
 
       expect(mainDiv).toHaveClass('rounded-t-lg')
@@ -531,7 +434,7 @@ describe('FloatingCompose Component', () => {
 
     it('should apply correct classes when maximized', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const maximizeButton = screen.getByRole('button', {
         name: /maximize.string/i,
@@ -544,13 +447,9 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Event Propagation', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should stop event propagation on close button click', async () => {
       const user = userEvent.setup()
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const closeButton =
         screen
@@ -568,35 +467,12 @@ describe('FloatingCompose Component', () => {
   })
 
   describe('Integration with ComposeHeader', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
     it('should pass onClose handler to ComposeHeader', () => {
-      render(<FloatingCompose />)
+      render(<FloatingCompose draftId="draft-1" />)
 
       const closeFromHeaderButton = screen.getByText('Close from header')
       expect(closeFromHeaderButton).toBeInTheDocument()
     })
   })
 
-  describe('Locale Handling', () => {
-    beforeEach(() => {
-      ;(useAppSelector as jest.Mock).mockReturnValue(true)
-    })
-
-    it('should use correct locale in compose path', async () => {
-      const user = userEvent.setup()
-      ;(useLocale as jest.Mock).mockReturnValue('fr')
-
-      render(<FloatingCompose />)
-
-      const openNewPageButton = screen.getByRole('button', {
-        name: /open_in_new_page.string/i,
-      })
-      await user.click(openNewPageButton)
-
-      expect(window.open).toHaveBeenCalledWith('/fr/compose', '_blank')
-    })
-  })
 })
