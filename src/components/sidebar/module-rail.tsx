@@ -9,6 +9,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import {
+  useFastAccess,
+  type FastAccessModuleId,
+} from '@/features/mails/components/sidebars/fast-access/context'
 import { cn } from '@/lib/utils'
 import {
   Calendar1Icon,
@@ -17,19 +21,34 @@ import {
   NotebookText,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import React, { memo } from 'react'
+import { useRouter } from 'next/navigation'
+import React, { memo, useCallback } from 'react'
 
-type ModuleId = 'address-book' | 'calendar' | 'tasks' | 'notes'
-
-interface ModuleRailProps {
-  onModuleSelect: (id: ModuleId) => void
+const FALLBACK_ROUTES: Record<FastAccessModuleId, string> = {
+  'address-book': '/address_books',
+  calendar: '/calendars',
+  tasks: '/tasks',
+  notes: '/notes',
 }
 
-const ModuleRail: React.FC<ModuleRailProps> = ({ onModuleSelect }) => {
+const ModuleRail: React.FC = () => {
   const t = useTranslations('NAVIGATION')
+  const router = useRouter()
+  const fastAccess = useFastAccess()
+
+  const handleSelect = useCallback(
+    (id: FastAccessModuleId) => {
+      if (fastAccess) {
+        fastAccess.toggleModule(id)
+      } else {
+        router.push(FALLBACK_ROUTES[id])
+      }
+    },
+    [fastAccess, router]
+  )
 
   const items: {
-    id: ModuleId
+    id: FastAccessModuleId
     title: string
     icon: React.ComponentType
   }[] = [
@@ -68,7 +87,13 @@ const ModuleRail: React.FC<ModuleRailProps> = ({ onModuleSelect }) => {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.id} className="mt-4 align-middle">
-                  <SidebarMenuButton onClick={() => onModuleSelect(item.id)}>
+                  <SidebarMenuButton
+                    onClick={() => handleSelect(item.id)}
+                    data-active={
+                      fastAccess?.isOpen &&
+                      fastAccess.activeModule === item.id
+                    }
+                  >
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
@@ -82,5 +107,5 @@ const ModuleRail: React.FC<ModuleRailProps> = ({ onModuleSelect }) => {
   )
 }
 
-export type { ModuleId }
+export type { FastAccessModuleId as ModuleId }
 export default memo(ModuleRail)

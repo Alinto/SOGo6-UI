@@ -11,6 +11,19 @@
     },
     "notes": {
       "string": "Notes"
+    },
+    "fast_access": {
+      "calendar": {
+        "today": "Today",
+        "no_events": "No events today",
+        "all_day": "All day",
+        "loading": "Loading events…",
+        "error": "Could not load events"
+      },
+      "coming_soon": {
+        "title": "Feature incoming",
+        "description": "This section is under development and will be available soon."
+      }
     }
   }
 }

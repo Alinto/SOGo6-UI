@@ -1,4 +1,5 @@
 import { Sidebar, SidebarContent } from '@/components/ui/sidebar'
+import type { FastAccessModuleId } from '@/features/mails/components/sidebars/fast-access/context'
 import React from 'react'
 import AddressBookContent from './address-book-content'
 import CalendarContent from './calendar-content'
@@ -6,21 +7,18 @@ import NotesContent from './notes-content'
 import TasksContent from './tasks-content'
 
 type FastAccessContentProps = {
-  name: 'address-book' | 'notes' | 'tasks' | 'calendar' | ''
+  name: FastAccessModuleId
+}
+
+const CONTENT_MAP: Record<FastAccessModuleId, React.ReactElement> = {
+  'address-book': <AddressBookContent />,
+  notes: <NotesContent />,
+  tasks: <TasksContent />,
+  calendar: <CalendarContent />,
 }
 
 const FastAccessContent: React.FC<FastAccessContentProps> = ({ name }) => {
-  let ContentComponent = null
-
-  if (name === 'address-book') {
-    ContentComponent = <AddressBookContent />
-  } else if (name === 'notes') {
-    ContentComponent = <NotesContent />
-  } else if (name === 'tasks') {
-    ContentComponent = <TasksContent />
-  } else if (name === 'calendar') {
-    ContentComponent = <CalendarContent />
-  }
+  const ContentComponent = CONTENT_MAP[name]
 
   return (
     <Sidebar

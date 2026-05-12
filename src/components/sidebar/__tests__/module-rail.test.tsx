@@ -4,6 +4,24 @@ import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import ModuleRail, { type ModuleId } from '../module-rail'
 
+const mockToggleModule = jest.fn()
+const mockRouterPush = jest.fn()
+const mockUseFastAccess = jest.fn(() => ({
+  isOpen: false,
+  activeModule: null,
+  openModule: jest.fn(),
+  closeModule: jest.fn(),
+  toggleModule: mockToggleModule,
+}))
+
+jest.mock('@/features/mails/components/sidebars/fast-access/context', () => ({
+  useFastAccess: (...args: unknown[]) => mockUseFastAccess(...args),
+}))
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockRouterPush }),
+}))
+
 jest.mock('@/components/ui/sidebar', () => ({
   Sidebar: ({
     children,
@@ -97,7 +115,7 @@ describe('ModuleRail', () => {
 
   describe('basic rendering', () => {
     it('renders the four module buttons', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       expect(
         screen.getByRole('button', { name: 'Address Book' })
@@ -110,7 +128,7 @@ describe('ModuleRail', () => {
     })
 
     it('renders all module icons', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       expect(screen.getByTestId('address-book-icon')).toBeInTheDocument()
       expect(screen.getByTestId('calendar-icon')).toBeInTheDocument()
@@ -121,7 +139,7 @@ describe('ModuleRail', () => {
 
   describe('configuration', () => {
     it('renders a right sidebar with the expected rail classes', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       const sidebar = screen.getByTestId('sidebar')
       expect(sidebar).toHaveAttribute('data-side', 'right')
@@ -138,7 +156,7 @@ describe('ModuleRail', () => {
 
   describe('custom styling', () => {
     it('applies overflow-hidden on sidebar content', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       expect(screen.getByTestId('sidebar-content')).toHaveClass(
         'overflow-hidden'
@@ -146,13 +164,13 @@ describe('ModuleRail', () => {
     })
 
     it('applies p-0 on sidebar group', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       expect(screen.getByTestId('sidebar-group')).toHaveClass('p-0')
     })
 
     it('applies spacing classes on each menu item', () => {
-      const { container } = render(<ModuleRail onModuleSelect={jest.fn()} />)
+      const { container } = render(<ModuleRail />)
 
       const items = container.querySelectorAll('li.mt-4.align-middle')
       expect(items).toHaveLength(4)
@@ -161,7 +179,7 @@ describe('ModuleRail', () => {
 
   describe('accessibility', () => {
     it('exposes four type="button" controls', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       const buttons = screen.getAllByRole('button')
       expect(buttons).toHaveLength(4)
@@ -171,7 +189,7 @@ describe('ModuleRail', () => {
     })
 
     it('uses a list for module entries', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       expect(screen.getByTestId('sidebar-menu')).toBeInTheDocument()
       expect(screen.getByTestId('sidebar-menu').tagName).toBe('UL')
@@ -179,23 +197,22 @@ describe('ModuleRail', () => {
 
     it('activates the focused module via keyboard', async () => {
       const user = userEvent.setup()
-      const onModuleSelect = jest.fn()
 
-      render(<ModuleRail onModuleSelect={onModuleSelect} />)
+      render(<ModuleRail />)
 
       const calendarBtn = screen.getByRole('button', { name: 'Calendar' })
       calendarBtn.focus()
       await user.keyboard('{Enter}')
 
       await waitFor(() => {
-        expect(onModuleSelect).toHaveBeenCalledWith('calendar')
+        expect(mockToggleModule).toHaveBeenCalledWith('calendar')
       })
     })
   })
 
   describe('integration', () => {
     it('nests sidebar primitives in the expected order', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       const sidebar = screen.getByTestId('sidebar')
       const content = screen.getByTestId('sidebar-content')
@@ -216,15 +233,27 @@ describe('ModuleRail', () => {
       { label: 'Notes', id: 'notes' },
     ]
 
-    it.each(cases)('calls onModuleSelect with $id', async ({ label, id }) => {
+    it.each(cases)('calls toggleModule with $id when context is available', async ({ label, id }) => {
       const user = userEvent.setup()
-      const onModuleSelect = jest.fn()
 
-      render(<ModuleRail onModuleSelect={onModuleSelect} />)
+      render(<ModuleRail />)
       await user.click(screen.getByRole('button', { name: label }))
 
       await waitFor(() => {
-        expect(onModuleSelect).toHaveBeenCalledWith(id)
+        expect(mockToggleModule).toHaveBeenCalledWith(id)
+      })
+    })
+
+    it('calls router.push when no fast access context is available', async () => {
+      mockUseFastAccess.mockReturnValueOnce(null)
+
+      const user = userEvent.setup()
+      render(<ModuleRail />)
+
+      await user.click(screen.getByRole('button', { name: 'Calendar' }))
+
+      await waitFor(() => {
+        expect(mockRouterPush).toHaveBeenCalledWith('/calendars')
       })
     })
   })
@@ -232,25 +261,22 @@ describe('ModuleRail', () => {
   describe('component stability', () => {
     it('keeps labels and handlers consistent after rerenders', async () => {
       const user = userEvent.setup()
-      const onModuleSelect = jest.fn()
-      const { rerender } = render(
-        <ModuleRail onModuleSelect={onModuleSelect} />
-      )
+      const { rerender } = render(<ModuleRail />)
 
       expect(screen.getByText('Address Book')).toBeInTheDocument()
 
-      rerender(<ModuleRail onModuleSelect={onModuleSelect} />)
+      rerender(<ModuleRail />)
 
       await user.click(screen.getByRole('button', { name: 'Tasks' }))
       await waitFor(() => {
-        expect(onModuleSelect).toHaveBeenCalledWith('tasks')
+        expect(mockToggleModule).toHaveBeenCalledWith('tasks')
       })
     })
   })
 
   describe('responsive layout', () => {
     it('marks the rail as hidden until md breakpoint', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       const sidebar = screen.getByTestId('sidebar')
       expect(sidebar).toHaveClass('hidden', 'md:block')
@@ -259,7 +285,7 @@ describe('ModuleRail', () => {
 
   describe('children rendering', () => {
     it('renders icon and label inside each button', () => {
-      render(<ModuleRail onModuleSelect={jest.fn()} />)
+      render(<ModuleRail />)
 
       const notes = screen.getByRole('button', { name: 'Notes' })
       expect(notes).toContainElement(screen.getByTestId('notes-icon'))

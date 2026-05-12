@@ -34,16 +34,6 @@ jest.mock('@/components/sidebar/app-sidebar', () => ({
   AppSidebar: () => <div data-testid="app-sidebar">App Sidebar</div>,
 }))
 
-jest.mock('@/components/sidebar/module-rail', () => {
-  return function MockModuleRail({ onModuleSelect }: any) {
-    return (
-      <div data-testid="module-rail">
-        <button onClick={() => onModuleSelect('calendar')}>Calendar</button>
-      </div>
-    )
-  }
-})
-
 jest.mock('@/components/ui/sidebar', () => ({
   SidebarInset: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sidebar-inset">{children}</div>
@@ -168,7 +158,6 @@ describe('Layout Component', () => {
 
     expect(screen.getByTestId('notification-toaster')).toBeInTheDocument()
     expect(screen.getByTestId('notification-provider')).toBeInTheDocument()
-    expect(screen.getByTestId('sidebar-provider-right-global-rail')).toBeInTheDocument()
     expect(screen.getByTestId('sidebar-provider-left-global-sidebar')).toBeInTheDocument()
     expect(screen.getByTestId('sidebar-inset')).toBeInTheDocument()
   })
@@ -221,12 +210,6 @@ describe('Layout Component', () => {
     expect(screen.getByTestId('dnd-context')).toBeInTheDocument()
   })
 
-  it('should render ModuleRail component', () => {
-    renderWithProvider(<div>Test</div>)
-
-    expect(screen.getByTestId('module-rail')).toBeInTheDocument()
-  })
-
   it('should render DragOverlay with Contact2 icon', () => {
     renderWithProvider(<div>Test</div>)
 
@@ -256,7 +239,7 @@ describe('Layout Component', () => {
     // The SSE connection happens in useEffect
     await waitFor(() => {
       expect(
-        screen.getByTestId('sidebar-provider-right-global-rail')
+        screen.getByTestId('sidebar-provider-left-global-sidebar')
       ).toBeInTheDocument()
     })
   })
@@ -269,7 +252,7 @@ describe('Layout Component', () => {
     // The component should render and use the config
     await waitFor(() => {
       expect(
-        screen.getByTestId('sidebar-provider-right-global-rail')
+        screen.getByTestId('sidebar-provider-left-global-sidebar')
       ).toBeInTheDocument()
     })
 
@@ -283,7 +266,7 @@ describe('Layout Component', () => {
     it('should have proper flex container structure', () => {
       renderWithProvider(<div>Test</div>)
 
-      const provider = screen.getByTestId('sidebar-provider-right-global-rail')
+      const provider = screen.getByTestId('sidebar-provider-left-global-sidebar')
       expect(provider).toBeInTheDocument()
     })
 
@@ -308,7 +291,6 @@ describe('Layout Component', () => {
 
       expect(testIds).toContain('notification-toaster')
       expect(testIds).toContain('notification-provider')
-      expect(testIds).toContain('sidebar-provider-right-global-rail')
       expect(testIds).toContain('sidebar-provider-left-global-sidebar')
       expect(testIds).toContain('app-header')
     })

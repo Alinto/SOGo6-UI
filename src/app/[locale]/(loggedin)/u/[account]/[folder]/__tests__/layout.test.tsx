@@ -1,15 +1,45 @@
 import * as userPreferencesApi from '@/features/app-data/store/user-preferences-api'
 import * as useIsMobileModule from '@/hooks/use-mobile'
 import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import Layout from '../layout'
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}))
+
+jest.mock('@/components/sidebar/module-rail', () => ({
+  __esModule: true,
+  default: () => <div data-testid="module-rail">Module Rail</div>,
+}))
 
 // Mock the dependencies
 jest.mock('@/hooks/use-mobile')
 jest.mock('@/features/app-data/store/user-preferences-api')
 jest.mock('@/components/ui/sidebar', () => ({
   SIDEBAR_WIDTH: '16rem',
-  SidebarProvider: ({ children, className, ...props }: any) => (
-    <div data-testid="sidebar-provider" className={className} {...props}>
+  SidebarProvider: ({
+    children,
+    className,
+    name,
+    open: _open,
+    defaultOpen: _defaultOpen,
+    width: _width,
+    ...rest
+  }: {
+    children: ReactNode
+    className?: string
+    name?: string
+    open?: boolean
+    defaultOpen?: boolean
+    width?: string
+  }) => (
+    <div
+      data-testid="sidebar-provider"
+      data-name={name}
+      className={className}
+      {...rest}
+    >
       {children}
     </div>
   ),
@@ -18,8 +48,12 @@ jest.mock('@/components/ui/sidebar', () => ({
       {children}
     </div>
   ),
-  SidebarTrigger: ({ ...props }: any) => (
-    <button data-testid="sidebar-trigger" {...props}>
+  SidebarTrigger: ({
+    onClose: _onClose,
+    reverseIcon: _reverseIcon,
+    ...props
+  }: any) => (
+    <button type="button" data-testid="sidebar-trigger" {...props}>
       Trigger
     </button>
   ),
@@ -105,7 +139,8 @@ describe('Mail Folder Layout', () => {
     const sidebarProviders = container.querySelectorAll(
       '[data-testid="sidebar-provider"]'
     )
-    expect(sidebarProviders.length).toBe(1)
+    // Nested: right-global-rail + right-mail-sidebar-2
+    expect(sidebarProviders.length).toBe(2)
   })
 
   it('should use header height CSS variable', () => {
