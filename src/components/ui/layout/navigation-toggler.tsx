@@ -1,5 +1,5 @@
+import { ModuleNavIcon } from '@/lib/icons/module-nav-icons'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
-import { Calendar, Contact2, Mail, NotepadText } from 'lucide-react'
 import React from 'react'
 import { Tabs, TabsList, TabsTrigger } from '../tabs'
 
@@ -46,28 +46,28 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
           aria-label="Mail"
           className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
         >
-          <Mail className="h-6 w-6" />
+          <ModuleNavIcon.Mail className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="address_books"
           aria-label="Address Books"
           className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
         >
-          <Contact2 className="h-6 w-6" />
+          <ModuleNavIcon.AddressBook className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="calendars"
           aria-label="Calendars"
           className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
         >
-          <Calendar className="h-6 w-6" />
+          <ModuleNavIcon.Calendar className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="tasks"
           aria-label="Tasks"
           className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
         >
-          <NotepadText className="h-6 w-6" />
+          <ModuleNavIcon.Tasks className="h-6 w-6" />
         </TabsTrigger>
       </TabsList>
     </Tabs>

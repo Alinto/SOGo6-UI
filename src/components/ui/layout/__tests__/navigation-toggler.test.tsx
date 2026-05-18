@@ -43,12 +43,13 @@ jest.mock('../../tabs', () => ({
   ),
 }))
 
-// Mock lucide-react icons
-jest.mock('lucide-react', () => ({
-  Mail: () => <div data-testid="icon-mail" />,
-  Contact2: () => <div data-testid="icon-contact2" />,
-  Calendar: () => <div data-testid="icon-calendar" />,
-  NotepadText: () => <div data-testid="icon-notepad-text" />,
+jest.mock('@/lib/icons/module-nav-icons', () => ({
+  ModuleNavIcon: {
+    Mail: () => <div data-testid="icon-mail" />,
+    AddressBook: () => <div data-testid="icon-contact2" />,
+    Calendar: () => <div data-testid="icon-calendar" />,
+    Tasks: () => <div data-testid="icon-list-checks" />,
+  },
 }))
 
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
@@ -95,7 +96,7 @@ describe('NavigationToggler', () => {
       expect(screen.getByTestId('icon-mail')).toBeInTheDocument()
       expect(screen.getByTestId('icon-contact2')).toBeInTheDocument()
       expect(screen.getByTestId('icon-calendar')).toBeInTheDocument()
-      expect(screen.getByTestId('icon-notepad-text')).toBeInTheDocument()
+      expect(screen.getByTestId('icon-list-checks')).toBeInTheDocument()
     })
 
     it('should render tabs list', () => {
@@ -444,7 +445,7 @@ describe('NavigationToggler', () => {
 
       const tasksTab = screen.getByTestId('tab-trigger-tasks')
       expect(
-        tasksTab.querySelector('[data-testid="icon-notepad-text"]')
+        tasksTab.querySelector('[data-testid="icon-list-checks"]')
       ).toBeInTheDocument()
     })
 

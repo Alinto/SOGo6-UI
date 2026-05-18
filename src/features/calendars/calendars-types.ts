@@ -216,3 +216,64 @@ export type ApiCalendarResponse = {
   error_code: string
   error_msg: string
 }
+
+// ─── FreeBusy types ───────────────────────────────────────────────────────────
+
+/**
+ * Values returned by the backend (FreeBusyType.py).
+ * Includes `no_info` for slots with no data on the frontend.
+ */
+export type FreeBusyPeriodType = 'busy' | 'tentative' | 'unavailable' | 'no_info'
+
+export interface FreeBusyPeriod {
+  /** Compact UTC backend format: "YYYYMMDDTHHmmSSZ", e.g. "20260511T090000Z" */
+  start: string
+  end: string
+  type: FreeBusyPeriodType
+  title?: string | null
+}
+
+export interface FreeBusyAttendeeResult {
+  periods: FreeBusyPeriod[]
+}
+
+/** Exact shape of `data` in the backend FreeBusyDataSchema response */
+export interface FreeBusyData {
+  start: string
+  end: string
+  /** Map of email/uid → { periods } */
+  attendees: Record<string, FreeBusyAttendeeResult>
+  is_available: boolean | null
+}
+
+/** ApiBaseResponse-style wrapper from the backend */
+export interface FreeBusyApiResponse {
+  data: FreeBusyData | null
+  error_code?: string | null
+  error_msg?: string | null
+}
+
+/** Request body sent to the backend (FreeBusyRequestSchema) */
+export interface FreeBusyRequest {
+  target_uids: string[] // participant emails / uids
+  start: string // ISO 8601 UTC, e.g. "2026-05-11T00:00:00Z"
+  end: string // ISO 8601 UTC, e.g. "2026-05-11T23:59:59Z"
+}
+
+/**
+ * Internal attendee shape for AttendeeInput and FreeBusyTimeline.
+ * Distinct from EventAttendee — do not change EventAttendee for this.
+ */
+export interface AttendeeInputItem {
+  email: string
+  name?: string
+  status?: 'needs-action' | 'accepted' | 'declined' | 'tentative'
+}
+
+export interface UserSearchResult {
+  uid: string
+  email: string
+  name: string
+  department?: string
+  avatar_url?: string
+}

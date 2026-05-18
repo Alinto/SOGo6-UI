@@ -89,11 +89,13 @@ jest.mock('@/lib/utils', () => ({
     args.filter(Boolean).join(' '),
 }))
 
-jest.mock('lucide-react', () => ({
-  Calendar1Icon: () => <span data-testid="calendar-icon" />,
-  ClipboardList: () => <span data-testid="tasks-icon" />,
-  Contact2: () => <span data-testid="address-book-icon" />,
-  NotebookText: () => <span data-testid="notes-icon" />,
+jest.mock('@/lib/icons/module-nav-icons', () => ({
+  ModuleNavIcon: {
+    AddressBook: () => <span data-testid="address-book-icon" />,
+    Calendar: () => <span data-testid="calendar-icon" />,
+    Tasks: () => <span data-testid="tasks-icon" />,
+    Notes: () => <span data-testid="notes-icon" />,
+  },
 }))
 
 jest.mock('next-intl', () => ({

@@ -38,10 +38,12 @@ export interface PersonAvailability {
 }
 
 export interface OptimalSlot {
+  /** YYYY-MM-DD UTC — same as `day.date` on the timeline */
   day: string
-  hour: number
-  quarter: number
-  duration: number
+  /** Window start instant (UTC ms) */
+  startMs: number
+  /** Window end instant (UTC ms) */
+  endMs: number
 }
 
 export const DEFAULT_WORKING_DAYS = [1, 2, 3, 4, 5] // Monday to Friday
@@ -161,19 +163,16 @@ export const isQuarterBusy = (
   quarter: number,
   busyPeriods: BusyPeriod[]
 ): boolean => {
-  // Create the start and end times for this 15-minute quarter
-  const dayDate = new Date(dateString + 'T00:00:00.000Z')
-  const slotStart = new Date(dayDate)
-  slotStart.setUTCHours(hour, quarter * 15, 0, 0)
-  const slotEnd = new Date(slotStart)
-  slotEnd.setUTCMinutes(slotEnd.getUTCMinutes() + 15)
+  // dateString is YYYY-MM-DD from toISOString().split('T')[0] (UTC calendar day).
+  const [year, month, day] = dateString.split('-').map(Number)
+  const slotStart = new Date(
+    Date.UTC(year, month - 1, day, hour, quarter * 15, 0, 0)
+  )
+  const slotEnd = new Date(slotStart.getTime() + 15 * 60 * 1000)
 
-  // Check if this quarter overlaps with any busy period
   return busyPeriods.some((period) => {
     const periodStart = new Date(period.from)
     const periodEnd = new Date(period.to)
-
-    // Check if slot overlaps with busy period
     return slotStart < periodEnd && slotEnd > periodStart
   })
 }
@@ -182,9 +181,11 @@ export const generateAvailabilityData = (
   teamMembers: TeamMember[],
   workingDays: number[],
   workingHours: { start: number; end: number },
-  busyData: AvailabilityData
+  busyData: AvailabilityData,
+  /** When set (e.g. day-1 / center / day+1), must match the days rendered by the timeline. */
+  gridDays?: Day[]
 ): { data: PersonAvailability[]; days: Day[] } => {
-  const days = getNext7Days()
+  const days = gridDays && gridDays.length > 0 ? gridDays : getNext7Days()
 
   // Pre-calculate working day set for faster lookup
   const workingDaysSet = new Set(workingDays)
@@ -251,15 +252,12 @@ export const getVisibleHours = (workingHours: {
   start: number
   end: number
 }): number[] => {
-  const startHour = Math.max(0, workingHours.start - 1)
-  const endHour = Math.min(23, workingHours.end + 1)
-  const visibleHours: number[] = []
-
-  for (let hour = startHour; hour <= endHour; hour++) {
-    visibleHours.push(hour)
+  const start = Math.max(6, workingHours.start - 1)
+  const end = Math.min(22, workingHours.end + 1)
+  if (end < start) {
+    return Array.from({ length: 13 }, (_, i) => 6 + i)
   }
-
-  return visibleHours
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 }
 
 export const calculateMinWidth = (visibleHours: number[]): number => {
@@ -271,75 +269,58 @@ export const getAllAvailableSlots = (
   availabilityData: PersonAvailability[],
   appointmentDuration: number
 ): OptimalSlot[] => {
-  const allAvailableSlots: OptimalSlot[] = []
-  const durationInQuarters = Math.ceil(appointmentDuration / 15)
-  const totalQuartersPerDay = 24 * 4
+  if (availabilityData.length === 0) return []
 
-  // Pre-build availability matrix for faster lookup
-  const availabilityMatrix: boolean[][] = availabilityData.map((person) =>
-    person.availability.map((slot) => slot.status === 'available')
-  )
+  const durationMs = appointmentDuration * 60 * 1000
+  const result: OptimalSlot[] = []
+  const slotsPerDay = 24 * 4
 
   for (let dayIndex = 0; dayIndex < days.length; dayIndex++) {
     const day = days[dayIndex]
+    const [y, mo, d] = day.date.split('-').map(Number)
 
-    for (let hour = 0; hour < 24; hour++) {
-      for (let quarter = 0; quarter < 4; quarter++) {
-        let consecutiveAvailable = true
+    let gapStartMs: number | null = null
 
-        // Check if we have enough consecutive quarters
-        for (let q = 0; q < durationInQuarters; q++) {
-          const currentHour = hour + Math.floor((quarter + q) / 4)
-          const currentQuarter = (quarter + q) % 4
-          const currentSlotIndex =
-            dayIndex * totalQuartersPerDay + currentHour * 4 + currentQuarter
+    for (let h = 0; h < 24; h++) {
+      for (let q = 0; q < 4; q++) {
+        const slotIndex = dayIndex * slotsPerDay + h * 4 + q
+        const slotStartMs = Date.UTC(y, mo - 1, d, h, q * 15, 0, 0)
 
-          // Break if we go beyond the day or beyond available slots
-          if (
-            currentHour >= 24 ||
-            currentSlotIndex >= availabilityMatrix[0]?.length
-          ) {
-            consecutiveAvailable = false
-            break
-          }
+        const allFree = availabilityData.every(
+          (person) =>
+            person.availability[slotIndex]?.status === 'available'
+        )
 
-          // Check if all people are available for this slot
-          const isAllAvailable = availabilityMatrix.every(
-            (personAvailability) => personAvailability[currentSlotIndex]
-          )
-
-          if (!isAllAvailable) {
-            consecutiveAvailable = false
-            break
+        if (allFree) {
+          if (gapStartMs === null) gapStartMs = slotStartMs
+        } else {
+          if (gapStartMs !== null) {
+            if (slotStartMs - gapStartMs >= durationMs) {
+              result.push({
+                day: day.date,
+                startMs: gapStartMs,
+                endMs: slotStartMs,
+              })
+            }
+            gapStartMs = null
           }
         }
+      }
+    }
 
-        if (consecutiveAvailable) {
-          allAvailableSlots.push({
-            day: day.date,
-            hour,
-            quarter,
-            duration: durationInQuarters,
-          })
-        }
+    if (gapStartMs !== null) {
+      const dayEndMs = Date.UTC(y, mo - 1, d, 24, 0, 0, 0)
+      if (dayEndMs - gapStartMs >= durationMs) {
+        result.push({
+          day: day.date,
+          startMs: gapStartMs,
+          endMs: dayEndMs,
+        })
       }
     }
   }
 
-  return allAvailableSlots
-}
-
-export const hasOptimalSlot = (
-  allAvailableSlots: OptimalSlot[],
-  dayDate: string,
-  hour: number
-): boolean => {
-  return allAvailableSlots.some((slot) => {
-    const slotStartHour = slot.hour
-    const slotEndHour =
-      slotStartHour + Math.floor((slot.quarter + slot.duration - 1) / 4)
-    return slot.day === dayDate && hour >= slotStartHour && hour <= slotEndHour
-  })
+  return result
 }
 
 export const isPartOfOptimalSlot = (
@@ -348,13 +329,79 @@ export const isPartOfOptimalSlot = (
   hour: number,
   quarter: number
 ): boolean => {
-  return allAvailableSlots.some((optimalSlot) => {
-    if (optimalSlot.day !== dayDate) return false
+  const [y, mo, d] = dayDate.split('-').map(Number)
+  const slotStartMs = Date.UTC(y, mo - 1, d, hour, quarter * 15, 0, 0)
+  const slotEndMs = slotStartMs + 15 * 60 * 1000
 
-    const slotStartIndex = optimalSlot.hour * 4 + optimalSlot.quarter
-    const slotEndIndex = slotStartIndex + optimalSlot.duration - 1
-    const currentIndex = hour * 4 + quarter
+  return allAvailableSlots.some(
+    (s) =>
+      s.day === dayDate &&
+      slotStartMs >= s.startMs &&
+      slotEndMs <= s.endMs
+  )
+}
 
-    return currentIndex >= slotStartIndex && currentIndex <= slotEndIndex
-  })
+/**
+ * Parse backend compact UTC format "YYYYMMDDTHHmmSSZ" into a JavaScript Date.
+ * Example: "20260511T090000Z" → new Date("2026-05-11T09:00:00Z")
+ */
+export function parseCompactUtc(compact: string): Date {
+  const clean = compact.replace(
+    /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})Z$/,
+    '$1-$2-$3T$4:$5:$6Z'
+  )
+  return new Date(clean)
+}
+
+/**
+ * Map backend `FreeBusyData.attendees` into `AvailabilityData`
+ * (shape expected by TimelineFreeBusy).
+ */
+export function mapBackendFreeBusyToAvailability(
+  attendeesMap: Record<string, { periods: { start: string; end: string; type: string }[] }>,
+  teamMembers: TeamMember[]
+): AvailabilityData {
+  const result: AvailabilityData = {}
+
+  for (const member of teamMembers) {
+    const normalizedEmail = member.email.trim()
+    const mapKey =
+      Object.keys(attendeesMap).find(
+        (uid) => uid.toLowerCase() === normalizedEmail.toLowerCase()
+      ) ?? normalizedEmail
+    const backendData = attendeesMap[mapKey]
+    if (!backendData) {
+      result[member.email] = {}
+      continue
+    }
+
+    const busyByDate: Record<string, BusyPeriod[]> = {}
+
+    for (const period of backendData.periods) {
+      if (
+        period.type === 'busy' ||
+        period.type === 'tentative' ||
+        period.type === 'unavailable'
+      ) {
+        const startDate = parseCompactUtc(period.start)
+        const endDate = parseCompactUtc(period.end)
+        // UTC calendar day — must match timeline day.date (ISO date part, UTC).
+        const dateKey = [
+          startDate.getUTCFullYear(),
+          String(startDate.getUTCMonth() + 1).padStart(2, '0'),
+          String(startDate.getUTCDate()).padStart(2, '0'),
+        ].join('-')
+
+        if (!busyByDate[dateKey]) busyByDate[dateKey] = []
+        busyByDate[dateKey].push({
+          from: startDate.toISOString(),
+          to: endDate.toISOString(),
+        })
+      }
+    }
+
+    result[member.email] = busyByDate
+  }
+
+  return result
 }

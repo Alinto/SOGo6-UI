@@ -20,6 +20,17 @@ jest.mock('@/features/calendars', () => ({
   ]),
 }))
 
+jest.mock('@/features/calendars/store/calendars-api', () => ({
+  useGetFreeBusyQuery: jest.fn(() => ({
+    data: undefined,
+    isFetching: false,
+  })),
+  useSearchUsersQuery: jest.fn(() => ({
+    data: [],
+    isFetching: false,
+  })),
+}))
+
 import { EventForm } from '../event-form'
 
 describe('EventForm', () => {
