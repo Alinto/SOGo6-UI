@@ -32,12 +32,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, MapPin, Plus, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { type Resolver, useFieldArray, useForm } from 'react-hook-form'
+import { type Resolver, useFieldArray, useForm, useWatch } from 'react-hook-form'
 import * as z from 'zod'
 import {
   RecurrenceSelector,
   type RecurrenceRuleValue,
 } from './recurrence-selector'
+import AttendeeInput from './event-form/attendee-input'
+import { TimelineFreeBusy } from './timeline-freebusy'
+import { mapBackendFreeBusyToAvailability } from './utils'
+import { skipToken } from '@reduxjs/toolkit/query'
+import { useGetFreeBusyQuery } from '../store/calendars-api'
+import type { AttendeeInputItem, FreeBusyRequest } from '../calendars-types'
 
 const recurrenceFrequencies = [
   'daily',
@@ -237,11 +243,67 @@ export function EventForm({
     remove: removeReminder,
   } = useFieldArray({ control: form.control, name: 'reminders' })
 
-  const {
-    fields: attendeeFields,
-    append: appendAttendee,
-    remove: removeAttendee,
-  } = useFieldArray({ control: form.control, name: 'attendees' })
+  const watchedAttendees = useWatch({
+    control: form.control,
+    name: 'attendees',
+    defaultValue: [],
+  }) as AttendeeInputItem[]
+
+  const watchedStart = useWatch({ control: form.control, name: 'start' })
+  const watchedEnd = useWatch({ control: form.control, name: 'end' })
+
+  const attendeeFetchKey = JSON.stringify(
+    (watchedAttendees ?? []).map((a) => ({
+      e: (a.email ?? '').trim(),
+      n: (a.name ?? '').trim(),
+    }))
+  )
+
+  const freeBusyQueryArg = useMemo((): FreeBusyRequest | typeof skipToken => {
+    if (!watchedStart || !watchedEnd) return skipToken
+    const target_uids = (watchedAttendees ?? [])
+      .map((a) => (a.email ?? '').trim())
+      .filter(Boolean)
+    if (!target_uids.length) return skipToken
+
+    const center = new Date(watchedStart)
+    const windowStart = new Date(center)
+    windowStart.setDate(windowStart.getDate() - 1)
+    windowStart.setHours(0, 0, 0, 0)
+
+    const windowEnd = new Date(watchedEnd)
+    windowEnd.setDate(windowEnd.getDate() + 1)
+    windowEnd.setHours(23, 59, 59, 999)
+
+    return {
+      target_uids,
+      start: windowStart.toISOString(),
+      end: windowEnd.toISOString(),
+    }
+    // attendeeFetchKey avoids refetch when `attendees` gets a new array reference with same content
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendeeFetchKey, watchedStart, watchedEnd])
+
+  const { data: freeBusyData, isFetching: isFreeBusyLoading } =
+    useGetFreeBusyQuery(freeBusyQueryArg)
+
+  const teamMembersForFreeBusy = useMemo(
+    () =>
+      (watchedAttendees ?? []).map((a) => ({
+        name: a.name ?? a.email,
+        email: a.email,
+      })),
+    [watchedAttendees]
+  )
+
+  const mappedData = useMemo(() => {
+    const attendeesRaw = freeBusyData?.data?.attendees
+    if (!attendeesRaw) return undefined
+    return mapBackendFreeBusyToAvailability(
+      attendeesRaw,
+      teamMembersForFreeBusy
+    )
+  }, [freeBusyData, teamMembersForFreeBusy])
 
   const allDay = form.watch('all_day')
   const watchedCalendarKey = form.watch('calendar_key')
@@ -332,9 +394,15 @@ export function EventForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className={cn('flex max-h-[calc(90vh-88px)] w-full flex-col')}
+        className={cn(
+          'flex min-h-0 w-full flex-1 flex-col overflow-hidden'
+        )}
       >
-        <div className={cn('flex-1 space-y-4 overflow-y-auto px-6 py-4')}>
+        <div
+          className={cn(
+            'flex min-h-0 flex-1 flex-col space-y-4 overflow-y-auto px-6 py-4'
+          )}
+        >
           {calendars && calendars.length > 0 ? (
             <FormField
               control={form.control}
@@ -671,59 +739,37 @@ export function EventForm({
             </FormItem>
           )}
           />
-          <div className={cn('flex flex-col gap-2')}>
-            <div className={cn('flex items-center justify-between')}>
-            <span className={cn('text-sm font-medium')}>
-              {t('eventForm.attendees.label')}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => appendAttendee({ email: '', name: '' })}
-            >
-              <Plus className={cn('mr-1 h-3 w-3')} />
-              {t('eventForm.attendees.add')}
-            </Button>
-          </div>
-
-          {attendeeFields.map((field, index) => (
-            <div key={field.id} className={cn('flex items-center gap-2')}>
-              <FormField
-                control={form.control}
-                name={`attendees.${index}.email`}
-                render={({ field }) => (
-                  <Input
-                    type="email"
-                    placeholder={t('eventForm.attendees.emailPlaceholder')}
-                    className={cn('flex-1')}
-                    {...field}
-                  />
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`attendees.${index}.name`}
-                render={({ field }) => (
-                  <Input
-                    placeholder={t('eventForm.attendees.namePlaceholder')}
-                    className={cn('w-32')}
-                    {...field}
-                  />
-                )}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeAttendee(index)}
-                aria-label={t('eventForm.attendees.remove')}
-              >
-                <Trash2 className={cn('text-destructive h-4 w-4')} />
-              </Button>
-            </div>
-          ))}
-          </div>
+          {/* Attendees + free/busy */}
+          <FormItem>
+            <FormLabel>{t('eventForm.attendees.title')}</FormLabel>
+            <AttendeeInput
+              value={watchedAttendees ?? []}
+              onChange={(list) => form.setValue('attendees', list, { shouldDirty: true })}
+              disabled={isSubmitting}
+            />
+            {(watchedAttendees?.length > 0 || isFreeBusyLoading) && (
+              <div className="mt-3">
+                <TimelineFreeBusy
+                  teamMembers={teamMembersForFreeBusy}
+                  data={mappedData}
+                  isLoading={isFreeBusyLoading}
+                  centerDate={watchedStart ? new Date(watchedStart) : undefined}
+                  appointmentDuration={
+                    watchedStart && watchedEnd
+                      ? Math.max(
+                          15,
+                          Math.round(
+                            (new Date(watchedEnd).getTime() -
+                              new Date(watchedStart).getTime()) /
+                              60000
+                          )
+                        )
+                      : undefined
+                  }
+                />
+              </div>
+            )}
+          </FormItem>
           <div className={cn('flex flex-col gap-2')}>
             <div className={cn('flex items-center justify-between')}>
             <span className={cn('text-sm font-medium')}>
@@ -851,7 +897,7 @@ export function EventForm({
         </div>
         <div
           className={cn(
-            'bg-background flex justify-end gap-2 border-t px-6 py-4'
+            'bg-background flex shrink-0 justify-end gap-2 border-t px-6 py-4'
           )}
         >
           <Button variant="outline" type="button" onClick={onCancel}>

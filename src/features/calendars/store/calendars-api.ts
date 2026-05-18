@@ -3,9 +3,10 @@ import {
   apiSlice,
   CALENDAR_EVENTS_SLICE,
   CALENDARS_SLICE,
+  USER_SEARCH_SLICE,
 } from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
-import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
+import { BaseQueryFn, EndpointBuilder, skipToken } from '@reduxjs/toolkit/query'
 import type {
   ApiCalendarEventResponse,
   ApiCalendarResponse,
@@ -20,6 +21,9 @@ import type {
   CalendarEventsResponse,
   CalendarUpdateBody,
   CalendarsResponse,
+  FreeBusyRequest,
+  FreeBusyApiResponse,
+  UserSearchResult,
 } from '../calendars-types'
 
 type GetCalendarEventsArgs = {
@@ -29,6 +33,8 @@ type GetCalendarEventsArgs = {
   end_date_time?: string
   search?: string
 }
+
+const userSearchUrl = () => 'users/search'
 
 const calendarUrl = (key: string) => `calendars/${encodeURIComponent(key)}`
 const calendarEventsUrl = (key: string) =>
@@ -431,6 +437,34 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         ...calendarIds.map((id) => ({ type: CALENDAR_EVENTS_SLICE, id })),
       ],
     }),
+    getFreeBusy: builder.query<
+      FreeBusyApiResponse,
+      FreeBusyRequest | typeof skipToken
+    >({
+      query: (arg) =>
+        arg === skipToken
+          ? skipToken
+          : {
+              url: 'freebusy',
+              method: 'POST',
+              body: arg,
+            },
+    }),
+    searchUsers: builder.query<
+      UserSearchResult[],
+      { q: string; limit?: number }
+    >({
+      query: ({ q, limit = 10 }) => ({
+        url: userSearchUrl(),
+        params: { q, limit },
+      }),
+      transformResponse: (response: {
+        data: { users: UserSearchResult[] }
+      }) => response.data.users,
+      providesTags: (result, error, { q, limit = 10 }) => [
+        { type: USER_SEARCH_SLICE, id: `${q}:${limit}` },
+      ],
+    }),
     updateCalendarVisibility: builder.mutation<
       null,
       { id: string; hidden: boolean }
@@ -511,6 +545,8 @@ export const {
   useGetAllEventsQuery,
   useGetEventsInTimeRangeQuery,
   useUpdateCalendarVisibilityMutation,
+  useGetFreeBusyQuery,
+  useSearchUsersQuery,
 } = injectedEndpoints
 
 export const calendarsApiEndpoints = injectedEndpoints

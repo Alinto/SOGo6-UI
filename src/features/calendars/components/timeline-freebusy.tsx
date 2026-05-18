@@ -1,264 +1,770 @@
 'use client'
 
-import { Card, CardContent } from '@/components/ui/card'
-import React, { useCallback, useMemo } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
+import React, {
+  type CSSProperties,
+  useCallback,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+} from 'react'
 import {
   type AvailabilityData,
+  type Day,
   DEFAULT_APPOINTMENT_DURATION,
   DEFAULT_TEAM_MEMBERS,
   DEFAULT_WORKING_DAYS,
   DEFAULT_WORKING_HOURS,
-  SAMPLE_API_DATA,
-  type TeamMember,
-  calculateMinWidth,
   generateAvailabilityData,
   getAllAvailableSlots,
   getVisibleHours,
-  hasOptimalSlot,
   isPartOfOptimalSlot,
+  type PersonAvailability,
+  type TeamMember,
 } from './utils'
 
-interface TimelineFreeBusyProps {
-  workingDays?: number[]
-  workingHours?: { start: number; end: number }
-  teamMembers?: TeamMember[]
-  appointmentDuration?: number
-  data?: AvailabilityData
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type DayMeta = Day & {
+  label: string
+  isToday: boolean
+  isCenter: boolean
 }
 
-const DEFAULT_DATA: AvailabilityData = SAMPLE_API_DATA
+type SlotArray = PersonAvailability['availability']
 
-// Memoized sub-component for hour headers
-const HourHeader = React.memo(function HourHeader({
-  day,
-  hour,
-  workingHours,
-  workingDays,
-  isOptimalSlot,
-}: {
-  day: { date: string; dayName: string; dayMonth: string; dayOfWeek: number }
-  hour: number
-  workingHours: { start: number; end: number }
+type SlotStatusFn = (
+  avail: SlotArray,
+  date: string,
+  h: number,
+  q: number
+) => 'busy' | 'available' | 'non-working'
+
+type HourStatusFn = (
+  avail: SlotArray,
+  date: string,
+  h: number
+) => 'busy' | 'available' | 'non-working' | 'mixed'
+
+type CalendarsT = ReturnType<typeof useTranslations>
+
+interface TimelineFreeBusyProps {
+  teamMembers?: TeamMember[]
+  workingDays?: number[]
+  workingHours?: { start: number; end: number }
+  appointmentDuration?: number
+  data?: AvailabilityData
+  isLoading?: boolean
+  centerDate?: Date
+}
+
+interface GridHeaderProps {
+  days: DayMeta[]
+  hours: number[]
   workingDays: number[]
-  isOptimalSlot: (_dayDate: string, _hour: number) => boolean
-}) {
-  const hasOptimalSlotInHour = isOptimalSlot(day.date, hour)
-  const isWorkingHour = hour >= workingHours.start && hour <= workingHours.end
-  const isWorkingDay = workingDays.includes(day.dayOfWeek)
+  workingHours: { start: number; end: number }
+  t: CalendarsT
+}
 
+interface PersonRowProps {
+  person: PersonAvailability
+  index: number
+  days: DayMeta[]
+  hours: number[]
+  workingDays: number[]
+  workingHours: { start: number; end: number }
+  appointmentDuration: number
+  slotStatus: SlotStatusFn
+  hourStatus: HourStatusFn
+  isOptimal: (date: string, h: number, q: number) => boolean
+  t: CalendarsT
+}
+
+interface LegendProps {
+  t: CalendarsT
+}
+
+// ─── Layout constants ─────────────────────────────────────────────────────────
+
+const HOUR_W = 52
+const NAME_W = 152
+const ROW_H = 38
+const HEAD_H = 44
+const LABEL_H = 22
+
+/** Shadow on the right edge of the sticky name column (horizontal scroll). */
+const NAME_COL_EDGE_SHADOW = '2px 0 8px -2px rgba(0, 0, 0, 0.12)'
+
+/** z-index: grid header above timeline body when scrolling vertically. */
+const Z_GRID_HEADER = 10
+const Z_EVENT_MARKER = 9
+const Z_NAME_COL = 12
+const Z_HEADER_NAME_CORNER = 18
+
+// ─── Status styles (inline: avoids Tailwind purge) ───────────────────────────
+
+const S: Record<string, CSSProperties> = {
+  busy: { backgroundColor: 'rgba(245,158,11,0.88)' },
+  tentative: { backgroundColor: 'rgba(251,191,36,0.65)' },
+  available: { backgroundColor: 'rgba(52,211,153,0.18)' },
+  optimal: { backgroundColor: 'rgba(16,185,129,0.82)' },
+  nonworking: { backgroundColor: 'rgba(148,163,184,0.22)' },
+}
+
+const LEGEND_ITEM_KEYS: ReadonlyArray<{
+  key: string
+  style: CSSProperties
+  i18nKey:
+    | 'eventForm.attendees.legend_busy'
+    | 'eventForm.attendees.legend_tentative'
+    | 'eventForm.attendees.legend_free'
+    | 'eventForm.attendees.legend_non_working'
+}> = [
+  {
+    key: 'nonworking',
+    style: S.nonworking,
+    i18nKey: 'eventForm.attendees.legend_non_working',
+  },
+  { key: 'busy', style: S.busy, i18nKey: 'eventForm.attendees.legend_busy' },
+  {
+    key: 'tentative',
+    style: S.tentative,
+    i18nKey: 'eventForm.attendees.legend_tentative',
+  },
+  {
+    key: 'available',
+    style: S.available,
+    i18nKey: 'eventForm.attendees.legend_free',
+  },
+]
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function Skeleton({ rows }: { rows: number }) {
+  return (
+    <div className="border-border bg-card rounded-xl border">
+      {Array.from({ length: Math.max(rows, 1) }).map((_, i) => (
+        <div
+          key={i}
+          className="border-border/40 flex items-center gap-3 border-b px-3 py-3 last:border-0"
+        >
+          <div className="w-36 shrink-0 space-y-1.5">
+            <div className="bg-muted h-3 w-20 animate-pulse rounded" />
+            <div className="bg-muted/60 h-2 w-28 animate-pulse rounded" />
+          </div>
+          <div className="bg-muted h-9 flex-1 animate-pulse rounded-md" />
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function GridHeader({
+  days,
+  hours,
+  workingDays,
+  workingHours,
+  t,
+}: GridHeaderProps) {
   return (
     <div
-      className={`flex-[0.2] border-l border-gray-200 py-1 text-center text-xs font-medium ${
-        hasOptimalSlotInHour
-          ? 'border-yellow-300 bg-yellow-100'
-          : isWorkingDay && isWorkingHour
-            ? 'bg-white'
-            : 'bg-gray-100'
-      }`}
+      style={{
+        position: 'sticky',
+        top: 0,
+        zIndex: Z_GRID_HEADER,
+        display: 'flex',
+        background: 'hsl(var(--card))',
+        borderBottom: '1px solid var(--border)',
+        height: HEAD_H + LABEL_H,
+      }}
     >
-      {hour.toString().padStart(2, '0')}
-      {hasOptimalSlotInHour && (
-        <div className="flex justify-center">
-          <div className="h-1 w-1 rounded-full bg-yellow-500"></div>
+      <div
+        style={{
+          position: 'sticky',
+          left: 0,
+          top: 0,
+          zIndex: Z_HEADER_NAME_CORNER,
+          width: NAME_W,
+          minWidth: NAME_W,
+          flexShrink: 0,
+          borderRight: '1px solid var(--border)',
+          background: 'hsl(var(--card))',
+          boxShadow: NAME_COL_EDGE_SHADOW,
+        }}
+      />
+
+      {days.map((day) => (
+        <div
+          key={day.date}
+          style={{
+            width: hours.length * HOUR_W,
+            display: 'flex',
+            flexDirection: 'column',
+            borderRight: '1px solid var(--border)',
+            background: day.isCenter
+              ? 'rgba(var(--primary-rgb, 16 185 129) / 0.05)'
+              : undefined,
+          }}
+        >
+          <div
+            style={{
+              height: HEAD_H,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0,
+              borderBottom: '1px solid var(--border)',
+              fontSize: day.isCenter ? 13 : 11,
+              fontWeight: day.isCenter ? 600 : 400,
+              color: day.isCenter
+                ? 'var(--primary)'
+                : 'var(--muted-foreground)',
+              textTransform: 'capitalize',
+            }}
+          >
+            {day.label}
+          </div>
+
+          <div style={{ height: LABEL_H, display: 'flex' }}>
+            {hours.map((h) => {
+              const inWorkDay = workingDays.includes(day.dayOfWeek)
+              const inWorkHour =
+                h >= workingHours.start && h <= workingHours.end
+              return (
+                <div
+                  key={h}
+                  style={{
+                    width: HOUR_W,
+                    display: 'flex',
+                    alignItems: 'center',
+                    paddingLeft: 4,
+                    borderRight: '1px solid rgba(148,163,184,0.15)',
+                    background:
+                      inWorkDay && inWorkHour
+                        ? undefined
+                        : 'rgba(148,163,184,0.08)',
+                    fontSize: 10,
+                    fontFamily: 'monospace',
+                    color: 'rgba(148,163,184,0.6)',
+                    userSelect: 'none',
+                  }}
+                >
+                  {h % 2 === 0
+                    ? t('eventForm.attendees.timeline_hour', {
+                        hour: String(h).padStart(2, '0'),
+                      })
+                    : null}
+                </div>
+              )
+            })}
+          </div>
         </div>
-      )}
+      ))}
+    </div>
+  )
+}
+
+const PersonRow = React.memo(function PersonRow({
+  person,
+  index,
+  days,
+  hours,
+  workingDays,
+  workingHours,
+  appointmentDuration,
+  slotStatus,
+  hourStatus,
+  isOptimal,
+  t,
+}: PersonRowProps) {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        height: ROW_H,
+        borderBottom: '1px solid rgba(148,163,184,0.15)',
+        background: index % 2 === 0 ? undefined : 'rgba(148,163,184,0.04)',
+      }}
+    >
+      <div
+        style={{
+          position: 'sticky',
+          left: 0,
+          zIndex: Z_NAME_COL,
+          width: NAME_W,
+          minWidth: NAME_W,
+          flexShrink: 0,
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          gap: 2,
+          padding: '0 12px',
+          borderRight: '1px solid var(--border)',
+          background:
+            index % 2 === 0 ? 'hsl(var(--card))' : 'hsl(var(--muted))',
+          boxShadow: NAME_COL_EDGE_SHADOW,
+        }}
+      >
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 600,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {person.personName}
+        </span>
+        <span
+          style={{
+            fontSize: 10,
+            color: 'var(--muted-foreground)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {person.email}
+        </span>
+      </div>
+
+      <div style={{ display: 'flex', flex: 1 }}>
+        {days.map((day) => {
+          const inWorkDay = workingDays.includes(day.dayOfWeek)
+          return (
+            <div
+              key={day.date}
+              style={{
+                width: hours.length * HOUR_W,
+                display: 'flex',
+                height: '100%',
+                borderRight: '1px solid rgba(148,163,184,0.15)',
+                background: day.isCenter ? 'rgba(16,185,129,0.025)' : undefined,
+              }}
+            >
+              {hours.map((h) => {
+                const inWorkHour =
+                  h >= workingHours.start && h <= workingHours.end
+                const active = inWorkDay && inWorkHour
+                const dominant = hourStatus(person.availability, day.date, h)
+
+                // Per-quarter optimal coverage. If partial within the hour,
+                // we must render quarter-by-quarter to respect the boundary
+                // (e.g. busy ends at 17:30 → optimal starts at 17:30, not 17:00).
+                const optimalFlags: readonly [
+                  boolean,
+                  boolean,
+                  boolean,
+                  boolean,
+                ] = [
+                  isOptimal(day.date, h, 0),
+                  isOptimal(day.date, h, 1),
+                  isOptimal(day.date, h, 2),
+                  isOptimal(day.date, h, 3),
+                ]
+                const optimalAll = optimalFlags.every(Boolean)
+                const optimalAny = optimalFlags.some(Boolean)
+                const optimalMixed = optimalAny && !optimalAll
+
+                const useSingleCell = dominant !== 'mixed' && !optimalMixed
+
+                if (useSingleCell) {
+                  const optHour = dominant === 'available' && optimalAll
+                  const st = optHour
+                    ? S.optimal
+                    : dominant === 'busy'
+                      ? S.busy
+                      : dominant === 'non-working' || !active
+                        ? S.nonworking
+                        : S.available
+                  return (
+                    <div
+                      key={h}
+                      title={
+                        optHour
+                          ? t('eventForm.attendees.tooltip_slot_optimal', {
+                              duration: appointmentDuration,
+                              time: `${String(h).padStart(2, '0')}:00`,
+                            })
+                          : dominant === 'busy'
+                            ? t('eventForm.attendees.tooltip_slot_busy')
+                            : dominant === 'available'
+                              ? t('eventForm.attendees.tooltip_slot_free', {
+                                  name:
+                                    person.personName?.trim() || person.email,
+                                  time: `${String(h).padStart(2, '0')}:00`,
+                                })
+                              : undefined
+                      }
+                      style={{
+                        width: HOUR_W,
+                        height: '100%',
+                        borderRight: '1px solid rgba(255,255,255,0.06)',
+                        ...st,
+                      }}
+                    />
+                  )
+                }
+
+                return (
+                  <div
+                    key={h}
+                    style={{
+                      width: HOUR_W,
+                      height: '100%',
+                      display: 'flex',
+                      borderRight: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    {[0, 1, 2, 3].map((q) => {
+                      const raw = slotStatus(
+                        person.availability,
+                        day.date,
+                        h,
+                        q
+                      )
+                      const opt = optimalFlags[q] && raw === 'available'
+                      const st = opt
+                        ? S.optimal
+                        : raw === 'busy'
+                          ? S.busy
+                          : raw === 'non-working' || !active
+                            ? S.nonworking
+                            : S.available
+                      const mm = String(q * 15).padStart(2, '0')
+                      return (
+                        <div
+                          key={q}
+                          title={
+                            opt
+                              ? t('eventForm.attendees.tooltip_slot_optimal', {
+                                  duration: appointmentDuration,
+                                  time: `${String(h).padStart(2, '0')}:${mm}`,
+                                })
+                              : raw === 'busy'
+                                ? t('eventForm.attendees.tooltip_slot_busy')
+                                : raw === 'available'
+                                  ? t('eventForm.attendees.tooltip_slot_free', {
+                                      name:
+                                        person.personName?.trim() ||
+                                        person.email,
+                                      time: `${String(h).padStart(2, '0')}:${mm}`,
+                                    })
+                                  : undefined
+                          }
+                          style={{
+                            flex: 1,
+                            height: '100%',
+                            ...st,
+                          }}
+                        />
+                      )
+                    })}
+                  </div>
+                )
+              })}
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 })
 
-// Memoized sub-component for quarter slots
-const QuarterSlot = React.memo(function QuarterSlot({
-  day,
-  hour,
-  quarter,
-  person,
-  days,
-  isPartOfOptimal,
-}: {
-  day: { date: string }
-  hour: number
-  quarter: number
-  person: {
-    availability: Array<{ status: 'busy' | 'available' | 'non-working' }>
-  }
-  days: Array<{ date: string }>
-  isPartOfOptimal: (
-    _dayDate: string,
-    _hour: number,
-    _quarter: number
-  ) => boolean
-}) {
-  const slotIndex = days.indexOf(day) * 24 * 4 + hour * 4 + quarter
-  const slot = person.availability[slotIndex]
-  const isPartOfOptimalSlot = isPartOfOptimal(day.date, hour, quarter)
-
+function Legend({ t }: LegendProps) {
   return (
     <div
-      className={`hover flex-1 ${
-        slot?.status === 'busy'
-          ? 'bg-primary'
-          : slot?.status === 'available'
-            ? isPartOfOptimalSlot
-              ? 'border-yellow-400 bg-yellow-200'
-              : 'bg-secondary'
-            : 'bg-gray-300'
-      }`}
-    />
+      style={{
+        flexShrink: 0,
+        display: 'flex',
+        flexWrap: 'wrap',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '6px 20px',
+        padding: '8px 16px',
+        borderTop: '1px solid var(--border)',
+        background: 'rgba(148,163,184,0.05)',
+      }}
+    >
+      {LEGEND_ITEM_KEYS.map(({ key, style, i18nKey }) => (
+        <div
+          key={key}
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <div
+            style={{
+              width: 20,
+              height: 12,
+              borderRadius: 3,
+              flexShrink: 0,
+              ...style,
+              opacity: 1,
+            }}
+          />
+          <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>
+            {t(i18nKey)}
+          </span>
+        </div>
+      ))}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div
+          style={{
+            width: 20,
+            height: 12,
+            borderRadius: 3,
+            flexShrink: 0,
+            ...S.optimal,
+            opacity: 1,
+          }}
+        />
+        <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>
+          {t('eventForm.attendees.optimal_slot')}
+        </span>
+      </div>
+    </div>
   )
-})
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 const TimelineFreeBusy = React.memo(function TimelineFreeBusy({
   workingDays = DEFAULT_WORKING_DAYS,
   workingHours = DEFAULT_WORKING_HOURS,
   teamMembers = DEFAULT_TEAM_MEMBERS,
   appointmentDuration = DEFAULT_APPOINTMENT_DURATION,
-  data = DEFAULT_DATA,
+  data,
+  isLoading,
+  centerDate,
 }: TimelineFreeBusyProps = {}) {
-  const { data: availabilityData, days } = useMemo(
+  const t = useTranslations('CALENDARS')
+  const locale = useLocale()
+
+  const scrollEl = useRef<HTMLDivElement>(null)
+
+  const days = useMemo((): DayMeta[] => {
+    const center = centerDate ?? new Date()
+    const centerUtcMidnight = Date.UTC(
+      center.getUTCFullYear(),
+      center.getUTCMonth(),
+      center.getUTCDate(),
+      0,
+      0,
+      0,
+      0
+    )
+
+    return [-1, 0, 1].map((offset) => {
+      const d = new Date(centerUtcMidnight + offset * 24 * 60 * 60 * 1000)
+      const dateStr = d.toISOString().split('T')[0]
+      const displayDate = new Date(d.getTime())
+
+      return {
+        date: dateStr,
+        dayName: displayDate.toLocaleDateString(locale, {
+          weekday: 'short',
+          timeZone: 'UTC',
+        }),
+        dayMonth: displayDate.toLocaleDateString(locale, {
+          month: 'short',
+          day: 'numeric',
+          timeZone: 'UTC',
+        }),
+        dayOfWeek: d.getUTCDay(),
+        label: displayDate.toLocaleDateString(locale, {
+          weekday: 'short',
+          day: 'numeric',
+          month: 'short',
+          timeZone: 'UTC',
+        }),
+        isToday: dateStr === new Date().toISOString().split('T')[0],
+        isCenter: offset === 0,
+      }
+    })
+  }, [centerDate, locale])
+
+  const hours = useMemo(() => getVisibleHours(workingHours), [workingHours])
+
+  const { data: persons, days: gridDays } = useMemo(
     () =>
-      generateAvailabilityData(teamMembers, workingDays, workingHours, data),
-    [teamMembers, workingDays, workingHours, data]
+      generateAvailabilityData(
+        teamMembers,
+        workingDays,
+        workingHours,
+        data ?? {},
+        days
+      ),
+    [teamMembers, workingDays, workingHours, data, days]
   )
 
-  const visibleHours = useMemo(
-    () => getVisibleHours(workingHours),
-    [workingHours]
+  const optimalSlots = useMemo(() => {
+    if (isLoading) return []
+
+    return getAllAvailableSlots(days, persons, appointmentDuration)
+  }, [days, persons, appointmentDuration, isLoading])
+
+  const isOptimal = useCallback(
+    (date: string, h: number, q: number) =>
+      isPartOfOptimalSlot(optimalSlots, date, h, q),
+    [optimalSlots]
   )
 
-  const minWidth = useMemo(
-    () => calculateMinWidth(visibleHours),
-    [visibleHours]
+  const eventLineX = useMemo(() => {
+    if (!centerDate || !hours.length) return null
+    const h = centerDate.getHours()
+    const m = centerDate.getMinutes()
+    const idx = hours.indexOf(h)
+    if (idx < 0) return null
+    // Layout: [NAME_W] [day-1 = dayW] [center day = dayW] [day+1 = dayW]
+    // Marker is in the center column (days[1]), so skip NAME_W + one full day width.
+    const dayW = hours.length * HOUR_W
+    return NAME_W + dayW + (idx + m / 60) * HOUR_W
+  }, [centerDate, hours])
+
+  const totalW = NAME_W + days.length * hours.length * HOUR_W
+
+  useLayoutEffect(() => {
+    const el = scrollEl.current
+    if (!el || !hours.length) return
+
+    const applyScroll = () => {
+      if (eventLineX != null && el.clientWidth > 0) {
+        const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth)
+        const desired = eventLineX - el.clientWidth / 2
+        el.scrollLeft = Math.max(0, Math.min(maxScroll, desired))
+        return
+      }
+      const dayW = hours.length * HOUR_W
+      const startIdx = hours.indexOf(workingHours.start)
+      const offset = startIdx >= 0 ? startIdx * HOUR_W : 0
+      el.scrollLeft = NAME_W + dayW + offset
+    }
+
+    applyScroll()
+    const id = requestAnimationFrame(applyScroll)
+    return () => cancelAnimationFrame(id)
+  }, [
+    eventLineX,
+    hours,
+    workingHours.start,
+    data,
+    persons.length,
+    totalW,
+  ])
+
+  const slotStatus = useCallback(
+    (avail: SlotArray, date: string, h: number, q: number) => {
+      const di = gridDays.findIndex((d) => d.date === date)
+      if (di < 0) return 'non-working' as const
+      return avail[di * 24 * 4 + h * 4 + q]?.status ?? 'non-working'
+    },
+    [gridDays]
   )
 
-  const allAvailableSlots = useMemo(
-    () => getAllAvailableSlots(days, availabilityData, appointmentDuration),
-    [days, availabilityData, appointmentDuration]
+  const hourStatus = useCallback(
+    (avail: SlotArray, date: string, h: number) => {
+      const qs = [0, 1, 2, 3].map((q) => slotStatus(avail, date, h, q))
+      if (qs.every((s) => s === 'busy')) return 'busy' as const
+      if (qs.every((s) => s === 'available')) return 'available' as const
+      if (qs.every((s) => s === 'non-working')) return 'non-working' as const
+      return 'mixed' as const
+    },
+    [slotStatus]
   )
 
-  const labels = useMemo(
-    () => ({
-      available: 'Available',
-      busy: 'Busy',
-      nonWorking: 'Non-working Hours',
-      optimal: `Optimal ${appointmentDuration}min Appointment`,
-    }),
-    [appointmentDuration]
-  )
+  // Keep grid visible during RTK refetch when data is already present.
+  if (isLoading && !data) return <Skeleton rows={teamMembers?.length ?? 1} />
 
-  const isOptimalSlot = useCallback(
-    (dayDate: string, hour: number) =>
-      hasOptimalSlot(allAvailableSlots, dayDate, hour),
-    [allAvailableSlots]
-  )
-
-  const isPartOfOptimal = useCallback(
-    (dayDate: string, hour: number, quarter: number) =>
-      isPartOfOptimalSlot(allAvailableSlots, dayDate, hour, quarter),
-    [allAvailableSlots]
-  )
+  if (!data) {
+    return (
+      <p className="text-muted-foreground py-6 text-center text-sm">
+        {t('eventForm.attendees.no_data')}
+      </p>
+    )
+  }
 
   return (
-    <Card className="w-full">
-      <CardContent>
-        <div className="w-full overflow-x-auto">
-          <div style={{ minWidth: `${minWidth}px` }}>
-            {/* Header with days and hours */}
-            <div className="mb-2 flex">
-              <div className="w-[200px] flex-shrink-0"></div>
-              {/* Days header */}
-              <div className="flex flex-[0.2]">
-                {days.map((day) => (
-                  <div
-                    key={day.date}
-                    className="flex-[0.2] border-l border-gray-200"
-                  >
-                    <div className="border-b border-gray-200 bg-gray-50 py-2 text-center text-sm font-medium">
-                      {day.dayName} {day.dayMonth}
-                    </div>
-                    {/* Hours header for each day */}
-                    <div className="flex">
-                      {visibleHours.map((hour) => (
-                        <HourHeader
-                          key={`${day.date}-${hour}`}
-                          day={day}
-                          hour={hour}
-                          workingHours={workingHours}
-                          workingDays={workingDays}
-                          isOptimalSlot={isOptimalSlot}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
+    <div
+      className="border-border bg-card flex min-h-0 w-full max-w-full flex-col rounded-xl border shadow-sm"
+      style={{
+        maxHeight: 'min(320px, 55vh)',
+      }}
+    >
+      <div
+        ref={scrollEl}
+        style={{
+          flex: '0 1 auto',
+          minHeight: 0,
+          // ~legend block height so the scroll region + legend fit under the card cap
+          maxHeight: 'calc(min(320px, 55vh) - 80px)',
+          overflow: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          position: 'relative',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(148,163,184,0.4) transparent',
+        }}
+      >
+        <div style={{ minWidth: totalW, position: 'relative' }}>
+          {eventLineX !== null && (
+            <div
+              aria-hidden
+              style={{
+                position: 'absolute',
+                top: HEAD_H + LABEL_H,
+                bottom: 0,
+                left: eventLineX,
+                width: 1,
+                background: 'rgba(59,130,246,0.75)',
+                zIndex: Z_EVENT_MARKER,
+                pointerEvents: 'none',
+              }}
+            >
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: 'rgb(59,130,246)',
+                }}
+              />
             </div>
+          )}
 
-            {/* Chart rows */}
-            <div className="space-y-[0.5]">
-              {availabilityData.map((person) => (
-                <div key={person.person} className="flex items-center">
-                  {/* Person name */}
-                  <div className="w-[200px] shrink-0 truncate pr-4 text-sm font-medium">
-                    {person.personName}
-                    <div className="truncate text-xs text-gray-500">
-                      {person.email}
-                    </div>
-                  </div>
+          <GridHeader
+            days={days}
+            hours={hours}
+            workingDays={workingDays}
+            workingHours={workingHours}
+            t={t}
+          />
 
-                  {/* Availability bars */}
-                  <div className="flex flex-[0.2]">
-                    {days.map((day) => (
-                      <div
-                        key={`${person.personName}-${day.date}`}
-                        className="flex h-10 flex-1 rounded-4xl"
-                      >
-                        {visibleHours.map((hour) => (
-                          <div
-                            key={`${day.date}-${hour}`}
-                            className="flex flex-[0.2] cursor-pointer hover:opacity-80"
-                          >
-                            {/* Display 4 quarters within each hour */}
-                            {[0, 1, 2, 3].map((quarter) => (
-                              <QuarterSlot
-                                key={`${day.date}-${hour}-${quarter}`}
-                                day={day}
-                                hour={hour}
-                                quarter={quarter}
-                                person={person}
-                                days={days}
-                                isPartOfOptimal={isPartOfOptimal}
-                              />
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-6 flex items-center justify-center gap-6 pt-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-secondary h-4 w-4 rounded"></div>
-                <span className="text-sm">{labels.available}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="bg-primary h-4 w-4 rounded"></div>
-                <span className="text-sm">{labels.busy}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded bg-gray-300"></div>
-                <span className="text-sm">{labels.nonWorking}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="h-4 w-4 rounded border border-yellow-400 bg-yellow-200"></div>
-                <span className="text-sm">{labels.optimal}</span>
-              </div>
-            </div>
-          </div>
+          {persons.map((person, pi) => (
+            <PersonRow
+              key={person.person}
+              person={person}
+              index={pi}
+              days={days}
+              hours={hours}
+              workingDays={workingDays}
+              workingHours={workingHours}
+              appointmentDuration={appointmentDuration}
+              slotStatus={slotStatus}
+              hourStatus={hourStatus}
+              isOptimal={isOptimal}
+              t={t}
+            />
+          ))}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <Legend t={t} />
+    </div>
   )
 })
 

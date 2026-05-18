@@ -184,7 +184,9 @@ const CalendarPage = () => {
         <DialogContent
           className={cn(
             'max-h-[90vh] sm:max-w-2xl',
-            dialogMode === 'edit' ? 'overflow-hidden p-0' : 'overflow-y-auto'
+            dialogMode === 'edit'
+              ? 'flex min-h-0 flex-col gap-0 overflow-hidden p-0'
+              : 'overflow-y-auto'
           )}
         >
           {selectedEvent && displayEvent && dialogMode === 'view' && (
@@ -227,20 +229,28 @@ const CalendarPage = () => {
           )}
           {selectedEvent && displayEvent && dialogMode === 'edit' && (
             <>
-              <DialogHeader className={cn('border-b px-6 pt-6 pb-4')}>
+              <DialogHeader
+                className={cn('shrink-0 border-b px-6 pt-6 pb-4')}
+              >
                 <DialogTitle
                   className={cn('text-xl font-semibold tracking-tight')}
                 >
                   {selectedEvent.title}
                 </DialogTitle>
               </DialogHeader>
-              <EventForm
-                key={eventKeyForQuery ?? 'edit-event'}
-                event={displayEvent}
-                calendarKey={eventCalendarKey}
-                calendars={calendarState.calendarsData ?? []}
-                onCancel={() => setDialogMode('view')}
-              />
+              <div
+                className={cn(
+                  'flex min-h-0 flex-1 flex-col overflow-hidden'
+                )}
+              >
+                <EventForm
+                  key={eventKeyForQuery ?? 'edit-event'}
+                  event={displayEvent}
+                  calendarKey={eventCalendarKey}
+                  calendars={calendarState.calendarsData ?? []}
+                  onCancel={() => setDialogMode('view')}
+                />
+              </div>
             </>
           )}
         </DialogContent>

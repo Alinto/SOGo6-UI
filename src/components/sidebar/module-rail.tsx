@@ -13,13 +13,8 @@ import {
   useFastAccess,
   type FastAccessModuleId,
 } from '@/features/mails/components/sidebars/fast-access/context'
+import { ModuleNavIcon } from '@/lib/icons/module-nav-icons'
 import { cn } from '@/lib/utils'
-import {
-  Calendar1Icon,
-  ClipboardList,
-  Contact2,
-  NotebookText,
-} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import React, { memo, useCallback } from 'react'
@@ -55,22 +50,22 @@ const ModuleRail: React.FC = () => {
     {
       id: 'address-book',
       title: t('address_book.string'),
-      icon: Contact2,
+      icon: ModuleNavIcon.AddressBook,
     },
     {
       id: 'calendar',
       title: t('calendar.string'),
-      icon: Calendar1Icon,
+      icon: ModuleNavIcon.Calendar,
     },
     {
       id: 'tasks',
       title: t('tasks.string'),
-      icon: ClipboardList,
+      icon: ModuleNavIcon.Tasks,
     },
     {
       id: 'notes',
       title: t('notes.string'),
-      icon: NotebookText,
+      icon: ModuleNavIcon.Notes,
     },
   ]
 

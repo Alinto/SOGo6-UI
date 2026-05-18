@@ -99,20 +99,22 @@ function EventDialog({
 
   return (
     <Dialog open={selectedSlot !== null} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] overflow-hidden p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b px-6 pt-6 pb-4">
+      <DialogContent className="flex max-h-[90vh] min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
           <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
             {t('events.create.string')}
           </h2>
         </DialogHeader>
         {selectedSlot && (
-          <EventForm
-            calendarKey={calendarKey}
-            calendars={calendars}
-            start={selectedSlot.start}
-            end={selectedSlot.end}
-            onCancel={onClose}
-          />
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <EventForm
+              calendarKey={calendarKey}
+              calendars={calendars}
+              start={selectedSlot.start}
+              end={selectedSlot.end}
+              onCancel={onClose}
+            />
+          </div>
         )}
       </DialogContent>
     </Dialog>
