@@ -1,3 +1,8 @@
+const mockT = (key: string) => key
+jest.mock('next-intl', () => ({
+  useTranslations: () => mockT,
+}))
+
 import {
   PP_DEFAULT,
   PP_GRAVATAR,
