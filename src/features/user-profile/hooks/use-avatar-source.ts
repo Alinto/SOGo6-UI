@@ -105,7 +105,7 @@ export const useAvatarSource = ({
     return () => {
       cancelled = true
     }
-  }, [pictureSource, email, userSourceBase64, t])
+  }, [pictureSource, email, userSourceBase64])
 
   return avatarSource
 }
