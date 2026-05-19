@@ -4,7 +4,7 @@ import React from 'react'
 import { TimelineFreeBusy } from '../timeline-freebusy'
 
 jest.mock('next-intl', () => {
-  const { calendarsMessagesT } = require('./calendars-intl-mock')
+  const { calendarsMessagesT } = require('../calendars-intl-mock')
   return {
     NextIntlClientProvider: ({ children }: { children: React.ReactNode }) =>
       React.createElement(React.Fragment, null, children),

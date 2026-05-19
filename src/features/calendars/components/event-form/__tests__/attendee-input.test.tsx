@@ -13,7 +13,7 @@ jest.mock('@/features/calendars/store/calendars-api', () => ({
 }))
 
 jest.mock('next-intl', () => {
-  const { calendarsMessagesT } = require('../../__tests__/calendars-intl-mock')
+  const { calendarsMessagesT } = require('../../calendars-intl-mock')
   return {
     NextIntlClientProvider: ({ children }: { children: React.ReactNode }) =>
       React.createElement(React.Fragment, null, children),
