@@ -1,6 +1,15 @@
 {
   "CALENDARS": {
     "loading": "Loading...",
+    "recurrenceScope": {
+      "editTitle": "Edit recurring event",
+      "deleteTitle": "Delete recurring event",
+      "description": "Which events do you want to modify?",
+      "ONE": "This event only",
+      "THISANDFUTURE": "This and following events",
+      "ALL": "All events",
+      "cancel": "Cancel"
+    },
     "toolbar": {
       "previous": {
         "string": "Previous"

@@ -359,8 +359,30 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         await notifyUpdateCalendarEvent(dispatch, queryFulfilled)
       },
     }),
-    deleteCalendarEvent: builder.mutation<void, string>({
-      query: (eventKey) => ({ url: eventUrl(eventKey), method: 'DELETE' }),
+    deleteCalendarEvent: builder.mutation<
+      void,
+      | string
+      | {
+          eventKey: string
+          recurrence_id?: string
+          recurrence_range?: 'ONE' | 'THISANDFUTURE' | 'ALL'
+        }
+    >({
+      query: (arg) => {
+        const eventKey = typeof arg === 'string' ? arg : arg.eventKey
+        const recurrence_id =
+          typeof arg === 'string' ? undefined : arg.recurrence_id
+        const recurrence_range =
+          typeof arg === 'string' ? undefined : arg.recurrence_range
+        return {
+          url: eventUrl(eventKey),
+          method: 'DELETE',
+          params: {
+            ...(recurrence_id ? { recurrence_id } : {}),
+            ...(recurrence_range ? { recurrence_range } : {}),
+          },
+        }
+      },
       transformResponse: () => undefined,
       invalidatesTags: [CALENDAR_EVENTS_SLICE],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {

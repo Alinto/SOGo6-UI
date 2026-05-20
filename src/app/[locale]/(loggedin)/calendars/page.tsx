@@ -21,8 +21,14 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   type CalendarEvent,
+  useDeleteCalendarEventMutation,
   useGetCalendarEventByIdQuery,
 } from '@/features/calendars'
+import {
+  eventNeedsRecurrenceScope,
+  RecurrenceScopeDialog,
+  type RecurrenceScope,
+} from '@/features/calendars/components/recurrence-scope-dialog'
 import { CalendarToolbar } from '@/features/calendars/components/calendar-toolbar'
 import CalendarView from '@/features/calendars/components/calendar-view'
 import { EventForm } from '@/features/calendars/components/event-form'
@@ -79,6 +85,8 @@ const CalendarPage = () => {
   )
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [dialogMode, setDialogMode] = useState<'view' | 'edit'>('view')
+  const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false)
+  const [deleteCalendarEvent] = useDeleteCalendarEventMutation()
 
   const rawEventKey = selectedEvent?.key ?? selectedEvent?.id ?? null
   const eventKeyForQuery =
@@ -135,15 +143,42 @@ const CalendarPage = () => {
     )
   }, [calendarState.defaultCalendar, detailedEvent, selectedEvent])
 
-  const handleDeleteSelectedEvent = async () => {
+  const handleDeleteSelectedEvent = async (
+    scope?: RecurrenceScope
+  ) => {
     if (!selectedEvent) return
 
+    const eventKey = selectedEvent.key ?? selectedEvent.id ?? selectedEvent.uid
+    if (!eventKey) return
+
     try {
-      await calendarState.handleDeleteEvent(selectedEvent)
+      if (scope && eventNeedsRecurrenceScope(selectedEvent)) {
+        await deleteCalendarEvent({
+          eventKey,
+          recurrence_id: selectedEvent.recurrence_id ?? undefined,
+          recurrence_range: scope,
+        }).unwrap()
+      } else {
+        await calendarState.handleDeleteEvent(selectedEvent)
+      }
       setSelectedEvent(null)
     } catch {
       // Event mutation notifications are handled by RTK Query.
     }
+  }
+
+  const handleDeleteWithScope = async (scope: RecurrenceScope) => {
+    setDeleteScopeDialogOpen(false)
+    await handleDeleteSelectedEvent(scope)
+  }
+
+  const handleConfirmDeleteClick = () => {
+    if (!selectedEvent) return
+    if (eventNeedsRecurrenceScope(selectedEvent)) {
+      setDeleteScopeDialogOpen(true)
+      return
+    }
+    void handleDeleteSelectedEvent()
   }
 
   return (
@@ -248,7 +283,7 @@ const CalendarPage = () => {
                     </AlertDialogHeader>
                     <AlertDialogFooter>
                       <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteSelectedEvent}>
+                      <AlertDialogAction onClick={handleConfirmDeleteClick}>
                         {t('forms.deleteEvent.confirm.button')}
                       </AlertDialogAction>
                     </AlertDialogFooter>
@@ -285,6 +320,12 @@ const CalendarPage = () => {
           )}
         </DialogContent>
       </Dialog>
+      <RecurrenceScopeDialog
+        open={deleteScopeDialogOpen}
+        mode="delete"
+        onSelect={handleDeleteWithScope}
+        onCancel={() => setDeleteScopeDialogOpen(false)}
+      />
     </main>
   )
 }
