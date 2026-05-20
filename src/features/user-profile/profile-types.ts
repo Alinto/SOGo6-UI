@@ -127,6 +127,7 @@ export interface DomainUISettings {
   SOGO_D_IDENTITIES_CUSTOM_NAME_ENABLED?: boolean
   SOGO_D_IDENTITIES_CUSTOM_REPLY_TO_ENABLED?: boolean
   SOGO_D_ALLOW_EXT_MAIL_ACCOUNT?: boolean
+  SOGO_D_MAIL_DRAFT_AUTOSAVE?: number
 
   // Mail
   SOGO_D_MAIL_PURGE_ALLOW?: boolean

@@ -148,7 +148,7 @@ beforeEach(() => {
         'sign_on.new.string': 'Sign on new',
         'sign_on.reply.string': 'Sign on reply',
         'sign_on.forward.string': 'Sign on forward',
-        'start_reply_to.string': 'Compose in',
+        'compose_message_in.string': 'Compose in',
         'display_remote_images.string': 'Display remote images',
         'mail_allow_receipt.string': 'Allow read receipts',
         'mail_folder_subscribe.string': 'Mail folder subscribe',

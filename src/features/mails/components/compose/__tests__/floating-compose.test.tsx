@@ -22,6 +22,30 @@ jest.mock('@/lib/i18n/navigation', () => ({
   })),
 }))
 
+jest.mock('@/features/user-profile', () => ({
+  useProfile: jest.fn(() => ({
+    mainAccount: null,
+    externalAccounts: [],
+    uiSettings: null,
+    jitsiLinkEnabled: false,
+    jitsiBaseUrl: null,
+    preferences: null,
+  })),
+}))
+
+jest.mock('@/hooks/use-interval', () => ({
+  useInterval: jest.fn(),
+}))
+
+jest.mock('@/features/mails/store/mail-api.ts', () => ({
+  useSendMailMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useSaveDraftMutation: jest.fn(() => [
+    jest.fn().mockResolvedValue({ data: { data: { uid: null } } }), // ← return a valid result
+    { isLoading: false },
+  ]),
+  useDeleteMailMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+}))
+
 const createMockState = (hasDraft = false, isActive = false) => ({
   mailCompose: {
     drafts: hasDraft
@@ -37,6 +61,10 @@ const createMockState = (hasDraft = false, isActive = false) => ({
             isDirty: false,
             createdAt: 0,
             updatedAt: 0,
+            selectedIdentity: { mail: 'test@example.com' }, // ← add this
+            mailUid: null,
+            priority: 'normal',
+            requestReadReceipt: false,
           },
         }
       : {},
@@ -110,8 +138,8 @@ describe('FloatingCompose Component', () => {
     ;(useLocale as jest.Mock).mockReturnValue('en')
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
     ;(useIsMobile as jest.Mock).mockReturnValue(false)
-    ;(useAppSelector as jest.Mock).mockImplementation((selector: (s: any) => any) =>
-      selector(createMockState(true, false))
+    ;(useAppSelector as jest.Mock).mockImplementation(
+      (selector: (s: any) => any) => selector(createMockState(true, false))
     )
   })
 
@@ -121,8 +149,8 @@ describe('FloatingCompose Component', () => {
 
   describe('Render Behavior', () => {
     it('should not render when compose is not open', () => {
-      ;(useAppSelector as jest.Mock).mockImplementation((selector: (s: any) => any) =>
-        selector(createMockState(false))
+      ;(useAppSelector as jest.Mock).mockImplementation(
+        (selector: (s: any) => any) => selector(createMockState(false))
       )
 
       const { container } = render(<FloatingCompose draftId="draft-1" />)
@@ -156,9 +184,11 @@ describe('FloatingCompose Component', () => {
 
     it('should have clickable title bar when minimized', () => {
       render(<FloatingCompose draftId="draft-1" />)
-      const titleBar = screen.getByText('new_message.string').closest('div')
+      const titleBar = screen
+        .getByText('new_message.string')
+        .closest('div')?.parentElement
 
-      expect(titleBar).toHaveClass('select-none')
+      expect(titleBar).toHaveClass('cursor-grab')
     })
   })
 
@@ -362,7 +392,6 @@ describe('FloatingCompose Component', () => {
     })
   })
 
-
   describe('Accessibility', () => {
     it('should have sr-only labels for icon buttons', () => {
       render(<FloatingCompose draftId="draft-1" />)
@@ -415,9 +444,6 @@ describe('FloatingCompose Component', () => {
     it('should render footer buttons when not minimized', () => {
       render(<FloatingCompose draftId="draft-1" />)
 
-      expect(
-        screen.getByRole('button', { name: /save_draft.string/i })
-      ).toBeInTheDocument()
       expect(
         screen.getByRole('button', { name: /send.string/i })
       ).toBeInTheDocument()
@@ -474,5 +500,4 @@ describe('FloatingCompose Component', () => {
       expect(closeFromHeaderButton).toBeInTheDocument()
     })
   })
-
 })

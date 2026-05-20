@@ -1,6 +1,14 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import InputWithTags from '@/components/ui/inputs/input-with-tags'
 import {
@@ -12,17 +20,18 @@ import {
 } from '@/components/ui/select'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { Paperclip, Video, X } from 'lucide-react'
+import { PenLine } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import React, { useCallback } from 'react'
+import React, { useCallback, useRef } from 'react'
 import {
-  setPendingInsert,
+  updateIdentity,
   updateRecipients,
+  updateSelectedSignatureKey,
   updateSubject,
 } from '../../store/mail-compose-slice'
 
 interface ComposeHeaderProps {
-  onClose?: () => void
+  draftId: string
 }
 
 type RecipientTag = { id: string; value: string }
@@ -31,18 +40,17 @@ type RecipientField = 'to' | 'cc' | 'bcc'
 const isValidEmail = (value: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 
-const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
+const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   const [showCc, setShowCc] = React.useState(false)
   const [showBcc, setShowBcc] = React.useState(false)
-  const tCommons = useTranslations('COMMONS')
   const t = useTranslations('COMPOSE')
 
   const dispatch = useAppDispatch()
-  const activeDraftId = useAppSelector(
-    (state) => state.mailCompose.activeDraftId
+  const subject = useAppSelector(
+    (state) => state.mailCompose.drafts[draftId]?.subject ?? ''
   )
-  const subject = useAppSelector((state) =>
-    activeDraftId ? state.mailCompose.drafts[activeDraftId]?.subject ?? '' : ''
+  const selectedSignatureKey = useAppSelector(
+    (state) => state.mailCompose.drafts[draftId]?.selectedSignatureKey ?? null
   )
 
   const {
@@ -52,8 +60,6 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
     identitiesEnabled,
     customFromEnabled,
     user,
-    jitsiLinkEnabled,
-    jitsiBaseUrl,
     mailMaxRecipient,
   } = useProfile()
 
@@ -63,16 +69,15 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
 
   const dispatchRecipients = useCallback(
     (field: RecipientField, tags: RecipientTag[]) => {
-      if (!activeDraftId) return
       dispatch(
         updateRecipients({
-          draftId: activeDraftId,
+          draftId,
           field,
           recipients: tags.map((tag) => ({ email: tag.value })),
         })
       )
     },
-    [activeDraftId, dispatch]
+    [draftId, dispatch]
   )
 
   const makeHandlers = useCallback(
@@ -105,24 +110,12 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
   const isOverLimit =
     mailMaxRecipient > 0 && totalRecipients >= mailMaxRecipient
 
-  const handleInsertJitsi = useCallback(() => {
-    const meetId = Math.random().toString(36).substring(2, 10)
-    const link = `${jitsiBaseUrl}/${meetId}`
-    dispatch(setPendingInsert(`<a href="${link}">${link}</a>`))
-  }, [jitsiBaseUrl, dispatch])
-
   const handleSubjectChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      if (!activeDraftId) return
-      dispatch(updateSubject({ draftId: activeDraftId, subject: e.target.value }))
+      dispatch(updateSubject({ draftId, subject: e.target.value }))
     },
-    [activeDraftId, dispatch]
+    [draftId, dispatch]
   )
-
-  const allIdentities = [
-    ...(mainAccount?.identities ?? []),
-    ...externalAccounts.flatMap((acc) => acc.identities),
-  ]
 
   const defaultFrom = defaultIdentity?.mail || user?.email || ''
   const [selectedFrom, setSelectedFrom] = React.useState(defaultFrom)
@@ -131,8 +124,107 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
     if (defaultFrom) setSelectedFrom(defaultFrom)
   }, [defaultFrom])
 
+  const memoizedIdentities = React.useMemo(
+    () => [
+      ...(mainAccount?.identities ?? []),
+      ...externalAccounts.flatMap((acc) => acc.identities),
+    ],
+    [mainAccount?.identities, externalAccounts]
+  )
+
+  const currentIdentity = React.useMemo(
+    () => memoizedIdentities.find((id) => id.mail === selectedFrom) ?? null,
+    [memoizedIdentities, selectedFrom]
+  )
+
+  const availableSignatures = React.useMemo<Record<string, string>>(
+    () => (currentIdentity?.signatures as Record<string, string>) ?? {},
+    [currentIdentity]
+  )
+
+  //  Track previous selectedFrom to detect real identity switches
+  const prevSelectedFromRef = useRef<string | null>(null)
+
+  React.useEffect(() => {
+    if (!draftId || !selectedFrom) return
+
+    const selectedIdentity = memoizedIdentities.find(
+      (id) => id.mail === selectedFrom
+    )
+    if (!selectedIdentity) return
+
+    dispatch(updateIdentity({ draftId, identity: selectedIdentity }))
+
+    //  Only reset signature key when the identity actually changes,
+    // not on every render triggered by memoizedIdentities reference change
+    if (prevSelectedFromRef.current !== selectedFrom) {
+      prevSelectedFromRef.current = selectedFrom
+      const keys = Object.keys(
+        (selectedIdentity.signatures as Record<string, string>) ?? {}
+      )
+      if (keys.length > 0) {
+        dispatch(updateSelectedSignatureKey({ draftId, key: keys[0] }))
+      }
+    }
+  }, [selectedFrom, draftId, memoizedIdentities, dispatch])
+
+  const handleSignatureSelect = useCallback(
+    (key: string | null) => {
+      dispatch(updateSelectedSignatureKey({ draftId, key }))
+    },
+    [draftId, dispatch]
+  )
+
+  const signatureKeys = Object.keys(availableSignatures)
+  const hasSignatures = signatureKeys.length > 0
+
+  const renderSignatureButton = () => {
+    if (!hasSignatures) return null
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1.5 text-xs"
+            title={t('signature.string')}
+          >
+            <PenLine className="h-3.5 w-3.5 shrink-0" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="z-[9999] min-w-[160px]">
+          <DropdownMenuGroup>
+            <DropdownMenuItem
+              onSelect={() => handleSignatureSelect(null)}
+              className={selectedSignatureKey === null ? 'font-medium' : ''}
+            >
+              {selectedSignatureKey === null && <span className="mr-2">✓</span>}
+              {t('no_signature.string')}
+            </DropdownMenuItem>
+
+            <DropdownMenuSeparator />
+
+            {signatureKeys.map((key) => (
+              <DropdownMenuItem
+                key={key}
+                onSelect={() => handleSignatureSelect(key)}
+                className={selectedSignatureKey === key ? 'font-medium' : ''}
+              >
+                {selectedSignatureKey === key && (
+                  <span className="mr-2">✓</span>
+                )}
+                {key}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
   const renderFromField = () => {
-    if (!identitiesEnabled || allIdentities.length <= 1) {
+    if (!identitiesEnabled || memoizedIdentities.length <= 1) {
       return <Input value={defaultFrom} readOnly className="min-w-3xl" />
     }
     if (!customFromEnabled) {
@@ -141,7 +233,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
           <SelectTrigger className="min-w-3xl">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="z-[9999]">
             <SelectItem value={defaultFrom}>{defaultFrom}</SelectItem>
           </SelectContent>
         </Select>
@@ -152,8 +244,8 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
         <SelectTrigger className="min-w-3xl">
           <SelectValue placeholder={t('from.string')} />
         </SelectTrigger>
-        <SelectContent>
-          {allIdentities.map((identity) => (
+        <SelectContent className="z-[9999]">
+          {memoizedIdentities.map((identity) => (
             <SelectItem key={identity.mail} value={identity.mail}>
               {identity.name
                 ? `${identity.name} <${identity.mail}>`
@@ -168,18 +260,10 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
   return (
     <>
       <div className="flex justify-between gap-2">
-        <div className="flex items-center gap-2">{renderFromField()}</div>
-        {onClose && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-4"
-            onClick={onClose}
-          >
-            <X className="text-muted-foreground h-6 w-6" />
-            <span className="sr-only">{tCommons('close.string')}</span>
-          </Button>
-        )}
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="min-w-0 flex-1">{renderFromField()}</div>
+          <div className="flex-shrink-0">{renderSignatureButton()}</div>
+        </div>
       </div>
 
       <div className="mt-2 flex w-full items-center">
@@ -253,30 +337,6 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ onClose }) => {
           placeholder={t('subject.string')}
           className="w-full rounded-tr-none rounded-br-none border-r-0"
         />
-        <div className="flex items-center">
-          <Button
-            variant="outline"
-            className={`rounded-tl-none rounded-bl-none ${
-              jitsiLinkEnabled && jitsiBaseUrl
-                ? 'rounded-tr-none rounded-br-none'
-                : ''
-            }`}
-            size="sm"
-          >
-            <Paperclip className="h-5 w-5" />
-          </Button>
-          {jitsiLinkEnabled && jitsiBaseUrl && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-l-0 rounded-tl-none rounded-bl-none"
-              onClick={handleInsertJitsi}
-              title={t('jitsi.string')}
-            >
-              <Video className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
       </div>
     </>
   )

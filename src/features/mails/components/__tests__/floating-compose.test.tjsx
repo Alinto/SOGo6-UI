@@ -111,11 +111,14 @@ describe('FloatingCompose Component', () => {
     mockState = createMockState(false)
   })
 
-  it('renders nothing when the requested draft does not exist', () => {
-    mockState = createMockState(false)
-    const { container } = render(<FloatingCompose draftId="test-draft-id" />)
-    expect(container.firstChild).toBeNull()
-  })
+it('renders nothing when the requested draft does not exist', () => {
+  ;(useAppSelector as jest.Mock).mockImplementation((selector: (s: any) => any) =>
+    selector(createMockState(false))
+  )
+
+  const { container } = render(<FloatingCompose draftId="test-draft-id" />)
+  expect(container.firstChild).toBeNull()
+})
 
   it('renders the floating compose when the draft exists', () => {
     mockState = createMockState(true)

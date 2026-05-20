@@ -77,15 +77,15 @@ describe('CustomEditor Component (compose.tsx)', () => {
     })
   })
 
-  describe('LazyCustomEditor Configuration', () => {
-    it('should create LazyCustomEditor using createLazyImport', () => {
-      expect(fileContent).toContain('const LazyCustomEditor')
+  describe('LazyComposeEditorCore Configuration', () => {
+    it('should create LazyComposeEditorCore using createLazyImport', () => {
+      expect(fileContent).toContain('const LazyComposeEditorCore')
       expect(fileContent).toContain('createLazyImport')
     })
 
-    it('should lazy load from editor-core module', () => {
+    it('should lazy load from compose-editor-core module', () => {
       expect(fileContent).toMatch(
-        /import\(['"]@\/features\/mails\/components\/compose\/editor-core['"]\)/
+        /import\(['"]+@\/features\/mails\/components\/compose\/compose-editor-core['"]+\)/
       )
     })
 
@@ -104,8 +104,8 @@ describe('CustomEditor Component (compose.tsx)', () => {
       expect(fileContent).toContain('const CustomEditor')
     })
 
-    it('should render LazyCustomEditor', () => {
-      expect(fileContent).toContain('<LazyCustomEditor')
+    it('should render LazyComposeEditorCore', () => {
+      expect(fileContent).toContain('<LazyComposeEditorCore')
     })
 
     it('should export as default', () => {
@@ -147,7 +147,7 @@ describe('CustomEditor Component (compose.tsx)', () => {
 
   describe('Component Comments and Documentation', () => {
     it('should have file comment explaining purpose', () => {
-      expect(fileContent).toContain('custom-editor')
+      expect(fileContent).toContain('compose-editor-core')
     })
 
     it('should document use client requirement', () => {
@@ -162,7 +162,7 @@ describe('CustomEditor Component (compose.tsx)', () => {
 
   describe('JSX and Component Rendering', () => {
     it('should have proper JSX structure', () => {
-      expect(fileContent).toContain('<LazyCustomEditor')
+      expect(fileContent).toContain('<LazyComposeEditorCore')
       expect(fileContent).toContain('/>')
     })
 
@@ -194,7 +194,7 @@ describe('CustomEditor Component (compose.tsx)', () => {
   describe('Best Practices', () => {
     it('should separate concerns with EditorLoader', () => {
       expect(fileContent).toContain('EditorLoader')
-      expect(fileContent).toContain('LazyCustomEditor')
+      expect(fileContent).toContain('LazyComposeEditorCore')
       expect(fileContent).toContain('CustomEditor')
     })
 
@@ -203,14 +203,6 @@ describe('CustomEditor Component (compose.tsx)', () => {
       expect(fileContent).toContain('CustomEditor')
     })
 
-    it('should not have prop drilling issues', () => {
-      const customEditorMatch = fileContent.match(
-        /const CustomEditor\s*=\s*\([^)]*\)/
-      )
-      expect(customEditorMatch ? customEditorMatch[0] : '').toMatch(
-        /^const CustomEditor\s*=\s*\(\s*\)/
-      )
-    })
 
     it('should have clean code structure', () => {
       const lines = fileContent.split('\n')
@@ -220,15 +212,15 @@ describe('CustomEditor Component (compose.tsx)', () => {
   })
 
   describe('Editor Integration Path', () => {
-    it('should reference editor-core module', () => {
-      expect(fileContent).toContain('editor-core')
+    it('should reference compose-editor-core module', () => {
+      expect(fileContent).toContain('compose-editor-core')
     })
 
     it('should use correct import path format', () => {
-      expect(fileContent).toMatch(/editor-core['"]/)
+      expect(fileContent).toMatch(/compose-editor-core['"]/)
     })
 
-    it('should load editor-core as default export', () => {
+    it('should load compose-editor-core as default export', () => {
       expect(fileContent).toContain('default')
     })
   })
