@@ -1,6 +1,16 @@
 import '@testing-library/jest-dom'
+import userEvent from '@testing-library/user-event'
 import { webcrypto } from 'crypto'
 import { TextDecoder, TextEncoder } from 'util'
+
+/**
+ * Default user-event delays simulate real typing; under pre-push (full suite,
+ * maxWorkers 50%) that makes interaction tests flaky. Merge delay: null so
+ * tests stay fast and deterministic. Callers can still pass a custom delay.
+ */
+const userEventSetup = userEvent.setup.bind(userEvent)
+userEvent.setup = ((options) =>
+  userEventSetup({ delay: null, ...options })) as typeof userEvent.setup
 
 // Polyfill crypto.subtle for Node/jsdom test environment
 if (!globalThis.crypto?.subtle) {
