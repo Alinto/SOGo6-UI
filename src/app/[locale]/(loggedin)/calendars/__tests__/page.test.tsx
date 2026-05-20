@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom'
 import { render } from '@testing-library/react'
 
 const mockDispatch = jest.fn()
@@ -36,9 +37,12 @@ jest.mock('@/features/calendars/hooks/useCalendarState', () => ({
     handleNavigate: jest.fn(),
     handleSelectSlot: jest.fn(),
     handleCreateEvent: jest.fn(),
+    handleDeleteEvent: jest.fn(),
     handleEventDrop: jest.fn(),
     handleEventResize: jest.fn(),
     setTimezone: jest.fn(),
+    calendarsData: [],
+    defaultCalendar: undefined,
   }),
 }))
 
@@ -64,6 +68,11 @@ jest.mock('@/features/calendars/components/calendar-view', () => ({
   default: () => <div data-testid="calendar-view">Calendar View</div>,
 }))
 
+const mockDeleteCalendarEventUnwrap = jest.fn().mockResolvedValue(undefined)
+const mockDeleteCalendarEvent = jest.fn(() => ({
+  unwrap: mockDeleteCalendarEventUnwrap,
+}))
+
 jest.mock('@/features/calendars', () => {
   const actual = jest.requireActual<typeof import('@/features/calendars')>(
     '@/features/calendars'
@@ -74,6 +83,10 @@ jest.mock('@/features/calendars', () => {
       data: undefined,
       isFetching: false,
     }),
+    useDeleteCalendarEventMutation: () => [
+      mockDeleteCalendarEvent,
+      { isLoading: false },
+    ],
   }
 })
 

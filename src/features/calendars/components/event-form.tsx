@@ -43,7 +43,17 @@ import { TimelineFreeBusy } from './timeline-freebusy'
 import { mapBackendFreeBusyToAvailability } from './utils'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useGetFreeBusyQuery } from '../store/calendars-api'
-import type { AttendeeInputItem, FreeBusyRequest } from '../calendars-types'
+import type {
+  AttendeeInputItem,
+  CalendarEventUpdateBody,
+  EventRecurrence,
+  FreeBusyRequest,
+} from '../calendars-types'
+import {
+  eventNeedsRecurrenceScope,
+  RecurrenceScopeDialog,
+  type RecurrenceScope,
+} from './recurrence-scope-dialog'
 
 const recurrenceFrequencies = [
   'daily',
@@ -117,6 +127,21 @@ const normalizeInputValue = (value: string, allDay: boolean) =>
 const toIsoDate = (value: string, allDay: boolean) =>
   new Date(allDay ? `${value}T00:00:00` : value).toISOString()
 
+function recurrenceToFormRule(
+  recurrence: EventRecurrence | null | undefined
+): EventFormValues['recurrence_rule'] {
+  if (!recurrence) return null
+  return {
+    frequency: recurrence.frequency,
+    interval: recurrence.interval ?? 1,
+    until: recurrence.until ?? undefined,
+    count: recurrence.count ?? undefined,
+    by_day: recurrence.by_day ?? undefined,
+    by_month_day: recurrence.by_month_day ?? undefined,
+    week_start: 'MO',
+  }
+}
+
 function calendarRowKey(cal: Calendar): string {
   return (cal.key ?? cal.id ?? '').trim()
 }
@@ -177,6 +202,9 @@ export function EventForm({
     ? new Date(event.end_date ?? event.date_end ?? end ?? startDate)
     : (end ?? startDate)
   const [categoryInput, setCategoryInput] = useState('')
+  const [scopeDialogOpen, setScopeDialogOpen] = useState(false)
+  const [pendingFormValues, setPendingFormValues] =
+    useState<EventFormValues | null>(null)
 
   const resolvedCalendarKey = useMemo(
     () => resolveCalendarKeyForForm(calendars, event ?? null, calendarKey),
@@ -223,17 +251,9 @@ export function EventForm({
           email: attendee.email,
           name: attendee.name ?? '',
         })) ?? [],
-      recurrence_rule: event?.recurrence
-        ? {
-            frequency: event.recurrence.frequency,
-            interval: event.recurrence.interval ?? 1,
-            until: event.recurrence.until ?? undefined,
-            count: event.recurrence.count ?? undefined,
-            by_day: event.recurrence.by_day ?? undefined,
-            by_month_day: event.recurrence.by_month_day ?? undefined,
-            week_start: 'MO',
-          }
-        : null,
+      recurrence_rule: recurrenceToFormRule(
+        event?.recurrence ?? event?.recurrence_rule ?? null
+      ),
     },
   })
 
@@ -340,43 +360,57 @@ export function EventForm({
     form.setValue('color', '')
   }, [watchedCalendarKey, form])
 
-  const handleSubmit = async (values: EventFormValues) => {
+  const buildEventBody = (
+    values: EventFormValues
+  ): CalendarEventCreateBody => ({
+    title: values.title,
+    date_start: toIsoDate(values.start, values.all_day),
+    date_end: toIsoDate(values.end, values.all_day),
+    all_day: values.all_day,
+    timezone: values.timezone,
+    description: values.description || undefined,
+    location: values.location || undefined,
+    visibility: values.visibility,
+    show_as: values.show_as,
+    status: values.status,
+    url: values.url || undefined,
+    color: values.color || calendarColor,
+    categories: values.categories.length > 0 ? values.categories : undefined,
+    reminders: values.reminders.length > 0 ? values.reminders : undefined,
+    attendees:
+      values.attendees.filter((attendee) => attendee.email.trim() !== '')
+        .length > 0
+        ? values.attendees
+            .filter((attendee) => attendee.email.trim() !== '')
+            .map((attendee) => ({
+              email: attendee.email,
+              name: attendee.name || undefined,
+            }))
+        : undefined,
+    recurrence_rule: values.recurrence_rule ?? undefined,
+  })
+
+  const performSubmit = async (
+    values: EventFormValues,
+    recurrenceScope?: RecurrenceScope
+  ) => {
     const targetCalendarKey = values.calendar_key
     if (!targetCalendarKey) return
 
-    const body: CalendarEventCreateBody = {
-      title: values.title,
-      date_start: toIsoDate(values.start, values.all_day),
-      date_end: toIsoDate(values.end, values.all_day),
-      all_day: values.all_day,
-      timezone: values.timezone,
-      description: values.description || undefined,
-      location: values.location || undefined,
-      visibility: values.visibility,
-      show_as: values.show_as,
-      status: values.status,
-      url: values.url || undefined,
-      color: values.color || calendarColor,
-      categories: values.categories.length > 0 ? values.categories : undefined,
-      reminders: values.reminders.length > 0 ? values.reminders : undefined,
-      attendees:
-        values.attendees.filter((attendee) => attendee.email.trim() !== '')
-          .length > 0
-          ? values.attendees
-              .filter((attendee) => attendee.email.trim() !== '')
-              .map((attendee) => ({
-                email: attendee.email,
-                name: attendee.name || undefined,
-              }))
-          : undefined,
-      recurrence_rule: values.recurrence_rule ?? undefined,
-    }
+    const body = buildEventBody(values)
 
     try {
       if (eventKey) {
+        const updateBody: CalendarEventUpdateBody = { ...body }
+        if (recurrenceScope && eventNeedsRecurrenceScope(event)) {
+          if (event?.recurrence_id) {
+            updateBody.recurrence_id = event.recurrence_id
+          }
+          updateBody.recurrence_range = recurrenceScope
+        }
         await updateCalendarEvent({
           eventKey,
-          body,
+          body: updateBody,
         }).unwrap()
       } else {
         await createCalendarEvent({
@@ -388,6 +422,28 @@ export function EventForm({
     } catch {
       // Notifications are handled by RTK Query onQueryStarted.
     }
+  }
+
+  const handleSubmit = async (values: EventFormValues) => {
+    if (isEditing && eventNeedsRecurrenceScope(event)) {
+      setPendingFormValues(values)
+      setScopeDialogOpen(true)
+      return
+    }
+    await performSubmit(values)
+  }
+
+  const handleScopeSelect = async (scope: RecurrenceScope) => {
+    setScopeDialogOpen(false)
+    const values = pendingFormValues
+    setPendingFormValues(null)
+    if (!values) return
+    await performSubmit(values, scope)
+  }
+
+  const handleScopeCancel = () => {
+    setScopeDialogOpen(false)
+    setPendingFormValues(null)
   }
 
   return (
@@ -916,6 +972,12 @@ export function EventForm({
           </Button>
         </div>
       </form>
+      <RecurrenceScopeDialog
+        open={scopeDialogOpen}
+        mode="edit"
+        onSelect={handleScopeSelect}
+        onCancel={handleScopeCancel}
+      />
     </Form>
   )
 }
