@@ -262,9 +262,7 @@ export function SignaturesSection({
     <div className="space-y-3 border-t pt-4">
       <div>
         <FormLabel>{t('labels.signatures')}</FormLabel>
-        <FormDescription>
-          {t('labels.signaturesDescription')}
-        </FormDescription>
+        <FormDescription>{t('labels.signaturesDescription')}</FormDescription>
       </div>
 
       {/* Existing Signatures */}

@@ -1,4 +1,12 @@
+// mail-compose-slice.ts
+import type { Identity } from '@/features/user-profile/profile-types'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+
+export const MAIL_PRIORITY_LOWEST = 'lowest'
+export const MAIL_PRIORITY_LOW = 'low'
+export const MAIL_PRIORITY_NORMAL = 'normal'
+export const MAIL_PRIORITY_HIGH = 'high'
+export const MAIL_PRIORITY_HIGHEST = 'highest'
 
 export interface MailComposeAttachment {
   id: string
@@ -18,6 +26,7 @@ export interface MailComposeRecipient {
 
 export interface MailComposeDraft {
   id: string
+  mailUid: string | null
   to: MailComposeRecipient[]
   cc: MailComposeRecipient[]
   bcc: MailComposeRecipient[]
@@ -26,12 +35,19 @@ export interface MailComposeDraft {
   attachments: MailComposeAttachment[]
   inReplyTo?: string
   forwardOf?: string
-  priority?: 'low' | 'normal' | 'high'
+  priority:
+    | typeof MAIL_PRIORITY_LOWEST
+    | typeof MAIL_PRIORITY_LOW
+    | typeof MAIL_PRIORITY_NORMAL
+    | typeof MAIL_PRIORITY_HIGH
+    | typeof MAIL_PRIORITY_HIGHEST
   requestReadReceipt?: boolean
   isDirty: boolean
   lastSaved?: number
   createdAt: number
   updatedAt: number
+  selectedIdentity?: Identity
+  selectedSignatureKey: string | null
 }
 
 export interface MailComposeState {
@@ -58,7 +74,6 @@ const mailComposeSlice = createSlice({
   name: 'mailCompose',
   initialState,
   reducers: {
-    // Create a new draft
     createDraft: (
       state,
       action: PayloadAction<{
@@ -70,14 +85,13 @@ const mailComposeSlice = createSlice({
         >
       }>
     ) => {
-      if (state.openDraftIds.length >= MAX_OPEN_DRAFTS) {
-        return
-      }
+      if (state.openDraftIds.length >= MAX_OPEN_DRAFTS) return
 
       const { id, inReplyTo, forwardOf, initialData } = action.payload
       const now = Date.now()
       state.drafts[id] = {
         id,
+        mailUid: null,
         to: initialData?.to ?? [],
         cc: initialData?.cc ?? [],
         bcc: initialData?.bcc ?? [],
@@ -86,17 +100,24 @@ const mailComposeSlice = createSlice({
         attachments: initialData?.attachments ?? [],
         inReplyTo,
         forwardOf,
-        priority: initialData?.priority ?? 'normal',
+        priority: initialData?.priority ?? MAIL_PRIORITY_NORMAL,
         requestReadReceipt: initialData?.requestReadReceipt ?? false,
         isDirty: false,
         createdAt: now,
         updatedAt: now,
+        // Default to first signature key from the initial identity if provided
+        selectedSignatureKey:
+          Object.keys(
+            (initialData?.selectedIdentity?.signatures as Record<
+              string,
+              string
+            >) ?? {}
+          )[0] ?? null,
       }
       state.openDraftIds.push(id)
       state.activeDraftId = id
     },
 
-    // Set active draft
     setActiveDraft: (state, action: PayloadAction<string | null>) => {
       state.activeDraftId = action.payload
     },
@@ -111,7 +132,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Update draft recipients
     updateRecipients: (
       state,
       action: PayloadAction<{
@@ -129,7 +149,17 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Update draft subject
+    updateMailUid: (
+      state,
+      action: PayloadAction<{ draftId: string; mailUid: string }>
+    ) => {
+      const { draftId, mailUid } = action.payload
+      const draft = state.drafts[draftId]
+      if (draft) {
+        draft.mailUid = mailUid
+      }
+    },
+
     updateSubject: (
       state,
       action: PayloadAction<{ draftId: string; subject: string }>
@@ -143,7 +173,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Update draft body
     updateBody: (
       state,
       action: PayloadAction<{ draftId: string; body: string }>
@@ -157,7 +186,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Add attachment
     addAttachment: (
       state,
       action: PayloadAction<{
@@ -174,7 +202,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Update attachment progress
     updateAttachmentProgress: (
       state,
       action: PayloadAction<{
@@ -195,7 +222,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Remove attachment
     removeAttachment: (
       state,
       action: PayloadAction<{ draftId: string; attachmentId: string }>
@@ -211,7 +237,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Update priority
     updatePriority: (
       state,
       action: PayloadAction<{
@@ -228,7 +253,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Toggle read receipt
     toggleReadReceipt: (state, action: PayloadAction<{ draftId: string }>) => {
       const { draftId } = action.payload
       const draft = state.drafts[draftId]
@@ -239,7 +263,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Mark draft as saved
     markDraftSaved: (state, action: PayloadAction<{ draftId: string }>) => {
       const { draftId } = action.payload
       const draft = state.drafts[draftId]
@@ -249,7 +272,6 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Delete draft
     deleteDraft: (state, action: PayloadAction<{ draftId: string }>) => {
       const { draftId } = action.payload
       delete state.drafts[draftId]
@@ -260,30 +282,46 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    // Set sending state
     setSending: (state, action: PayloadAction<boolean>) => {
       state.isSending = action.payload
-      if (action.payload) {
-        state.sendError = null
-      }
+      if (action.payload) state.sendError = null
     },
 
-    // Set send error
     setSendError: (state, action: PayloadAction<string | null>) => {
       state.sendError = action.payload
       state.isSending = false
     },
 
-    // Clear all drafts
     clearAllDrafts: (state) => {
       state.drafts = {}
       state.activeDraftId = null
       state.openDraftIds = []
     },
 
-    // Set pending insert (transient signal for editor content insertion)
     setPendingInsert: (state, action: PayloadAction<string | null>) => {
       state.pendingInsert = action.payload
+    },
+
+    updateIdentity: (
+      state,
+      action: PayloadAction<{ draftId: string; identity: Identity }>
+    ) => {
+      const { draftId, identity } = action.payload
+      const draft = state.drafts[draftId]
+      if (draft) {
+        draft.selectedIdentity = identity
+      }
+    },
+
+    updateSelectedSignatureKey: (
+      state,
+      action: PayloadAction<{ draftId: string; key: string | null }>
+    ) => {
+      const { draftId, key } = action.payload
+      const draft = state.drafts[draftId]
+      if (draft) {
+        draft.selectedSignatureKey = key
+      }
     },
   },
 })
@@ -306,6 +344,9 @@ export const {
   setSendError,
   clearAllDrafts,
   setPendingInsert,
+  updateIdentity,
+  updateSelectedSignatureKey,
+  updateMailUid,
 } = mailComposeSlice.actions
 
 export default mailComposeSlice.reducer

@@ -210,6 +210,7 @@ const data = {
       SOGO_D_MAIL_MAX_RECIPIENT: 0,
       SOGO_D_MAIL_PURGE_ALLOW: true,
       SOGO_D_MAIL_PURGE_MIN_DATE: 0,
+      SOGO_D_MAIL_DRAFT_AUTOSAVE: 5,
       SOGO_D_MODULE_ACCESS: ['mail', 'calendar', 'contact'],
       SOGO_D_NOTIFY_ENABLED: true,
       SOGO_D_PWD_CHANGE_ENABLED: true,

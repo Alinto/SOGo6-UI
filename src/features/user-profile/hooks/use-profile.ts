@@ -1,5 +1,5 @@
-import { useGetUserProfileQuery } from '../store/profile-api'
 import { useAppSelector } from '@/lib/redux/hooks'
+import { useGetUserProfileQuery } from '../store/profile-api'
 
 /**
  * Custom hook for easy access to profile data
@@ -18,9 +18,7 @@ export function useProfile() {
   const authUser = useAppSelector((state) => state.auth.user)
 
   // Extract domain from uid (e.g. "user@sogo.nu" → "sogo.nu")
-  const domain = authUser?.uid?.includes('@') 
-  ? authUser.uid.split('@')[1] 
-  : ''
+  const domain = authUser?.uid?.includes('@') ? authUser.uid.split('@')[1] : ''
 
   // Separate main account vs external accounts
   const mainAccount = profile?.mailboxes.find((m) => m.id === '0')
@@ -75,5 +73,6 @@ export function useProfile() {
     jitsiLinkEnabled: profile?.ui?.SOGO_D_JITSI_LINK_ENABLED ?? false,
     jitsiBaseUrl: profile?.ui?.SOGO_D_JITSI_BASE_URL ?? null,
     folderSharingDisabled: profile?.ui?.SOGO_D_FOLDER_DISABLE_SHARING ?? false,
+    draftAutosaveTimer: profile?.ui?.SOGO_D_MAIL_DRAFT_AUTOSAVE ?? 5, // Default to 5s if not set
   }
 }

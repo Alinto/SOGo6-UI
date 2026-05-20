@@ -4,9 +4,9 @@
             "string": "Mail General Settings",
             "context": "Title for the mail general settings page"
         },
-        "start_reply_to": {
-            "string": "Start reply to",
-            "context": "Dropdown label to know where to start replying"
+        "compose_message_in": {
+            "string": "Compose message in",
+            "context": "Dropdown label in what way to compose messages"
         },
         "display_subscribed_mailboxes_only": {
             "string": "Show subscribed mailboxes only",

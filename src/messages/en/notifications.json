@@ -1,25 +1,25 @@
 {
     "NOTIFICATIONS": {
-        "success": {
-            "string": "Success",
-            "developer_comment": "Operation completed successfully."
-        },
         "title": {
             "success": {
                 "string": "Success",
-                "developer_comment": "Operation completed successfully."
+                "context": "Notification title for successful operations.",
+                "developer_comment": "Advise the user that an operation completed successfully."
             },
             "error": {
                 "string": "Error",
-                "developer_comment": "An error occurred during the operation. {error}"
+                "context": "Notification title for failed operations.",
+                "developer_comment": "Advise the user that an error occurred during the operation. {error}"
             },
             "warning": {
                 "string": "Warning",
-                "developer_comment": "Please check the details and proceed with caution."
+                "context": "Notification title for warning messages.",
+                "developer_comment": "Advise the user to check the details and proceed with caution."
             },
             "info": {
                 "string": "Info",
-                "developer_comment": "Informational message."
+                "context": "Notification title for informational messages.",
+                "developer_comment": "Advise the user of an informational message."
             }
         },
         "mail_action": {
@@ -571,11 +571,11 @@
         "message": {
             "success": {
                 "string": "Operation completed successfully.",
-                "developer_comment": "The operation was successful."
+                "developer_comment": "Advise the user that an operation completed successfully."
             },
             "error": {
                 "string": "An error occurred during the operation.",
-                "developer_comment": "There was an error while processing your request."
+                "developer_comment": "Advise the user that there was an error while processing their request."
             },
             "warning": {
                 "string": "Please check the details and proceed with caution.",
@@ -584,6 +584,60 @@
             "info": {
                 "string": "This is an informational message.",
                 "developer_comment": "This message provides information to the user."
+            }
+        },
+        "mail_send": {
+            "success": {
+                "title": {
+                    "string": "Mail sent"
+                },
+                "message": {
+                    "string": "Your email has been sent successfully."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to send mail"
+                },
+                "message": {
+                    "string": "An error occurred while sending your email. Please try again."
+                }
+            }
+        },
+        "save_draft": {
+            "success": {
+                "title": {
+                    "string": "Draft saved"
+                },
+                "message": {
+                    "string": "Your email has been saved as a draft."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to save draft"
+                },
+                "message": {
+                    "string": "An error occurred while saving your draft. Please try again."
+                }
+            }
+        },
+        "discard_draft": {
+            "success": {
+                "title": {
+                    "string": "Draft discarded"
+                },
+                "message": {
+                    "string": "Your email has been discarded."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to discard draft"
+                },
+                "message": {
+                    "string": "An error occurred while discarding your draft. Please try again."
+                }
             }
         }
     }

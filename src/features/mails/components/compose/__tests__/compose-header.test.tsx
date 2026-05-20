@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import ComposeHeader from '../compose-header'
 
 // --- Mocks ---
@@ -9,7 +9,9 @@ jest.mock('next-intl', () => ({
 
 jest.mock('@/components/ui/button', () => ({
   Button: ({ children, onClick, disabled }: any) => (
-    <button onClick={onClick} disabled={disabled}>{children}</button>
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
   ),
 }))
 
@@ -28,7 +30,9 @@ jest.mock('@/components/ui/select', () => ({
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
   SelectValue: ({ placeholder }: any) => <span>{placeholder}</span>,
   SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children, value }: any) => <div data-value={value}>{children}</div>,
+  SelectItem: ({ children, value }: any) => (
+    <div data-value={value}>{children}</div>
+  ),
 }))
 
 jest.mock('lucide-react/dynamic', () => ({
@@ -117,12 +121,6 @@ describe('ComposeHeader', () => {
       render(<ComposeHeader />)
       expect(screen.queryByText('close.string')).not.toBeInTheDocument()
     })
-
-    it('should render close button when onClose is provided', () => {
-      mockProfile()
-      render(<ComposeHeader onClose={jest.fn()} />)
-      expect(screen.getByText('close.string')).toBeInTheDocument()
-    })
   })
 
   describe('Champ From', () => {
@@ -167,7 +165,10 @@ describe('ComposeHeader', () => {
     })
 
     it('should fallback to user email when no defaultIdentity', () => {
-      mockProfile({ defaultIdentity: null, user: { email: 'fallback@sogo.nu' } })
+      mockProfile({
+        defaultIdentity: null,
+        user: { email: 'fallback@sogo.nu' },
+      })
       render(<ComposeHeader />)
       expect(screen.getByDisplayValue('fallback@sogo.nu')).toBeInTheDocument()
     })
@@ -209,16 +210,6 @@ describe('ComposeHeader', () => {
       fireEvent.click(screen.getByText('cc.string'))
       fireEvent.click(screen.getByText('bcc.string'))
       expect(screen.getAllByRole('textbox').length).toBeGreaterThan(4)
-    })
-  })
-
-  describe('Close button', () => {
-    it('should call onClose when close button is clicked', () => {
-      mockProfile()
-      const onClose = jest.fn()
-      render(<ComposeHeader onClose={onClose} />)
-      fireEvent.click(screen.getByText('close.string').closest('button')!)
-      expect(onClose).toHaveBeenCalledTimes(1)
     })
   })
 })

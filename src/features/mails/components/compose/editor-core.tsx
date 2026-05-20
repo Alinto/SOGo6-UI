@@ -14,6 +14,7 @@ import {
   CloudServices,
   Code,
   CodeBlock,
+  Emoji,
   Essentials,
   FontBackgroundColor,
   FontColor,
@@ -22,7 +23,7 @@ import {
   GeneralHtmlSupport,
   Heading,
   Highlight,
-  HtmlEmbed,
+  HorizontalLine,
   Image,
   ImageCaption,
   ImageInsert,
@@ -40,6 +41,7 @@ import {
   PasteFromOffice,
   RemoveFormat,
   SelectAll,
+  ShowBlocks,
   SourceEditing,
   SpecialCharacters,
   SpecialCharactersEssentials,
@@ -71,6 +73,7 @@ const EDITOR_PLUGINS = [
   Code,
   CodeBlock,
   Essentials,
+  Emoji,
   FontBackgroundColor,
   FontColor,
   FontFamily,
@@ -78,7 +81,7 @@ const EDITOR_PLUGINS = [
   GeneralHtmlSupport,
   Heading,
   Highlight,
-  HtmlEmbed,
+  HorizontalLine,
   Image,
   ImageCaption,
   ImageInsert,
@@ -96,6 +99,7 @@ const EDITOR_PLUGINS = [
   PasteFromOffice,
   RemoveFormat,
   SelectAll,
+  ShowBlocks,
   SourceEditing,
   SpecialCharacters,
   SpecialCharactersEssentials,
@@ -111,12 +115,12 @@ const EDITOR_PLUGINS = [
   Undo,
 ]
 
-interface CustomEditorCoreProps {
+interface EditorCoreProps {
   data: string
   onChange?: (content: string) => void
 }
 
-export const CustomEditorCore = ({ data, onChange }: CustomEditorCoreProps) => {
+export const CustomEditorCore = ({ data, onChange }: EditorCoreProps) => {
   const locale = useLocale()
   const editorRef = useRef<ClassicEditor | null>(null)
   const dispatch = useAppDispatch()
@@ -149,23 +153,38 @@ export const CustomEditorCore = ({ data, onChange }: CustomEditorCoreProps) => {
       language: locale,
       toolbar: {
         items: [
+          'undo',
+          'redo',
           'heading',
+          'showBlocks',
           '|',
           'bold',
           'italic',
-          'link',
+          'underline',
+          'fontColor',
+          'fontBackgroundColor',
+          'fontFamily',
+          'fontSize',
+          'removeFormat',
+          'horizontalLine',
+          '|',
           'bulletedList',
           'numberedList',
           '|',
           'outdent',
           'indent',
+          'alignment',
           '|',
-          'imageUpload',
+          'link',
           'blockQuote',
+          '|',
+          'emoji',
+          'imageUpload',
+          'specialCharacters',
           'insertTable',
           'mediaEmbed',
-          'undo',
-          'redo',
+          '|',
+          'sourceEditing',
         ],
       },
     }),
@@ -178,9 +197,12 @@ export const CustomEditorCore = ({ data, onChange }: CustomEditorCoreProps) => {
   }, [])
 
   // Handle content changes
-  const handleChange = useCallback((event, editor: ClassicEditor) => {
-    onChange?.(editor.getData())
-  }, [onChange])
+  const handleChange = useCallback(
+    (event, editor: ClassicEditor) => {
+      onChange?.(editor.getData())
+    },
+    [onChange]
+  )
 
   // Cleanup on unmount
   useEffect(() => {

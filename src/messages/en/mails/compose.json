@@ -2,67 +2,134 @@
     "COMPOSE": {
         "from": {
             "string": "From",
-            "description": "Label for the sender identity selector in the compose form"
+            "context": "Label for the sender identity selector in the compose form"
         },
         "to": {
             "string": "To",
-            "description": "Label for the recipient field in the compose form"
+            "context": "Label for the recipient field in the compose form"
         },
         "new_message": {
-            "string": "New Message",
-            "description": "Button for composing a new message in sidebar"
+            "string": "New message",
+            "context": "Button for composing a new message in sidebar"
         },
         "send": {
             "string": "Send",
-            "description": "Send the composed message"
+            "context": "Send the composed message"
+        },
+        "sending": {
+            "string": "Sending...",
+            "context": "Indicates that the message is currently being sent"
+        },
+        "no_recipient_alert": {
+            "title": {
+                "string": "No recipient",
+                "context": "Title of the alert shown when the user tries to send a message without any recipients"
+            },
+            "content": {
+                "string": "Please add at least one recipient before sending.",
+                "context": "Content of the alert shown when the user tries to send a message without any recipients"
+            },
+            "ok": {
+                "string": "OK",
+                "context": "Label for the OK button in the alert"
+            },
+            "context": "Alert shown when the user tries to send a message without any recipients"
+        },
+        "schedule_sending": {
+            "string": "Schedule sending",
+            "context": "Schedule the sending of the composed message"
         },
         "save_draft": {
             "string": "Save draft",
-            "description": "Save the composed message as a draft"
+            "context": "Save the composed message as a draft"
+        },
+        "discard_draft": {
+            "string": "Discard draft",
+            "context": "Discard the current draft"
         },
         "cc": {
             "string": "Cc",
-            "description": "Carbon copy recipient"
+            "context": "Carbon copy recipient"
         },
         "bcc": {
             "string": "Bcc",
-            "description": "Blind carbon copy recipient"
+            "context": "Blind carbon copy recipient"
         },
         "subject": {
             "string": "Subject",
-            "description": "Subject of the email"
+            "context": "Subject of the email"
         },
         "minimize": {
             "string": "Minimize",
-            "description": "Minimize the compose window"
+            "context": "Minimize the compose window"
         },
         "maximize": {
             "string": "Maximize",
-            "description": "Maximize the compose window"
+            "context": "Maximize the compose window"
         },
         "restore": {
             "string": "Restore",
-            "description": "Restore the compose window to its previous size"
+            "context": "Restore the compose window to its previous size"
         },
         "close": {
             "string": "Close",
-            "description": "Close the compose window"
+            "context": "Close the compose window"
         },
         "open_in_new_page": {
             "string": "Open in new page",
-            "description": "Open the compose window in a new page"
+            "context": "Open the compose window in a new page"
         },
         "jitsi": {
             "string": "Insert Jitsi meeting link",
-            "description": "Button to insert a Jitsi video meeting link into the message body"
+            "context": "Button to insert a Jitsi video meeting link into the message body"
         },
         "max_recipients_reached": {
             "string": "Maximum {max} recipients reached",
-            "description": "Error shown when the maximum number of recipients has been reached"
+            "context": "Error shown when the maximum number of recipients has been reached"
         },
         "max_windows_error": {
             "string": "Maximum {max} compose windows allowed.",
-            "description": "Error shown when the user tries to open more than three floating compose windows"
+            "context": "Error shown when the user tries to open more than three floating compose windows"
+        },
+        "signature": {
+            "string": "Signature",
+            "context": "Label for the signature picker button in the compose header"
+        },
+        "no_signature": {
+            "string": "No signature",
+            "context": "Label for the option to have no signature in the signature picker"
+        },
+        "attachment": {
+            "string": "Insert attachment",
+            "context": "Button to insert an attachment into the message body"
+        },
+        "return_receipt": {
+            "string": "Return receipt",
+            "context": "Button to request a return receipt for the email"
+        },
+        "priority": {
+            "string": "Set priority",
+            "context": "Button to set the priority of the email"
+        },
+        "low": {
+            "string": "Low",
+            "context": "Option to set the email priority to low"
+        },
+        "lowest": {
+            "string": "Lowest",
+            "context": "Option to set the email priority to lowest"
+        },
+        "normal": {
+            "string": "Normal",
+            "context": "Option to set the email priority to normal"
+        },
+        "high": {
+            "string": "High",
+            "context": "Option to set the email priority to high"
+        },
+        "highest": {
+            "string": "Highest",
+            "context": "Option to set the email priority to highest"
         }
     }
 }

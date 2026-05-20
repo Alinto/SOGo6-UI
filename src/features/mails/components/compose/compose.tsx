@@ -1,7 +1,7 @@
-// components/custom-editor.js
-'use client' // Required only in App Router.
+'use client'
 
 import { createLazyImport } from '@/components/lazy-components'
+import React from 'react'
 
 // Loading component for the editor
 const EditorLoader = () => {
@@ -14,14 +14,20 @@ const EditorLoader = () => {
   )
 }
 
-// Lazy load the entire CKEditor component
-const LazyCustomEditor = createLazyImport(
-  () => import('@/features/mails/components/compose/editor-core'),
+const LazyComposeEditorCore = createLazyImport(
+  () =>
+    import('@/features/mails/components/compose/compose-editor-core').then(
+      (m) => ({ default: m.ComposeEditorCore as React.ComponentType })
+    ),
   <EditorLoader />
 )
 
-const CustomEditor = () => {
-  return <LazyCustomEditor />
+interface CustomEditorProps {
+  draftId: string
+}
+
+const CustomEditor = ({ draftId }: CustomEditorProps) => {
+  return <LazyComposeEditorCore draftId={draftId} />
 }
 
 export default CustomEditor

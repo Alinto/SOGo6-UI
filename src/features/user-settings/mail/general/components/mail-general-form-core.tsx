@@ -454,7 +454,7 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
             name="composeIn"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('start_reply_to.string')}</FormLabel>
+                <FormLabel>{t('compose_message_in.string')}</FormLabel>
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value}
