@@ -243,17 +243,19 @@ describe('IdentityFields', () => {
   })
 
   describe('user interaction', () => {
+    const user = userEvent.setup({ delay: null })
+
     it('updates the name input when the user types', async () => {
       render(<Wrapper initialValues={{ ...DEFAULT_IDENTITY, name: '' }} />)
       const input = screen.getByPlaceholderText('John Doe')
-      await userEvent.type(input, 'Jane')
+      await user.type(input, 'Jane')
       expect(input).toHaveValue('Jane')
     })
 
     it('updates the replyTo input when the user types', async () => {
       render(<Wrapper initialValues={{ ...DEFAULT_IDENTITY, replyTo: '' }} />)
       const input = screen.getByPlaceholderText('noreply@example.com')
-      await userEvent.type(input, 'other@example.com')
+      await user.type(input, 'other@example.com')
       expect(input).toHaveValue('other@example.com')
     })
   })
