@@ -194,6 +194,23 @@
       "organizer": {
         "string": "Organizer"
       },
+      "organizerRole": {
+        "string": "(organizer)"
+      },
+      "attendeeStatus": {
+        "accepted": {
+          "string": "Accepted"
+        },
+        "pending": {
+          "string": "Pending"
+        },
+        "declined": {
+          "string": "Declined"
+        },
+        "tentative": {
+          "string": "Tentative"
+        }
+      },
       "categories": {
         "string": "Categories"
       },

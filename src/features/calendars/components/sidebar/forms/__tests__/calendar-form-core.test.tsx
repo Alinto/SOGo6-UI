@@ -62,18 +62,6 @@ jest.mock('@/components/ui/select', () => ({
   SelectValue: () => <div data-testid="select-value" />,
 }))
 
-jest.mock('@/components/ui/popover', () => ({
-  Popover: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="popover">{children}</div>
-  ),
-  PopoverContent: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="popover-content">{children}</div>
-  ),
-  PopoverTrigger: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="popover-trigger">{children}</div>
-  ),
-}))
-
 jest.mock('@/components/ui/checkbox', () => ({
   Checkbox: (props: Record<string, unknown>) => (
     <input type="checkbox" data-testid="checkbox" {...props} />

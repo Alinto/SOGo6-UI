@@ -1,10 +1,16 @@
-import { Calendar, Contact2, ListChecks, Mail, NotebookText } from 'lucide-react'
+import {
+  Calendar1,
+  ClipboardCheck,
+  Contact2,
+  Mail,
+  NotepadText,
+} from 'lucide-react'
 
 /** Lucide icons shared between the main sidebar tab and the fast-access rail. */
 export const ModuleNavIcon = {
   Mail: Mail,
   AddressBook: Contact2,
-  Calendar: Calendar,
-  Tasks: ListChecks,
-  Notes: NotebookText,
+  Calendar: Calendar1,
+  Tasks: ClipboardCheck,
+  Notes: NotepadText,
 } as const

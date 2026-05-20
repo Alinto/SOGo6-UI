@@ -11,18 +11,14 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
-import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Check, Plus, Trash2 } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
@@ -34,19 +30,7 @@ import type {
 // Union type
 type CalendarFormDataUnion = CalendarAddFormData | CalendarEditFormData
 
-// Predefined colors
-const PREDEFINED_COLORS = [
-  '#3b82f6',
-  '#ef4444',
-  '#10b981',
-  '#f59e0b',
-  '#8b5cf6',
-  '#ec4899',
-  '#06b6d4',
-  '#84cc16',
-  '#f97316',
-  '#6366f1',
-]
+const DEFAULT_CALENDAR_COLOR = '#3b82f6'
 
 interface CalendarFormCoreProps {
   form: UseFormReturn<CalendarFormDataUnion>
@@ -128,32 +112,14 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                     {t(`forms.${formPrefix}.colorLabel.string`)}
                   </FormLabel>
                   <FormControl>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          style={{ backgroundColor: field.value }}
-                          className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-gray-300 transition-colors hover:border-gray-400 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none"
-                        />
-                      </PopoverTrigger>
-                      <PopoverContent className="w-64 p-3" align="start">
-                        <div className="grid grid-cols-5 gap-2">
-                          {PREDEFINED_COLORS.map((color) => (
-                            <button
-                              key={color}
-                              type="button"
-                              onClick={() => field.onChange(color)}
-                              style={{ backgroundColor: color }}
-                              className="relative h-8 w-8 rounded-md border-2 border-gray-300 transition-all hover:scale-110 focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:outline-none"
-                            >
-                              {field.value === color && (
-                                <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-md" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      </PopoverContent>
-                    </Popover>
+                    <input
+                      type="color"
+                      value={field.value || DEFAULT_CALENDAR_COLOR}
+                      onChange={(e) => field.onChange(e.target.value)}
+                      className={cn(
+                        'border-input bg-background h-9 w-9 cursor-pointer rounded border p-0.5'
+                      )}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

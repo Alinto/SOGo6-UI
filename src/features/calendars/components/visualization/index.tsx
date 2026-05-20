@@ -1,5 +1,4 @@
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import {
   Bell,
@@ -7,17 +6,18 @@ import {
   Clock,
   ExternalLink,
   FileText,
-  Globe,
-  Lock,
   MapPin,
-  User,
   Users,
   Video,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 import { cn } from '@/lib/utils'
-import { CalendarEvent } from '../../calendars-types'
+import {
+  CalendarEvent,
+  EventAttendee,
+  EventReminder,
+} from '../../calendars-types'
 
 interface VisualizationProps {
   data: CalendarEvent
@@ -29,6 +29,78 @@ const getStatusClassName = (status: NonNullable<CalendarEvent['status']>) =>
     status === 'tentative' && 'border-orange-200 bg-orange-100 text-orange-800',
     status === 'cancelled' && 'border-red-200 bg-red-100 text-red-800'
   )
+
+function formatReminderTimeBefore(
+  t: ReturnType<typeof useTranslations<'CALENDARS'>>,
+  minutes: number
+): string {
+  const hours = Math.floor(minutes / 60)
+  const days = Math.floor(hours / 24)
+
+  if (days > 0) {
+    return t('visualization.daysBefore.string', { count: days })
+  }
+  if (hours > 0) {
+    return t('visualization.hoursBefore.string', { count: hours })
+  }
+  return t('visualization.minutesBefore.string', { count: minutes })
+}
+
+function getReminderMethodLabel(
+  t: ReturnType<typeof useTranslations<'CALENDARS'>>,
+  method: EventReminder['method']
+): string {
+  if (method === 'email') {
+    return t('eventForm.reminders.methods.email')
+  }
+  if (method === 'notification') {
+    return t('eventForm.reminders.methods.notification')
+  }
+  return t('eventForm.reminders.methods.popup')
+}
+
+function AttendeeParticipationStatus({
+  status,
+  t,
+}: {
+  status: NonNullable<EventAttendee['status']>
+  t: ReturnType<typeof useTranslations<'CALENDARS'>>
+}) {
+  const config =
+    status === 'accepted'
+      ? {
+          dotClassName: 'bg-green-500',
+          label: t('visualization.attendeeStatus.accepted.string'),
+        }
+      : status === 'declined'
+        ? {
+            dotClassName: 'bg-red-500',
+            label: t('visualization.attendeeStatus.declined.string'),
+          }
+        : status === 'tentative'
+          ? {
+              dotClassName: 'bg-orange-500',
+              label: t('visualization.attendeeStatus.tentative.string'),
+            }
+          : {
+              dotClassName: 'bg-orange-500',
+              label: t('visualization.attendeeStatus.pending.string'),
+            }
+
+  return (
+    <span
+      className={cn(
+        'text-muted-foreground flex items-center gap-1 text-xs'
+      )}
+    >
+      <span
+        className={cn('h-2 w-2 rounded-full', config.dotClassName)}
+        aria-hidden="true"
+      />
+      {config.label}
+    </span>
+  )
+}
 
 const Visualization: React.FC<VisualizationProps> = ({ data }) => {
   const t = useTranslations('CALENDARS')
@@ -80,314 +152,243 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
   const timeStr = `${startDate.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
-  })} - ${endDate.toLocaleTimeString([], {
+  })} – ${endDate.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   })}`
 
-  return (
-    <Card className="h-full w-full">
-      <CardHeader>
-        <div className="space-y-2">
-          <h2 className="text-3xl font-bold">{data.title}</h2>
-          <div className="text-muted-foreground flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            <div>
-              <p className="text-lg">{dateStr}</p>
-              <p className="text-sm">{timeStr}</p>
-            </div>
-          </div>
+  const organizer = data.organizer
+  const otherAttendees = (data.attendees ?? []).filter(
+    (attendee) =>
+      !organizer ||
+      attendee.email.toLowerCase() !== organizer.email.toLowerCase()
+  )
+  const showAttendeesSection =
+    organizer !== undefined || otherAttendees.length > 0
+
+  const dateTimeLabel = data.all_day ? dateStr : `${dateStr} · ${timeStr}`
+
+  const sections = [
+    data.location && (
+      <div key="location" className="flex items-start gap-3">
+        <MapPin className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div>
+          <h3 className="font-semibold">
+            {t('visualization.location.string')}
+          </h3>
+          <p className="text-muted-foreground">{data.location}</p>
         </div>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {data.location && (
-          <>
-            <div className="flex items-start gap-3">
-              <MapPin className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div>
-                <h3 className="font-semibold">
-                  {t('visualization.location.string')}
-                </h3>
-                <p className="text-muted-foreground">{data.location}</p>
-              </div>
-            </div>
-            <Separator />
-          </>
-        )}
-
-        {data.description && (
-          <>
-            <div className="flex items-start gap-3">
-              <FileText className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-semibold">
-                  {t('visualization.description.string')}
-                </h3>
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {data.description}
-                </p>
-              </div>
-            </div>
-            <Separator />
-          </>
-        )}
-
-        {data.attendees && data.attendees.length > 0 && (
-          <>
-            <div className="flex items-start gap-3">
-              <Users className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div className="flex-1">
-                <h3 className="mb-2 font-semibold">
-                  {t('visualization.attendees.string')}
-                </h3>
-                <div className="space-y-2">
-                  {data.attendees.map((attendee, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between"
-                    >
-                      <div>
-                        <p className="font-medium">
-                          {attendee.name || attendee.email}
-                        </p>
-                        {attendee.name && (
-                          <p className="text-muted-foreground text-sm">
-                            {attendee.email}
-                          </p>
-                        )}
-                      </div>
-                      {attendee.status && (
-                        <Badge
-                          variant={
-                            attendee.status === 'accepted'
-                              ? 'default'
-                              : attendee.status === 'declined'
-                                ? 'destructive'
-                                : 'secondary'
-                          }
-                        >
-                          {attendee.status}
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <Separator />
-          </>
-        )}
-
-        {data.conference_data && (
-          <>
-            <div className="flex items-start gap-3">
-              <Video className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-semibold">
-                  {t('visualization.conference.string')}
-                </h3>
-                <a
-                  href={data.conference_data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary hover:underline"
-                >
-                  {data.conference_data.type}{' '}
-                  {t('visualization.joinMeeting.string')}
-                </a>
-              </div>
-            </div>
-            <Separator />
-          </>
-        )}
-
-        {data.reminders && data.reminders.length > 0 && (
-          <>
-            <div className="flex items-start gap-3">
-              <Bell className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div className="flex-1">
-                <h3 className="mb-2 font-semibold">
-                  {t('visualization.reminders.string')}
-                </h3>
-                <div className="space-y-1">
-                  {data.reminders.map((reminder, index) => {
-                    const minutes = reminder.minutes_before
-                    const hours = Math.floor(minutes / 60)
-                    const days = Math.floor(hours / 24)
-
-                    let timeStr = ''
-                    if (days > 0) {
-                      timeStr = t('visualization.daysBefore.string', {
-                        count: days,
-                      })
-                    } else if (hours > 0) {
-                      timeStr = t('visualization.hoursBefore.string', {
-                        count: hours,
-                      })
-                    } else {
-                      timeStr = t('visualization.minutesBefore.string', {
-                        count: minutes,
-                      })
-                    }
-                    const reminderText = `${reminder.method} ${timeStr}`
-
-                    return (
-                      <p key={index} className="text-muted-foreground text-sm">
-                        {reminderText}
-                      </p>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
-            <Separator />
-          </>
-        )}
-
-        {data.recurrence && (
-          <div className="flex items-start gap-3">
-            <Clock className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-            <div>
-              <h3 className="font-semibold">
-                {t('visualization.recurrence.string')}
-              </h3>
-              <p className="text-muted-foreground">
-                {recurrenceFrequencyLabel}
-                {data.recurrence.interval && data.recurrence.interval > 1 && (
-                  <>
-                    {' '}
-                    {t('visualization.every.string', {
-                      count: data.recurrence.interval,
-                    })}
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {data.organizer && (
-          <>
-            <Separator />
-            <div className="flex items-start gap-3">
-              <User className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div>
-                <h3 className="font-semibold">
-                  {t('visualization.organizer.string')}
-                </h3>
-                <p className="text-muted-foreground">
-                  {data.organizer.name ?? data.organizer.email}
-                </p>
-                {data.organizer.name && (
-                  <p className="text-muted-foreground text-sm">
-                    {data.organizer.email}
+      </div>
+    ),
+    data.description && (
+      <div key="description" className="flex items-start gap-3">
+        <FileText className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div className="flex-1">
+          <h3 className="font-semibold">
+            {t('visualization.description.string')}
+          </h3>
+          <p className="text-muted-foreground whitespace-pre-wrap">
+            {data.description}
+          </p>
+        </div>
+      </div>
+    ),
+    showAttendeesSection && (
+      <div key="attendees" className="flex items-start gap-3">
+        <Users className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div className="flex-1">
+          <h3 className="mb-2 font-semibold">
+            {t('visualization.attendees.string')}
+          </h3>
+          <div className="space-y-2">
+            {organizer && (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">
+                    {organizer.name ?? organizer.email}
                   </p>
+                  {organizer.name && (
+                    <p className="text-muted-foreground text-sm">
+                      {organizer.email}
+                    </p>
+                  )}
+                </div>
+                <span className="text-muted-foreground text-xs">
+                  {t('visualization.organizerRole.string')}
+                </span>
+              </div>
+            )}
+            {otherAttendees.map((attendee, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-medium">
+                    {attendee.name || attendee.email}
+                  </p>
+                  {attendee.name && (
+                    <p className="text-muted-foreground text-sm">
+                      {attendee.email}
+                    </p>
+                  )}
+                </div>
+                {attendee.status && (
+                  <AttendeeParticipationStatus
+                    status={attendee.status}
+                    t={t}
+                  />
                 )}
               </div>
-            </div>
-          </>
-        )}
-
-        {data.categories && data.categories.length > 0 && (
-          <>
-            <Separator />
-            <div className="flex items-start gap-3">
-              <FileText className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div className="flex-1">
-                <h3 className="mb-2 font-semibold">
-                  {t('visualization.categories.string')}
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {data.categories.map((category) => (
-                    <Badge key={category} variant="secondary">
-                      {category}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </>
-        )}
-
-        {data.url && (
-          <>
-            <Separator />
-            <div className="flex items-start gap-3">
-              <ExternalLink className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div>
-                <h3 className="font-semibold">
-                  {t('visualization.url.string')}
-                </h3>
-                <a
-                  href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-primary break-all hover:underline"
-                >
-                  {data.url}
-                </a>
-              </div>
-            </div>
-          </>
-        )}
-
-        <Separator />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="flex items-start gap-3">
-            {visibility === 'public' ? (
-              <Globe className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-            ) : (
-              <Lock className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-            )}
-            <div>
-              <h3 className="font-semibold">
-                {t('visualization.visibility.string')}
-              </h3>
-              <p className="text-muted-foreground">{visibilityLabel}</p>
-            </div>
+            ))}
           </div>
-
-          <div className="flex items-start gap-3">
-            <Clock className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-            <div>
-              <h3 className="font-semibold">
-                {t('visualization.showAs.string')}
-              </h3>
-              <p className="text-muted-foreground">{showAsLabel}</p>
-            </div>
-          </div>
-
-          {data.color && (
-            <div className="flex items-center gap-2">
-              <div
-                className="border-border h-4 w-4 rounded-full border"
-                style={{ backgroundColor: data.color }}
-              />
-              <span className="text-muted-foreground text-sm">
-                {data.color}
-              </span>
-            </div>
-          )}
         </div>
+      </div>
+    ),
+    data.conference_data && (
+      <div key="conference" className="flex items-start gap-3">
+        <Video className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div className="flex-1">
+          <h3 className="font-semibold">
+            {t('visualization.conference.string')}
+          </h3>
+          <a
+            href={data.conference_data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[hsl(var(--ring))] underline underline-offset-2 hover:opacity-80"
+          >
+            {data.conference_data.type}{' '}
+            {t('visualization.joinMeeting.string')}
+          </a>
+        </div>
+      </div>
+    ),
+    data.reminders &&
+      data.reminders.length > 0 && (
+        <div key="reminders" className="flex items-start gap-3 pt-1">
+          <Bell className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <h3 className="mb-2 font-semibold">
+              {t('visualization.reminders.string')}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {data.reminders.map((reminder, index) => {
+                const timeBefore = formatReminderTimeBefore(
+                  t,
+                  reminder.minutes_before
+                )
+                const methodLabel = getReminderMethodLabel(t, reminder.method)
 
-        {status !== 'confirmed' && (
-          <>
-            <Separator />
-            <div className="flex items-start gap-3">
-              <Calendar className="text-muted-foreground mt-1 h-5 w-5 shrink-0" />
-              <div>
-                <h3 className="font-semibold">
-                  {t('visualization.status.string')}
-                </h3>
-                <Badge variant="outline" className={getStatusClassName(status)}>
-                  {statusLabel}
-                </Badge>
-              </div>
+                return (
+                  <span
+                    key={index}
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs'
+                    )}
+                  >
+                    <span aria-hidden="true">🔔</span>
+                    {methodLabel} · {timeBefore}
+                  </span>
+                )
+              })}
             </div>
-          </>
-        )}
-      </CardContent>
-    </Card>
+          </div>
+        </div>
+      ),
+    data.recurrence && (
+      <div key="recurrence" className="flex items-start gap-3">
+        <Clock className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div>
+          <h3 className="font-semibold">
+            {t('visualization.recurrence.string')}
+          </h3>
+          <p className="text-muted-foreground">
+            {recurrenceFrequencyLabel}
+            {data.recurrence.interval && data.recurrence.interval > 1 && (
+              <>
+                {' '}
+                {t('visualization.every.string', {
+                  count: data.recurrence.interval,
+                })}
+              </>
+            )}
+          </p>
+        </div>
+      </div>
+    ),
+    data.categories &&
+      data.categories.length > 0 && (
+        <div key="categories" className="flex items-start gap-3">
+          <FileText className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+          <div className="flex-1">
+            <h3 className="mb-2 font-semibold">
+              {t('visualization.categories.string')}
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {data.categories.map((category) => (
+                <Badge key={category} variant="secondary">
+                  {category}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        </div>
+      ),
+    data.url && (
+      <div key="url" className="flex items-start gap-3">
+        <ExternalLink className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div>
+          <h3 className="font-semibold">{t('visualization.url.string')}</h3>
+          <a
+            href={data.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm break-all text-[hsl(var(--ring))] underline underline-offset-2 hover:opacity-80"
+          >
+            {data.url}
+          </a>
+        </div>
+      </div>
+    ),
+    status !== 'confirmed' && (
+      <div key="status" className="flex items-start gap-3">
+        <Calendar className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div>
+          <h3 className="font-semibold">
+            {t('visualization.status.string')}
+          </h3>
+          <Badge variant="outline" className={getStatusClassName(status)}>
+            {statusLabel}
+          </Badge>
+        </div>
+      </div>
+    ),
+  ].filter((section): section is React.ReactElement => Boolean(section))
+
+  return (
+    <div className="space-y-5">
+      <div
+        className="-mx-6 -mt-6 mb-5 h-1 rounded-t-lg"
+        style={{ backgroundColor: data.color ?? 'hsl(var(--primary))' }}
+      />
+      <div className="space-y-2">
+        <h2 className="text-xl font-semibold">{data.title}</h2>
+        <p className="text-muted-foreground text-sm">{dateTimeLabel}</p>
+      </div>
+
+      {sections.map((section, index) => (
+        <React.Fragment key={section.key ?? index}>
+          {index > 0 && <Separator className="opacity-50" />}
+          {section}
+        </React.Fragment>
+      ))}
+
+      <Separator className="opacity-50" />
+      <p className="text-muted-foreground text-xs">
+        {visibilityLabel} · {showAsLabel}
+      </p>
+    </div>
   )
 }
 
