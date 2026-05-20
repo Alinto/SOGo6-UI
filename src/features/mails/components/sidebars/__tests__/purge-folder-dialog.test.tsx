@@ -148,6 +148,7 @@ describe('PurgeFolderDialog', () => {
       const purgeButton = screen.getByRole('button', {
         name: 'folders.actions.purge.confirm.string',
       })
+      await waitFor(() => expect(purgeButton).not.toBeDisabled())
       await user.click(purgeButton)
 
       await waitFor(() => {
