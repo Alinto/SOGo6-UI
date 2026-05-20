@@ -408,6 +408,9 @@
       "create": "Create Event",
       "update": "Update Event"
     },
+    "common": {
+      "cancel": "Cancel"
+    },
     "forms": {
       "createCalendar": {
         "title": {
@@ -584,6 +587,13 @@
       },
       "editEvent": {
         "string": "Edit event"
+      },
+      "deleteEvent": {
+        "confirm": {
+          "title": "Delete event?",
+          "description": "This action cannot be undone.",
+          "button": "Delete"
+        }
       },
       "deleteCalendar": {
         "title": {

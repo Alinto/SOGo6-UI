@@ -56,13 +56,16 @@ export async function POST(req: NextRequest) {
     name,
     description,
     color,
-    type,
+    type: rawType,
     eventDuration,
     showBusyStatus,
     eventNotifications,
     allDayNotifications,
     url,
   } = body
+
+  const type =
+    rawType === 'shared' || rawType === 'subscription' ? rawType : 'personal'
 
   // Read the data from the cookie
   const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)

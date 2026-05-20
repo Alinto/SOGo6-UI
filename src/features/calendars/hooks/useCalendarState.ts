@@ -205,7 +205,9 @@ export function useCalendarState(): UseCalendarStateReturn {
         return [
           {
             ...event,
-            id: event.id ?? `${event.uid}-${startDate}`,
+            id: event.recurrence_id
+              ? `${event.key ?? event.uid}-${event.recurrence_id}`
+              : (event.key ?? event.id ?? `${event.uid}-${startDate}`),
             calendar_id: event.calendar_id ?? event.calendar_key ?? '',
             start_date: startDate,
             date_start: startDate,

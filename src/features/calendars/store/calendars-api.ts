@@ -16,6 +16,7 @@ import type {
   CalendarCreateBody,
   CalendarEvent,
   CalendarEventCreateBody,
+  EventRecurrence,
   CalendarEventQueryArgs,
   CalendarEventUpdateBody,
   CalendarEventsResponse,
@@ -147,11 +148,17 @@ function normalizeCalendarEvent(event: CalendarEvent): CalendarEvent {
 
   return {
     ...event,
-    id: event.id ?? event.key ?? event.uid ?? null,
     start_date: startDate,
     date_start: startDate,
     end_date: endDate,
     date_end: endDate,
+    recurrence:
+      event.recurrence ??
+      (event as { recurrence_rule?: EventRecurrence }).recurrence_rule ??
+      undefined,
+    id: event.recurrence_id
+      ? `${event.key ?? event.uid}-${event.recurrence_id}`
+      : (event.key ?? event.id ?? event.uid ?? null),
     calendar_id: calendarId,
     calendar_key: event.calendar_key ?? event.calendar_id ?? undefined,
   }

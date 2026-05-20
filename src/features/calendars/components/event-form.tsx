@@ -27,7 +27,7 @@ import {
   useCreateCalendarEventMutation,
   useUpdateCalendarEventMutation,
 } from '@/features/calendars'
-import { cn } from '@/lib/utils'
+import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, MapPin, Plus, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -277,8 +277,8 @@ export function EventForm({
 
     return {
       target_uids,
-      start: windowStart.toISOString(),
-      end: windowEnd.toISOString(),
+      start_date_time: windowStart.toISOString(),
+      end_date_time: windowEnd.toISOString(),
     }
     // attendeeFetchKey avoids refetch when `attendees` gets a new array reference with same content
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -849,31 +849,39 @@ export function EventForm({
               <FormItem>
               <FormLabel>{t('eventForm.categories.label')}</FormLabel>
               <FormControl>
-                <div className={cn('flex flex-col gap-2')}>
-                  <div className={cn('flex min-h-6 flex-wrap gap-1')}>
-                    {field.value.map((category) => (
-                      <Badge
-                        key={category}
-                        variant="secondary"
-                        className={cn('gap-1')}
-                      >
-                        {category}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            field.onChange(
-                              field.value.filter((item) => item !== category)
-                            )
-                          }
-                          aria-label={t('eventForm.categories.remove', {
-                            category,
-                          })}
+                <div
+                  className={cn(
+                    'flex flex-col',
+                    field.value.length > 0 && 'gap-2'
+                  )}
+                >
+                  {field.value.length > 0 && (
+                    <div className={cn('flex flex-wrap gap-1')}>
+                      {field.value.map((category) => (
+                        <Badge
+                          key={category}
+                          variant="secondary"
+                          className={cn('gap-1')}
                         >
-                          <X className={cn('h-3 w-3')} />
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
+                          {category}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              field.onChange(
+                                field.value.filter((item) => item !== category)
+                              )
+                            }
+                            className={tagDismissButtonClassName('p-0.5')}
+                            aria-label={t('eventForm.categories.remove', {
+                              category,
+                            })}
+                          >
+                            <X className={cn('h-3 w-3')} />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                   <Input
                     value={categoryInput}
                     onChange={(e) => setCategoryInput(e.target.value)}

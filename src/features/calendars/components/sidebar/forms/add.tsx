@@ -47,6 +47,11 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
         color: values.color,
         description: values.description || undefined,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        type: 'personal',
+        eventDuration: values.eventDuration,
+        showBusyStatus: values.showBusyStatus,
+        eventNotifications: values.eventNotifications,
+        allDayNotifications: values.allDayNotifications,
       }).unwrap()
       setOpen(false)
       form.reset()

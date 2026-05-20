@@ -120,6 +120,8 @@
     --sidebar-background: 220 15% 12%;
     --sidebar-background-secondary: 220 15% 12%;
     --sidebar-foreground: 220 10% 96%;
+    --sidebar-foreground-secondary: 220 10% 96%;
+    --sidebar-muted-foreground-secondary: 220 10% 65%;
     --sidebar-primary: 180 60% 45%;
     --sidebar-accent: 220 15% 25%;
     --sidebar-accent-foreground: 220 10% 96%;

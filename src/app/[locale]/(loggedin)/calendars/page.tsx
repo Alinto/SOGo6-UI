@@ -1,5 +1,16 @@
 'use client'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -217,13 +228,32 @@ const CalendarPage = () => {
                   <Pencil className={cn('mr-2 h-4 w-4')} />
                   {t('forms.editEvent.string')}
                 </Button>
-                <Button
-                  variant="destructive"
-                  disabled={isDetailFetching && eventKeyForQuery !== null}
-                  onClick={handleDeleteSelectedEvent}
-                >
-                  {t('forms.deleteCalendar.confirm.string')}
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="destructive"
+                      disabled={isDetailFetching && eventKeyForQuery !== null}
+                    >
+                      {t('forms.deleteEvent.confirm.button')}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        {t('forms.deleteEvent.confirm.title')}
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {t('forms.deleteEvent.confirm.description')}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDeleteSelectedEvent}>
+                        {t('forms.deleteEvent.confirm.button')}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </div>
             </>
           )}

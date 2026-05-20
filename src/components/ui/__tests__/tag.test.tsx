@@ -2,10 +2,16 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import Tag from '../tag'
 
-// Mock the dependencies with inline implementations
-jest.mock('@/lib/utils', () => ({
-  cn: jest.fn((...classes) => classes.filter(Boolean).join(' ')),
-}))
+// Mock cn only; keep tagDismissButtonClassName from the real module
+jest.mock('@/lib/utils', () => {
+  const actual = jest.requireActual<typeof import('@/lib/utils')>('@/lib/utils')
+  return {
+    ...actual,
+    cn: jest.fn((...classes: unknown[]) =>
+      classes.filter(Boolean).join(' ')
+    ),
+  }
+})
 
 jest.mock('lucide-react/dynamic', () => ({
   DynamicIcon: ({ name, ...props }: any) => (

@@ -52,7 +52,9 @@ export interface CalendarEvent {
 
   // Recurrence
   recurrence?: EventRecurrence
-  recurrence_id?: string // For edited instances of recurring events
+  recurrence_rule?: EventRecurrence | null
+  recurrence_id?: string | null
+  recurrence_range?: 'ONE' | 'THISANDFUTURE' | 'ALL' | null
 
   // Reminders
   reminders?: EventReminder[]
@@ -130,7 +132,10 @@ export type CalendarEventCreateBody = {
   } | null
 }
 
-export type CalendarEventUpdateBody = Partial<CalendarEventCreateBody>
+export type CalendarEventUpdateBody = Partial<CalendarEventCreateBody> & {
+  recurrence_id?: string
+  recurrence_range?: 'ONE' | 'THISANDFUTURE' | 'ALL'
+}
 
 export interface ApiCalendarEventResponse {
   data: CalendarEvent
@@ -195,6 +200,17 @@ export type CalendarCreateBody = {
   color?: string
   description?: string | null
   timezone?: string
+  /** fakeApi / legacy form fields */
+  type?: CalendarType
+  eventDuration?: string
+  showBusyStatus?: boolean
+  eventNotifications?: Array<{ type: string; timing: string }>
+  allDayNotifications?: Array<{
+    type: string
+    daysBefore: number
+    time: string
+  }>
+  url?: string
 }
 
 export type CalendarUpdateBody = {
@@ -256,8 +272,8 @@ export interface FreeBusyApiResponse {
 /** Request body sent to the backend (FreeBusyRequestSchema) */
 export interface FreeBusyRequest {
   target_uids: string[] // participant emails / uids
-  start: string // ISO 8601 UTC, e.g. "2026-05-11T00:00:00Z"
-  end: string // ISO 8601 UTC, e.g. "2026-05-11T23:59:59Z"
+  start_date_time: string // ISO 8601 UTC, e.g. "2026-05-11T00:00:00Z"
+  end_date_time: string // ISO 8601 UTC, e.g. "2026-05-11T23:59:59Z"
 }
 
 /**

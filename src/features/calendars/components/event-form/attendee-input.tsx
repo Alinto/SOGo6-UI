@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { Loader2, Search, UserPlus, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import {
@@ -226,7 +226,9 @@ export default function AttendeeInput({
                 <button
                   type="button"
                   onClick={() => handleRemove(attendee.email)}
-                  className="focus-visible:ring-ring ml-0.5 cursor-pointer rounded-sm opacity-60 hover:opacity-100 focus-visible:ring-2"
+                  className={tagDismissButtonClassName(
+                    'ml-0.5 rounded-sm opacity-60 hover:opacity-100 focus-visible:ring-2'
+                  )}
                   aria-label={t('eventForm.attendees.remove', {
                     email: attendee.email,
                   })}
