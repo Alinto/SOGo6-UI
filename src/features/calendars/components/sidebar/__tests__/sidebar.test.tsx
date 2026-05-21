@@ -33,6 +33,13 @@ jest.mock('../forms/add', () => ({
   },
 }))
 
+jest.mock('../forms/add-external', () => ({
+  __esModule: true,
+  default: function MockAddExternalCalendar() {
+    return <div data-testid="add-external-calendar" />
+  },
+}))
+
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
   default: function MockSidebarItem({ name }: { name: string }) {

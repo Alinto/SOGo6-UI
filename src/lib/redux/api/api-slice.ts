@@ -22,6 +22,7 @@ export const MAIL_SLICE = 'mail'
 export const MAILS_FOLDERS_SLICE = 'mails/folders'
 export const CALENDARS_SLICE = 'calendars'
 export const CALENDAR_EVENTS_SLICE = 'calendar_events'
+export const CALENDAR_SYNC_SLICE = 'calendar_sync'
 export const ADMIN_CONFIG_SLICE = 'adminConfig'
 export const ADMIN_CONFIG_DOMAIN_SLICE = 'adminConfig/domain'
 export const ADMIN_CONFIG_RULES_SLICE = 'adminConfig/rules'
@@ -62,6 +63,7 @@ const tagTypes = [
   MAILS_FOLDERS_SLICE,
   CALENDARS_SLICE,
   CALENDAR_EVENTS_SLICE,
+  CALENDAR_SYNC_SLICE,
   ADMIN_CONFIG_SLICE,
   ADMIN_CONFIG_DOMAIN_SLICE,
   ADMIN_CONFIG_RULES_SLICE,

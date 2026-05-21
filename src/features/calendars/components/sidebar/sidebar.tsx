@@ -12,6 +12,7 @@ import React, { memo, useMemo } from 'react'
 import { useGetCalendarsQuery } from '../../store/calendars-api'
 import CreateEventOpener from './create-event-opener'
 import AddCalendar from './forms/add'
+import AddExternalCalendar from './forms/add-external'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -28,7 +29,8 @@ const Sidebar: React.FC = () => {
           calendar.source_type === 'personal' ||
           (!calendar.type &&
             calendar.source_type !== 'shared' &&
-            calendar.source_type !== 'subscription')
+            calendar.source_type !== 'subscription' &&
+            calendar.source_type !== 'ics')
       ),
       shared: calendars.filter(
         (calendar) =>
@@ -37,7 +39,8 @@ const Sidebar: React.FC = () => {
       subscriptions: calendars.filter(
         (calendar) =>
           calendar.type === 'subscription' ||
-          calendar.source_type === 'subscription'
+          calendar.source_type === 'subscription' ||
+          calendar.source_type === 'ics'
       ),
     }
   }, [data])
@@ -69,6 +72,8 @@ const Sidebar: React.FC = () => {
                 icon="calendar"
                 isDefault={calendar.is_default ?? calendar.default}
                 id={calendar.key ?? calendar.id ?? ''}
+                calendarKey={calendar.key ?? calendar.id}
+                sourceType={calendar.source_type}
                 name={calendar.name}
                 color={calendar.color}
                 onClick={() => {}}
@@ -86,6 +91,8 @@ const Sidebar: React.FC = () => {
               key={calendar.key ?? calendar.id}
               icon="calendar"
               id={calendar.key ?? calendar.id ?? ''}
+              calendarKey={calendar.key ?? calendar.id}
+              sourceType={calendar.source_type}
               name={calendar.name}
               color={calendar.color}
               onClick={() => {}}
@@ -98,13 +105,15 @@ const Sidebar: React.FC = () => {
         <SidebarGroupLabel>
           {t('sidebar.subscriptions.string')}
         </SidebarGroupLabel>
-        <AddCalendar type="subscriptions" />
+        <AddExternalCalendar />
         <SidebarMenu>
           {subscriptions.map((calendar) => (
             <SidebarItem
               key={calendar.key ?? calendar.id}
               icon="calendar"
               id={calendar.key ?? calendar.id ?? ''}
+              calendarKey={calendar.key ?? calendar.id}
+              sourceType={calendar.source_type}
               name={calendar.name}
               color={calendar.color}
               onClick={() => {}}

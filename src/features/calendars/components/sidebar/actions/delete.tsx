@@ -5,23 +5,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useDeleteCalendarMutation } from '@/features/calendars'
+import {
+  useDeleteCalendarMutation,
+  useDeleteExternalCalendarMutation,
+} from '@/features/calendars/store/calendars-api'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 
 interface DeleteActionProps {
   id: string
   name?: string
+  sourceType?: string
   onClose?: () => void
 }
 
-const DeleteAction: React.FC<DeleteActionProps> = ({ id, onClose }) => {
+const DeleteAction: React.FC<DeleteActionProps> = ({ id, sourceType, onClose }) => {
   const t = useTranslations('CALENDARS')
-  const [deleteCalendar, { isLoading }] = useDeleteCalendarMutation()
+  const [deleteCalendar, { isLoading: isDeletingLocal }] =
+    useDeleteCalendarMutation()
+  const [deleteExternalCalendar, { isLoading: isDeletingExternal }] =
+    useDeleteExternalCalendarMutation()
+  const isLoading = isDeletingLocal || isDeletingExternal
 
   const handleDelete = async () => {
     try {
-      await deleteCalendar(id).unwrap()
+      if (sourceType === 'ics') {
+        await deleteExternalCalendar(id).unwrap()
+      } else {
+        await deleteCalendar(id).unwrap()
+      }
       onClose?.()
     } catch {
       // Notifications are handled by RTK Query onQueryStarted.

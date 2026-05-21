@@ -105,7 +105,7 @@ export function CalendarEventsSearch() {
         <div className="relative w-full">
           <Input
             type="text"
-            className="placeholder:text-transparent"
+            className="text-foreground caret-foreground placeholder:text-transparent"
             placeholder={t('search.string')}
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
@@ -114,7 +114,7 @@ export function CalendarEventsSearch() {
             autoComplete="off"
           />
           {!searchInput && (
-            <div className="pointer-events-none absolute inset-0 flex items-center gap-2 px-3 text-sm text-gray-500">
+            <div className="text-muted-foreground pointer-events-none absolute inset-0 flex items-center gap-2 px-3 text-sm">
               <SearchIcon className="size-4 shrink-0 opacity-70" />
               {t('search.string')}
             </div>
