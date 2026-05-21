@@ -1,3 +1,4 @@
+import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import {
   apiSlice,
@@ -12,6 +13,7 @@ import type {
   ApiCalendarResponse,
   ApiCalendarsResponse,
   ApiCalendarEventsResponse,
+  AttendanceStatus,
   Calendar,
   CalendarCreateBody,
   CalendarEvent,
@@ -99,6 +101,28 @@ const notifyDeleteCalendarEvent = createCalendarNotifyMutation({
   errorTitle: 'calendar_event_delete.error.title.string',
   errorMessage: 'calendar_event_delete.error.message.string',
 })
+
+const attendanceSuccessKeys: Record<
+  AttendanceStatus,
+  { title: string; message: string }
+> = {
+  accepted: {
+    title: 'calendar_event_attendance.success.accepted.title.string',
+    message: 'calendar_event_attendance.success.accepted.message.string',
+  },
+  declined: {
+    title: 'calendar_event_attendance.success.declined.title.string',
+    message: 'calendar_event_attendance.success.declined.message.string',
+  },
+  tentative: {
+    title: 'calendar_event_attendance.success.tentative.title.string',
+    message: 'calendar_event_attendance.success.tentative.message.string',
+  },
+  delegated: {
+    title: 'calendar_event_attendance.success.delegated.title.string',
+    message: 'calendar_event_attendance.success.delegated.message.string',
+  },
+}
 
 function normalizeCalendar(calendar: Calendar): Calendar {
   const key = calendar.key ?? calendar.id ?? ''
@@ -195,6 +219,57 @@ type UpdateQueryDataFn = <T>(
 ) => UnknownAction
 
 const updateQueryData = apiSlice.util.updateQueryData as unknown as UpdateQueryDataFn
+
+function eventMatchesKey(event: CalendarEvent, eventKey: string): boolean {
+  return (
+    event.id === eventKey ||
+    event.key === eventKey ||
+    (event.uid != null && event.uid === eventKey)
+  )
+}
+
+/** Keep grid/list caches in sync after attendance without waiting for refetch. */
+function patchEventInCachedTimeRangeQueries(
+  dispatch: (action: UnknownAction) => void,
+  getState: () => unknown,
+  eventKey: string,
+  updatedEvent: CalendarEvent
+) {
+  const apiState = (getState() as { api?: { queries?: Record<string, {
+    endpointName?: string
+    originalArgs?: { calendarIds: string[]; startDate: string; endDate: string }
+    data?: CalendarEvent[]
+  }> } }).api?.queries
+
+  if (!apiState) return
+
+  for (const entry of Object.values(apiState)) {
+    if (
+      entry?.endpointName !== 'getEventsInTimeRange' ||
+      !entry.originalArgs ||
+      !Array.isArray(entry.data)
+    ) {
+      continue
+    }
+
+    dispatch(
+      updateQueryData<CalendarEvent[]>(
+        'getEventsInTimeRange',
+        entry.originalArgs,
+        (draft) => {
+          const idx = draft.findIndex((e) => eventMatchesKey(e, eventKey))
+          if (idx >= 0) {
+            draft[idx] = {
+              ...draft[idx],
+              ...updatedEvent,
+              calendar_id: updatedEvent.calendar_id ?? draft[idx].calendar_id,
+            }
+          }
+        }
+      )
+    )
+  }
+}
 
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
@@ -389,6 +464,63 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         await notifyDeleteCalendarEvent(dispatch, queryFulfilled)
       },
     }),
+    postEventAttendance: builder.mutation<
+      CalendarEvent,
+      { eventKey: string; status: AttendanceStatus; recurrence_id?: string }
+    >({
+      query: ({ eventKey, status, recurrence_id }) => ({
+        url: `${eventUrl(eventKey)}/attendance`,
+        method: 'POST',
+        body: {
+          status,
+          ...(recurrence_id ? { recurrence_id } : {}),
+        },
+      }),
+      transformResponse: (response: ApiCalendarEventResponse | CalendarEvent) =>
+        normalizeCalendarEvent('data' in response ? response.data : response),
+      invalidatesTags: [],
+      async onQueryStarted(
+        { eventKey, status },
+        { dispatch, queryFulfilled, getState }
+      ) {
+        const keys = attendanceSuccessKeys[status]
+        try {
+          const { data: updatedEvent } = await queryFulfilled
+
+          dispatch(
+            updateQueryData<CalendarEvent>(
+              'getCalendarEventById',
+              { eventKey },
+              () => updatedEvent
+            )
+          )
+          patchEventInCachedTimeRangeQueries(
+            dispatch,
+            getState,
+            eventKey,
+            updatedEvent
+          )
+
+          dispatch(
+            addNotification({
+              type: 'success',
+              title: keys.title,
+              message: keys.message,
+              duration: 3000,
+            })
+          )
+        } catch {
+          dispatch(
+            addNotification({
+              type: 'error',
+              title: 'calendar_event_attendance.error.title.string',
+              message: 'calendar_event_attendance.error.message.string',
+              duration: 5000,
+            })
+          )
+        }
+      },
+    }),
     getAllEvents: builder.query<CalendarEventsResponse, CalendarEventQueryArgs>({
       query: (params) => ({ url: 'events', params }),
       transformResponse: (
@@ -465,6 +597,64 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         CALENDAR_EVENTS_SLICE,
         ...calendarIds.map((id) => ({ type: CALENDAR_EVENTS_SLICE, id })),
       ],
+    }),
+    searchEvents: builder.query<
+      CalendarEvent[],
+      { calendarIds: string[]; search: string }
+    >({
+      queryFn: async (
+        { calendarIds, search },
+        _api,
+        _options,
+        baseQuery
+      ) => {
+        if (search.length < 2 || calendarIds.length === 0) {
+          return { data: [] }
+        }
+
+        const allEvents: CalendarEvent[] = []
+        await Promise.all(
+          calendarIds.map(async (calendarId) => {
+            try {
+              const result = await baseQuery({
+                url: calendarEventsUrl(calendarId),
+                method: 'GET',
+                params: { search },
+              })
+
+              if (result.error) {
+                console.warn(
+                  `[Calendar] Failed to search events for ${calendarId}:`,
+                  result.error
+                )
+                return
+              }
+
+              const { events } = normalizeCalendarEventsResponse(
+                result.data as
+                  | ApiCalendarEventsResponse
+                  | CalendarEventsResponse
+                  | CalendarEvent[]
+              )
+
+              allEvents.push(
+                ...events.map((event) => ({
+                  ...event,
+                  calendar_id: event.calendar_id ?? calendarId,
+                }))
+              )
+            } catch (e) {
+              console.warn(
+                `[Calendar] Exception searching events for ${calendarId}:`,
+                e
+              )
+            }
+          })
+        )
+
+        return { data: allEvents }
+      },
+      providesTags: [CALENDAR_EVENTS_SLICE],
     }),
     getFreeBusy: builder.query<
       FreeBusyApiResponse,
@@ -570,9 +760,11 @@ export const {
   useCreateCalendarEventMutation,
   useUpdateCalendarEventMutation,
   useDeleteCalendarEventMutation,
+  usePostEventAttendanceMutation,
   useDeleteCalendarMutation,
   useGetAllEventsQuery,
   useGetEventsInTimeRangeQuery,
+  useSearchEventsQuery,
   useUpdateCalendarVisibilityMutation,
   useGetFreeBusyQuery,
   useSearchUsersQuery,

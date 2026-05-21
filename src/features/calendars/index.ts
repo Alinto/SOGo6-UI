@@ -17,6 +17,8 @@ export type {
   EventAttendee,
   EventRecurrence,
   EventReminder,
+  AttendanceStatus,
+  AttendanceBody,
 } from './calendars-types'
 
 // API & Hooks from RTK Query
@@ -32,6 +34,8 @@ export {
   useGetCalendarsByTypeQuery,
   useGetCalendarsQuery,
   useGetEventsInTimeRangeQuery,
+  useSearchEventsQuery,
   useUpdateCalendarMutation,
   useUpdateCalendarEventMutation,
+  usePostEventAttendanceMutation,
 } from './store/calendars-api'

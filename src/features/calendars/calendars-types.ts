@@ -293,3 +293,10 @@ export interface UserSearchResult {
   department?: string
   avatar_url?: string
 }
+
+export type AttendanceStatus = 'accepted' | 'declined' | 'tentative' | 'delegated'
+
+export interface AttendanceBody {
+  status: AttendanceStatus
+  recurrence_id?: string
+}

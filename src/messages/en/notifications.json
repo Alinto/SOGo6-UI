@@ -208,6 +208,50 @@
                 }
             }
         },
+        "calendar_event_attendance": {
+            "success": {
+                "accepted": {
+                    "title": {
+                        "string": "Invitation accepted"
+                    },
+                    "message": {
+                        "string": "You accepted this event."
+                    }
+                },
+                "declined": {
+                    "title": {
+                        "string": "Invitation declined"
+                    },
+                    "message": {
+                        "string": "You declined this event."
+                    }
+                },
+                "tentative": {
+                    "title": {
+                        "string": "Marked as maybe"
+                    },
+                    "message": {
+                        "string": "You marked this event as maybe."
+                    }
+                },
+                "delegated": {
+                    "title": {
+                        "string": "Attendance updated"
+                    },
+                    "message": {
+                        "string": "Your attendance was updated."
+                    }
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Attendance update failed"
+                },
+                "message": {
+                    "string": "Failed to update your attendance. Please try again."
+                }
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",

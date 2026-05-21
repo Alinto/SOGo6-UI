@@ -110,7 +110,6 @@ export function useCalendarState(): UseCalendarStateReturn {
   const [timezone, setTimezone] = useState<string>(
     Intl.DateTimeFormat().resolvedOptions().timeZone
   )
-
   // Remove manual cache management and shouldFetch state
 
   const { data: calendarsData } = useGetCalendarsQuery()

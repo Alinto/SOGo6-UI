@@ -1,22 +1,10 @@
 import {
-  getAllEvents,
+  findEventByKey,
   readDelta,
   writeDelta,
 } from '@/app/fakeApi/utils/calendar-events-store'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { NextRequest, NextResponse } from 'next/server'
-
-function findEvent(
-  req: NextRequest,
-  eventId: string
-): { event: CalendarEvent; calendarId: string } | null {
-  const all = getAllEvents(req)
-  for (const [calendarId, events] of Object.entries(all)) {
-    const event = events.find((e) => e.id === eventId)
-    if (event) return { event, calendarId }
-  }
-  return null
-}
 
 /**
  * GET /fakeApi/events/[eventId]
@@ -26,7 +14,7 @@ export async function GET(
   { params }: { params: Promise<{ eventId: string }> }
 ) {
   const { eventId } = await params
-  const found = findEvent(request, eventId)
+  const found = findEventByKey(request, eventId)
   if (!found) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
@@ -43,7 +31,7 @@ export async function PATCH(
   const { eventId } = await params
   const body = await request.json()
 
-  const found = findEvent(request, eventId)
+  const found = findEventByKey(request, eventId)
   if (!found) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
@@ -74,7 +62,7 @@ export async function DELETE(
 ) {
   const { eventId } = await params
 
-  const found = findEvent(request, eventId)
+  const found = findEventByKey(request, eventId)
   if (!found) {
     return NextResponse.json({ error: 'Event not found' }, { status: 404 })
   }
