@@ -4,6 +4,7 @@ import {
   apiSlice,
   CALENDAR_EVENTS_SLICE,
   CALENDARS_SLICE,
+  CALENDAR_SYNC_SLICE,
   USER_SEARCH_SLICE,
 } from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
@@ -27,6 +28,11 @@ import type {
   FreeBusyRequest,
   FreeBusyApiResponse,
   UserSearchResult,
+  ExternalCalendarCreateBody,
+  ExternalCalendarUpdateBody,
+  CalendarSyncStatus,
+  CalendarSyncResult,
+  ApiDataResponse,
 } from '../calendars-types'
 
 type GetCalendarEventsArgs = {
@@ -40,6 +46,10 @@ type GetCalendarEventsArgs = {
 const userSearchUrl = () => 'users/search'
 
 const calendarUrl = (key: string) => `calendars/${encodeURIComponent(key)}`
+const externalCalendarUrl = (key: string) =>
+  `external-calendars/${encodeURIComponent(key)}`
+const externalCalendarSyncUrl = (key: string) =>
+  `${externalCalendarUrl(key)}/sync`
 const calendarEventsUrl = (key: string) =>
   `calendars/${encodeURIComponent(key)}/events`
 const eventUrl = (eventKey: string) => `events/${encodeURIComponent(eventKey)}`
@@ -101,6 +111,34 @@ const notifyDeleteCalendarEvent = createCalendarNotifyMutation({
   errorTitle: 'calendar_event_delete.error.title.string',
   errorMessage: 'calendar_event_delete.error.message.string',
 })
+
+const notifyCreateExternalCalendar = createCalendarNotifyMutation({
+  successTitle: 'external_calendar_create.success.title.string',
+  successMessage: 'external_calendar_create.success.message.string',
+  errorTitle: 'external_calendar_create.error.title.string',
+  errorMessage: 'external_calendar_create.error.message.string',
+})
+
+const notifyDeleteExternalCalendar = createCalendarNotifyMutation({
+  successTitle: 'external_calendar_delete.success.title.string',
+  successMessage: 'external_calendar_delete.success.message.string',
+  errorTitle: 'external_calendar_delete.error.title.string',
+  errorMessage: 'external_calendar_delete.error.message.string',
+})
+
+const notifyTriggerSync = createCalendarNotifyMutation({
+  successTitle: 'external_calendar_sync.success.title.string',
+  successMessage: 'external_calendar_sync.success.message.string',
+  errorTitle: 'external_calendar_sync.error.title.string',
+  errorMessage: 'external_calendar_sync.error.message.string',
+})
+
+function unwrapApiData<T>(response: ApiDataResponse<T> | T): T {
+  if (response && typeof response === 'object' && 'data' in response) {
+    return (response as ApiDataResponse<T>).data
+  }
+  return response as T
+}
 
 const attendanceSuccessKeys: Record<
   AttendanceStatus,
@@ -347,6 +385,92 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         await notifyDeleteCalendar(dispatch, queryFulfilled)
       },
+    }),
+
+    getExternalCalendars: builder.query<Calendar[], void>({
+      query: () => ({ url: 'external-calendars', method: 'GET' }),
+      transformResponse: (
+        response: ApiCalendarsResponse | CalendarsResponse | Calendar[]
+      ) => normalizeCalendarsResponse(response),
+      providesTags: [CALENDARS_SLICE],
+    }),
+    createExternalCalendar: builder.mutation<
+      Calendar,
+      ExternalCalendarCreateBody
+    >({
+      query: (body) => ({
+        url: 'external-calendars',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ApiCalendarResponse | Calendar) =>
+        normalizeCalendarResponse(response),
+      invalidatesTags: [CALENDARS_SLICE],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        await notifyCreateExternalCalendar(dispatch, queryFulfilled)
+      },
+    }),
+    getExternalCalendar: builder.query<Calendar, string>({
+      query: (key) => ({
+        url: externalCalendarUrl(key),
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiCalendarResponse | Calendar) =>
+        normalizeCalendarResponse(response),
+      providesTags: (_, __, key) => [{ type: CALENDARS_SLICE, id: key }],
+    }),
+    updateExternalCalendar: builder.mutation<
+      Calendar,
+      { key: string; body: ExternalCalendarUpdateBody }
+    >({
+      query: ({ key, body }) => ({
+        url: externalCalendarUrl(key),
+        method: 'PUT',
+        body,
+      }),
+      transformResponse: (response: ApiCalendarResponse | Calendar) =>
+        normalizeCalendarResponse(response),
+      invalidatesTags: (_, __, { key }) => [
+        { type: CALENDARS_SLICE, id: key },
+        CALENDARS_SLICE,
+      ],
+    }),
+    deleteExternalCalendar: builder.mutation<void, string>({
+      query: (key) => ({
+        url: externalCalendarUrl(key),
+        method: 'DELETE',
+      }),
+      transformResponse: () => undefined,
+      invalidatesTags: [CALENDARS_SLICE],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        await notifyDeleteExternalCalendar(dispatch, queryFulfilled)
+      },
+    }),
+    triggerSync: builder.mutation<CalendarSyncResult, string>({
+      query: (key) => ({
+        url: externalCalendarSyncUrl(key),
+        method: 'POST',
+      }),
+      transformResponse: (response: ApiDataResponse<CalendarSyncResult>) =>
+        unwrapApiData(response),
+      invalidatesTags: (_, __, key) => [
+        { type: CALENDARS_SLICE, id: key },
+        { type: CALENDAR_SYNC_SLICE, id: key },
+        CALENDAR_EVENTS_SLICE,
+      ],
+      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+        await notifyTriggerSync(dispatch, queryFulfilled)
+      },
+    }),
+    getSyncStatus: builder.query<CalendarSyncStatus, string>({
+      query: (key) => ({
+        url: externalCalendarSyncUrl(key),
+        method: 'GET',
+      }),
+      transformResponse: (
+        response: ApiDataResponse<CalendarSyncStatus> | CalendarSyncStatus
+      ) => unwrapApiData(response),
+      providesTags: (_, __, key) => [{ type: CALENDAR_SYNC_SLICE, id: key }],
     }),
 
     // Calendar Events endpoints
@@ -768,6 +892,13 @@ export const {
   useUpdateCalendarVisibilityMutation,
   useGetFreeBusyQuery,
   useSearchUsersQuery,
+  useGetExternalCalendarsQuery,
+  useCreateExternalCalendarMutation,
+  useGetExternalCalendarQuery,
+  useUpdateExternalCalendarMutation,
+  useDeleteExternalCalendarMutation,
+  useTriggerSyncMutation,
+  useGetSyncStatusQuery,
 } = injectedEndpoints
 
 export const calendarsApiEndpoints = injectedEndpoints

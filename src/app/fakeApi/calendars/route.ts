@@ -1,3 +1,4 @@
+import { getExternalCalendars } from '@/app/fakeApi/external-calendars/route'
 import { DEFAULT_CALENDARS } from '@/app/fakeApi/utils/default-data'
 import {
   cleanupOldData,
@@ -36,11 +37,25 @@ function formatNotifications(
  */
 export async function GET(req: NextRequest) {
   const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
+  const externalIcs = getExternalCalendars(req)
+  const mergedSubscriptions = [
+    ...userCalendars.subscriptions,
+    ...externalIcs.filter(
+      (ext) =>
+        !userCalendars.subscriptions.some(
+          (sub) => (sub.key ?? sub.id) === (ext.key ?? ext.id)
+        )
+    ),
+  ]
+  const responsePayload = {
+    ...userCalendars,
+    subscriptions: mergedSubscriptions,
+  }
 
-  const response = NextResponse.json(userCalendars)
+  const response = NextResponse.json(responsePayload)
   // Only if the cookie does not exist yet (first visit)
   if (!req.cookies.get('demo_calendars')) {
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', responsePayload)
   }
   return response
 }

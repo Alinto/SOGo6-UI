@@ -4,6 +4,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 const mockDeleteCalendar = jest.fn(() => ({
   unwrap: () => Promise.resolve(),
 }))
+const mockDeleteExternalCalendar = jest.fn(() => ({
+  unwrap: () => Promise.resolve(),
+}))
 
 jest.mock('@/components/ui/dialog', () => ({
   DialogHeader: ({ children }: { children: unknown }) => (
@@ -20,9 +23,13 @@ jest.mock('@/components/ui/dialog', () => ({
   ),
 }))
 
-jest.mock('@/features/calendars', () => ({
+jest.mock('@/features/calendars/store/calendars-api', () => ({
   useDeleteCalendarMutation: jest.fn(() => [
     mockDeleteCalendar,
+    { isLoading: false },
+  ]),
+  useDeleteExternalCalendarMutation: jest.fn(() => [
+    mockDeleteExternalCalendar,
     { isLoading: false },
   ]),
 }))
@@ -69,6 +76,23 @@ describe('DeleteAction', () => {
       await waitFor(() => {
         expect(mockDeleteCalendar).toHaveBeenCalledWith('cal-1')
       })
+      expect(mockDeleteExternalCalendar).not.toHaveBeenCalled()
+      expect(onClose).toHaveBeenCalled()
+    })
+
+    it('invokes external delete mutation for ICS calendars', async () => {
+      render(
+        <DeleteAction id="ics-cal-1" sourceType="ics" onClose={onClose} />
+      )
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: 'forms.deleteCalendar.confirm.string',
+        })
+      )
+      await waitFor(() => {
+        expect(mockDeleteExternalCalendar).toHaveBeenCalledWith('ics-cal-1')
+      })
+      expect(mockDeleteCalendar).not.toHaveBeenCalled()
       expect(onClose).toHaveBeenCalled()
     })
   })

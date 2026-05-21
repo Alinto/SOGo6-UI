@@ -300,3 +300,38 @@ export interface AttendanceBody {
   status: AttendanceStatus
   recurrence_id?: string
 }
+
+export interface ExternalCalendarCreateBody {
+  name: string
+  url: string
+  color?: string | null
+  sync_interval_minutes?: number
+}
+
+export interface ExternalCalendarUpdateBody {
+  name?: string
+  color?: string | null
+  sync_config?: {
+    url?: string
+    sync_interval_minutes?: number
+  }
+}
+
+export interface CalendarSyncStatus {
+  sync_status: 'undefined' | 'pending' | 'running' | 'completed' | 'failed'
+  last_sync: string | null
+  sync_error: string | null
+}
+
+export interface CalendarSyncResult {
+  inserted: number
+  updated: number
+  deleted: number
+  total: number
+}
+
+export interface ApiDataResponse<T> {
+  data: T
+  error_code?: string | null
+  error_msg?: string | null
+}

@@ -120,6 +120,98 @@
         }
       }
     },
+    "external": {
+      "add_title": {
+        "string": "Subscribe to calendar"
+      },
+      "name_label": {
+        "string": "Name"
+      },
+      "url_label": {
+        "string": "Calendar URL (.ics)"
+      },
+      "url_error": {
+        "string": "Please enter a valid URL"
+      },
+      "color_label": {
+        "string": "Color"
+      },
+      "sync_interval_label": {
+        "string": "Sync every"
+      },
+      "sync_now": {
+        "string": "Sync now"
+      },
+      "submit": {
+        "string": "Subscribe"
+      },
+      "sync_interval_options": {
+        "5": {
+          "string": "5 min"
+        },
+        "15": {
+          "string": "15 min"
+        },
+        "30": {
+          "string": "30 min"
+        },
+        "60": {
+          "string": "1 hour"
+        },
+        "360": {
+          "string": "6 hours"
+        },
+        "1440": {
+          "string": "24 hours"
+        }
+      }
+    },
+    "external": {
+      "add_title": {
+        "string": "Subscribe to calendar"
+      },
+      "name_label": {
+        "string": "Name"
+      },
+      "url_label": {
+        "string": "Calendar URL (.ics)"
+      },
+      "url_error": {
+        "string": "Please enter a valid URL"
+      },
+      "color_label": {
+        "string": "Color"
+      },
+      "sync_interval_label": {
+        "string": "Sync every"
+      },
+      "sync_now": {
+        "string": "Sync now"
+      },
+      "submit": {
+        "string": "Subscribe"
+      },
+      "sync_interval_options": {
+        "5": {
+          "string": "5 min"
+        },
+        "15": {
+          "string": "15 min"
+        },
+        "30": {
+          "string": "30 min"
+        },
+        "60": {
+          "string": "1 hour"
+        },
+        "360": {
+          "string": "6 hours"
+        },
+        "1440": {
+          "string": "24 hours"
+        }
+      }
+    },
     "sidebar": {
       "personals": {
         "string": "Personal Calendars"

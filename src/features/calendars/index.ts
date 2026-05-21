@@ -19,6 +19,10 @@ export type {
   EventReminder,
   AttendanceStatus,
   AttendanceBody,
+  ExternalCalendarCreateBody,
+  ExternalCalendarUpdateBody,
+  CalendarSyncStatus,
+  CalendarSyncResult,
 } from './calendars-types'
 
 // API & Hooks from RTK Query
@@ -38,4 +42,11 @@ export {
   useUpdateCalendarMutation,
   useUpdateCalendarEventMutation,
   usePostEventAttendanceMutation,
+  useCreateExternalCalendarMutation,
+  useDeleteExternalCalendarMutation,
+  useGetExternalCalendarsQuery,
+  useGetExternalCalendarQuery,
+  useGetSyncStatusQuery,
+  useTriggerSyncMutation,
+  useUpdateExternalCalendarMutation,
 } from './store/calendars-api'

@@ -8,8 +8,19 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
+import {
+  useGetSyncStatusQuery,
+  useTriggerSyncMutation,
+} from '@/features/calendars/store/calendars-api'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { MoreVertical } from 'lucide-react'
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Loader2,
+  MoreVertical,
+  RefreshCw,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
 import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
@@ -25,7 +36,62 @@ interface SidebarItemProps {
   isDefault?: boolean
   disableActions?: boolean
   icon?: 'calendar'
+  sourceType?: string
+  calendarKey?: string
   onClick: () => void
+}
+
+function useExternalSyncVisuals(calendarKey: string, isMutationLoading: boolean) {
+  const { data: syncStatus } = useGetSyncStatusQuery(calendarKey, {
+    skip: !calendarKey,
+  })
+  const isRunning =
+    isMutationLoading || syncStatus?.sync_status === 'running'
+
+  const statusIcon = () => {
+    if (isRunning) {
+      return <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
+    }
+    if (syncStatus?.sync_status === 'failed') {
+      return (
+        <AlertTriangle className="text-destructive h-3 w-3 shrink-0" />
+      )
+    }
+    if (syncStatus?.sync_status === 'completed') {
+      return <CheckCircle2 className="h-3 w-3 shrink-0 text-green-500" />
+    }
+    return <RefreshCw className="h-3 w-3 shrink-0 opacity-60" />
+  }
+
+  return { syncStatus, isRunning, statusIcon }
+}
+
+const SyncNowItem = ({ calendarKey }: { calendarKey: string }) => {
+  const t = useTranslations('CALENDARS')
+  const [triggerSync, { isLoading }] = useTriggerSyncMutation()
+  const { isRunning, statusIcon } = useExternalSyncVisuals(calendarKey, isLoading)
+
+  return (
+    <DropdownMenuItem
+      disabled={isRunning}
+      onClick={(e) => {
+        e.stopPropagation()
+        void triggerSync(calendarKey)
+      }}
+    >
+      {statusIcon()}
+      <span>{t('external.sync_now.string')}</span>
+    </DropdownMenuItem>
+  )
+}
+
+const InlineSyncStatusIcon = ({ calendarKey }: { calendarKey: string }) => {
+  const { statusIcon } = useExternalSyncVisuals(calendarKey, false)
+  return (
+    <span className="shrink-0" aria-hidden>
+      {statusIcon()}
+    </span>
+  )
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -34,12 +100,16 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   color,
   isDefault,
   disableActions,
+  sourceType,
+  calendarKey,
 }) => {
   const [type, setType] = React.useState('')
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const { setCalendarVisibility, isCalendarVisible } = useCalendarVisibility()
   const t = useTranslations('CALENDARS')
   const isMobile = useIsMobile()
+  const isIcs = sourceType === 'ics' && Boolean(calendarKey)
+  const resolvedCalendarKey = calendarKey ?? id
 
   const handleCheckboxChange = (checked: boolean) => {
     setCalendarVisibility(id, checked)
@@ -54,7 +124,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     <SidebarMenuItem>
       <div
         onClick={() => handleCheckboxChange(!isVisible)}
-        className="hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
+        className={cn(
+          'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+          !disableActions && 'pr-8'
+        )}
       >
         <div onClick={(e) => e.stopPropagation()} className="flex items-center">
           <Checkbox
@@ -70,9 +143,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             }
           />
         </div>
-        <span className="truncate text-sm group-data-[collapsible=icon]:hidden">
-          {name}
-        </span>
+        <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
+          <span className="min-w-0 truncate text-sm">{name}</span>
+          {isIcs && (
+            <InlineSyncStatusIcon calendarKey={resolvedCalendarKey} />
+          )}
+        </div>
       </div>
       {!disableActions && (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
@@ -86,6 +162,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               side={isMobile ? 'bottom' : 'right'}
               align={isMobile ? 'center' : 'start'}
             >
+              {isIcs && (
+                <>
+                  <SyncNowItem calendarKey={resolvedCalendarKey} />
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DialogTrigger asChild>
                 <DropdownMenuItem
                   onClick={() => {
@@ -158,7 +240,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               />
             )}
             {type === 'delete' && (
-              <DeleteAction id={id} onClose={() => setDialogOpen(false)} />
+              <DeleteAction
+                id={id}
+                sourceType={sourceType}
+                onClose={() => setDialogOpen(false)}
+              />
             )}
             {type === 'link' && <LinkAction id={id} />}
             {type === 'sharing' && (

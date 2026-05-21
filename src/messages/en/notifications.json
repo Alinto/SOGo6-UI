@@ -154,6 +154,60 @@
                 }
             }
         },
+        "external_calendar_create": {
+            "success": {
+                "title": {
+                    "string": "Calendar subscribed"
+                },
+                "message": {
+                    "string": "The ICS calendar has been added."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Subscription failed"
+                },
+                "message": {
+                    "string": "Unable to subscribe to this calendar."
+                }
+            }
+        },
+        "external_calendar_delete": {
+            "success": {
+                "title": {
+                    "string": "Subscription removed"
+                },
+                "message": {
+                    "string": "The calendar has been removed."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Deletion failed"
+                },
+                "message": {
+                    "string": "Unable to remove this calendar."
+                }
+            }
+        },
+        "external_calendar_sync": {
+            "success": {
+                "title": {
+                    "string": "Calendar synced"
+                },
+                "message": {
+                    "string": "The calendar has been synchronized."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Sync failed"
+                },
+                "message": {
+                    "string": "Unable to sync this calendar."
+                }
+            }
+        },
         "calendar_event_create": {
             "success": {
                 "title": {
