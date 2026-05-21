@@ -4,6 +4,16 @@ import { render, screen } from '@testing-library/react'
 import type { CalendarEvent } from '../../../calendars-types'
 import Visualization from '../index'
 
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: (
+    selector: (state: { auth: { user: { email: string } | null } }) => unknown
+  ) => selector({ auth: { user: null } }),
+}))
+
+jest.mock('../../../store/calendars-api', () => ({
+  usePostEventAttendanceMutation: () => [jest.fn(), { isLoading: false }],
+}))
+
 const baseEvent: CalendarEvent = {
   id: 'e1',
   calendar_id: 'c1',

@@ -1,4 +1,5 @@
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
   Bell,
@@ -12,12 +13,10 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
+import { useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
-import {
-  CalendarEvent,
-  EventAttendee,
-  EventReminder,
-} from '../../calendars-types'
+import type { AttendanceStatus, CalendarEvent, EventAttendee, EventReminder } from '../../calendars-types'
+import { usePostEventAttendanceMutation } from '../../store/calendars-api'
 
 interface VisualizationProps {
   data: CalendarEvent
@@ -102,8 +101,42 @@ function AttendeeParticipationStatus({
   )
 }
 
+const RSVP_STATUSES: AttendanceStatus[] = ['accepted', 'tentative', 'declined']
+
 const Visualization: React.FC<VisualizationProps> = ({ data }) => {
   const t = useTranslations('CALENDARS')
+  const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
+  const [postAttendance, { isLoading: isAttendanceLoading }] =
+    usePostEventAttendanceMutation()
+
+  const normalizedUserEmail = currentUserEmail?.trim().toLowerCase() ?? ''
+
+  const rawAttendeeStatus = data.attendees?.find(
+    (a) => a.email.trim().toLowerCase() === normalizedUserEmail
+  )?.status
+
+  /** Map ICS needs-action to no highlighted RSVP button until user responds. */
+  const currentAttendeeStatus =
+    rawAttendeeStatus === 'needs-action' ? undefined : rawAttendeeStatus
+
+  const isAttendee = Boolean(
+    normalizedUserEmail &&
+      data.attendees?.some(
+        (a) => a.email.trim().toLowerCase() === normalizedUserEmail
+      )
+  )
+
+  const eventKey = data.key ?? data.id ?? undefined
+
+  const handleAttendance = async (status: AttendanceStatus) => {
+    if (!eventKey) return
+    await postAttendance({
+      eventKey,
+      status,
+      recurrence_id: data.recurrence_id ?? undefined,
+    }).unwrap()
+  }
+
   const visibility = data.visibility ?? 'public'
   const showAs = data.show_as ?? 'busy'
   const status = data.status ?? 'confirmed'
@@ -141,8 +174,8 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
           : t('visualization.frequency.yearly.string')
     : null
 
-  const startDate = new Date(data.start_date)
-  const endDate = new Date(data.end_date)
+  const startDate = new Date(data.start_date ?? data.date_start ?? '')
+  const endDate = new Date(data.end_date ?? data.date_end ?? '')
   const dateStr = startDate.toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
@@ -383,6 +416,26 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
           {section}
         </React.Fragment>
       ))}
+
+      {isAttendee && (
+        <>
+          <Separator className="opacity-50" />
+          <div className="mt-4 flex flex-wrap gap-2">
+            {RSVP_STATUSES.map((s) => (
+              <Button
+                key={s}
+                type="button"
+                variant={currentAttendeeStatus === s ? 'default' : 'outline'}
+                size="sm"
+                disabled={isAttendanceLoading}
+                onClick={() => handleAttendance(s)}
+              >
+                {t(`attendance.${s}`)}
+              </Button>
+            ))}
+          </div>
+        </>
+      )}
 
       <Separator className="opacity-50" />
       <p className="text-muted-foreground text-xs">

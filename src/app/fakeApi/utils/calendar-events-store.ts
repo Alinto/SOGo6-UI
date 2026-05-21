@@ -70,3 +70,39 @@ export function getAllEvents(req: NextRequest): Record<string, CalendarEvent[]> 
     Object.keys(seeds).map((calId) => [calId, getEventsForCalendar(req, calId)])
   )
 }
+
+/** Resolve an event by id, key, or uid across all calendars (merged with delta). */
+export function findEventByKey(
+  req: NextRequest,
+  eventKey: string
+): { event: CalendarEvent; calendarId: string } | null {
+  const all = getAllEvents(req)
+  for (const [calendarId, events] of Object.entries(all)) {
+    const event = events.find(
+      (e) =>
+        e.id === eventKey ||
+        e.key === eventKey ||
+        (e.uid != null && e.uid === eventKey)
+    )
+    if (event) return { event, calendarId }
+  }
+  return null
+}
+
+/** Email from Bearer JWT payload (fakeApi dev tokens). */
+export function emailFromAuthHeader(req: NextRequest): string | null {
+  const auth = req.headers.get('Authorization')
+  if (!auth?.startsWith('Bearer ')) return null
+  const token = auth.slice(7)
+  const segment = token.split('.')[1]
+  if (!segment) return null
+  try {
+    const normalized = segment.replace(/-/g, '+').replace(/_/g, '/')
+    const payload = JSON.parse(
+      Buffer.from(normalized, 'base64').toString('utf8')
+    ) as { email?: string }
+    return typeof payload.email === 'string' ? payload.email : null
+  } catch {
+    return null
+  }
+}

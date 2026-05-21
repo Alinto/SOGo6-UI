@@ -35,12 +35,13 @@ import { EventForm } from '@/features/calendars/components/event-form'
 import Visualization from '@/features/calendars/components/visualization'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
+import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
 import { clearCreateEventRequest } from '@/features/calendars/store/calendar-ui-slice'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { memo, useEffect, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 /** Prefer first non-empty string; avoids losing list calendar when GET detail omits it. */
 function pickNonEmptyCalendarRef(
@@ -100,10 +101,14 @@ const CalendarPage = () => {
       { skip: eventKeyForQuery === null }
     )
 
-  const handleSelectEvent = (event: CalendarEvent) => {
+  const handleSelectEvent = useCallback((event: CalendarEvent) => {
     setDialogMode('view')
     setSelectedEvent(event)
-  }
+  }, [])
+
+  useEffect(() => {
+    return registerCalendarEventSelection(handleSelectEvent)
+  }, [handleSelectEvent])
 
   useEffect(() => {
     if (createEventRequested) {
@@ -125,7 +130,11 @@ const CalendarPage = () => {
 
   const displayEvent = useMemo(() => {
     if (!selectedEvent) return null
-    return mergeEventDetailWithListSelection(selectedEvent, detailedEvent)
+    const merged = mergeEventDetailWithListSelection(selectedEvent, detailedEvent)
+    if (detailedEvent?.attendees?.length) {
+      return { ...merged, attendees: detailedEvent.attendees }
+    }
+    return merged
   }, [detailedEvent, selectedEvent])
 
   const eventCalendarKey = useMemo(() => {

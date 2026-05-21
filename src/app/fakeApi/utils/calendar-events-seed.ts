@@ -355,6 +355,12 @@ export function generateDefaultCalendarEvents(): Record<
         },
         attendees: [
           {
+            email: 'sogo-tests1@example.org',
+            name: 'John Paul',
+            role: 'required',
+            status: 'needs-action',
+          },
+          {
             email: 'member1@example.com',
             name: 'Member One',
             role: 'required',

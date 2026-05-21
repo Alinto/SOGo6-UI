@@ -6,71 +6,79 @@ import {
 } from '@/features/notifications'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useTranslations } from 'next-intl'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 export const NotificationProvider = () => {
   const dispatch = useAppDispatch()
   const notifications = useAppSelector(selectAllNotifications)
   const t = useTranslations('NOTIFICATIONS')
+  const tRef = useRef(t)
+
+  /** IDs already passed to Sonner — prevents duplicate toasts on effect re-runs. */
+  const shownIdsRef = useRef<Set<string>>(new Set())
 
   useEffect(() => {
-    notifications.forEach((notification) => {
+    tRef.current = t
+  }, [t])
+
+  useEffect(() => {
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+    const translate = tRef.current
+
+    for (const notification of notifications) {
+      if (shownIdsRef.current.has(notification.id)) {
+        continue
+      }
+      shownIdsRef.current.add(notification.id)
+
       const { id, type, title, message, duration } = notification
 
-      // Show toast with appropriate type
-      const showToast = () => {
-        switch (type) {
-          case 'error':
-            toast.error(`${t(title)}`, {
-              description: t(message),
-              duration: duration || undefined,
-              onDismiss: () => {
-                dispatch(removeNotification(id))
-              },
-            })
-            break
-          case 'success':
-            toast.success(t(title), {
-              description: t(message),
-              duration: duration || undefined,
-              onDismiss: () => {
-                dispatch(removeNotification(id))
-              },
-            })
-            break
-          case 'info':
-            toast.info(t(title), {
-              description: t(message),
-              duration: duration || undefined,
-              onDismiss: () => {
-                dispatch(removeNotification(id))
-              },
-            })
-            break
-          default:
-            toast.message(t(title), {
-              description: t(message),
-              duration: duration || undefined,
-              onDismiss: () => {
-                dispatch(removeNotification(id))
-              },
-            })
-        }
-      }
-
-      showToast()
-
-      // Auto-remove from Redux state after duration
-      if (duration && duration > 0) {
-        const timeout = setTimeout(() => {
+      const toastOptions = {
+        id,
+        description: translate(message),
+        duration: duration || undefined,
+        onDismiss: () => {
+          shownIdsRef.current.delete(id)
           dispatch(removeNotification(id))
-        }, duration)
-
-        return () => clearTimeout(timeout)
+        },
       }
-    })
-  }, [notifications, dispatch, t])
+
+      switch (type) {
+        case 'error':
+          toast.error(translate(title), toastOptions)
+          break
+        case 'success':
+          toast.success(translate(title), toastOptions)
+          break
+        case 'info':
+          toast.info(translate(title), toastOptions)
+          break
+        default:
+          toast.message(translate(title), toastOptions)
+      }
+
+      if (duration && duration > 0) {
+        timeouts.push(
+          setTimeout(() => {
+            shownIdsRef.current.delete(id)
+            dispatch(removeNotification(id))
+          }, duration)
+        )
+      }
+    }
+
+    const activeIds = new Set(notifications.map((n) => n.id))
+    for (const shownId of shownIdsRef.current) {
+      if (!activeIds.has(shownId)) {
+        shownIdsRef.current.delete(shownId)
+      }
+    }
+
+    return () => {
+      timeouts.forEach(clearTimeout)
+    }
+  }, [notifications, dispatch])
 
   return null
 }

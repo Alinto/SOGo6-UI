@@ -1,6 +1,20 @@
 {
   "CALENDARS": {
     "loading": "Loading...",
+    "attendance": {
+      "accepted": "Accept",
+      "declined": "Decline",
+      "tentative": "Maybe",
+      "delegated": "Delegate",
+      "success": {
+        "accepted": "You accepted this event",
+        "declined": "You declined this event",
+        "tentative": "Marked as maybe"
+      },
+      "error": {
+        "string": "Failed to update your attendance"
+      }
+    },
     "recurrenceScope": {
       "editTitle": "Edit recurring event",
       "deleteTitle": "Delete recurring event",
@@ -19,6 +33,15 @@
       },
       "next": {
         "string": "Next"
+      },
+      "search": {
+        "string": "Search events...",
+        "no_results": {
+          "string": "No events found"
+        },
+        "loading": {
+          "string": "Searching..."
+        }
       },
       "selectView": {
         "string": "Select view"

@@ -23,10 +23,13 @@ import { useCalendarState } from '../useCalendarState'
 const mockUseGetCalendarsQuery = useGetCalendarsQuery as jest.Mock
 const mockUseGetEventsInTimeRangeQuery = useGetEventsInTimeRangeQuery as jest.Mock
 
+
 describe('useCalendarState', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUseGetCalendarsQuery.mockReturnValue({ data: [] })
+    mockUseGetCalendarsQuery.mockReturnValue({
+      data: [{ id: 'k1', key: 'k1', name: 'A', description: null }],
+    })
     mockUseGetEventsInTimeRangeQuery.mockReturnValue({
       data: undefined,
       currentData: undefined,
@@ -109,4 +112,5 @@ describe('useCalendarState', () => {
       expect(result.current.events[0].title).toBe('E')
     })
   })
+
 })
