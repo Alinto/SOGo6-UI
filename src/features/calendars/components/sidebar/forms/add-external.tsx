@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { SidebarGroupAction } from '@/components/ui/sidebar'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { useCreateExternalCalendarMutation } from '@/features/calendars/store/calendars-api'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -45,8 +46,6 @@ const addExternalSchema = z.object({
 
 type AddExternalFormData = z.infer<typeof addExternalSchema>
 
-const DEFAULT_COLOR = '#3b82f6'
-
 const AddExternalCalendar: React.FC = () => {
   const t = useTranslations('CALENDARS')
   const [open, setOpen] = React.useState(false)
@@ -58,7 +57,7 @@ const AddExternalCalendar: React.FC = () => {
     defaultValues: {
       name: '',
       url: '',
-      color: DEFAULT_COLOR,
+      color: DEFAULT_CALENDAR_COLOR,
       sync_interval_minutes: 60,
     },
   })
@@ -68,7 +67,7 @@ const AddExternalCalendar: React.FC = () => {
       await createExternalCalendar({
         name: values.name,
         url: values.url,
-        color: values.color ?? DEFAULT_COLOR,
+        color: values.color ?? DEFAULT_CALENDAR_COLOR,
         sync_interval_minutes: values.sync_interval_minutes ?? 60,
       }).unwrap()
       setOpen(false)
@@ -138,7 +137,7 @@ const AddExternalCalendar: React.FC = () => {
                   <FormControl>
                     <input
                       type="color"
-                      value={field.value || DEFAULT_COLOR}
+                      value={field.value || DEFAULT_CALENDAR_COLOR}
                       onChange={(e) => field.onChange(e.target.value)}
                       className={cn(
                         'border-input bg-background h-9 w-9 cursor-pointer rounded border p-0.5'

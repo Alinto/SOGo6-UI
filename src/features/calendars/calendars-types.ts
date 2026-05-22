@@ -172,15 +172,8 @@ export type Calendar = {
   // --- UI-only field, never sent to the backend ---
   u_hidden?: boolean
 
-  // --- Legacy fakeApi fields kept for existing components. ---
-  visible?: boolean
-  type?: 'personal' | 'shared' | 'subscription'
-  default?: boolean
-  read_only?: boolean
-  owner?: string
   owner_uid?: string
-  permissions?: 'read' | 'readwrite'
-  url?: string // For subscription calendars
+  url?: string // For subscription / external ICS calendars
   event_duration?: number // in minutes
   event_notifications?: EventReminder[]
   all_day_notifications?: EventReminder[]
@@ -335,3 +328,6 @@ export interface ApiDataResponse<T> {
   error_code?: string | null
   error_msg?: string | null
 }
+
+/** Default calendar color used across the calendar feature. */
+export const DEFAULT_CALENDAR_COLOR = '#3B82F6'

@@ -10,6 +10,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 import { useForm } from 'react-hook-form'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import CalendarFormCore from './calendar-form-core'
 import type { CalendarAddFormData } from './calendar-form-types'
 import { schema, type CalendarEditFormData } from './edit-schema'
@@ -53,7 +54,7 @@ const EditForm: React.FC<EditFormProps> = ({
     defaultValues: {
       id,
       name,
-      color: color || '#3b82f6',
+      color: color || DEFAULT_CALENDAR_COLOR,
       description: description || '',
       eventDuration:
         eventDuration ||

@@ -43,11 +43,12 @@ import { TimelineFreeBusy } from './timeline-freebusy'
 import { mapBackendFreeBusyToAvailability } from './utils'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useGetFreeBusyQuery } from '../store/calendars-api'
-import type {
-  AttendeeInputItem,
-  CalendarEventUpdateBody,
-  EventRecurrence,
-  FreeBusyRequest,
+import {
+  DEFAULT_CALENDAR_COLOR,
+  type AttendeeInputItem,
+  type CalendarEventUpdateBody,
+  type EventRecurrence,
+  type FreeBusyRequest,
 } from '../calendars-types'
 import {
   eventNeedsRecurrenceScope,
@@ -335,7 +336,7 @@ export function EventForm({
       ),
     [calendars, watchedCalendarKey]
   )
-  const calendarColor = selectedCalendar?.color ?? '#3B82F6'
+  const calendarColor = selectedCalendar?.color ?? DEFAULT_CALENDAR_COLOR
 
   const isFirstCalendarKeyEffect = useRef(true)
   const skipNextCalendarColorClear = useRef(false)
@@ -491,7 +492,8 @@ export function EventForm({
                                   'border-border h-3 w-3 shrink-0 rounded-full border'
                                 )}
                                 style={{
-                                  backgroundColor: cal.color ?? '#3B82F6',
+                                  backgroundColor:
+                                    cal.color ?? DEFAULT_CALENDAR_COLOR,
                                 }}
                               />
                               {cal.name}

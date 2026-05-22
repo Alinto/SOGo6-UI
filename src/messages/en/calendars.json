@@ -96,6 +96,11 @@
         "string": "event",
         "plural": "events"
       },
+      "weekView": {
+        "eventsCount": {
+          "string": "{count, plural, one {# event} other {# events}}"
+        }
+      },
       "noEvents": {
         "string": "No events"
       },

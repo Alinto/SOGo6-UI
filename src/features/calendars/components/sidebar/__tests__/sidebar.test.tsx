@@ -6,16 +6,15 @@ const mockData = [
     key: 'p1',
     id: 'p1',
     name: 'Personal',
-    type: 'personal' as const,
+    source_type: 'personal',
     is_default: true,
-    default: true,
     color: '#111',
   },
   {
     key: 's1',
     id: 's1',
     name: 'Shared',
-    type: 'shared' as const,
+    source_type: 'shared',
     color: '#222',
   },
 ]

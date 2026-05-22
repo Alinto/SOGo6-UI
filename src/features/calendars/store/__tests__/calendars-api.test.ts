@@ -10,15 +10,12 @@ describe('calendars-api', () => {
   describe('injected RTK Query hooks', () => {
     it('exports getCalendars-related queries', () => {
       expect(typeof CalendarsApi.useGetCalendarsQuery).toBe('function')
-      expect(typeof CalendarsApi.useGetCalendarsByTypeQuery).toBe('function')
       expect(typeof CalendarsApi.useGetCalendarByIdQuery).toBe('function')
     })
 
     it('exports calendar event queries and mutations', () => {
-      expect(typeof CalendarsApi.useGetCalendarEventsQuery).toBe('function')
       expect(typeof CalendarsApi.useGetEventsInTimeRangeQuery).toBe('function')
       expect(typeof CalendarsApi.useGetCalendarEventByIdQuery).toBe('function')
-      expect(typeof CalendarsApi.useGetAllEventsQuery).toBe('function')
       expect(typeof CalendarsApi.useCreateCalendarEventMutation).toBe('function')
       expect(typeof CalendarsApi.useUpdateCalendarEventMutation).toBe('function')
       expect(typeof CalendarsApi.useDeleteCalendarEventMutation).toBe('function')

@@ -13,6 +13,7 @@ import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 import { useForm } from 'react-hook-form'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { schema, type CalendarAddFormData } from './add-schema'
 import CalendarFormCore from './calendar-form-core'
 
@@ -29,7 +30,7 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
     resolver: zodResolver(schema),
     defaultValues: {
       name: '',
-      color: '#3b82f6',
+      color: DEFAULT_CALENDAR_COLOR,
       description: '',
       eventDuration: t(
         'forms.createCalendar.durationOptions.thirtyMinutes.string'

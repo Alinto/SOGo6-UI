@@ -25,20 +25,17 @@ const Sidebar: React.FC = () => {
     return {
       personals: calendars.filter(
         (calendar) =>
-          calendar.type === 'personal' ||
           calendar.source_type === 'personal' ||
-          (!calendar.type &&
+          (!calendar.source_type &&
             calendar.source_type !== 'shared' &&
             calendar.source_type !== 'subscription' &&
             calendar.source_type !== 'ics')
       ),
       shared: calendars.filter(
-        (calendar) =>
-          calendar.type === 'shared' || calendar.source_type === 'shared'
+        (calendar) => calendar.source_type === 'shared'
       ),
       subscriptions: calendars.filter(
         (calendar) =>
-          calendar.type === 'subscription' ||
           calendar.source_type === 'subscription' ||
           calendar.source_type === 'ics'
       ),
@@ -70,7 +67,7 @@ const Sidebar: React.FC = () => {
               <SidebarItem
                 key={calendar.key ?? calendar.id}
                 icon="calendar"
-                isDefault={calendar.is_default ?? calendar.default}
+                isDefault={calendar.is_default}
                 id={calendar.key ?? calendar.id ?? ''}
                 calendarKey={calendar.key ?? calendar.id}
                 sourceType={calendar.source_type}

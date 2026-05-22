@@ -22,6 +22,7 @@ import { Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import type {
   CalendarAddFormData,
   CalendarEditFormData,
@@ -29,8 +30,6 @@ import type {
 
 // Union type
 type CalendarFormDataUnion = CalendarAddFormData | CalendarEditFormData
-
-const DEFAULT_CALENDAR_COLOR = '#3b82f6'
 
 interface CalendarFormCoreProps {
   form: UseFormReturn<CalendarFormDataUnion>

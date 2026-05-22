@@ -19,7 +19,7 @@ import {
 } from '@/features/user-settings/store/user-preferences-api-types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import {
@@ -37,16 +37,6 @@ import { EmailsTagInput } from '@/components/ui/emails-tag-input'
 
 import { MultiSelect } from '@/components/ui/combomultiple'
 
-const calendarDaysShowedOptions = [
-  { value: '0', label: 'Sunday' },
-  { value: '1', label: 'Monday' },
-  { value: '2', label: 'Tuesday' },
-  { value: '3', label: 'Wednesday' },
-  { value: '4', label: 'Thursday' },
-  { value: '5', label: 'Friday' },
-  { value: '6', label: 'Saturday' },
-]
-
 const calendarDefaultOptions = [
   // //TODO: fetch calendar list from API instead of hardcoding these values
   { value: 'SOGO_DEFAULT_CALENDAR', label: 'Default calendar' },
@@ -56,6 +46,15 @@ const calendarDefaultOptions = [
 
 const LabelsForm: React.FC<Props> = ({ data, update }) => {
   const t = useTranslations('US_CALENDARS')
+
+  const calendarDaysShowedOptions = useMemo(
+    () =>
+      (['0', '1', '2', '3', '4', '5', '6'] as const).map((v) => ({
+        value: v,
+        label: t(`calendarDaysShowed.${v}`),
+      })),
+    [t]
+  )
 
   const fetchedData = data ? apiToCalendarGeneral(data) : undefined
 
@@ -81,9 +80,11 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit, (err) =>
-          console.log('errors sbmit', err)
-        )}
+        onSubmit={form.handleSubmit(onSubmit, (err) => {
+          if (process.env.NODE_ENV === 'development') {
+            console.warn('errors submit', err)
+          }
+        })}
       >
         <div className="grid gap-4 p-4 lg:grid-cols-3 lg:space-x-10">
           <FormField

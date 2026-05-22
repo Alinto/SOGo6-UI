@@ -1,5 +1,6 @@
 'use client'
 
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import {
   useCreateCalendarEventMutation,
   useDeleteCalendarEventMutation,
@@ -224,7 +225,7 @@ export function useCalendarState(): UseCalendarStateReturn {
 
   const defaultCalendar =
     calendarsData?.find((cal: Calendar) => cal.is_default) ?? calendarsData?.[0]
-  const defaultColor = defaultCalendar?.color || '#3174ad'
+  const defaultColor = defaultCalendar?.color || DEFAULT_CALENDAR_COLOR
 
   const handleNavigate = (newDate: Date) => {
     setDate(newDate)

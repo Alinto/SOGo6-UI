@@ -25,17 +25,16 @@ export type {
   CalendarSyncResult,
 } from './calendars-types'
 
+export { DEFAULT_CALENDAR_COLOR } from './calendars-types'
+
 // API & Hooks from RTK Query
 export {
   useCreateCalendarMutation,
   useCreateCalendarEventMutation,
   useDeleteCalendarMutation,
   useDeleteCalendarEventMutation,
-  useGetAllEventsQuery,
   useGetCalendarByIdQuery,
   useGetCalendarEventByIdQuery,
-  useGetCalendarEventsQuery,
-  useGetCalendarsByTypeQuery,
   useGetCalendarsQuery,
   useGetEventsInTimeRangeQuery,
   useSearchEventsQuery,

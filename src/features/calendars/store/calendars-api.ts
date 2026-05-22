@@ -34,14 +34,7 @@ import type {
   CalendarSyncResult,
   ApiDataResponse,
 } from '../calendars-types'
-
-type GetCalendarEventsArgs = {
-  calendarKey?: string
-  calendarId?: string
-  start_date_time?: string
-  end_date_time?: string
-  search?: string
-}
+import { DEFAULT_CALENDAR_COLOR } from '../calendars-types'
 
 const userSearchUrl = () => 'users/search'
 
@@ -168,11 +161,13 @@ function normalizeCalendar(calendar: Calendar): Calendar {
     ...calendar,
     key,
     id: calendar.id ?? key,
-    color: calendar.color || '#3B82F6',
+    color: calendar.color || DEFAULT_CALENDAR_COLOR,
     description: calendar.description ?? null,
     timezone: calendar.timezone ?? 'UTC',
-    is_default: calendar.is_default ?? calendar.default ?? false,
-    default: calendar.default ?? calendar.is_default ?? false,
+    is_default:
+      calendar.is_default ??
+      (calendar as Calendar & { default?: boolean }).default ??
+      false,
     ctag: calendar.ctag ?? 0,
     share_token: calendar.share_token ?? null,
     u_hidden: calendar.u_hidden ?? false,
@@ -324,28 +319,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         normalizeCalendarResponse(response),
       providesTags: (result, error, key) => [{ type: CALENDARS_SLICE, id: key }],
     }),
-    getCalendarsByType: builder.query<
-      Calendar[],
-      'personal' | 'shared' | 'subscription'
-    >({
-      query: () => ({ url: 'calendars' }),
-      transformResponse: (
-        response: ApiCalendarsResponse | CalendarsResponse | Calendar[],
-        _meta,
-        type
-      ) =>
-        normalizeCalendarsResponse(response).filter(
-          (calendar) =>
-            calendar.type === type ||
-            calendar.source_type === type ||
-            (type === 'personal' &&
-              calendar.source_type !== 'shared' &&
-              calendar.source_type !== 'subscription')
-        ),
-      providesTags: (result, error, type) => [
-        { type: CALENDARS_SLICE, id: type },
-      ],
-    }),
     createCalendar: builder.mutation<Calendar, CalendarCreateBody>({
       query: (body) => ({
         url: 'calendars',
@@ -474,38 +447,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
 
     // Calendar Events endpoints
-    getCalendarEvents: builder.query<
-      CalendarEventsResponse,
-      GetCalendarEventsArgs
-    >({
-      query: ({
-        calendarKey,
-        calendarId,
-        start_date_time,
-        end_date_time,
-        search,
-      }) => ({
-        url: calendarEventsUrl(calendarKey ?? calendarId ?? ''),
-        params: {
-          start_date_time,
-          end_date_time,
-          search,
-        },
-      }),
-      transformResponse: (response: unknown) =>
-        normalizeCalendarEventsResponse(
-          response as
-            | ApiCalendarEventsResponse
-            | CalendarEventsResponse
-            | CalendarEvent[]
-        ),
-      providesTags: (result, error, { calendarKey, calendarId }) => [
-        {
-          type: CALENDAR_EVENTS_SLICE,
-          id: calendarKey ?? calendarId ?? 'calendar',
-        },
-      ],
-    }),
     getCalendarEventById: builder.query<
       CalendarEvent,
       { eventKey: string }
@@ -645,17 +586,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
     }),
-    getAllEvents: builder.query<CalendarEventsResponse, CalendarEventQueryArgs>({
-      query: (params) => ({ url: 'events', params }),
-      transformResponse: (
-        response:
-          | ApiCalendarEventsResponse
-          | CalendarEventsResponse
-          | CalendarEvent[]
-      ) => normalizeCalendarEventsResponse(response),
-      providesTags: [CALENDAR_EVENTS_SLICE],
-    }),
-
     // Get events from multiple calendars within a date range
     // Fetches each calendar separately and asynchronously
     getEventsInTimeRange: builder.query<
@@ -848,22 +778,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             )
           )
 
-          ;['personal', 'shared', 'subscription'].forEach((type) => {
-            dispatch(
-              updateQueryData<Calendar[]>(
-                'getCalendarsByType',
-                type as 'personal' | 'shared' | 'subscription',
-                (draft) => {
-                  const calendar = draft.find(
-                    (cal) => cal.key === id || cal.id === id
-                  )
-                  if (calendar) {
-                    calendar.u_hidden = hidden
-                  }
-                }
-              )
-            )
-          })
         } catch {
           // Local-only visibility updates should fail silently.
         }
@@ -876,17 +790,14 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 export const {
   useGetCalendarsQuery,
   useGetCalendarByIdQuery,
-  useGetCalendarsByTypeQuery,
   useUpdateCalendarMutation,
   useCreateCalendarMutation,
-  useGetCalendarEventsQuery,
   useGetCalendarEventByIdQuery,
   useCreateCalendarEventMutation,
   useUpdateCalendarEventMutation,
   useDeleteCalendarEventMutation,
   usePostEventAttendanceMutation,
   useDeleteCalendarMutation,
-  useGetAllEventsQuery,
   useGetEventsInTimeRangeQuery,
   useSearchEventsQuery,
   useUpdateCalendarVisibilityMutation,

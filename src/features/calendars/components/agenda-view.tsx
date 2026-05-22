@@ -1,6 +1,9 @@
 'use client'
 
-import { type CalendarEvent } from '@/features/calendars'
+import {
+  DEFAULT_CALENDAR_COLOR,
+  type CalendarEvent,
+} from '@/features/calendars'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
 import { useTranslations } from 'next-intl'
@@ -53,7 +56,8 @@ export function AgendaView({
           const eventDate = new Date(event.start)
           const eventEndDate = new Date(event.end)
           const timeRangeLabel = `${format(eventDate, 'h:mm a')}\u2009\u2013\u2009${format(eventEndDate, 'h:mm a')}`
-          const color = calendarColorMap[event.calendar_id ?? ''] || '#3b82f6'
+          const color =
+            calendarColorMap[event.calendar_id ?? ''] || DEFAULT_CALENDAR_COLOR
 
           const rowKey = `${event.calendar_id ?? ''}-${event.id ?? event.key ?? event.start.toISOString()}`
 
