@@ -54,7 +54,7 @@ export async function PATCH(
   delta.upserts[eventId] = updatedEvent
 
   const response = NextResponse.json(updatedEvent)
-  writeDelta(response, delta)
+  writeDelta(response, delta, request)
   return response
 }
 
@@ -88,7 +88,7 @@ export async function DELETE(
     { success: true, deleted_id: eventId },
     { status: 200 }
   )
-  writeDelta(response, delta)
+  writeDelta(response, delta, request)
   return response
 }
 

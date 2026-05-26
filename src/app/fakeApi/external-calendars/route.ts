@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
     { data: newCalendar, error_code: null, error_msg: null },
     { status: 201 }
   )
-  setDemoData(response, STORAGE_KEY, calendars)
-  setDemoData(response, SYNC_STORAGE_KEY, syncStore)
+  setDemoData(response, STORAGE_KEY, calendars, req)
+  setDemoData(response, SYNC_STORAGE_KEY, syncStore, req)
   return response
 }
 

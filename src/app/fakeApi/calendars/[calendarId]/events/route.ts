@@ -98,7 +98,7 @@ export async function POST(
   delta.upserts[id] = newEvent
 
   const response = NextResponse.json(newEvent, { status: 201 })
-  writeDelta(response, delta)
+  writeDelta(response, delta, request)
   return response
 }
 

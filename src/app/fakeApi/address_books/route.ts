@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
   const response = NextResponse.json(userAddressBooks)
   // Only if the cookie does not exist yet (first visit)
   if (!req.cookies.get('demo_address_books')) {
-    setDemoData(response, 'demo_address_books', userAddressBooks)
+    setDemoData(response, 'demo_address_books', userAddressBooks, req)
   }
   return response
 }
@@ -109,7 +109,7 @@ export async function POST(req: NextRequest) {
 
   // Save in the cookie
   const response = NextResponse.json(newAddressBook, { status: 201 })
-  setDemoData(response, 'demo_address_books', userAddressBooks)
+  setDemoData(response, 'demo_address_books', userAddressBooks, req)
   return response
 }
 

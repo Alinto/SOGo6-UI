@@ -58,7 +58,7 @@ export async function PUT(
     error_code: null,
     error_msg: null,
   })
-  setDemoData(response, STORAGE_KEY, calendars)
+  setDemoData(response, STORAGE_KEY, calendars, req)
   return response
 }
 
@@ -74,7 +74,7 @@ export async function DELETE(
   delete syncStore[key]
 
   const response = new NextResponse(null, { status: 204 })
-  setDemoData(response, STORAGE_KEY, calendars)
-  setDemoData(response, SYNC_STORAGE_KEY, syncStore)
+  setDemoData(response, STORAGE_KEY, calendars, req)
+  setDemoData(response, SYNC_STORAGE_KEY, syncStore, req)
   return response
 }

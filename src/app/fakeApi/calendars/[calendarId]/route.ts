@@ -109,7 +109,7 @@ export async function PATCH(
 
   // Save in the cookie
   const response = NextResponse.json(calendar)
-  setDemoData(response, 'demo_calendars', userCalendars)
+  setDemoData(response, 'demo_calendars', userCalendars, req)
   return response
 }
 
@@ -134,7 +134,7 @@ export async function DELETE(
   if (personalIndex !== -1) {
     userCalendars.personal.splice(personalIndex, 1)
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', userCalendars, req)
     return response
   }
 
@@ -144,7 +144,7 @@ export async function DELETE(
   if (sharedIndex !== -1) {
     userCalendars.shared.splice(sharedIndex, 1)
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', userCalendars, req)
     return response
   }
 
@@ -154,7 +154,7 @@ export async function DELETE(
   if (subscriptionIndex !== -1) {
     userCalendars.subscriptions.splice(subscriptionIndex, 1)
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', userCalendars, req)
     return response
   }
 

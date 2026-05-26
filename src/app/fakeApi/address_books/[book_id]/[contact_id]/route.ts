@@ -72,7 +72,7 @@ export async function PATCH(
 
   // Save in the cookie
   const response = NextResponse.json(contact)
-  setDemoData(response, 'demo_vcards', userVCards)
+  setDemoData(response, 'demo_vcards', userVCards, req)
   return response
 }
 
@@ -105,7 +105,7 @@ export async function DELETE(
 
   // Save in the cookie
   const response = NextResponse.json({ success: true }, { status: 200 })
-  setDemoData(response, 'demo_vcards', userVCards)
+  setDemoData(response, 'demo_vcards', userVCards, req)
   return response
 }
 

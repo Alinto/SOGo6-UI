@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   const response = NextResponse.json(responsePayload)
   // Only if the cookie does not exist yet (first visit)
   if (!req.cookies.get('demo_calendars')) {
-    setDemoData(response, 'demo_calendars', responsePayload)
+    setDemoData(response, 'demo_calendars', responsePayload, req)
   }
   return response
 }
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
 
   // Save in the cookie
   const response = NextResponse.json(newCalendar, { status: 201 })
-  setDemoData(response, 'demo_calendars', userCalendars)
+  setDemoData(response, 'demo_calendars', userCalendars, req)
   return response
 }
 

@@ -70,6 +70,6 @@ export async function POST(
     error_code: null,
     error_msg: null,
   })
-  setDemoData(response, SYNC_STORAGE_KEY, syncStore)
+  setDemoData(response, SYNC_STORAGE_KEY, syncStore, req)
   return response
 }

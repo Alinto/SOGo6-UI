@@ -22,8 +22,12 @@ export function readDelta(req: NextRequest): CalendarDelta {
   return getDemoData<CalendarDelta>(req, COOKIE_NAME, EMPTY_DELTA)
 }
 
-export function writeDelta(res: NextResponse, delta: CalendarDelta): void {
-  setDemoData(res, COOKIE_NAME, delta)
+export function writeDelta(
+  res: NextResponse,
+  delta: CalendarDelta,
+  req: NextRequest
+): void {
+  setDemoData(res, COOKIE_NAME, delta, req)
 }
 
 /**

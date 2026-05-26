@@ -118,7 +118,7 @@ export async function POST(
   const delta = readDelta(request)
   delta.upserts[stableEventId] = updatedEvent
   const response = ok(updatedEvent)
-  writeDelta(response, delta)
+  writeDelta(response, delta, request)
   return response
 }
 
