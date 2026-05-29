@@ -1,8 +1,5 @@
-import { FeatureInProgress } from '@/components/feature-in-progress-page'
-import React from 'react'
+'use client'
 
-const Page: React.FC = () => {
-  return <FeatureInProgress />
-}
+import { TasksPage } from '@/features/tasks'
 
-export default Page
+export default TasksPage

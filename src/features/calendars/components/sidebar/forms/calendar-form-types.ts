@@ -16,8 +16,15 @@ export interface BaseCalendarFormData {
   showBusyStatus: boolean
 }
 
+/** POST /calendars form (name, color, description only) */
+export interface CalendarCreateFormData {
+  name: string
+  color: string
+  description?: string
+}
+
 // Type for calendar creation (without id)
-export type CalendarAddFormData = BaseCalendarFormData
+export type CalendarAddFormData = CalendarCreateFormData
 
 // Type for calendar edition (with id)
 export interface CalendarEditFormData extends BaseCalendarFormData {

@@ -24,12 +24,12 @@ import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
 import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import type {
-  CalendarAddFormData,
+  CalendarCreateFormData,
   CalendarEditFormData,
 } from './calendar-form-types'
 
 // Union type
-type CalendarFormDataUnion = CalendarAddFormData | CalendarEditFormData
+type CalendarFormDataUnion = CalendarCreateFormData | CalendarEditFormData
 
 interface CalendarFormCoreProps {
   form: UseFormReturn<CalendarFormDataUnion>
@@ -148,6 +148,8 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
             )}
           />
 
+          {formPrefix === 'editCalendar' && (
+            <>
           {/* Event Duration Field */}
           <FormField
             control={form.control}
@@ -459,6 +461,8 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
               </FormItem>
             )}
           />
+            </>
+          )}
         </div>
 
         {/* Conditional buttons */}

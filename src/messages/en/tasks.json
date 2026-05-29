@@ -1,0 +1,186 @@
+{
+  "TASKS": {
+    "page_title": {
+      "string": "Tasks"
+    },
+    "new_task": {
+      "string": "New task"
+    },
+    "search_placeholder": {
+      "string": "Search tasks…"
+    },
+    "show_completed": {
+      "string": "Show completed"
+    },
+    "all_calendars": {
+      "string": "All calendars"
+    },
+    "empty_title": {
+      "string": "No tasks yet"
+    },
+    "empty_description": {
+      "string": "Create your first task to get organized."
+    },
+    "overdue": {
+      "string": "Overdue"
+    },
+    "filters": {
+      "all": {
+        "string": "All"
+      },
+      "needs_action": {
+        "string": "To do"
+      },
+      "in_process": {
+        "string": "In progress"
+      },
+      "completed": {
+        "string": "Completed"
+      },
+      "cancelled": {
+        "string": "Cancelled"
+      },
+      "overdue": {
+        "string": "Overdue"
+      }
+    },
+    "priority": {
+      "none": {
+        "string": "No priority"
+      },
+      "high": {
+        "string": "High"
+      },
+      "medium": {
+        "string": "Medium"
+      },
+      "low": {
+        "string": "Low"
+      }
+    },
+    "status": {
+      "needs_action": {
+        "string": "To do"
+      },
+      "in_process": {
+        "string": "In progress"
+      },
+      "completed": {
+        "string": "Completed"
+      },
+      "cancelled": {
+        "string": "Cancelled"
+      }
+    },
+    "form": {
+      "create_title": {
+        "string": "New task"
+      },
+      "edit_title": {
+        "string": "Edit task"
+      },
+      "title": {
+        "string": "Title"
+      },
+      "description": {
+        "string": "Description"
+      },
+      "due": {
+        "string": "Due date"
+      },
+      "date_start": {
+        "string": "Start date"
+      },
+      "status": {
+        "string": "Status"
+      },
+      "priority": {
+        "string": "Priority"
+      },
+      "percent_complete": {
+        "string": "Progress"
+      },
+      "calendar": {
+        "string": "Calendar"
+      },
+      "categories": {
+        "string": "Categories"
+      },
+      "visibility": {
+        "string": "Visibility"
+      },
+      "save": {
+        "string": "Save"
+      },
+      "cancel": {
+        "string": "Cancel"
+      },
+      "calendar_required": {
+        "string": "Select a calendar"
+      }
+    },
+    "actions": {
+      "edit": {
+        "string": "Edit"
+      },
+      "delete": {
+        "string": "Delete"
+      }
+    },
+    "delete_dialog": {
+      "title": {
+        "string": "Delete task?"
+      },
+      "description": {
+        "string": "This action cannot be undone."
+      },
+      "confirm": {
+        "string": "Delete"
+      },
+      "cancel": {
+        "string": "Cancel"
+      }
+    },
+    "sidebar": {
+      "smart_views": {
+        "title": {
+          "string": "Smart views"
+        },
+        "all": {
+          "string": "All tasks"
+        },
+        "today": {
+          "string": "Today"
+        },
+        "upcoming": {
+          "string": "Upcoming"
+        },
+        "overdue": {
+          "string": "Overdue"
+        },
+        "completed": {
+          "string": "Completed"
+        }
+      },
+      "calendars": {
+        "title": {
+          "string": "Calendars"
+        }
+      }
+    },
+    "fast_access": {
+      "title": {
+        "string": "Tasks"
+      },
+      "view_all": {
+        "string": "View all tasks"
+      },
+      "empty": {
+        "string": "No pending tasks"
+      },
+      "loading": {
+        "string": "Loading tasks…"
+      }
+    }
+  }
+}

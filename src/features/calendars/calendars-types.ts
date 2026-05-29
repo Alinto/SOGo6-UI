@@ -188,22 +188,12 @@ export interface CalendarsResponse {
 
 export type CalendarType = 'personal' | 'shared' | 'subscription'
 
+/** POST /calendars — matches backend CalendarCreateSchema */
 export type CalendarCreateBody = {
   name: string
   color?: string
   description?: string | null
   timezone?: string
-  /** fakeApi / legacy form fields */
-  type?: CalendarType
-  eventDuration?: string
-  showBusyStatus?: boolean
-  eventNotifications?: Array<{ type: string; timing: string }>
-  allDayNotifications?: Array<{
-    type: string
-    daysBefore: number
-    time: string
-  }>
-  url?: string
 }
 
 export type CalendarUpdateBody = {
