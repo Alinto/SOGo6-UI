@@ -9,6 +9,11 @@ import {
 } from '@/components/ui/sidebar'
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
+import {
+  isPersonalCalendar,
+  isSharedCalendar,
+  isSubscriptionCalendar,
+} from '@/features/calendars/utils/calendar-source-type'
 import { useGetCalendarsQuery } from '../../store/calendars-api'
 import CreateEventOpener from './create-event-opener'
 import AddCalendar from './forms/add'
@@ -23,22 +28,9 @@ const Sidebar: React.FC = () => {
   const groupedCalendars = useMemo(() => {
     const calendars = data ?? []
     return {
-      personals: calendars.filter(
-        (calendar) =>
-          calendar.source_type === 'personal' ||
-          (!calendar.source_type &&
-            calendar.source_type !== 'shared' &&
-            calendar.source_type !== 'subscription' &&
-            calendar.source_type !== 'ics')
-      ),
-      shared: calendars.filter(
-        (calendar) => calendar.source_type === 'shared'
-      ),
-      subscriptions: calendars.filter(
-        (calendar) =>
-          calendar.source_type === 'subscription' ||
-          calendar.source_type === 'ics'
-      ),
+      personals: calendars.filter(isPersonalCalendar),
+      shared: calendars.filter(isSharedCalendar),
+      subscriptions: calendars.filter(isSubscriptionCalendar),
     }
   }, [data])
 

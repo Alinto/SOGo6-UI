@@ -116,6 +116,7 @@ describe('API Slice', () => {
         'adminConfig/domain',
         'adminConfig/rules',
         'user_search',
+        'tasks',
       ]
 
       expectedTagTypes.forEach((tagType) => {
@@ -130,7 +131,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(34)
+      expect(tagTypes).toHaveLength(35)
     })
 
     it('should use readonly tag types array', async () => {

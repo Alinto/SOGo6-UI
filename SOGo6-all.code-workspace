@@ -1,0 +1,19 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../SOGo6-server"
+		}
+	],
+	"settings": {
+		"terminal.integrated.defaultLocation": "view",
+		"debug.console.fontSize": 14,
+		"debug.console.fontFamily": "Consolas, 'Courier New', monospace",
+		"debug.inlineValues": "on",
+		"debug.showBreakpointsInOverviewRuler": true,
+		"debug.terminal.clearBeforeReusing": true,
+		"typescript.preferences.includePackageJsonAutoImports": "on"
+	}
+}

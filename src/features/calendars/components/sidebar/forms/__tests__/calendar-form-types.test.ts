@@ -19,8 +19,6 @@ describe('calendar-form-types', () => {
     const data: CalendarAddFormData = {
       name: 'Test',
       color: '#3b82f6',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
     }
     expect(data).toBeDefined()
   })
@@ -41,8 +39,6 @@ describe('calendar-form-types', () => {
     const data: CalendarAddFormData = {
       name: 'Test',
       color: '#3b82f6',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
       description: 'Optional',
     }
     expect(data.description).toBe('Optional')

@@ -262,6 +262,60 @@
                 }
             }
         },
+        "task_create": {
+            "success": {
+                "title": {
+                    "string": "Task created"
+                },
+                "message": {
+                    "string": "The task has been created."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Creation failed"
+                },
+                "message": {
+                    "string": "Could not create the task. Please try again."
+                }
+            }
+        },
+        "task_update": {
+            "success": {
+                "title": {
+                    "string": "Task updated"
+                },
+                "message": {
+                    "string": "The task has been updated."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Update failed"
+                },
+                "message": {
+                    "string": "Could not update the task. Please try again."
+                }
+            }
+        },
+        "task_delete": {
+            "success": {
+                "title": {
+                    "string": "Task deleted"
+                },
+                "message": {
+                    "string": "The task has been deleted."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Deletion failed"
+                },
+                "message": {
+                    "string": "Could not delete the task. Please try again."
+                }
+            }
+        },
         "calendar_event_attendance": {
             "success": {
                 "accepted": {

@@ -73,10 +73,7 @@ const TestWrapper = ({ showButtons = true }: { showButtons?: boolean }) => {
     defaultValues: {
       name: '',
       color: '#3b82f6',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
-      eventNotifications: [],
-      allDayNotifications: [],
+      description: '',
     },
   })
 
@@ -109,13 +106,11 @@ describe('CalendarFormCore', () => {
   it('should render buttons when showButtons is true', () => {
     render(<TestWrapper showButtons={true} />)
     const buttons = screen.getAllByTestId('button')
-    expect(buttons.length).toBeGreaterThanOrEqual(4)
+    expect(buttons.length).toBe(2)
   })
 
   it('should not render submit/cancel buttons when showButtons is false', () => {
     render(<TestWrapper showButtons={false} />)
-    const buttons = screen.getAllByTestId('button')
-
-    expect(buttons.length).toBe(2)
+    expect(screen.queryAllByTestId('button')).toHaveLength(0)
   })
 })

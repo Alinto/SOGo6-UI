@@ -11,6 +11,13 @@ const mockData = [
     color: '#111',
   },
   {
+    key: 'local1',
+    id: 'local1',
+    name: 'Backend Local',
+    source_type: 'local',
+    color: '#333',
+  },
+  {
     key: 's1',
     id: 's1',
     name: 'Shared',
@@ -90,6 +97,17 @@ describe('Sidebar', () => {
       })
       expect(screen.getByText('sidebar.shared.string')).toBeInTheDocument()
       expect(screen.getByText('sidebar.subscriptions.string')).toBeInTheDocument()
+    })
+
+    it('lists backend local calendars under personals', async () => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+      })
+      render(<Sidebar />)
+      await waitFor(() => {
+        expect(screen.getByTestId('item-Backend Local')).toBeInTheDocument()
+      })
     })
   })
 })
