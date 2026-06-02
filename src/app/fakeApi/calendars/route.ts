@@ -14,16 +14,13 @@ import { NextRequest, NextResponse } from 'next/server'
 function formatNotifications(
   notifications: Array<{ type: string; timing: string | number }> | undefined
 ): Array<{
-  method: 'email' | 'popup' | 'notification'
+  method: 'email' | 'popup'
   minutes_before: number
 }> {
   if (!notifications || !Array.isArray(notifications)) return []
 
   return notifications.map((notif) => ({
-    method: (notif.type === 'email' ? 'email' : 'popup') as
-      | 'email'
-      | 'popup'
-      | 'notification',
+    method: notif.type === 'email' ? 'email' : 'popup',
     minutes_before: Number(notif.timing) || 0,
   }))
 }

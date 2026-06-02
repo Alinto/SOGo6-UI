@@ -10,6 +10,7 @@ export function normalizeTask(raw: RawTask): Task {
   const calendarKey =
     raw.calendar_key ?? raw.calendar_id ?? undefined
 
+  const due = raw.due ?? raw.date_end ?? null
   const { date_end: _dateEnd, ...rest } = raw
 
   return {
@@ -19,7 +20,7 @@ export function normalizeTask(raw: RawTask): Task {
     calendar_key: calendarKey,
     calendar_id: calendarKey ?? raw.calendar_id ?? null,
     title: raw.title ?? '',
-    due: raw.due ?? null,
+    due,
     status: raw.status ?? 'needs_action',
     priority: raw.priority ?? 0,
     percent_complete: raw.percent_complete ?? null,

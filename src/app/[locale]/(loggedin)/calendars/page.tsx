@@ -29,6 +29,7 @@ import {
   RecurrenceScopeDialog,
   type RecurrenceScope,
 } from '@/features/calendars/components/recurrence-scope-dialog'
+import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
 import { CalendarToolbar } from '@/features/calendars/components/calendar-toolbar'
 import CalendarView from '@/features/calendars/components/calendar-view'
 import { EventForm } from '@/features/calendars/components/event-form'
@@ -36,12 +37,15 @@ import Visualization from '@/features/calendars/components/visualization'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
 import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
+import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
 import { clearCreateEventRequest } from '@/features/calendars/store/calendar-ui-slice'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import type { SlotInfo } from 'react-big-calendar'
+import type { Calendar } from '@/features/calendars/calendars-types'
 
 /** Prefer first non-empty string; avoids losing list calendar when GET detail omits it. */
 function pickNonEmptyCalendarRef(
@@ -74,6 +78,17 @@ function mergeEventDetailWithListSelection(
       calendarRef || (listEvent.calendar_id ?? detail.calendar_id ?? null),
     calendar_key: calendarRef || listEvent.calendar_key || detail.calendar_key,
   }
+}
+
+function findCalendarByRef(
+  calendars: Calendar[] | undefined,
+  calendarRef: string
+): Calendar | undefined {
+  if (!calendars?.length || !calendarRef.trim()) return undefined
+  const ref = calendarRef.trim()
+  return calendars.find(
+    (cal) => cal.key === ref || cal.id === ref || (cal.key ?? cal.id) === ref
+  )
 }
 
 const CalendarPage = () => {
@@ -112,15 +127,25 @@ const CalendarPage = () => {
 
   useEffect(() => {
     if (createEventRequested) {
-      calendarState.setSelectedSlot({
-        start: new Date(),
-        end: new Date(),
-        slots: [],
-        action: 'click',
-      })
+      if (isCalendarWritable(calendarState.defaultCalendar)) {
+        calendarState.setSelectedSlot({
+          start: new Date(),
+          end: new Date(),
+          slots: [],
+          action: 'click',
+        })
+      }
       dispatch(clearCreateEventRequest())
     }
   }, [calendarState, createEventRequested, dispatch])
+
+  const handleSelectSlot = useCallback(
+    (slotInfo: SlotInfo) => {
+      if (!isCalendarWritable(calendarState.defaultCalendar)) return
+      calendarState.handleSelectSlot(slotInfo)
+    },
+    [calendarState]
+  )
 
   const visibleEvents = useMemo(() => {
     return calendarState.events.filter((event) =>
@@ -152,6 +177,13 @@ const CalendarPage = () => {
     )
   }, [calendarState.defaultCalendar, detailedEvent, selectedEvent])
 
+  const selectedEventCalendar = useMemo(
+    () => findCalendarByRef(calendarState.calendarsData, eventCalendarKey),
+    [calendarState.calendarsData, eventCalendarKey]
+  )
+
+  const isSelectedEventWritable = isCalendarWritable(selectedEventCalendar)
+
   const handleDeleteSelectedEvent = async (
     scope?: RecurrenceScope
   ) => {
@@ -162,10 +194,18 @@ const CalendarPage = () => {
 
     try {
       if (scope && eventNeedsRecurrenceScope(selectedEvent)) {
+        const scopeFields =
+          scope === 'ALL'
+            ? {}
+            : {
+                ...recurrenceScopeToMutationFields(
+                  scope,
+                  selectedEvent.recurrence_id
+                ),
+              }
         await deleteCalendarEvent({
           eventKey,
-          recurrence_id: selectedEvent.recurrence_id ?? undefined,
-          recurrence_range: scope,
+          ...scopeFields,
         }).unwrap()
       } else {
         await calendarState.handleDeleteEvent(selectedEvent)
@@ -219,7 +259,7 @@ const CalendarPage = () => {
           }
           onViewChange={calendarState.handleViewChange}
           onNavigate={calendarState.handleNavigate}
-          onSelectSlot={calendarState.handleSelectSlot}
+          onSelectSlot={handleSelectSlot}
           onSelectedSlotClose={() => calendarState.setSelectedSlot(null)}
           onSelectEvent={handleSelectEvent}
           onDeleteEvent={calendarState.handleDeleteEvent}
@@ -263,41 +303,45 @@ const CalendarPage = () => {
                   'mt-4 flex flex-wrap items-center justify-between gap-2'
                 )}
               >
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isDetailFetching && eventKeyForQuery !== null}
-                  onClick={() => setDialogMode('edit')}
-                >
-                  <Pencil className={cn('mr-2 h-4 w-4')} />
-                  {t('forms.editEvent.string')}
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+                {isSelectedEventWritable && (
+                  <>
                     <Button
-                      variant="destructive"
+                      type="button"
+                      variant="outline"
                       disabled={isDetailFetching && eventKeyForQuery !== null}
+                      onClick={() => setDialogMode('edit')}
                     >
-                      {t('forms.deleteEvent.confirm.button')}
+                      <Pencil className={cn('mr-2 h-4 w-4')} />
+                      {t('forms.editEvent.string')}
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        {t('forms.deleteEvent.confirm.title')}
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        {t('forms.deleteEvent.confirm.description')}
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleConfirmDeleteClick}>
-                        {t('forms.deleteEvent.confirm.button')}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          disabled={isDetailFetching && eventKeyForQuery !== null}
+                        >
+                          {t('forms.deleteEvent.confirm.button')}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {t('forms.deleteEvent.confirm.title')}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('forms.deleteEvent.confirm.description')}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleConfirmDeleteClick}>
+                            {t('forms.deleteEvent.confirm.button')}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </>
+                )}
               </div>
             </>
           )}

@@ -13,6 +13,9 @@ describe('calendars feature index', () => {
     it('exports useGetCalendarsQuery', () => {
       expect(typeof Calendars.useGetCalendarsQuery).toBe('function')
     })
+    it('exports useGetEventsQuery', () => {
+      expect(typeof Calendars.useGetEventsQuery).toBe('function')
+    })
     it('exports useGetEventsInTimeRangeQuery', () => {
       expect(typeof Calendars.useGetEventsInTimeRangeQuery).toBe('function')
     })

@@ -75,6 +75,35 @@ export function getAllEvents(req: NextRequest): Record<string, CalendarEvent[]> 
   )
 }
 
+/**
+ * All events across all known calendars, merged with delta and filtered by range.
+ */
+export function getEventsForAllCalendars(
+  req: NextRequest,
+  startDateTime: string | null,
+  endDateTime: string | null
+): CalendarEvent[] {
+  const all = getAllEvents(req)
+  let events: CalendarEvent[] = Object.values(all).flat()
+
+  if (startDateTime) {
+    const startBoundary = new Date(startDateTime).getTime()
+    events = events.filter(
+      (e) =>
+        new Date(e.end_date ?? e.date_end ?? '').getTime() >= startBoundary
+    )
+  }
+  if (endDateTime) {
+    const endBoundary = new Date(endDateTime).getTime()
+    events = events.filter(
+      (e) =>
+        new Date(e.start_date ?? e.date_start ?? '').getTime() <= endBoundary
+    )
+  }
+
+  return events
+}
+
 /** Resolve an event by id, key, or uid across all calendars (merged with delta). */
 export function findEventByKey(
   req: NextRequest,

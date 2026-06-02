@@ -53,7 +53,7 @@ function getReminderMethodLabel(
     return t('eventForm.reminders.methods.email')
   }
   if (method === 'notification') {
-    return t('eventForm.reminders.methods.notification')
+    return t('eventForm.reminders.methods.popup')
   }
   return t('eventForm.reminders.methods.popup')
 }

@@ -261,6 +261,54 @@ function eventMatchesKey(event: CalendarEvent, eventKey: string): boolean {
   )
 }
 
+type CachedEventsQueryEntry = {
+  endpointName?: string
+  originalArgs?: unknown
+  data?: CalendarEvent[]
+}
+
+function patchEventsInCachedQuery(
+  dispatch: (action: UnknownAction) => void,
+  entry: CachedEventsQueryEntry,
+  eventKey: string,
+  updatedEvent: CalendarEvent
+) {
+  if (!entry.originalArgs || !Array.isArray(entry.data)) return
+
+  const patchFn = (draft: CalendarEvent[]) => {
+    const idx = draft.findIndex((e) => eventMatchesKey(e, eventKey))
+    if (idx >= 0) {
+      draft[idx] = {
+        ...draft[idx],
+        ...updatedEvent,
+        calendar_id: updatedEvent.calendar_id ?? draft[idx].calendar_id,
+      }
+    }
+  }
+
+  if (entry.endpointName === 'getEvents') {
+    dispatch(
+      updateQueryData<CalendarEvent[]>(
+        'getEvents',
+        entry.originalArgs as { startDate: string; endDate: string },
+        patchFn
+      )
+    )
+  } else if (entry.endpointName === 'getEventsInTimeRange') {
+    dispatch(
+      updateQueryData<CalendarEvent[]>(
+        'getEventsInTimeRange',
+        entry.originalArgs as {
+          calendarIds: string[]
+          startDate: string
+          endDate: string
+        },
+        patchFn
+      )
+    )
+  }
+}
+
 /** Keep grid/list caches in sync after attendance without waiting for refetch. */
 function patchEventInCachedTimeRangeQueries(
   dispatch: (action: UnknownAction) => void,
@@ -268,39 +316,21 @@ function patchEventInCachedTimeRangeQueries(
   eventKey: string,
   updatedEvent: CalendarEvent
 ) {
-  const apiState = (getState() as { api?: { queries?: Record<string, {
-    endpointName?: string
-    originalArgs?: { calendarIds: string[]; startDate: string; endDate: string }
-    data?: CalendarEvent[]
-  }> } }).api?.queries
+  const apiState = (getState() as {
+    api?: { queries?: Record<string, CachedEventsQueryEntry> }
+  }).api?.queries
 
   if (!apiState) return
 
   for (const entry of Object.values(apiState)) {
     if (
-      entry?.endpointName !== 'getEventsInTimeRange' ||
-      !entry.originalArgs ||
-      !Array.isArray(entry.data)
+      entry?.endpointName !== 'getEvents' &&
+      entry?.endpointName !== 'getEventsInTimeRange'
     ) {
       continue
     }
 
-    dispatch(
-      updateQueryData<CalendarEvent[]>(
-        'getEventsInTimeRange',
-        entry.originalArgs,
-        (draft) => {
-          const idx = draft.findIndex((e) => eventMatchesKey(e, eventKey))
-          if (idx >= 0) {
-            draft[idx] = {
-              ...draft[idx],
-              ...updatedEvent,
-              calendar_id: updatedEvent.calendar_id ?? draft[idx].calendar_id,
-            }
-          }
-        }
-      )
-    )
+    patchEventsInCachedQuery(dispatch, entry, eventKey, updatedEvent)
   }
 }
 
@@ -360,13 +390,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
-    getExternalCalendars: builder.query<Calendar[], void>({
-      query: () => ({ url: 'external-calendars', method: 'GET' }),
-      transformResponse: (
-        response: ApiCalendarsResponse | CalendarsResponse | Calendar[]
-      ) => normalizeCalendarsResponse(response),
-      providesTags: [CALENDARS_SLICE],
-    }),
     createExternalCalendar: builder.mutation<
       Calendar,
       ExternalCalendarCreateBody
@@ -586,6 +609,29 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
     }),
+    getEvents: builder.query<
+      CalendarEvent[],
+      { startDate: string; endDate: string }
+    >({
+      query: ({ startDate, endDate }) => ({
+        url: 'events',
+        method: 'GET',
+        params: {
+          start_date_time: startDate,
+          end_date_time: endDate,
+        },
+      }),
+      transformResponse: (
+        response:
+          | ApiCalendarEventsResponse
+          | CalendarEventsResponse
+          | CalendarEvent[]
+      ) => {
+        const { events } = normalizeCalendarEventsResponse(response)
+        return events
+      },
+      providesTags: [CALENDAR_EVENTS_SLICE],
+    }),
     // Get events from multiple calendars within a date range
     // Fetches each calendar separately and asynchronously
     getEventsInTimeRange: builder.query<
@@ -714,14 +760,20 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       FreeBusyApiResponse,
       FreeBusyRequest | typeof skipToken
     >({
-      query: (arg) =>
-        arg === skipToken
-          ? skipToken
-          : {
-              url: 'freebusy',
-              method: 'POST',
-              body: arg,
-            },
+      query: (arg) => {
+        if (arg === skipToken) {
+          return skipToken
+        }
+        return {
+          url: 'freebusy',
+          method: 'POST',
+          body: {
+            target_uids: arg.target_uids,
+            start: arg.start,
+            end: arg.end,
+          },
+        }
+      },
     }),
     searchUsers: builder.query<
       UserSearchResult[],
@@ -798,12 +850,12 @@ export const {
   useDeleteCalendarEventMutation,
   usePostEventAttendanceMutation,
   useDeleteCalendarMutation,
+  useGetEventsQuery,
   useGetEventsInTimeRangeQuery,
   useSearchEventsQuery,
   useUpdateCalendarVisibilityMutation,
   useGetFreeBusyQuery,
   useSearchUsersQuery,
-  useGetExternalCalendarsQuery,
   useCreateExternalCalendarMutation,
   useGetExternalCalendarQuery,
   useUpdateExternalCalendarMutation,

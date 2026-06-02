@@ -4,7 +4,7 @@ import { Views } from 'react-big-calendar'
 
 jest.mock('@/features/calendars', () => ({
   useGetCalendarsQuery: jest.fn(),
-  useGetEventsInTimeRangeQuery: jest.fn(),
+  useGetEventsQuery: jest.fn(),
   useCreateCalendarEventMutation: jest.fn(() => [jest.fn()]),
   useUpdateCalendarEventMutation: jest.fn(() => [jest.fn()]),
   useDeleteCalendarEventMutation: jest.fn(() => [jest.fn()]),
@@ -16,12 +16,12 @@ jest.mock('next-intl', () => ({
 
 import {
   useGetCalendarsQuery,
-  useGetEventsInTimeRangeQuery,
+  useGetEventsQuery,
 } from '@/features/calendars'
 import { useCalendarState } from '../useCalendarState'
 
 const mockUseGetCalendarsQuery = useGetCalendarsQuery as jest.Mock
-const mockUseGetEventsInTimeRangeQuery = useGetEventsInTimeRangeQuery as jest.Mock
+const mockUseGetEventsQuery = useGetEventsQuery as jest.Mock
 
 
 describe('useCalendarState', () => {
@@ -30,7 +30,7 @@ describe('useCalendarState', () => {
     mockUseGetCalendarsQuery.mockReturnValue({
       data: [{ id: 'k1', key: 'k1', name: 'A', description: null }],
     })
-    mockUseGetEventsInTimeRangeQuery.mockReturnValue({
+    mockUseGetEventsQuery.mockReturnValue({
       data: undefined,
       currentData: undefined,
       isLoading: false,
@@ -74,7 +74,7 @@ describe('useCalendarState', () => {
       mockUseGetCalendarsQuery.mockReturnValue({
         data: [{ id: 'k1', key: 'k1', name: 'A', description: null }],
       })
-      mockUseGetEventsInTimeRangeQuery.mockReturnValue({
+      mockUseGetEventsQuery.mockReturnValue({
         data: [
           {
             id: 'e1',

@@ -250,6 +250,10 @@
       },
       "color": {
         "string": "Calendar Color"
+      },
+      "readOnlyCalendar": {
+        "string": "Read-only calendar",
+        "context": "Label for ICS/subscription calendars that cannot be edited"
       }
     },
     "actions": {

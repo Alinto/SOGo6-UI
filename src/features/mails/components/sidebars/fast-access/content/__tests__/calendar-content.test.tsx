@@ -5,12 +5,11 @@ import type { ReactNode } from 'react'
 import CalendarContent from '../calendar-content'
 
 const mockUseGetCalendarsQuery = jest.fn()
-const mockUseGetEventsInTimeRangeQuery = jest.fn()
+const mockUseGetEventsQuery = jest.fn()
 
 jest.mock('@/features/calendars/store/calendars-api', () => ({
   useGetCalendarsQuery: () => mockUseGetCalendarsQuery(),
-  useGetEventsInTimeRangeQuery: (...args: unknown[]) =>
-    mockUseGetEventsInTimeRangeQuery(...args),
+  useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
 }))
 
 jest.mock('@/components/ui/calendar-lazy', () => ({
@@ -70,7 +69,7 @@ describe('CalendarContent', () => {
     mockUseGetCalendarsQuery.mockReturnValue({
       data: [{ id: 'cal-1', key: 'cal-1', u_hidden: false, color: '#3b82f6' }],
     })
-    mockUseGetEventsInTimeRangeQuery.mockReturnValue({
+    mockUseGetEventsQuery.mockReturnValue({
       data: [],
       isLoading: false,
       isError: false,
@@ -99,7 +98,7 @@ describe('CalendarContent', () => {
     it('passes event dates as calendar modifiers when month has events', () => {
       const today = new Date()
       today.setHours(12, 0, 0, 0)
-      mockUseGetEventsInTimeRangeQuery.mockImplementation(() => ({
+      mockUseGetEventsQuery.mockImplementation(() => ({
         data: [
           {
             id: 'e1',
@@ -123,7 +122,7 @@ describe('CalendarContent', () => {
     it('skips events query when no calendars', () => {
       mockUseGetCalendarsQuery.mockReturnValue({ data: [] })
       render(<CalendarContent />)
-      expect(mockUseGetEventsInTimeRangeQuery).toHaveBeenCalled()
+      expect(mockUseGetEventsQuery).toHaveBeenCalled()
     })
   })
 

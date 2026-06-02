@@ -4,7 +4,7 @@ import { Calendar } from '@/components/ui/calendar-lazy'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import {
   useGetCalendarsQuery,
-  useGetEventsInTimeRangeQuery,
+  useGetEventsQuery,
 } from '@/features/calendars/store/calendars-api'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { cn } from '@/lib/utils'
@@ -77,12 +77,12 @@ function EventRow({ event, color }: { event: CalendarEvent; color?: string }) {
 
 function EventList({
   selectedDate,
-  calendarIds,
   calendarColors,
+  hasCalendars,
 }: {
   selectedDate: Date
-  calendarIds: string[]
   calendarColors: Record<string, string>
+  hasCalendars: boolean
 }) {
   const t = useTranslations('NAVIGATION.fast_access.calendar')
   const startDate = startOfDay(selectedDate).toISOString()
@@ -92,9 +92,9 @@ function EventList({
     data: events,
     isLoading,
     isError,
-  } = useGetEventsInTimeRangeQuery(
-    { calendarIds, startDate, endDate },
-    { skip: calendarIds.length === 0 }
+  } = useGetEventsQuery(
+    { startDate, endDate },
+    { skip: !hasCalendars }
   )
 
   const sorted = useMemo(() => {
@@ -151,11 +151,6 @@ const CalendarContent: React.FC = () => {
     [calendars]
   )
 
-  const calendarIds = useMemo(
-    () => visibleCalendars.map((c) => c.id ?? c.key ?? '').filter(Boolean),
-    [visibleCalendars]
-  )
-
   const calendarColors = useMemo(
     () =>
       Object.fromEntries(
@@ -167,12 +162,14 @@ const CalendarContent: React.FC = () => {
     [visibleCalendars]
   )
 
+  const hasCalendars = visibleCalendars.length > 0
+
   // Fetch all events for the current displayed month to build the dot indicators
   const monthStart = startOfMonth(displayMonth).toISOString()
   const monthEnd = endOfMonth(displayMonth).toISOString()
-  const { data: monthEvents } = useGetEventsInTimeRangeQuery(
-    { calendarIds, startDate: monthStart, endDate: monthEnd },
-    { skip: calendarIds.length === 0 }
+  const { data: monthEvents } = useGetEventsQuery(
+    { startDate: monthStart, endDate: monthEnd },
+    { skip: !hasCalendars }
   )
 
   // Deduplicated list of dates that have at least one event
@@ -222,8 +219,8 @@ const CalendarContent: React.FC = () => {
         </p>
         <EventList
           selectedDate={selectedDate}
-          calendarIds={calendarIds}
           calendarColors={calendarColors}
+          hasCalendars={hasCalendars}
         />
       </div>
     </SidebarGroupContent>

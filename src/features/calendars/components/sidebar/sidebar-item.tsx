@@ -18,16 +18,18 @@ import {
   AlertTriangle,
   CheckCircle2,
   Loader2,
+  Lock,
   MoreVertical,
   RefreshCw,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
-import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
+import { isSubscriptionCalendar } from '../../utils/calendar-source-type'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
 import EditForm from './forms/edit'
 import WorkInProgress from '@/components/work-in-progress'
+import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
 
 interface SidebarItemProps {
   name: string
@@ -109,6 +111,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const t = useTranslations('CALENDARS')
   const isMobile = useIsMobile()
   const isIcs = sourceType === 'ics' && Boolean(calendarKey)
+  const isReadOnly = isSubscriptionCalendar({ source_type: sourceType })
   const resolvedCalendarKey = calendarKey ?? id
 
   const handleCheckboxChange = (checked: boolean) => {
@@ -145,6 +148,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
           <span className="min-w-0 truncate text-sm">{name}</span>
+          {isReadOnly && (
+            <Lock
+              className="text-muted-foreground h-3 w-3 shrink-0"
+              aria-label={t('sidebar.readOnlyCalendar.string')}
+            />
+          )}
           {isIcs && (
             <InlineSyncStatusIcon calendarKey={resolvedCalendarKey} />
           )}
