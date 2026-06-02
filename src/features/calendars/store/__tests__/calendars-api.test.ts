@@ -14,6 +14,7 @@ describe('calendars-api', () => {
     })
 
     it('exports calendar event queries and mutations', () => {
+      expect(typeof CalendarsApi.useGetEventsQuery).toBe('function')
       expect(typeof CalendarsApi.useGetEventsInTimeRangeQuery).toBe('function')
       expect(typeof CalendarsApi.useGetCalendarEventByIdQuery).toBe('function')
       expect(typeof CalendarsApi.useCreateCalendarEventMutation).toBe('function')

@@ -29,7 +29,7 @@ import {
 } from '@/features/calendars'
 import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, MapPin, Plus, Trash2, X } from 'lucide-react'
+import { Link, Lock, MapPin, Plus, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { type Resolver, useFieldArray, useForm, useWatch } from 'react-hook-form'
@@ -48,8 +48,11 @@ import {
   type AttendeeInputItem,
   type CalendarEventUpdateBody,
   type EventRecurrence,
+  type EventReminder,
   type FreeBusyRequest,
 } from '../calendars-types'
+import { recurrenceScopeToMutationFields } from '../utils/recurrence-scope-mutation'
+import { isCalendarWritable } from '../utils/is-calendar-writable'
 import {
   eventNeedsRecurrenceScope,
   RecurrenceScopeDialog,
@@ -81,7 +84,7 @@ const formSchema = z.object({
   reminders: z
     .array(
       z.object({
-        method: z.enum(['email', 'popup', 'notification']),
+        method: z.enum(['email', 'popup']),
         minutes_before: z.number().min(0).default(15),
       })
     )
@@ -126,7 +129,11 @@ const normalizeInputValue = (value: string, allDay: boolean) =>
   allDay ? value.slice(0, 10) : value.length === 10 ? `${value}T00:00` : value
 
 const toIsoDate = (value: string, allDay: boolean) =>
-  new Date(allDay ? `${value}T00:00:00` : value).toISOString()
+  new Date(allDay ? `${value}T00:00:00Z` : value).toISOString()
+
+const normalizeReminderMethod = (
+  method: string
+): EventReminder['method'] => (method === 'notification' ? 'popup' : method as EventReminder['method'])
 
 function recurrenceToFormRule(
   recurrence: EventRecurrence | null | undefined
@@ -244,7 +251,7 @@ export function EventForm({
       categories: event?.categories ?? [],
       reminders:
         event?.reminders?.map((reminder) => ({
-          method: reminder.method,
+          method: normalizeReminderMethod(reminder.method),
           minutes_before: reminder.minutes_before,
         })) ?? [],
       attendees:
@@ -257,6 +264,18 @@ export function EventForm({
       ),
     },
   })
+
+  useEffect(() => {
+    if (isEditing || !calendars?.length) return
+    const current = form.getValues('calendar_key')
+    const currentCal = calendars.find((cal) => calendarRowKey(cal) === current)
+    if (!isCalendarWritable(currentCal)) {
+      const firstWritable = calendars.find(isCalendarWritable)
+      if (firstWritable) {
+        form.setValue('calendar_key', calendarRowKey(firstWritable))
+      }
+    }
+  }, [calendars, form, isEditing])
 
   const {
     fields: reminderFields,
@@ -298,8 +317,8 @@ export function EventForm({
 
     return {
       target_uids,
-      start_date_time: windowStart.toISOString(),
-      end_date_time: windowEnd.toISOString(),
+      start: windowStart.toISOString(),
+      end: windowEnd.toISOString(),
     }
     // attendeeFetchKey avoids refetch when `attendees` gets a new array reference with same content
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -377,7 +396,13 @@ export function EventForm({
     url: values.url || undefined,
     color: values.color || calendarColor,
     categories: values.categories.length > 0 ? values.categories : undefined,
-    reminders: values.reminders.length > 0 ? values.reminders : undefined,
+    reminders:
+      values.reminders.length > 0
+        ? values.reminders.map((reminder) => ({
+            method: normalizeReminderMethod(reminder.method),
+            minutes_before: reminder.minutes_before,
+          }))
+        : undefined,
     attendees:
       values.attendees.filter((attendee) => attendee.email.trim() !== '')
         .length > 0
@@ -404,10 +429,13 @@ export function EventForm({
       if (eventKey) {
         const updateBody: CalendarEventUpdateBody = { ...body }
         if (recurrenceScope && eventNeedsRecurrenceScope(event)) {
-          if (event?.recurrence_id) {
-            updateBody.recurrence_id = event.recurrence_id
-          }
-          updateBody.recurrence_range = recurrenceScope
+          Object.assign(
+            updateBody,
+            recurrenceScopeToMutationFields(
+              recurrenceScope,
+              event?.recurrence_id
+            )
+          )
         }
         await updateCalendarEvent({
           eventKey,
@@ -482,11 +510,25 @@ export function EventForm({
                       {(calendarsForSelect ?? calendars).map((cal) => {
                         const calKey = cal.key ?? cal.id ?? ''
                         if (!calKey) return null
+                        const writable = isCalendarWritable(cal)
                         return (
-                          <SelectItem key={calKey} value={calKey}>
+                          <SelectItem
+                            key={calKey}
+                            value={calKey}
+                            disabled={!writable}
+                          >
                             <span
-                              className={cn('flex items-center gap-2')}
+                              className={cn(
+                                'flex items-center gap-2',
+                                !writable && 'opacity-60'
+                              )}
                             >
+                              {!writable && (
+                                <Lock
+                                  className="h-3 w-3 shrink-0"
+                                  aria-label={t('sidebar.readOnlyCalendar.string')}
+                                />
+                              )}
                               <span
                                 className={cn(
                                   'border-border h-3 w-3 shrink-0 rounded-full border'
@@ -862,9 +904,6 @@ export function EventForm({
                       </SelectItem>
                       <SelectItem value="email">
                         {t('eventForm.reminders.methods.email')}
-                      </SelectItem>
-                      <SelectItem value="notification">
-                        {t('eventForm.reminders.methods.notification')}
                       </SelectItem>
                     </SelectContent>
                   </Select>

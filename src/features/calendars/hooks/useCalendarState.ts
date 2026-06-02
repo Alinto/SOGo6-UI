@@ -5,13 +5,15 @@ import {
   useCreateCalendarEventMutation,
   useDeleteCalendarEventMutation,
   useGetCalendarsQuery,
-  useGetEventsInTimeRangeQuery,
+  useGetEventsQuery,
   useUpdateCalendarEventMutation,
   type Calendar,
   type CalendarEventCreateBody,
   type CalendarEventUpdateBody,
   type CalendarEvent,
 } from '@/features/calendars'
+import { singleOccurrenceMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
+import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
 import { endOfDay, startOfDay } from 'date-fns'
 import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
@@ -118,14 +120,6 @@ export function useCalendarState(): UseCalendarStateReturn {
   const [updateCalendarEvent] = useUpdateCalendarEventMutation()
   const [deleteCalendarEvent] = useDeleteCalendarEventMutation()
 
-  const allCalendarKeys = useMemo(() => {
-    return (
-      calendarsData
-        ?.map((calendar) => calendar.key ?? calendar.id)
-        .filter((key): key is string => Boolean(key)) ?? []
-    )
-  }, [calendarsData])
-
   // Create a map of calendar ID to color
   const calendarColorMap = useMemo(() => {
     if (!calendarsData) return {}
@@ -181,14 +175,13 @@ export function useCalendarState(): UseCalendarStateReturn {
 
   // RTK Query will handle caching and refetching automatically based on query parameters
 
-  const { currentData } = useGetEventsInTimeRangeQuery(
+  const { currentData } = useGetEventsQuery(
     {
-      calendarIds: allCalendarKeys,
       startDate: dateRange.startDate,
       endDate: dateRange.endDate,
     },
     {
-      skip: allCalendarKeys.length === 0,
+      skip: !calendarsData?.length,
     }
   )
 
@@ -323,8 +316,14 @@ export function useCalendarState(): UseCalendarStateReturn {
     )
   }
 
-  const handleEventDrop = (args: EventInteractionArgs<RBCEvent>) => {
+  const handleEventMove = (args: EventInteractionArgs<RBCEvent>) => {
     const { event, start, end } = args
+    const calendarRef = event.calendar_id ?? event.calendar_key ?? ''
+    const sourceCalendar = calendarsData?.find(
+      (cal) => (cal.key ?? cal.id) === calendarRef
+    )
+    if (!isCalendarWritable(sourceCalendar)) return
+
     const allDay =
       (args as EventInteractionArgs<RBCEvent> & { allDay?: boolean }).allDay ??
       event.all_day ??
@@ -353,9 +352,10 @@ export function useCalendarState(): UseCalendarStateReturn {
       )
     )
 
-    // Call API to update the event
     const eventKey = event.key ?? event.id ?? event.uid
     if (!eventKey) return
+
+    const isRecurringOccurrence = Boolean(event.recurrence_id)
 
     updateCalendarEvent({
       eventKey,
@@ -363,58 +363,20 @@ export function useCalendarState(): UseCalendarStateReturn {
         date_start: nextStartIso,
         date_end: nextEndIso,
         all_day: allDay,
+        ...singleOccurrenceMutationFields(event.recurrence_id),
       },
-      silentSuccess: true,
+      silentSuccess: !isRecurringOccurrence,
     }).catch(() => {
       setEvents(previousEvents)
     })
   }
 
+  const handleEventDrop = (args: EventInteractionArgs<RBCEvent>) => {
+    handleEventMove(args)
+  }
+
   const handleEventResize = (args: EventInteractionArgs<RBCEvent>) => {
-    const { event, start, end } = args
-    const allDay =
-      (args as EventInteractionArgs<RBCEvent> & { allDay?: boolean }).allDay ??
-      event.all_day ??
-      false
-    const nextStart = new Date(start)
-    const nextEnd = new Date(end)
-    const previousEvents = events
-    const nextStartIso = nextStart.toISOString()
-    const nextEndIso = nextEnd.toISOString()
-
-    setEvents((currentEvents) =>
-      currentEvents.map((existingEvent) =>
-        existingEvent.id === event.id
-          ? {
-              ...existingEvent,
-              start: nextStart,
-              end: nextEnd,
-              start_date: nextStartIso,
-              date_start: nextStartIso,
-              end_date: nextEndIso,
-              date_end: nextEndIso,
-              allDay,
-              all_day: allDay,
-            }
-          : existingEvent
-      )
-    )
-
-    // Call API to update the event
-    const eventKey = event.key ?? event.id ?? event.uid
-    if (!eventKey) return
-
-    updateCalendarEvent({
-      eventKey,
-      body: {
-        date_start: nextStartIso,
-        date_end: nextEndIso,
-        all_day: allDay,
-      },
-      silentSuccess: true,
-    }).catch(() => {
-      setEvents(previousEvents)
-    })
+    handleEventMove(args)
   }
 
   return {

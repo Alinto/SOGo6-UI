@@ -76,7 +76,7 @@ export function findTaskByKey(
 }
 
 function saveTasks(req: NextRequest, tasks: Task[], res: NextResponse) {
-  setDemoData(res, req, DEMO_TASKS_KEY, tasks)
+  setDemoData(res, DEMO_TASKS_KEY, tasks, req)
 }
 
 function listResponse(tasks: Task[]): ApiTaskListResponse {

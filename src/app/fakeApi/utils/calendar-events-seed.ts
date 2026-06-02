@@ -467,7 +467,7 @@ Please review the attached documents before the meeting.`,
         reminders: [
           { method: 'email', minutes_before: 1440 },
           { method: 'popup', minutes_before: 60 },
-          { method: 'notification', minutes_before: 15 },
+          { method: 'popup', minutes_before: 15 },
         ],
         conference_data: {
           type: 'zoom',

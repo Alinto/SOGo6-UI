@@ -20,7 +20,7 @@ export interface EventRecurrence {
 
 // Event reminder/alarm
 export interface EventReminder {
-  method: 'email' | 'popup' | 'notification'
+  method: 'email' | 'popup'
   minutes_before: number
 }
 
@@ -255,8 +255,8 @@ export interface FreeBusyApiResponse {
 /** Request body sent to the backend (FreeBusyRequestSchema) */
 export interface FreeBusyRequest {
   target_uids: string[] // participant emails / uids
-  start_date_time: string // ISO 8601 UTC, e.g. "2026-05-11T00:00:00Z"
-  end_date_time: string // ISO 8601 UTC, e.g. "2026-05-11T23:59:59Z"
+  start: string // ISO 8601 UTC, e.g. "2026-05-11T00:00:00Z"
+  end: string // ISO 8601 UTC, e.g. "2026-05-11T23:59:59Z"
 }
 
 /**
