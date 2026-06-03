@@ -1,7 +1,5 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-
 const mockUseTaskState = jest.fn()
 
 jest.mock('../../hooks/use-task-state', () => ({
@@ -53,8 +51,6 @@ jest.mock('next-intl', () => ({
 import TasksPage from '../tasks-page'
 
 describe('TasksPage', () => {
-  const setSearch = jest.fn()
-
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseTaskState.mockReturnValue({
@@ -76,7 +72,6 @@ describe('TasksPage', () => {
       openCreateForm: jest.fn(),
       openEditForm: jest.fn(),
       closeForm: jest.fn(),
-      setSearch,
     })
   })
 
@@ -89,12 +84,4 @@ describe('TasksPage', () => {
     })
   })
 
-  describe('integration', () => {
-    it('updates search on input', async () => {
-      const user = userEvent.setup()
-      render(<TasksPage />)
-      await user.type(screen.getByTestId('tasks-search'), 'abc')
-      expect(setSearch).toHaveBeenCalled()
-    })
-  })
 })

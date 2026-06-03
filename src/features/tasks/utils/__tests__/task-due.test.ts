@@ -37,10 +37,16 @@ describe('task-due', () => {
       ).toBe(false)
     })
 
-    it('returns true when due is in the past', () => {
+    it('returns true when due is before today', () => {
       expect(
-        isTaskOverdue({ ...base, due: '2025-05-27T23:59:00.000Z' })
+        isTaskOverdue({ ...base, due: '2025-05-26T12:00:00.000Z' })
       ).toBe(true)
+    })
+
+    it('returns false when due is today even if the time has passed', () => {
+      expect(
+        isTaskOverdue({ ...base, due: '2025-05-28T08:00:00.000Z' })
+      ).toBe(false)
     })
 
     it('returns false for invalid due', () => {

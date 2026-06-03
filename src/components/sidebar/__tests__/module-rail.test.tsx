@@ -146,7 +146,7 @@ describe('ModuleRail', () => {
       const sidebar = screen.getByTestId('sidebar')
       expect(sidebar).toHaveAttribute('data-side', 'right')
       expect(sidebar).toHaveClass(
-        'text-sidebar-foreground',
+        'text-sidebar-foreground-secondary',
         'bg-sidebar-background-secondary',
         'mt-12',
         'hidden',

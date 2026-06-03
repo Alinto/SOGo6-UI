@@ -1,6 +1,7 @@
 'use client'
 import CalendarEventsSearch from '@/features/calendars/components/calendar-events-search'
 import MailsSearch from '@/features/mails/components/mails-search'
+import TasksSearch from '@/features/tasks/components/tasks-search'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
@@ -14,6 +15,7 @@ const AppHeader: React.FC = () => {
   const showMailSearch = pathname.startsWith('/u/')
   const showAddressBookSearch = pathname.startsWith('/address-books/')
   const showCalendarsSearch = pathname.startsWith('/calendars')
+  const showTasksSearch = pathname.startsWith('/tasks')
 
   return (
     <header className="bg-header text-header-foreground top-0 right-0 left-0 z-10 flex h-12 shrink-0 items-center justify-between gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -24,14 +26,16 @@ const AppHeader: React.FC = () => {
         <div className="min-w-0 flex-1">
           {showMailSearch && <MailsSearch />}
           {showCalendarsSearch && <CalendarEventsSearch />}
+          {showTasksSearch && <TasksSearch />}
         </div>
       </div>
       {showAddressBookSearch && (
         <div className="ml-2 w-1/4 min-w-0 flex-1">{/* address book search */}</div>
       )}
-      {!showMailSearch && !showAddressBookSearch && !showCalendarsSearch && (
-        <div className="ml-2 min-w-0 flex-1"></div>
-      )}
+      {!showMailSearch &&
+        !showAddressBookSearch &&
+        !showCalendarsSearch &&
+        !showTasksSearch && <div className="ml-2 min-w-0 flex-1" />}
       <div className="mr-3 shrink-0">
         <HeaderDropdown />
       </div>

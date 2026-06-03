@@ -27,6 +27,11 @@ jest.mock('@/features/calendars/components/calendar-events-search', () => ({
   ),
 }))
 
+jest.mock('@/features/tasks/components/tasks-search', () => ({
+  __esModule: true,
+  default: () => <div data-testid="tasks-search">Tasks Search</div>,
+}))
+
 jest.mock('../ui/header-dropdown', () => {
   return function HeaderDropdown() {
     return <div data-testid="header-dropdown">Header Dropdown</div>
