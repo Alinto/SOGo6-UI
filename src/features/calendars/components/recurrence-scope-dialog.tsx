@@ -20,11 +20,7 @@ const SCOPES: RecurrenceScope[] = ['ONE', 'THISANDFUTURE', 'ALL']
 export function eventNeedsRecurrenceScope(
   event: CalendarEvent | null | undefined
 ): boolean {
-  return !!(
-    event?.recurrence ||
-    event?.recurrence_rule ||
-    event?.recurrence_id
-  )
+  return !!(event?.recurrence || event?.recurrence_rule || event?.recurrence_id)
 }
 
 interface RecurrenceScopeDialogProps {
@@ -53,11 +49,11 @@ export function RecurrenceScopeDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>
             {mode === 'edit'
-              ? t('recurrenceScope.editTitle')
-              : t('recurrenceScope.deleteTitle')}
+              ? t('recurrenceScope.editTitle.string')
+              : t('recurrenceScope.deleteTitle.string')}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {t('recurrenceScope.description')}
+            {t('recurrenceScope.description.string')}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <div className="flex flex-col gap-2 py-2">
@@ -69,13 +65,13 @@ export function RecurrenceScopeDialog({
               className="justify-start"
               onClick={() => onSelect(scope)}
             >
-              {t(`recurrenceScope.${scope}`)}
+              {t(`recurrenceScope.${scope}.string`)}
             </Button>
           ))}
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel type="button" onClick={onCancel}>
-            {t('recurrenceScope.cancel')}
+            {t('recurrenceScope.cancel.string')}
           </AlertDialogCancel>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -41,8 +41,6 @@ describe('MobileMonthView', () => {
     title: 'Test Event',
     start: new Date('2026-01-19T10:00:00'),
     end: new Date('2026-01-19T11:00:00'),
-    start_date: '2026-01-19T10:00:00',
-    end_date: '2026-01-19T11:00:00',
     calendar_id: 'cal1',
     all_day: false,
     created_at: '2026-01-19T09:00:00',

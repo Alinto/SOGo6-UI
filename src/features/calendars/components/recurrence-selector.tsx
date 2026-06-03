@@ -43,13 +43,13 @@ export function RecurrenceSelector({
     : 'MO'
 
   const days = [
-    { key: 'MO', label: t('days.mo') },
-    { key: 'TU', label: t('days.tu') },
-    { key: 'WE', label: t('days.we') },
-    { key: 'TH', label: t('days.th') },
-    { key: 'FR', label: t('days.fr') },
-    { key: 'SA', label: t('days.sa') },
-    { key: 'SU', label: t('days.su') },
+    { key: 'MO', label: t('days.mo.string') },
+    { key: 'TU', label: t('days.tu.string') },
+    { key: 'WE', label: t('days.we.string') },
+    { key: 'TH', label: t('days.th.string') },
+    { key: 'FR', label: t('days.fr.string') },
+    { key: 'SA', label: t('days.sa.string') },
+    { key: 'SU', label: t('days.su.string') },
   ]
 
   const [endType, setEndType] = useState<EndType>(
@@ -114,7 +114,7 @@ export function RecurrenceSelector({
           id="recurrence-toggle"
         />
         <Label htmlFor="recurrence-toggle" className={cn('text-sm font-medium')}>
-          {t('repeat')}
+          {t('repeat.string')}
         </Label>
       </div>
 
@@ -124,7 +124,7 @@ export function RecurrenceSelector({
         >
           <div className={cn('flex items-center gap-2')}>
             <span className={cn('text-muted-foreground text-sm')}>
-              {t('every')}
+              {t('every.string')}
             </span>
             <Input
               type="number"
@@ -150,10 +150,10 @@ export function RecurrenceSelector({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="daily">{t('frequencies.daily')}</SelectItem>
-                <SelectItem value="weekly">{t('frequencies.weekly')}</SelectItem>
-                <SelectItem value="monthly">{t('frequencies.monthly')}</SelectItem>
-                <SelectItem value="yearly">{t('frequencies.yearly')}</SelectItem>
+                <SelectItem value="daily">{t('frequencies.daily.string')}</SelectItem>
+                <SelectItem value="weekly">{t('frequencies.weekly.string')}</SelectItem>
+                <SelectItem value="monthly">{t('frequencies.monthly.string')}</SelectItem>
+                <SelectItem value="yearly">{t('frequencies.yearly.string')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -161,7 +161,7 @@ export function RecurrenceSelector({
           {rule.frequency === 'weekly' && (
             <div className={cn('flex flex-col gap-1')}>
               <span className={cn('text-muted-foreground text-sm')}>
-                {t('on')}
+                {t('on.string')}
               </span>
               <div className={cn('flex gap-1')}>
                 {days.map((day) => (
@@ -186,7 +186,7 @@ export function RecurrenceSelector({
           {rule.frequency === 'monthly' && (
             <div className={cn('flex items-center gap-2')}>
               <span className={cn('text-muted-foreground text-sm')}>
-                {t('onDay')}
+                {t('onDay.string')}
               </span>
               <Input
                 type="number"
@@ -203,14 +203,14 @@ export function RecurrenceSelector({
                 }
               />
               <span className={cn('text-muted-foreground text-sm')}>
-                {t('ofTheMonth')}
+                {t('ofTheMonth.string')}
               </span>
             </div>
           )}
 
           <div className={cn('flex flex-col gap-2')}>
             <span className={cn('text-muted-foreground text-sm')}>
-              {t('ends')}
+              {t('ends.string')}
             </span>
             <div className={cn('flex flex-col gap-2')}>
               <label className={cn('flex cursor-pointer items-center gap-2')}>
@@ -221,7 +221,7 @@ export function RecurrenceSelector({
                   onChange={() => handleEndTypeChange('never')}
                   className={cn('accent-primary')}
                 />
-                <span className={cn('text-sm')}>{t('endTypes.never')}</span>
+                <span className={cn('text-sm')}>{t('endTypes.never.string')}</span>
               </label>
 
               <label className={cn('flex cursor-pointer items-center gap-2')}>
@@ -232,7 +232,7 @@ export function RecurrenceSelector({
                   onChange={() => handleEndTypeChange('until')}
                   className={cn('accent-primary')}
                 />
-                <span className={cn('text-sm')}>{t('endTypes.on')}</span>
+                <span className={cn('text-sm')}>{t('endTypes.on.string')}</span>
                 {endType === 'until' && (
                   <Input
                     type="date"
@@ -257,7 +257,7 @@ export function RecurrenceSelector({
                   onChange={() => handleEndTypeChange('count')}
                   className={cn('accent-primary')}
                 />
-                <span className={cn('text-sm')}>{t('endTypes.after')}</span>
+                <span className={cn('text-sm')}>{t('endTypes.after.string')}</span>
                 {endType === 'count' && (
                   <>
                     <Input
@@ -272,7 +272,7 @@ export function RecurrenceSelector({
                       }
                     />
                     <span className={cn('text-muted-foreground text-sm')}>
-                      {t('occurrences')}
+                      {t('occurrences.string')}
                     </span>
                   </>
                 )}

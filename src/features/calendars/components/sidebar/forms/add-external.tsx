@@ -179,7 +179,7 @@ const AddExternalCalendar: React.FC = () => {
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" type="button" onClick={handleCancel}>
-                {t('common.cancel')}
+                {t('common.cancel.string')}
               </Button>
               <Button type="submit" disabled={isLoading}>
                 {isLoading

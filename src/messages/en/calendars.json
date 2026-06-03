@@ -1,28 +1,60 @@
 {
   "CALENDARS": {
-    "loading": "Loading...",
+    "loading": {
+      "string": "Loading..."
+    },
     "attendance": {
-      "accepted": "Accept",
-      "declined": "Decline",
-      "tentative": "Maybe",
-      "delegated": "Delegate",
+      "accepted": {
+        "string": "Accept"
+      },
+      "declined": {
+        "string": "Decline"
+      },
+      "tentative": {
+        "string": "Maybe"
+      },
+      "delegated": {
+        "string": "Delegate"
+      },
       "success": {
-        "accepted": "You accepted this event",
-        "declined": "You declined this event",
-        "tentative": "Marked as maybe"
+        "accepted": {
+          "string": "You accepted this event"
+        },
+        "declined": {
+          "string": "You declined this event"
+        },
+        "tentative": {
+          "string": "Marked as maybe"
+        }
       },
       "error": {
-        "string": "Failed to update your attendance"
+        "string": {
+          "string": "Failed to update your attendance"
+        }
       }
     },
     "recurrenceScope": {
-      "editTitle": "Edit recurring event",
-      "deleteTitle": "Delete recurring event",
-      "description": "Which events do you want to modify?",
-      "ONE": "This event only",
-      "THISANDFUTURE": "This and following events",
-      "ALL": "All events",
-      "cancel": "Cancel"
+      "editTitle": {
+        "string": "Edit recurring event"
+      },
+      "deleteTitle": {
+        "string": "Delete recurring event"
+      },
+      "description": {
+        "string": "Which events do you want to modify?"
+      },
+      "ONE": {
+        "string": "This event only"
+      },
+      "THISANDFUTURE": {
+        "string": "This and following events"
+      },
+      "ALL": {
+        "string": "All events"
+      },
+      "cancel": {
+        "string": "Cancel"
+      }
     },
     "toolbar": {
       "previous": {
@@ -122,52 +154,6 @@
         },
         "hasEvents": {
           "string": "Has events"
-        }
-      }
-    },
-    "external": {
-      "add_title": {
-        "string": "Subscribe to calendar"
-      },
-      "name_label": {
-        "string": "Name"
-      },
-      "url_label": {
-        "string": "Calendar URL (.ics)"
-      },
-      "url_error": {
-        "string": "Please enter a valid URL"
-      },
-      "color_label": {
-        "string": "Color"
-      },
-      "sync_interval_label": {
-        "string": "Sync every"
-      },
-      "sync_now": {
-        "string": "Sync now"
-      },
-      "submit": {
-        "string": "Subscribe"
-      },
-      "sync_interval_options": {
-        "5": {
-          "string": "5 min"
-        },
-        "15": {
-          "string": "15 min"
-        },
-        "30": {
-          "string": "30 min"
-        },
-        "60": {
-          "string": "1 hour"
-        },
-        "360": {
-          "string": "6 hours"
-        },
-        "1440": {
-          "string": "24 hours"
         }
       }
     },
@@ -398,151 +384,332 @@
     },
     "eventForm": {
       "calendar": {
-        "label": "Calendar",
-        "placeholder": "Select calendar"
+        "label": {
+          "string": "Calendar"
+        },
+        "placeholder": {
+          "string": "Select calendar"
+        }
       },
       "title": {
-        "label": "Event title",
-        "placeholder": "Enter event title"
+        "label": {
+          "string": "Event title"
+        },
+        "placeholder": {
+          "string": "Enter event title"
+        }
       },
       "allDay": {
-        "label": "All day"
+        "label": {
+          "string": "All day"
+        }
       },
       "startDate": {
-        "label": "Start date"
+        "label": {
+          "string": "Start date"
+        }
       },
       "startTime": {
-        "label": "Start time"
+        "label": {
+          "string": "Start time"
+        }
       },
       "endDate": {
-        "label": "End date"
+        "label": {
+          "string": "End date"
+        }
       },
       "endTime": {
-        "label": "End time"
+        "label": {
+          "string": "End time"
+        }
       },
       "timezone": {
-        "label": "Timezone (event)",
-        "description": "Timezone in which this event's dates are interpreted"
+        "label": {
+          "string": "Timezone (event)"
+        },
+        "description": {
+          "string": "Timezone in which this event's dates are interpreted"
+        }
       },
       "description": {
-        "label": "Description",
-        "placeholder": "Add event details"
+        "label": {
+          "string": "Description"
+        },
+        "placeholder": {
+          "string": "Add event details"
+        }
       },
       "location": {
-        "label": "Location",
-        "placeholder": "Add location"
+        "label": {
+          "string": "Location"
+        },
+        "placeholder": {
+          "string": "Add location"
+        }
       },
       "visibility": {
-        "label": "Visibility",
-        "placeholder": "Select visibility",
+        "label": {
+          "string": "Visibility"
+        },
+        "placeholder": {
+          "string": "Select visibility"
+        },
         "options": {
-          "public": "Public",
-          "private": "Private",
-          "confidential": "Confidential"
+          "public": {
+            "string": "Public"
+          },
+          "private": {
+            "string": "Private"
+          },
+          "confidential": {
+            "string": "Confidential"
+          }
         }
       },
       "showAs": {
-        "label": "Show as",
-        "placeholder": "Select availability",
+        "label": {
+          "string": "Show as"
+        },
+        "placeholder": {
+          "string": "Select availability"
+        },
         "options": {
-          "busy": "Busy",
-          "free": "Free",
-          "outOfOffice": "Out of office",
-          "tentative": "Tentative"
+          "busy": {
+            "string": "Busy"
+          },
+          "free": {
+            "string": "Free"
+          },
+          "outOfOffice": {
+            "string": "Out of office"
+          },
+          "tentative": {
+            "string": "Tentative"
+          }
         }
       },
       "status": {
-        "label": "Status",
-        "placeholder": "Select status",
+        "label": {
+          "string": "Status"
+        },
+        "placeholder": {
+          "string": "Select status"
+        },
         "options": {
-          "confirmed": "Confirmed",
-          "tentative": "Tentative",
-          "cancelled": "Cancelled"
+          "confirmed": {
+            "string": "Confirmed"
+          },
+          "tentative": {
+            "string": "Tentative"
+          },
+          "cancelled": {
+            "string": "Cancelled"
+          }
         }
       },
       "color": {
-        "label": "Color",
-        "reset": "Reset"
+        "label": {
+          "string": "Color"
+        },
+        "reset": {
+          "string": "Reset"
+        }
       },
       "categories": {
-        "label": "Categories",
-        "placeholder": "Add a category and press Enter",
-        "remove": "Remove {category}"
+        "label": {
+          "string": "Categories"
+        },
+        "placeholder": {
+          "string": "Add a category and press Enter"
+        },
+        "remove": {
+          "string": "Remove {category}"
+        }
       },
       "attendees": {
-        "label": "Attendees",
-        "title": "Participants",
-        "add": "Add participant",
-        "emailPlaceholder": "email@example.com",
-        "namePlaceholder": "Name (optional)",
-        "remove": "Remove {email}",
-        "search_placeholder": "Search by name or email...",
-        "invalid_email": "Please enter a valid email address",
-        "already_added": "This participant has already been added",
-        "max_reached": "Maximum {max} participants reached",
-        "add_email_direct": "Add \"{email}\" directly",
-        "no_data": "No availability data",
-        "legend_free": "Available",
-        "legend_busy": "Busy",
-        "legend_tentative": "Tentative",
-        "legend_non_working": "Non-working hours",
-        "optimal_slot": "Suggested window",
-        "timeline_hour": "{hour}h",
-        "scroll_horizontal_hint": "Scroll horizontally",
-        "tooltip_slot_busy": "Busy",
-        "tooltip_slot_free": "{name} · free · {time}",
-        "tooltip_slot_optimal": "Part of the suggested {duration}-min window · {time}"
+        "label": {
+          "string": "Attendees"
+        },
+        "title": {
+          "string": "Participants"
+        },
+        "add": {
+          "string": "Add participant"
+        },
+        "emailPlaceholder": {
+          "string": "email@example.com"
+        },
+        "namePlaceholder": {
+          "string": "Name (optional)"
+        },
+        "remove": {
+          "string": "Remove {email}"
+        },
+        "search_placeholder": {
+          "string": "Search by name or email..."
+        },
+        "invalid_email": {
+          "string": "Please enter a valid email address"
+        },
+        "already_added": {
+          "string": "This participant has already been added"
+        },
+        "max_reached": {
+          "string": "Maximum {max} participants reached"
+        },
+        "add_email_direct": {
+          "string": "Add \"{email}\" directly"
+        },
+        "no_data": {
+          "string": "No availability data"
+        },
+        "legend_free": {
+          "string": "Available"
+        },
+        "legend_busy": {
+          "string": "Busy"
+        },
+        "legend_tentative": {
+          "string": "Tentative"
+        },
+        "legend_non_working": {
+          "string": "Non-working hours"
+        },
+        "optimal_slot": {
+          "string": "Suggested window"
+        },
+        "timeline_hour": {
+          "string": "{hour}h"
+        },
+        "scroll_horizontal_hint": {
+          "string": "Scroll horizontally"
+        },
+        "tooltip_slot_busy": {
+          "string": "Busy"
+        },
+        "tooltip_slot_free": {
+          "string": "{name} · free · {time}"
+        },
+        "tooltip_slot_optimal": {
+          "string": "Part of the suggested {duration}-min window · {time}"
+        }
       },
       "reminders": {
-        "label": "Reminders",
-        "add": "Add reminder",
-        "minutesBefore": "min before",
-        "remove": "Remove reminder",
+        "label": {
+          "string": "Reminders"
+        },
+        "add": {
+          "string": "Add reminder"
+        },
+        "minutesBefore": {
+          "string": "min before"
+        },
+        "remove": {
+          "string": "Remove reminder"
+        },
         "methods": {
-          "popup": "Popup",
-          "email": "Email",
-          "notification": "Notification"
+          "popup": {
+            "string": "Popup"
+          },
+          "email": {
+            "string": "Email"
+          }
         }
       },
       "recurrence": {
-        "repeat": "Repeat",
-        "every": "Every",
-        "on": "On",
-        "onDay": "On day",
-        "ofTheMonth": "of the month",
-        "ends": "Ends",
-        "occurrences": "occurrences",
+        "repeat": {
+          "string": "Repeat"
+        },
+        "every": {
+          "string": "Every"
+        },
+        "on": {
+          "string": "On"
+        },
+        "onDay": {
+          "string": "On day"
+        },
+        "ofTheMonth": {
+          "string": "of the month"
+        },
+        "ends": {
+          "string": "Ends"
+        },
+        "occurrences": {
+          "string": "occurrences"
+        },
         "days": {
-          "mo": "Mon",
-          "tu": "Tue",
-          "we": "Wed",
-          "th": "Thu",
-          "fr": "Fri",
-          "sa": "Sat",
-          "su": "Sun"
+          "mo": {
+            "string": "Mon"
+          },
+          "tu": {
+            "string": "Tue"
+          },
+          "we": {
+            "string": "Wed"
+          },
+          "th": {
+            "string": "Thu"
+          },
+          "fr": {
+            "string": "Fri"
+          },
+          "sa": {
+            "string": "Sat"
+          },
+          "su": {
+            "string": "Sun"
+          }
         },
         "frequencies": {
-          "daily": "Day(s)",
-          "weekly": "Week(s)",
-          "monthly": "Month(s)",
-          "yearly": "Year(s)"
+          "daily": {
+            "string": "Day(s)"
+          },
+          "weekly": {
+            "string": "Week(s)"
+          },
+          "monthly": {
+            "string": "Month(s)"
+          },
+          "yearly": {
+            "string": "Year(s)"
+          }
         },
         "endTypes": {
-          "never": "Never",
-          "on": "On",
-          "after": "After"
+          "never": {
+            "string": "Never"
+          },
+          "on": {
+            "string": "On"
+          },
+          "after": {
+            "string": "After"
+          }
         }
       },
       "url": {
-        "label": "URL",
-        "placeholder": "https://example.com"
+        "label": {
+          "string": "URL"
+        },
+        "placeholder": {
+          "string": "https://example.com"
+        }
       },
-      "cancel": "Cancel",
-      "create": "Create Event",
-      "update": "Update Event"
+      "cancel": {
+        "string": "Cancel"
+      },
+      "create": {
+        "string": "Create Event"
+      },
+      "update": {
+        "string": "Update Event"
+      }
     },
     "common": {
-      "cancel": "Cancel"
+      "cancel": {
+        "string": "Cancel"
+      }
     },
     "forms": {
       "createCalendar": {
@@ -723,9 +890,15 @@
       },
       "deleteEvent": {
         "confirm": {
-          "title": "Delete event?",
-          "description": "This action cannot be undone.",
-          "button": "Delete"
+          "title": {
+            "string": "Delete event?"
+          },
+          "description": {
+            "string": "This action cannot be undone."
+          },
+          "button": {
+            "string": "Delete"
+          }
         }
       },
       "deleteCalendar": {

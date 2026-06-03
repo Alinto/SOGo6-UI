@@ -1,6 +1,5 @@
 'use client'
 
-import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import {
   useCreateCalendarEventMutation,
   useDeleteCalendarEventMutation,
@@ -8,12 +7,13 @@ import {
   useGetEventsQuery,
   useUpdateCalendarEventMutation,
   type Calendar,
+  type CalendarEvent,
   type CalendarEventCreateBody,
   type CalendarEventUpdateBody,
-  type CalendarEvent,
 } from '@/features/calendars'
-import { singleOccurrenceMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
+import { singleOccurrenceMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
 import { endOfDay, startOfDay } from 'date-fns'
 import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
@@ -190,8 +190,8 @@ export function useCalendarState(): UseCalendarStateReturn {
   useEffect(() => {
     if (currentData) {
       const transformedEvents: RBCEvent[] = currentData.flatMap((event) => {
-        const startDate = event.start_date ?? event.date_start
-        const endDate = event.end_date ?? event.date_end
+        const startDate = event.date_start
+        const endDate = event.date_end
 
         if (!startDate || !endDate) return []
 
@@ -202,9 +202,7 @@ export function useCalendarState(): UseCalendarStateReturn {
               ? `${event.key ?? event.uid}-${event.recurrence_id}`
               : (event.key ?? event.id ?? `${event.uid}-${startDate}`),
             calendar_id: event.calendar_id ?? event.calendar_key ?? '',
-            start_date: startDate,
             date_start: startDate,
-            end_date: endDate,
             date_end: endDate,
             start: convertDateToTimezone(startDate, timezone, locale),
             end: convertDateToTimezone(endDate, timezone, locale),
@@ -341,9 +339,7 @@ export function useCalendarState(): UseCalendarStateReturn {
               ...existingEvent,
               start: nextStart,
               end: nextEnd,
-              start_date: nextStartIso,
               date_start: nextStartIso,
-              end_date: nextEndIso,
               date_end: nextEndIso,
               allDay,
               all_day: allDay,

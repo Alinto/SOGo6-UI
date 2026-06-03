@@ -36,8 +36,6 @@ export interface CalendarEvent {
   location?: string
   date_start?: string // Backend ISO datetime
   date_end?: string // Backend ISO datetime
-  start_date?: string // Frontend-normalized ISO datetime
-  end_date?: string // Frontend-normalized ISO datetime
   all_day: boolean
   timezone?: string
 

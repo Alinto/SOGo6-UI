@@ -199,15 +199,13 @@ function normalizeCalendarResponse(
 }
 
 function normalizeCalendarEvent(event: CalendarEvent): CalendarEvent {
-  const startDate = event.date_start ?? event.start_date
-  const endDate = event.date_end ?? event.end_date
+  const startDate = event.date_start 
+  const endDate = event.date_end 
   const calendarId = event.calendar_id ?? event.calendar_key ?? null
 
   return {
     ...event,
-    start_date: startDate,
     date_start: startDate,
-    end_date: endDate,
     date_end: endDate,
     recurrence:
       event.recurrence ??

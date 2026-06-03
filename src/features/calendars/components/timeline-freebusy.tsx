@@ -115,26 +115,26 @@ const LEGEND_ITEM_KEYS: ReadonlyArray<{
   key: string
   style: CSSProperties
   i18nKey:
-    | 'eventForm.attendees.legend_busy'
-    | 'eventForm.attendees.legend_tentative'
-    | 'eventForm.attendees.legend_free'
-    | 'eventForm.attendees.legend_non_working'
+    | 'eventForm.attendees.legend_busy.string'
+    | 'eventForm.attendees.legend_tentative.string'
+    | 'eventForm.attendees.legend_free.string'
+    | 'eventForm.attendees.legend_non_working.string'
 }> = [
   {
     key: 'nonworking',
     style: S.nonworking,
-    i18nKey: 'eventForm.attendees.legend_non_working',
+    i18nKey: 'eventForm.attendees.legend_non_working.string',
   },
-  { key: 'busy', style: S.busy, i18nKey: 'eventForm.attendees.legend_busy' },
+  { key: 'busy', style: S.busy, i18nKey: 'eventForm.attendees.legend_busy.string' },
   {
     key: 'tentative',
     style: S.tentative,
-    i18nKey: 'eventForm.attendees.legend_tentative',
+    i18nKey: 'eventForm.attendees.legend_tentative.string',
   },
   {
     key: 'available',
     style: S.available,
-    i18nKey: 'eventForm.attendees.legend_free',
+    i18nKey: 'eventForm.attendees.legend_free.string',
   },
 ]
 
@@ -252,7 +252,7 @@ function GridHeader({
                   }}
                 >
                   {h % 2 === 0
-                    ? t('eventForm.attendees.timeline_hour', {
+                    ? t('eventForm.attendees.timeline_hour.string', {
                         hour: String(h).padStart(2, '0'),
                       })
                     : null}
@@ -385,14 +385,14 @@ const PersonRow = React.memo(function PersonRow({
                       key={h}
                       title={
                         optHour
-                          ? t('eventForm.attendees.tooltip_slot_optimal', {
+                          ? t('eventForm.attendees.tooltip_slot_optimal.string', {
                               duration: appointmentDuration,
                               time: `${String(h).padStart(2, '0')}:00`,
                             })
                           : dominant === 'busy'
-                            ? t('eventForm.attendees.tooltip_slot_busy')
+                            ? t('eventForm.attendees.tooltip_slot_busy.string')
                             : dominant === 'available'
-                              ? t('eventForm.attendees.tooltip_slot_free', {
+                              ? t('eventForm.attendees.tooltip_slot_free.string', {
                                   name:
                                     person.personName?.trim() || person.email,
                                   time: `${String(h).padStart(2, '0')}:00`,
@@ -440,14 +440,14 @@ const PersonRow = React.memo(function PersonRow({
                           key={q}
                           title={
                             opt
-                              ? t('eventForm.attendees.tooltip_slot_optimal', {
+                              ? t('eventForm.attendees.tooltip_slot_optimal.string', {
                                   duration: appointmentDuration,
                                   time: `${String(h).padStart(2, '0')}:${mm}`,
                                 })
                               : raw === 'busy'
-                                ? t('eventForm.attendees.tooltip_slot_busy')
+                                ? t('eventForm.attendees.tooltip_slot_busy.string')
                                 : raw === 'available'
-                                  ? t('eventForm.attendees.tooltip_slot_free', {
+                                  ? t('eventForm.attendees.tooltip_slot_free.string', {
                                       name:
                                         person.personName?.trim() ||
                                         person.email,
@@ -521,7 +521,7 @@ function Legend({ t }: LegendProps) {
           }}
         />
         <span style={{ fontSize: 11, color: 'var(--muted-foreground)' }}>
-          {t('eventForm.attendees.optimal_slot')}
+          {t('eventForm.attendees.optimal_slot.string')}
         </span>
       </div>
     </div>
@@ -680,7 +680,7 @@ const TimelineFreeBusy = React.memo(function TimelineFreeBusy({
   if (!data) {
     return (
       <p className="text-muted-foreground py-6 text-center text-sm">
-        {t('eventForm.attendees.no_data')}
+        {t('eventForm.attendees.no_data.string')}
       </p>
     )
   }

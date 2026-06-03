@@ -10,7 +10,6 @@ const sampleEvent: CalendarEvent = {
   key: 'evt-1',
   title: 'Team standup',
   calendar_id: 'cal-1',
-  start_date: '2024-06-23T09:00:00.000Z',
   date_start: '2024-06-23T09:00:00.000Z',
 }
 

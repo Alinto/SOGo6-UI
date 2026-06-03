@@ -1,6 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { useAppSelector } from '@/lib/redux/hooks'
+import { cn } from '@/lib/utils'
 import {
   Bell,
   Calendar,
@@ -13,9 +15,12 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
-import { useAppSelector } from '@/lib/redux/hooks'
-import { cn } from '@/lib/utils'
-import type { AttendanceStatus, CalendarEvent, EventAttendee, EventReminder } from '../../calendars-types'
+import type {
+  AttendanceStatus,
+  CalendarEvent,
+  EventAttendee,
+  EventReminder,
+} from '../../calendars-types'
 import { usePostEventAttendanceMutation } from '../../store/calendars-api'
 
 interface VisualizationProps {
@@ -50,12 +55,9 @@ function getReminderMethodLabel(
   method: EventReminder['method']
 ): string {
   if (method === 'email') {
-    return t('eventForm.reminders.methods.email')
+    return t('eventForm.reminders.methods.email.string')
   }
-  if (method === 'notification') {
-    return t('eventForm.reminders.methods.popup')
-  }
-  return t('eventForm.reminders.methods.popup')
+  return t('eventForm.reminders.methods.popup.string')
 }
 
 function AttendeeParticipationStatus({
@@ -88,9 +90,7 @@ function AttendeeParticipationStatus({
 
   return (
     <span
-      className={cn(
-        'text-muted-foreground flex items-center gap-1 text-xs'
-      )}
+      className={cn('text-muted-foreground flex items-center gap-1 text-xs')}
     >
       <span
         className={cn('h-2 w-2 rounded-full', config.dotClassName)}
@@ -121,9 +121,9 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
 
   const isAttendee = Boolean(
     normalizedUserEmail &&
-      data.attendees?.some(
-        (a) => a.email.trim().toLowerCase() === normalizedUserEmail
-      )
+    data.attendees?.some(
+      (a) => a.email.trim().toLowerCase() === normalizedUserEmail
+    )
   )
 
   const eventKey = data.key ?? data.id ?? undefined
@@ -174,8 +174,8 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
           : t('visualization.frequency.yearly.string')
     : null
 
-  const startDate = new Date(data.start_date ?? data.date_start ?? '')
-  const endDate = new Date(data.end_date ?? data.date_end ?? '')
+  const startDate = new Date(data.date_start ?? '')
+  const endDate = new Date(data.date_end ?? '')
   const dateStr = startDate.toLocaleDateString(undefined, {
     weekday: 'long',
     year: 'numeric',
@@ -252,10 +252,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
               </div>
             )}
             {otherAttendees.map((attendee, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between"
-              >
+              <div key={index} className="flex items-center justify-between">
                 <div>
                   <p className="font-medium">
                     {attendee.name || attendee.email}
@@ -267,10 +264,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
                   )}
                 </div>
                 {attendee.status && (
-                  <AttendeeParticipationStatus
-                    status={attendee.status}
-                    t={t}
-                  />
+                  <AttendeeParticipationStatus status={attendee.status} t={t} />
                 )}
               </div>
             ))}
@@ -291,44 +285,42 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
             rel="noopener noreferrer"
             className="text-[hsl(var(--ring))] underline underline-offset-2 hover:opacity-80"
           >
-            {data.conference_data.type}{' '}
-            {t('visualization.joinMeeting.string')}
+            {data.conference_data.type} {t('visualization.joinMeeting.string')}
           </a>
         </div>
       </div>
     ),
-    data.reminders &&
-      data.reminders.length > 0 && (
-        <div key="reminders" className="flex items-start gap-3 pt-1">
-          <Bell className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
-          <div className="flex-1">
-            <h3 className="mb-2 font-semibold">
-              {t('visualization.reminders.string')}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {data.reminders.map((reminder, index) => {
-                const timeBefore = formatReminderTimeBefore(
-                  t,
-                  reminder.minutes_before
-                )
-                const methodLabel = getReminderMethodLabel(t, reminder.method)
+    data.reminders && data.reminders.length > 0 && (
+      <div key="reminders" className="flex items-start gap-3 pt-1">
+        <Bell className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div className="flex-1">
+          <h3 className="mb-2 font-semibold">
+            {t('visualization.reminders.string')}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {data.reminders.map((reminder, index) => {
+              const timeBefore = formatReminderTimeBefore(
+                t,
+                reminder.minutes_before
+              )
+              const methodLabel = getReminderMethodLabel(t, reminder.method)
 
-                return (
-                  <span
-                    key={index}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2.5 py-0.5 text-xs'
-                    )}
-                  >
-                    <span aria-hidden="true">🔔</span>
-                    {methodLabel} · {timeBefore}
-                  </span>
-                )
-              })}
-            </div>
+              return (
+                <span
+                  key={index}
+                  className={cn(
+                    'border-border bg-muted inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs'
+                  )}
+                >
+                  <span aria-hidden="true">🔔</span>
+                  {methodLabel} · {timeBefore}
+                </span>
+              )
+            })}
           </div>
         </div>
-      ),
+      </div>
+    ),
     data.recurrence && (
       <div key="recurrence" className="flex items-start gap-3">
         <Clock className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
@@ -350,24 +342,23 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
         </div>
       </div>
     ),
-    data.categories &&
-      data.categories.length > 0 && (
-        <div key="categories" className="flex items-start gap-3">
-          <FileText className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
-          <div className="flex-1">
-            <h3 className="mb-2 font-semibold">
-              {t('visualization.categories.string')}
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {data.categories.map((category) => (
-                <Badge key={category} variant="secondary">
-                  {category}
-                </Badge>
-              ))}
-            </div>
+    data.categories && data.categories.length > 0 && (
+      <div key="categories" className="flex items-start gap-3">
+        <FileText className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
+        <div className="flex-1">
+          <h3 className="mb-2 font-semibold">
+            {t('visualization.categories.string')}
+          </h3>
+          <div className="flex flex-wrap gap-2">
+            {data.categories.map((category) => (
+              <Badge key={category} variant="secondary">
+                {category}
+              </Badge>
+            ))}
           </div>
         </div>
-      ),
+      </div>
+    ),
     data.url && (
       <div key="url" className="flex items-start gap-3">
         <ExternalLink className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
@@ -388,9 +379,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
       <div key="status" className="flex items-start gap-3">
         <Calendar className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
         <div>
-          <h3 className="font-semibold">
-            {t('visualization.status.string')}
-          </h3>
+          <h3 className="font-semibold">{t('visualization.status.string')}</h3>
           <Badge variant="outline" className={getStatusClassName(status)}>
             {statusLabel}
           </Badge>

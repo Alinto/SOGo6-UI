@@ -1,44 +1,45 @@
-import { getEventsForCalendar } from '@/app/fakeApi/utils/calendar-events-store'
+import { getAllEvents } from '@/app/fakeApi/utils/calendar-events-store'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * GET /fakeApi/calendars/events/range
+ * GET /fakeApi/calendars/events
  * Fetches events from multiple calendars within a date range.
  * Query parameters:
- *   - calendar_ids: comma-separated list of calendar IDs
- *   - start_date: ISO date string (YYYY-MM-DD)
- *   - end_date: ISO date string (YYYY-MM-DD)
+ *   - start_date_time: ISO date-time string
+ *   - end_date_time: ISO date-time string
+ *  - search: optional string to filter events by title or description
  */
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams
-    const calendarIdsParam = searchParams.get('calendar_ids')
-    const startDateParam = searchParams.get('start_date')
-    const endDateParam = searchParams.get('end_date')
+    const { searchParams } = new URL(request.url)
 
-    if (!calendarIdsParam || !startDateParam || !endDateParam) {
-      return NextResponse.json(
-        {
-          error:
-            'Missing required parameters: calendar_ids, start_date, end_date',
-        },
-        { status: 400 }
-      )
-    }
+    console.log('searchParams', searchParams)
 
-    const calendarIds = calendarIdsParam.split(',').map((id) => id.trim())
-    const startDate = new Date(startDateParam + 'T00:00:00Z')
-    const endDate = new Date(endDateParam + 'T23:59:59Z')
+    const startDateParam = searchParams.get('start_date_time')
+    const endDateParam = searchParams.get('end_date_time')
+    const searchParam = searchParams.get('search')
 
-    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    console.log('startDateParam', startDateParam)
+    console.log('endDateParam', endDateParam)
+    console.log('searchParam', searchParam)
+
+    const startDate = startDateParam
+      ? new Date(startDateParam + 'T00:00:00Z')
+      : null
+    const endDate = endDateParam ? new Date(endDateParam + 'T23:59:59Z') : null
+
+    if (
+      (startDate && isNaN(startDate.getTime())) ||
+      (endDate && isNaN(endDate.getTime()))
+    ) {
       return NextResponse.json(
         { error: 'Invalid date format. Use ISO date format (YYYY-MM-DD)' },
         { status: 400 }
       )
     }
 
-    if (startDate > endDate) {
+    if (startDate && endDate && startDate > endDate) {
       return NextResponse.json(
         { error: 'start_date must be before end_date' },
         { status: 400 }
@@ -47,22 +48,42 @@ export async function GET(request: NextRequest) {
 
     const eventsInRange: CalendarEvent[] = []
 
-    for (const calendarId of calendarIds) {
-      const calendarEvents = getEventsForCalendar(request, calendarId)
-      const filtered = calendarEvents.filter((event) => {
-        const eventStart = new Date(event.start_date ?? event.date_start ?? '')
-        const eventEnd = new Date(event.end_date ?? event.date_end ?? '')
-        return eventStart <= endDate && eventEnd >= startDate
-      })
-      eventsInRange.push(...filtered)
+    const calendarEvents = getAllEvents(request)
+
+    for (const [calendarId, events] of Object.entries(calendarEvents)) {
+      for (const event of events) {
+        if (searchParam) {
+          const searchLower = searchParam.toLowerCase()
+          const titleMatch = event.title.toLowerCase().includes(searchLower)
+          const descriptionMatch = event.description
+            ? event.description.toLowerCase().includes(searchLower)
+            : false
+          if (titleMatch || descriptionMatch) {
+            eventsInRange.push(event)
+          }
+        }
+        const eventStart = event.all_day
+          ? new Date(event.date_start + 'T00:00:00Z')
+          : new Date(event.date_start)
+        const eventEnd = event.all_day
+          ? new Date(event.date_end + 'T23:59:59Z')
+          : new Date(event.date_end)
+        if (
+          startDate &&
+          endDate &&
+          startDate <= eventStart &&
+          endDate >= eventEnd
+        ) {
+          eventsInRange.push(event)
+        } else if (startDate && !endDate && startDate <= eventEnd) {
+          eventsInRange.push(event)
+        } else if (!startDate && endDate && endDate >= eventStart) {
+          eventsInRange.push(event)
+        } else if (!startDate && !endDate) {
+          eventsInRange.push(event)
+        }
+      }
     }
-
-    eventsInRange.sort(
-      (a, b) =>
-        new Date(a.start_date ?? a.date_start ?? '').getTime() -
-        new Date(b.start_date ?? b.date_start ?? '').getTime()
-    )
-
     return NextResponse.json(eventsInRange)
   } catch (error) {
     console.error('Error fetching events in range:', error)
@@ -74,7 +95,7 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * OPTIONS /fakeApi/calendars/events/range
+ * OPTIONS /fakeApi/calendars/events
  */
 export async function OPTIONS() {
   return NextResponse.json({ allow: ['GET'] }, { status: 200 })
