@@ -20,32 +20,32 @@ import {
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  type CalendarEvent,
   useDeleteCalendarEventMutation,
   useGetCalendarEventByIdQuery,
+  type CalendarEvent,
 } from '@/features/calendars'
+import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
+import type { Calendar } from '@/features/calendars/calendars-types'
+import { CalendarToolbar } from '@/features/calendars/components/calendar-toolbar'
+import CalendarView from '@/features/calendars/components/calendar-view'
+import { EventForm } from '@/features/calendars/components/event-form'
 import {
   eventNeedsRecurrenceScope,
   RecurrenceScopeDialog,
   type RecurrenceScope,
 } from '@/features/calendars/components/recurrence-scope-dialog'
-import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
-import { CalendarToolbar } from '@/features/calendars/components/calendar-toolbar'
-import CalendarView from '@/features/calendars/components/calendar-view'
-import { EventForm } from '@/features/calendars/components/event-form'
 import Visualization from '@/features/calendars/components/visualization'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
-import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
-import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
 import { clearCreateEventRequest } from '@/features/calendars/store/calendar-ui-slice'
+import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
+import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type { SlotInfo } from 'react-big-calendar'
-import type { Calendar } from '@/features/calendars/calendars-types'
 
 /** Prefer first non-empty string; avoids losing list calendar when GET detail omits it. */
 function pickNonEmptyCalendarRef(
@@ -155,7 +155,10 @@ const CalendarPage = () => {
 
   const displayEvent = useMemo(() => {
     if (!selectedEvent) return null
-    const merged = mergeEventDetailWithListSelection(selectedEvent, detailedEvent)
+    const merged = mergeEventDetailWithListSelection(
+      selectedEvent,
+      detailedEvent
+    )
     if (detailedEvent?.attendees?.length) {
       return { ...merged, attendees: detailedEvent.attendees }
     }
@@ -184,9 +187,7 @@ const CalendarPage = () => {
 
   const isSelectedEventWritable = isCalendarWritable(selectedEventCalendar)
 
-  const handleDeleteSelectedEvent = async (
-    scope?: RecurrenceScope
-  ) => {
+  const handleDeleteSelectedEvent = async (scope?: RecurrenceScope) => {
     if (!selectedEvent) return
 
     const eventKey = selectedEvent.key ?? selectedEvent.id ?? selectedEvent.uid
@@ -318,24 +319,28 @@ const CalendarPage = () => {
                       <AlertDialogTrigger asChild>
                         <Button
                           variant="destructive"
-                          disabled={isDetailFetching && eventKeyForQuery !== null}
+                          disabled={
+                            isDetailFetching && eventKeyForQuery !== null
+                          }
                         >
-                          {t('forms.deleteEvent.confirm.button')}
+                          {t('forms.deleteEvent.confirm.button.string')}
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent>
                         <AlertDialogHeader>
                           <AlertDialogTitle>
-                            {t('forms.deleteEvent.confirm.title')}
+                            {t('forms.deleteEvent.confirm.title.string')}
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            {t('forms.deleteEvent.confirm.description')}
+                            {t('forms.deleteEvent.confirm.description.string')}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+                          <AlertDialogCancel>
+                            {t('common.cancel.string')}
+                          </AlertDialogCancel>
                           <AlertDialogAction onClick={handleConfirmDeleteClick}>
-                            {t('forms.deleteEvent.confirm.button')}
+                            {t('forms.deleteEvent.confirm.button.string')}
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
@@ -347,9 +352,7 @@ const CalendarPage = () => {
           )}
           {selectedEvent && displayEvent && dialogMode === 'edit' && (
             <>
-              <DialogHeader
-                className={cn('shrink-0 border-b px-6 pt-6 pb-4')}
-              >
+              <DialogHeader className={cn('shrink-0 border-b px-6 pt-6 pb-4')}>
                 <DialogTitle
                   className={cn('text-xl font-semibold tracking-tight')}
                 >
@@ -357,9 +360,7 @@ const CalendarPage = () => {
                 </DialogTitle>
               </DialogHeader>
               <div
-                className={cn(
-                  'flex min-h-0 flex-1 flex-col overflow-hidden'
-                )}
+                className={cn('flex min-h-0 flex-1 flex-col overflow-hidden')}
               >
                 <EventForm
                   key={eventKeyForQuery ?? 'edit-event'}

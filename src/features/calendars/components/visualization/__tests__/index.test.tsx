@@ -19,8 +19,8 @@ const baseEvent: CalendarEvent = {
   calendar_id: 'c1',
   title: 'Plan review',
   all_day: false,
-  start_date: '2024-06-15T10:00:00.000Z',
-  end_date: '2024-06-15T11:00:00.000Z',
+  date_start: '2024-06-15T10:00:00.000Z',
+  date_end: '2024-06-15T11:00:00.000Z',
   created_at: '2024-01-01T00:00:00.000Z',
   updated_at: '2024-01-01T00:00:00.000Z',
 }

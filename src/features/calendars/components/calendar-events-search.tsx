@@ -26,7 +26,7 @@ function eventResultKey(event: CalendarEvent): string {
     event.key ??
     event.id ??
     event.uid ??
-    `${event.calendar_id}-${event.start_date ?? event.date_start}`
+    `${event.calendar_id}-${event.date_start}`
   )
 }
 
@@ -34,7 +34,7 @@ function formatEventSearchDate(
   event: CalendarEvent,
   dateFnsLocale: ReturnType<typeof getDateFnsLocale>
 ): string {
-  const raw = event.start_date ?? event.date_start
+  const raw = event.date_start
   if (!raw) return ''
   try {
     return format(parseISO(raw), 'EEE d MMM yyyy · HH:mm', {

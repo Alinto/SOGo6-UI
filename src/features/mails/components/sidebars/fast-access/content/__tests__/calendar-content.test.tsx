@@ -103,7 +103,7 @@ describe('CalendarContent', () => {
           {
             id: 'e1',
             title: 'Standup',
-            start_date: today.toISOString(),
+            date_start: today.toISOString(),
             calendar_id: 'cal-1',
             all_day: false,
             created_at: today.toISOString(),

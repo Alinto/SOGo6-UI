@@ -2,11 +2,11 @@
 
 import { Calendar } from '@/components/ui/calendar-lazy'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
+import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import {
   useGetCalendarsQuery,
   useGetEventsQuery,
 } from '@/features/calendars/store/calendars-api'
-import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React, { useMemo, useState } from 'react'
@@ -52,16 +52,16 @@ function EventRow({ event, color }: { event: CalendarEvent; color?: string }) {
   const isAllDay = event.all_day
   const timeLabel = isAllDay
     ? t('all_day')
-    : `${formatTime(event.start_date)} – ${formatTime(event.end_date)}`
+    : `${formatTime(event.date_start)} – ${formatTime(event.date_end)}`
 
   return (
-    <div className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm transition-colors hover:bg-sidebar-accent/50">
+    <div className="hover:bg-sidebar-accent/50 flex items-start gap-2 rounded-md px-2 py-1.5 text-sm transition-colors">
       <span
         className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
         style={{ backgroundColor: color ?? '#3b82f6' }}
       />
       <div className="min-w-0">
-        <p className="text-foreground truncate font-medium leading-tight">
+        <p className="text-foreground truncate leading-tight font-medium">
           {event.title}
         </p>
         <p className="text-muted-foreground text-xs">{timeLabel}</p>
@@ -102,7 +102,7 @@ function EventList({
     return [...events].sort((a, b) => {
       if (a.all_day && !b.all_day) return -1
       if (!a.all_day && b.all_day) return 1
-      return (a.start_date ?? '').localeCompare(b.start_date ?? '')
+      return (a.date_start ?? '').localeCompare(b.date_start ?? '')
     })
   }, [events])
 
@@ -113,9 +113,7 @@ function EventList({
   }
 
   if (isError) {
-    return (
-      <p className="text-destructive px-2 py-3 text-xs">{t('error')}</p>
-    )
+    return <p className="text-destructive px-2 py-3 text-xs">{t('error')}</p>
   }
 
   if (sorted.length === 0) {
@@ -154,10 +152,7 @@ const CalendarContent: React.FC = () => {
   const calendarColors = useMemo(
     () =>
       Object.fromEntries(
-        visibleCalendars.map((c) => [
-          c.id ?? c.key ?? '',
-          c.color ?? '#3b82f6',
-        ])
+        visibleCalendars.map((c) => [c.id ?? c.key ?? '', c.color ?? '#3b82f6'])
       ),
     [visibleCalendars]
   )
@@ -178,7 +173,7 @@ const CalendarContent: React.FC = () => {
     const seen = new Set<string>()
     const dates: Date[] = []
     for (const event of monthEvents) {
-      const raw = event.start_date ?? event.date_start
+      const raw = event.date_start
       if (!raw) continue
       const d = new Date(raw)
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
@@ -208,7 +203,7 @@ const CalendarContent: React.FC = () => {
         }}
       />
       <div className="px-1 pb-2">
-        <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold uppercase tracking-wide">
+        <p className="text-muted-foreground mb-1 px-2 text-xs font-semibold tracking-wide uppercase">
           {isToday
             ? t('today')
             : selectedDate.toLocaleDateString(undefined, {

@@ -53,7 +53,6 @@ describe('calendars-types', () => {
         updated_at: '2024-01-01T00:00:00Z',
         date_start: '2024-01-01T10:00:00Z',
         date_end: '2024-01-01T11:00:00Z',
-        start_date: '2024-01-01T10:00:00Z',
         end_date: '2024-01-01T11:00:00Z',
         calendar_key: 'cal-1',
       }

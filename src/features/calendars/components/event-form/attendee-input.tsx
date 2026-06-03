@@ -110,13 +110,15 @@ export default function AttendeeInput({
   const addAttendee = useCallback(
     (item: AttendeeInputItem) => {
       if (maxAttendees && value.length >= maxAttendees) {
-        setError(t('eventForm.attendees.max_reached', { max: maxAttendees }))
+        setError(
+          t('eventForm.attendees.max_reached.string', { max: maxAttendees })
+        )
         return
       }
       if (
         value.some((a) => a.email.toLowerCase() === item.email.toLowerCase())
       ) {
-        setError(t('eventForm.attendees.already_added'))
+        setError(t('eventForm.attendees.already_added.string'))
         return
       }
       onChange([...value, item])
@@ -133,7 +135,7 @@ export default function AttendeeInput({
     const trimmed = inputValue.trim()
     if (!trimmed) return
     if (!isValidEmail(trimmed)) {
-      setError(t('eventForm.attendees.invalid_email'))
+      setError(t('eventForm.attendees.invalid_email.string'))
       return
     }
     addAttendee({ email: trimmed })
@@ -146,9 +148,7 @@ export default function AttendeeInput({
 
   const suggestionCount = filteredSuggestions.length
   const hasDirectRow = showDirectAdd && isOpen
-  const listLength = isOpen
-    ? suggestionCount + (hasDirectRow ? 1 : 0)
-    : 0
+  const listLength = isOpen ? suggestionCount + (hasDirectRow ? 1 : 0) : 0
 
   const effectiveHighlight = useMemo(() => {
     if (listLength === 0) return 0
@@ -229,7 +229,7 @@ export default function AttendeeInput({
                   className={tagDismissButtonClassName(
                     'ml-0.5 rounded-sm opacity-60 hover:opacity-100 focus-visible:ring-2'
                   )}
-                  aria-label={t('eventForm.attendees.remove', {
+                  aria-label={t('eventForm.attendees.remove.string', {
                     email: attendee.email,
                   })}
                 >
@@ -261,7 +261,7 @@ export default function AttendeeInput({
               onFocus={() => {
                 setPanelDismissed(false)
               }}
-              placeholder={t('eventForm.attendees.search_placeholder')}
+              placeholder={t('eventForm.attendees.search_placeholder.string')}
               className={cn(
                 'pl-8',
                 error && 'border-destructive focus-visible:ring-destructive'

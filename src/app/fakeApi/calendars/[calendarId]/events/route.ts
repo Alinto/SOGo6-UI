@@ -30,14 +30,14 @@ export async function GET(
     const startBoundary = new Date(startDateTime).getTime()
     events = events.filter(
       (e) =>
-        new Date(e.end_date ?? e.date_end ?? '').getTime() >= startBoundary
+        new Date( e.date_end ?? '').getTime() >= startBoundary
     )
   }
   if (endDateTime) {
     const endBoundary = new Date(endDateTime).getTime()
     events = events.filter(
       (e) =>
-        new Date(e.start_date ?? e.date_start ?? '').getTime() <= endBoundary
+        new Date( e.date_start ?? '').getTime() <= endBoundary
     )
   }
   if (search) {

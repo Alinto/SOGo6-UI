@@ -55,8 +55,8 @@ describe('MobileDayView', () => {
     calendar_id: 'cal-1',
     start: new Date(2025, 0, 15, 10, 0),
     end: new Date(2025, 0, 15, 11, 0),
-    start_date: '2025-01-15T10:00:00',
-    end_date: '2025-01-15T11:00:00',
+    date_start: '2025-01-15T10:00:00',
+    date_end: '2025-01-15T11:00:00',
     all_day: false,
     created_at: '2025-01-15T09:00:00',
     updated_at: '2025-01-15T09:00:00',
@@ -115,8 +115,8 @@ describe('MobileDayView', () => {
       title: 'Tomorrow Event',
       start: addDays(mockDate, 1),
       end: addDays(addHours(mockDate, 1), 1),
-      start_date: addDays(mockDate, 1).toISOString(),
-      end_date: addDays(addHours(mockDate, 1), 1).toISOString(),
+      date_start: addDays(mockDate, 1).toISOString(),
+      date_end: addDays(addHours(mockDate, 1), 1).toISOString(),
     })
 
     render(
@@ -134,8 +134,8 @@ describe('MobileDayView', () => {
       title: 'Event 2',
       start: new Date(2025, 0, 15, 14, 0),
       end: new Date(2025, 0, 15, 15, 0),
-      start_date: '2025-01-15T14:00:00',
-      end_date: '2025-01-15T15:00:00',
+      date_start: '2025-01-15T14:00:00',
+      date_end: '2025-01-15T15:00:00',
     })
 
     render(<MobileDayView {...defaultProps} events={[event1, event2]} />)
@@ -156,8 +156,8 @@ describe('MobileDayView', () => {
     const event = createMockEvent({
       start: new Date(2025, 0, 15, 14, 30),
       end: new Date(2025, 0, 15, 16, 45),
-      start_date: '2025-01-15T14:30:00',
-      end_date: '2025-01-15T16:45:00',
+      date_start: '2025-01-15T14:30:00',
+      date_end: '2025-01-15T16:45:00',
     })
 
     render(<MobileDayView {...defaultProps} events={[event]} />)
@@ -234,8 +234,8 @@ describe('MobileDayView', () => {
       title: 'First Event',
       start: new Date(2025, 0, 15, 14, 0),
       end: new Date(2025, 0, 15, 15, 0),
-      start_date: '2025-01-15T14:00:00',
-      end_date: '2025-01-15T15:00:00',
+      date_start: '2025-01-15T14:00:00',
+      date_end: '2025-01-15T15:00:00',
     })
 
     const event2 = createMockEvent({
@@ -243,8 +243,8 @@ describe('MobileDayView', () => {
       title: 'Second Event',
       start: new Date(2025, 0, 15, 10, 0),
       end: new Date(2025, 0, 15, 11, 0),
-      start_date: '2025-01-15T10:00:00',
-      end_date: '2025-01-15T11:00:00',
+      date_start: '2025-01-15T10:00:00',
+      date_end: '2025-01-15T11:00:00',
     })
 
     render(<MobileDayView {...defaultProps} events={[event1, event2]} />)
@@ -269,8 +269,8 @@ describe('MobileDayView', () => {
       title: 'Event 2',
       start: new Date(2025, 0, 15, 10, 0),
       end: new Date(2025, 0, 15, 11, 0),
-      start_date: '2025-01-15T10:00:00',
-      end_date: '2025-01-15T11:00:00',
+      date_start: '2025-01-15T10:00:00',
+      date_end: '2025-01-15T11:00:00',
     })
 
     render(<MobileDayView {...defaultProps} events={[event1, event2]} />)

@@ -72,8 +72,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Team Standup',
         description: 'Daily team sync meeting',
         location: 'Conference Room A',
-        start_date: formatDateWithTime(today, 9, 30),
-        end_date: formatDateWithTime(today, 10, 0),
+        date_start: formatDateWithTime(today, 9, 30),
+        date_end: formatDateWithTime(today, 10, 0),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -132,8 +132,12 @@ export function generateDefaultCalendarEvents(): Record<
             },
           ],
         },
-        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 2 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 2,
       },
       {
@@ -143,8 +147,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Doctor Appointment',
         description: 'Annual checkup',
         location: 'Medical Center',
-        start_date: formatDateWithTime(tomorrow, 10, 0),
-        end_date: formatDateWithTime(tomorrow, 11, 0),
+        date_start: formatDateWithTime(tomorrow, 10, 0),
+        date_end: formatDateWithTime(tomorrow, 11, 0),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -155,8 +159,12 @@ export function generateDefaultCalendarEvents(): Record<
           { method: 'popup', minutes_before: 60 },
           { method: 'email', minutes_before: 1440 },
         ],
-        created_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 12 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 12 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 12 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 0,
       },
       {
@@ -166,8 +174,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Project Review',
         description: 'Quarterly project review and planning',
         location: 'Conference Room B',
-        start_date: formatDateWithTime(inTwoDays, 15, 0),
-        end_date: formatDateWithTime(inTwoDays, 17, 0),
+        date_start: formatDateWithTime(inTwoDays, 15, 0),
+        date_end: formatDateWithTime(inTwoDays, 17, 0),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -213,8 +221,12 @@ export function generateDefaultCalendarEvents(): Record<
           },
         ],
         reminders: [{ method: 'popup', minutes_before: 30 }],
-        created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 7 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 1,
       },
       {
@@ -224,8 +236,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Client Meeting',
         description: 'Important meeting with key client',
         location: 'Client Office',
-        start_date: formatDateWithTime(nextFriday, 14, 0),
-        end_date: formatDateWithTime(nextFriday, 15, 30),
+        date_start: formatDateWithTime(nextFriday, 14, 0),
+        date_end: formatDateWithTime(nextFriday, 15, 30),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -252,8 +264,12 @@ export function generateDefaultCalendarEvents(): Record<
           { method: 'email', minutes_before: 1440 },
           { method: 'popup', minutes_before: 30 },
         ],
-        created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 5 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 0,
       },
       {
@@ -263,8 +279,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Company Annual Conference',
         description: 'Annual company-wide conference in Paris',
         location: 'Paris Convention Center',
-        start_date: formatDateAllDay(inOneWeek),
-        end_date: formatDateAllDay(getDaysFromToday(9)),
+        date_start: formatDateAllDay(inOneWeek),
+        date_end: formatDateAllDay(getDaysFromToday(9)),
         all_day: true,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -282,8 +298,12 @@ export function generateDefaultCalendarEvents(): Record<
           { method: 'email', minutes_before: 1440 },
           { method: 'popup', minutes_before: 10080 },
         ],
-        created_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 30 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 0,
       },
       {
@@ -293,8 +313,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Team Retrospective',
         description: 'Sprint retrospective and lessons learned',
         location: 'Conference Room A',
-        start_date: formatDateWithTime(yesterday, 15, 0),
-        end_date: formatDateWithTime(yesterday, 16, 30),
+        date_start: formatDateWithTime(yesterday, 15, 0),
+        date_end: formatDateWithTime(yesterday, 16, 30),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -323,8 +343,12 @@ export function generateDefaultCalendarEvents(): Record<
           },
         ],
         reminders: [{ method: 'popup', minutes_before: 15 }],
-        created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 1 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 0,
       },
     ],
@@ -337,8 +361,8 @@ export function generateDefaultCalendarEvents(): Record<
         title: 'Weekly Planning Meeting',
         description: 'Review progress and plan for the week',
         location: 'Virtual - Teams',
-        start_date: formatDateWithTime(nextMonday, 9, 0),
-        end_date: formatDateWithTime(nextMonday, 10, 0),
+        date_start: formatDateWithTime(nextMonday, 9, 0),
+        date_end: formatDateWithTime(nextMonday, 10, 0),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -385,8 +409,12 @@ export function generateDefaultCalendarEvents(): Record<
           url: 'https://teams.microsoft.com/l/meetup-join/...',
           conference_id: 'teams_meeting_001',
         },
-        created_at: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 180 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 180 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 0,
       },
       {
@@ -402,8 +430,8 @@ export function generateDefaultCalendarEvents(): Record<
 
 Please review the attached documents before the meeting.`,
         location: 'Headquarters - Board Room, 5th Floor',
-        start_date: formatDateWithTime(getDaysFromToday(5), 9, 0),
-        end_date: formatDateWithTime(getDaysFromToday(5), 12, 0),
+        date_start: formatDateWithTime(getDaysFromToday(5), 9, 0),
+        date_end: formatDateWithTime(getDaysFromToday(5), 12, 0),
         all_day: false,
         timezone: 'Europe/Paris',
         status: 'confirmed',
@@ -520,8 +548,12 @@ Please review the attached documents before the meeting.`,
         ],
         color: '#d50000',
         locked: true,
-        created_at: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        updated_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        created_at: new Date(
+          Date.now() - 20 * 24 * 60 * 60 * 1000
+        ).toISOString(),
+        updated_at: new Date(
+          Date.now() - 3 * 24 * 60 * 60 * 1000
+        ).toISOString(),
         sequence: 3,
       },
     ],

@@ -21,28 +21,25 @@ import {
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import {
+  useCreateCalendarEventMutation,
+  useUpdateCalendarEventMutation,
   type Calendar,
   type CalendarEvent,
   type CalendarEventCreateBody,
-  useCreateCalendarEventMutation,
-  useUpdateCalendarEventMutation,
 } from '@/features/calendars'
 import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { skipToken } from '@reduxjs/toolkit/query'
 import { Link, Lock, MapPin, Plus, Trash2, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { type Resolver, useFieldArray, useForm, useWatch } from 'react-hook-form'
-import * as z from 'zod'
 import {
-  RecurrenceSelector,
-  type RecurrenceRuleValue,
-} from './recurrence-selector'
-import AttendeeInput from './event-form/attendee-input'
-import { TimelineFreeBusy } from './timeline-freebusy'
-import { mapBackendFreeBusyToAvailability } from './utils'
-import { skipToken } from '@reduxjs/toolkit/query'
-import { useGetFreeBusyQuery } from '../store/calendars-api'
+  useFieldArray,
+  useForm,
+  useWatch,
+  type Resolver,
+} from 'react-hook-form'
+import * as z from 'zod'
 import {
   DEFAULT_CALENDAR_COLOR,
   type AttendeeInputItem,
@@ -51,13 +48,21 @@ import {
   type EventReminder,
   type FreeBusyRequest,
 } from '../calendars-types'
-import { recurrenceScopeToMutationFields } from '../utils/recurrence-scope-mutation'
+import { useGetFreeBusyQuery } from '../store/calendars-api'
 import { isCalendarWritable } from '../utils/is-calendar-writable'
+import { recurrenceScopeToMutationFields } from '../utils/recurrence-scope-mutation'
+import AttendeeInput from './event-form/attendee-input'
 import {
   eventNeedsRecurrenceScope,
   RecurrenceScopeDialog,
   type RecurrenceScope,
 } from './recurrence-scope-dialog'
+import {
+  RecurrenceSelector,
+  type RecurrenceRuleValue,
+} from './recurrence-selector'
+import { TimelineFreeBusy } from './timeline-freebusy'
+import { mapBackendFreeBusyToAvailability } from './utils'
 
 const recurrenceFrequencies = [
   'daily',
@@ -122,8 +127,18 @@ type EventFormProps = {
 
 type EventFormValues = z.infer<typeof formSchema>
 
-const formatInputDate = (date: Date, allDay: boolean) =>
-  allDay ? date.toISOString().slice(0, 10) : date.toISOString().slice(0, 16)
+// format Date to match input value (the input value should be in the user's local timezone)
+// not allDay : type="datetime-local" value format YYYY-MM-DDTHH:mm, e.g. "2024-07-01T14:30"
+// allDay : type="date" value format yyyy-mm-dd, e.g. "2024-07-01"
+function formatInputDate(date: Date, allDay: boolean): string {
+  const pad = (n: number) => String(n).padStart(2, '0')
+
+  const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+
+  return allDay
+    ? datePart
+    : `${datePart}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
 
 const normalizeInputValue = (value: string, allDay: boolean) =>
   allDay ? value.slice(0, 10) : value.length === 10 ? `${value}T00:00` : value
@@ -131,9 +146,8 @@ const normalizeInputValue = (value: string, allDay: boolean) =>
 const toIsoDate = (value: string, allDay: boolean) =>
   new Date(allDay ? `${value}T00:00:00Z` : value).toISOString()
 
-const normalizeReminderMethod = (
-  method: string
-): EventReminder['method'] => (method === 'notification' ? 'popup' : method as EventReminder['method'])
+const normalizeReminderMethod = (method: string): EventReminder['method'] =>
+  method === 'notification' ? 'popup' : (method as EventReminder['method'])
 
 function recurrenceToFormRule(
   recurrence: EventRecurrence | null | undefined
@@ -204,10 +218,10 @@ export function EventForm({
   const isSubmitting = createState.isLoading || updateState.isLoading
   const isAllDay = event?.all_day ?? false
   const startDate = event
-    ? new Date(event.start_date ?? event.date_start ?? start ?? new Date())
+    ? new Date(event.date_start ?? start ?? new Date())
     : (start ?? new Date())
   const endDate = event
-    ? new Date(event.end_date ?? event.date_end ?? end ?? startDate)
+    ? new Date(event.date_end ?? end ?? startDate)
     : (end ?? startDate)
   const [categoryInput, setCategoryInput] = useState('')
   const [scopeDialogOpen, setScopeDialogOpen] = useState(false)
@@ -222,9 +236,7 @@ export function EventForm({
   const calendarsForSelect = useMemo(() => {
     if (!calendars?.length) return calendars
     const resolved = resolvedCalendarKey
-    const idx = calendars.findIndex(
-      (cal) => calendarRowKey(cal) === resolved
-    )
+    const idx = calendars.findIndex((cal) => calendarRowKey(cal) === resolved)
     if (idx <= 0) return calendars
     const next = [...calendars]
     const [active] = next.splice(idx, 1)
@@ -359,6 +371,7 @@ export function EventForm({
 
   const isFirstCalendarKeyEffect = useRef(true)
   const skipNextCalendarColorClear = useRef(false)
+  const prevStartRef = useRef<string>(watchedStart)
 
   useEffect(() => {
     if (!resolvedCalendarKey) return
@@ -379,6 +392,34 @@ export function EventForm({
     }
     form.setValue('color', '')
   }, [watchedCalendarKey, form])
+
+  useEffect(() => {
+    // When start date changes, update end date to keep the same duration
+    // (only if both dates are valid and start actually changed)
+    const currentStart = watchedStart
+    const prevStart = prevStartRef.current
+
+    if (currentStart && prevStart && currentStart !== prevStart && watchedEnd) {
+      const parseLocalDateTime = (value: string) => {
+        return new Date(allDay ? `${value}T00:00:00` : `${value}:00`)
+      }
+
+      const oldStartDate = parseLocalDateTime(prevStart)
+      const newStartDate = parseLocalDateTime(currentStart)
+      const endDate = parseLocalDateTime(watchedEnd)
+
+      // Calculate the duration between old start and end
+      const duration = endDate.getTime() - oldStartDate.getTime()
+
+      // Apply the same duration to the new end date
+      const newEndDate = new Date(newStartDate.getTime() + duration)
+      form.setValue('end', formatInputDate(newEndDate, allDay), {
+        shouldDirty: true,
+      })
+    }
+
+    prevStartRef.current = currentStart
+  }, [watchedStart, allDay, form, watchedEnd])
 
   const buildEventBody = (
     values: EventFormValues
@@ -479,9 +520,7 @@ export function EventForm({
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
-        className={cn(
-          'flex min-h-0 w-full flex-1 flex-col overflow-hidden'
-        )}
+        className={cn('flex min-h-0 w-full flex-1 flex-col overflow-hidden')}
       >
         <div
           className={cn(
@@ -494,15 +533,14 @@ export function EventForm({
               name="calendar_key"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{t('eventForm.calendar.label')}</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value}
-                  >
+                  <FormLabel>{t('eventForm.calendar.label.string')}</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue
-                          placeholder={t('eventForm.calendar.placeholder')}
+                          placeholder={t(
+                            'eventForm.calendar.placeholder.string'
+                          )}
                         />
                       </SelectTrigger>
                     </FormControl>
@@ -526,7 +564,9 @@ export function EventForm({
                               {!writable && (
                                 <Lock
                                   className="h-3 w-3 shrink-0"
-                                  aria-label={t('sidebar.readOnlyCalendar.string')}
+                                  aria-label={t(
+                                    'sidebar.readOnlyCalendar.string'
+                                  )}
                                 />
                               )}
                               <span
@@ -554,250 +594,273 @@ export function EventForm({
             name="title"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>{t('eventForm.title.label')}</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder={t('eventForm.title.placeholder')}
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+                <FormLabel>{t('eventForm.title.label.string')}</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder={t('eventForm.title.placeholder.string')}
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="all_day"
             render={({ field }) => (
-              <FormItem className={cn('flex items-center justify-between gap-4')}>
-              <FormLabel>{t('eventForm.allDay.label')}</FormLabel>
-              <FormControl>
-                <Switch
-                  checked={field.value}
-                  onCheckedChange={(checked) => {
-                    field.onChange(checked)
-                    form.setValue(
-                      'start',
-                      normalizeInputValue(form.getValues('start'), checked)
-                    )
-                    form.setValue(
-                      'end',
-                      normalizeInputValue(form.getValues('end'), checked)
-                    )
-                  }}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+              <FormItem
+                className={cn('flex items-center justify-between gap-4')}
+              >
+                <FormLabel>{t('eventForm.allDay.label.string')}</FormLabel>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={(checked) => {
+                      field.onChange(checked)
+                      form.setValue(
+                        'start',
+                        normalizeInputValue(form.getValues('start'), checked)
+                      )
+                      form.setValue(
+                        'end',
+                        normalizeInputValue(form.getValues('end'), checked)
+                      )
+                    }}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="start"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>
-                {allDay
-                  ? t('eventForm.startDate.label')
-                  : t('eventForm.startTime.label')}
-              </FormLabel>
-              <FormControl>
-                <Input type={allDay ? 'date' : 'datetime-local'} {...field} />
-              </FormControl>
-            </FormItem>
-          )}
+                <FormLabel>
+                  {allDay
+                    ? t('eventForm.startDate.label.string')
+                    : t('eventForm.startTime.label.string')}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    required
+                    type={allDay ? 'date' : 'datetime-local'}
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="end"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>
-                {allDay
-                  ? t('eventForm.endDate.label')
-                  : t('eventForm.endTime.label')}
-              </FormLabel>
-              <FormControl>
-                <Input type={allDay ? 'date' : 'datetime-local'} {...field} />
-              </FormControl>
-            </FormItem>
-          )}
+                <FormLabel>
+                  {allDay
+                    ? t('eventForm.endDate.label.string')
+                    : t('eventForm.endTime.label.string')}
+                </FormLabel>
+                <FormControl>
+                  <Input
+                    required
+                    type={allDay ? 'date' : 'datetime-local'}
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="timezone"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>{t('eventForm.timezone.label')}</FormLabel>
-              <FormControl>
-                <TimezoneSelect
-                  value={field.value}
-                  onValueChange={field.onChange}
-                />
-              </FormControl>
-              <p className={cn('text-muted-foreground text-xs')}>
-                {t('eventForm.timezone.description')}
-              </p>
-            </FormItem>
-          )}
+                <FormLabel>{t('eventForm.timezone.label.string')}</FormLabel>
+                <FormControl>
+                  <TimezoneSelect
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                </FormControl>
+                <p className={cn('text-muted-foreground text-xs')}>
+                  {t('eventForm.timezone.description.string')}
+                </p>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="description"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>{t('eventForm.description.label')}</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder={t('eventForm.description.placeholder')}
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+                <FormLabel>{t('eventForm.description.label.string')}</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder={t('eventForm.description.placeholder.string')}
+                    {...field}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="location"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>{t('eventForm.location.label')}</FormLabel>
-              <FormControl>
-                <div className={cn('relative')}>
-                  <MapPin
-                    className={cn(
-                      'text-muted-foreground absolute top-2.5 left-3 h-4 w-4'
-                    )}
-                  />
-                  <Input
-                    className={cn('pl-9')}
-                    placeholder={t('eventForm.location.placeholder')}
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-            </FormItem>
-          )}
-          />
-          <div className={cn('grid gap-4 sm:grid-cols-2')}>
-            <FormField
-            control={form.control}
-            name="visibility"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('eventForm.visibility.label')}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={t('eventForm.visibility.placeholder')}
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="public">
-                      {t('eventForm.visibility.options.public')}
-                    </SelectItem>
-                    <SelectItem value="private">
-                      {t('eventForm.visibility.options.private')}
-                    </SelectItem>
-                    <SelectItem value="confidential">
-                      {t('eventForm.visibility.options.confidential')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="show_as"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('eventForm.showAs.label')}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={t('eventForm.showAs.placeholder')}
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="busy">
-                      {t('eventForm.showAs.options.busy')}
-                    </SelectItem>
-                    <SelectItem value="free">
-                      {t('eventForm.showAs.options.free')}
-                    </SelectItem>
-                    <SelectItem value="out-of-office">
-                      {t('eventForm.showAs.options.outOfOffice')}
-                    </SelectItem>
-                    <SelectItem value="tentative">
-                      {t('eventForm.showAs.options.tentative')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('eventForm.status.label')}</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue
-                        placeholder={t('eventForm.status.placeholder')}
-                      />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="confirmed">
-                      {t('eventForm.status.options.confirmed')}
-                    </SelectItem>
-                    <SelectItem value="tentative">
-                      {t('eventForm.status.options.tentative')}
-                    </SelectItem>
-                    <SelectItem value="cancelled">
-                      {t('eventForm.status.options.cancelled')}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormItem>
-            )}
-            />
-            <FormField
-            control={form.control}
-            name="color"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('eventForm.color.label')}</FormLabel>
+                <FormLabel>{t('eventForm.location.label.string')}</FormLabel>
                 <FormControl>
-                  <div className={cn('flex items-center gap-2')}>
-                    <input
-                      type="color"
-                      value={field.value || calendarColor}
-                      onChange={(e) => field.onChange(e.target.value)}
+                  <div className={cn('relative')}>
+                    <MapPin
                       className={cn(
-                        'border-input bg-background h-9 w-9 cursor-pointer rounded border p-0.5'
+                        'text-muted-foreground absolute top-2.5 left-3 h-4 w-4'
                       )}
                     />
-                    {field.value && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => field.onChange('')}
-                      >
-                        {t('eventForm.color.reset')}
-                      </Button>
-                    )}
+                    <Input
+                      className={cn('pl-9')}
+                      placeholder={t('eventForm.location.placeholder.string')}
+                      {...field}
+                    />
                   </div>
                 </FormControl>
               </FormItem>
             )}
+          />
+          <div className={cn('grid gap-4 sm:grid-cols-2')}>
+            <FormField
+              control={form.control}
+              name="visibility"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    {t('eventForm.visibility.label.string')}
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t(
+                            'eventForm.visibility.placeholder.string'
+                          )}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="public">
+                        {t('eventForm.visibility.options.public.string')}
+                      </SelectItem>
+                      <SelectItem value="private">
+                        {t('eventForm.visibility.options.private.string')}
+                      </SelectItem>
+                      <SelectItem value="confidential">
+                        {t('eventForm.visibility.options.confidential.string')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="show_as"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('eventForm.showAs.label.string')}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t('eventForm.showAs.placeholder.string')}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="busy">
+                        {t('eventForm.showAs.options.busy.string')}
+                      </SelectItem>
+                      <SelectItem value="free">
+                        {t('eventForm.showAs.options.free.string')}
+                      </SelectItem>
+                      <SelectItem value="out-of-office">
+                        {t('eventForm.showAs.options.outOfOffice.string')}
+                      </SelectItem>
+                      <SelectItem value="tentative">
+                        {t('eventForm.showAs.options.tentative.string')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('eventForm.status.label.string')}</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={t('eventForm.status.placeholder.string')}
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="confirmed">
+                        {t('eventForm.status.options.confirmed.string')}
+                      </SelectItem>
+                      <SelectItem value="tentative">
+                        {t('eventForm.status.options.tentative.string')}
+                      </SelectItem>
+                      <SelectItem value="cancelled">
+                        {t('eventForm.status.options.cancelled.string')}
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="color"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('eventForm.color.label.string')}</FormLabel>
+                  <FormControl>
+                    <div className={cn('flex items-center gap-2')}>
+                      <input
+                        type="color"
+                        value={field.value || calendarColor}
+                        onChange={(e) => field.onChange(e.target.value)}
+                        className={cn(
+                          'border-input bg-background h-9 w-9 cursor-pointer rounded border p-0.5'
+                        )}
+                      />
+                      {field.value && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => field.onChange('')}
+                        >
+                          {t('eventForm.color.reset')}
+                        </Button>
+                      )}
+                    </div>
+                  </FormControl>
+                </FormItem>
+              )}
             />
           </div>
           <FormField
@@ -805,46 +868,48 @@ export function EventForm({
             name="url"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>{t('eventForm.url.label')}</FormLabel>
-              <FormControl>
-                <div className={cn('relative')}>
-                  <Link
-                    className={cn(
-                      'text-muted-foreground absolute top-2.5 left-3 h-4 w-4'
-                    )}
-                  />
-                  <Input
-                    className={cn('pl-9')}
-                    type="url"
-                    placeholder={t('eventForm.url.placeholder')}
-                    {...field}
-                  />
-                </div>
-              </FormControl>
-            </FormItem>
-          )}
+                <FormLabel>{t('eventForm.url.label.string')}</FormLabel>
+                <FormControl>
+                  <div className={cn('relative')}>
+                    <Link
+                      className={cn(
+                        'text-muted-foreground absolute top-2.5 left-3 h-4 w-4'
+                      )}
+                    />
+                    <Input
+                      className={cn('pl-9')}
+                      type="url"
+                      placeholder={t('eventForm.url.placeholder.string')}
+                      {...field}
+                    />
+                  </div>
+                </FormControl>
+              </FormItem>
+            )}
           />
           <FormField
             control={form.control}
             name="recurrence_rule"
             render={({ field }) => (
               <FormItem>
-              <FormControl>
-                <RecurrenceSelector
-                  value={field.value ?? null}
-                  onChange={field.onChange}
-                  eventStart={startDate}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+                <FormControl>
+                  <RecurrenceSelector
+                    value={field.value ?? null}
+                    onChange={field.onChange}
+                    eventStart={startDate}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
           />
           {/* Attendees + free/busy */}
           <FormItem>
-            <FormLabel>{t('eventForm.attendees.title')}</FormLabel>
+            <FormLabel>{t('eventForm.attendees.title.string')}</FormLabel>
             <AttendeeInput
               value={watchedAttendees ?? []}
-              onChange={(list) => form.setValue('attendees', list, { shouldDirty: true })}
+              onChange={(list) =>
+                form.setValue('attendees', list, { shouldDirty: true })
+              }
               disabled={isSubmitting}
             />
             {(watchedAttendees?.length > 0 || isFreeBusyLoading) && (
@@ -872,132 +937,137 @@ export function EventForm({
           </FormItem>
           <div className={cn('flex flex-col gap-2')}>
             <div className={cn('flex items-center justify-between')}>
-            <span className={cn('text-sm font-medium')}>
-              {t('eventForm.reminders.label')}
-            </span>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                appendReminder({ method: 'popup', minutes_before: 15 })
-              }
-            >
-              <Plus className={cn('mr-1 h-3 w-3')} />
-              {t('eventForm.reminders.add')}
-            </Button>
-          </div>
-
-          {reminderFields.map((field, index) => (
-            <div key={field.id} className={cn('flex items-center gap-2')}>
-              <FormField
-                control={form.control}
-                name={`reminders.${index}.method`}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <SelectTrigger className={cn('w-[130px]')}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="popup">
-                        {t('eventForm.reminders.methods.popup')}
-                      </SelectItem>
-                      <SelectItem value="email">
-                        {t('eventForm.reminders.methods.email')}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name={`reminders.${index}.minutes_before`}
-                render={({ field }) => (
-                  <div className={cn('flex items-center gap-1')}>
-                    <Input
-                      type="number"
-                      min={0}
-                      className={cn('w-20')}
-                      value={field.value}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                    <span className={cn('text-muted-foreground text-sm')}>
-                      {t('eventForm.reminders.minutesBefore')}
-                    </span>
-                  </div>
-                )}
-              />
+              <span className={cn('text-sm font-medium')}>
+                {t('eventForm.reminders.label.string')}
+              </span>
               <Button
                 type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeReminder(index)}
-                aria-label={t('eventForm.reminders.remove')}
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  appendReminder({ method: 'popup', minutes_before: 15 })
+                }
               >
-                <Trash2 className={cn('text-destructive h-4 w-4')} />
+                <Plus className={cn('mr-1 h-3 w-3')} />
+                {t('eventForm.reminders.add.string')}
               </Button>
             </div>
-          ))}
+
+            {reminderFields.map((field, index) => (
+              <div key={field.id} className={cn('flex items-center gap-2')}>
+                <FormField
+                  control={form.control}
+                  name={`reminders.${index}.method`}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger className={cn('w-[130px]')}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="popup">
+                          {t('eventForm.reminders.methods.popup.string')}
+                        </SelectItem>
+                        <SelectItem value="email">
+                          {t('eventForm.reminders.methods.email.string')}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`reminders.${index}.minutes_before`}
+                  render={({ field }) => (
+                    <div className={cn('flex items-center gap-1')}>
+                      <Input
+                        type="number"
+                        min={0}
+                        className={cn('w-20')}
+                        value={field.value}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
+                      <span className={cn('text-muted-foreground text-sm')}>
+                        {t('eventForm.reminders.minutesBefore.string')}
+                      </span>
+                    </div>
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeReminder(index)}
+                  aria-label={t('eventForm.reminders.remove.string')}
+                >
+                  <Trash2 className={cn('text-destructive h-4 w-4')} />
+                </Button>
+              </div>
+            ))}
           </div>
           <FormField
             control={form.control}
             name="categories"
             render={({ field }) => (
               <FormItem>
-              <FormLabel>{t('eventForm.categories.label')}</FormLabel>
-              <FormControl>
-                <div
-                  className={cn(
-                    'flex flex-col',
-                    field.value.length > 0 && 'gap-2'
-                  )}
-                >
-                  {field.value.length > 0 && (
-                    <div className={cn('flex flex-wrap gap-1')}>
-                      {field.value.map((category) => (
-                        <Badge
-                          key={category}
-                          variant="secondary"
-                          className={cn('gap-1')}
-                        >
-                          {category}
-                          <button
-                            type="button"
-                            onClick={() =>
-                              field.onChange(
-                                field.value.filter((item) => item !== category)
-                              )
-                            }
-                            className={tagDismissButtonClassName('p-0.5')}
-                            aria-label={t('eventForm.categories.remove', {
-                              category,
-                            })}
+                <FormLabel>{t('eventForm.categories.label.string')}</FormLabel>
+                <FormControl>
+                  <div
+                    className={cn(
+                      'flex flex-col',
+                      field.value.length > 0 && 'gap-2'
+                    )}
+                  >
+                    {field.value.length > 0 && (
+                      <div className={cn('flex flex-wrap gap-1')}>
+                        {field.value.map((category) => (
+                          <Badge
+                            key={category}
+                            variant="secondary"
+                            className={cn('gap-1')}
                           >
-                            <X className={cn('h-3 w-3')} />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                  <Input
-                    value={categoryInput}
-                    onChange={(e) => setCategoryInput(e.target.value)}
-                    onKeyDown={(e) => {
-                      const category = categoryInput.trim()
-                      if (e.key === 'Enter' && category) {
-                        e.preventDefault()
-                        if (!field.value.includes(category)) {
-                          field.onChange([...field.value, category])
+                            {category}
+                            <button
+                              type="button"
+                              onClick={() =>
+                                field.onChange(
+                                  field.value.filter(
+                                    (item) => item !== category
+                                  )
+                                )
+                              }
+                              className={tagDismissButtonClassName('p-0.5')}
+                              aria-label={t(
+                                'eventForm.categories.remove.string',
+                                {
+                                  category,
+                                }
+                              )}
+                            >
+                              <X className={cn('h-3 w-3')} />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                    <Input
+                      value={categoryInput}
+                      onChange={(e) => setCategoryInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        const category = categoryInput.trim()
+                        if (e.key === 'Enter' && category) {
+                          e.preventDefault()
+                          if (!field.value.includes(category)) {
+                            field.onChange([...field.value, category])
+                          }
+                          setCategoryInput('')
                         }
-                        setCategoryInput('')
-                      }
-                    }}
-                    placeholder={t('eventForm.categories.placeholder')}
-                  />
-                </div>
-              </FormControl>
-            </FormItem>
-          )}
+                      }}
+                      placeholder={t('eventForm.categories.placeholder.string')}
+                    />
+                  </div>
+                </FormControl>
+              </FormItem>
+            )}
           />
         </div>
         <div
@@ -1006,10 +1076,12 @@ export function EventForm({
           )}
         >
           <Button variant="outline" type="button" onClick={onCancel}>
-            {t('eventForm.cancel')}
+            {t('eventForm.cancel.string')}
           </Button>
           <Button type="submit" disabled={isSubmitting || !watchedCalendarKey}>
-            {isEditing ? t('eventForm.update') : t('eventForm.create')}
+            {isEditing
+              ? t('eventForm.update.string')
+              : t('eventForm.create.string')}
           </Button>
         </div>
       </form>

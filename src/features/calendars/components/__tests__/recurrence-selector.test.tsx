@@ -33,8 +33,8 @@ describe('RecurrenceSelector', () => {
       render(<RecurrenceSelector value={null} onChange={onChange} />)
 
       expect(screen.getByRole('switch')).toBeInTheDocument()
-      expect(screen.getByText('repeat')).toBeInTheDocument()
-      expect(screen.queryByText('every')).not.toBeInTheDocument()
+      expect(screen.getByText('repeat.string')).toBeInTheDocument()
+      expect(screen.queryByText('every.string')).not.toBeInTheDocument()
     })
 
     it('renders configuration panel when recurrence is enabled', () => {
@@ -51,9 +51,9 @@ describe('RecurrenceSelector', () => {
         />
       )
 
-      expect(screen.getByText('every')).toBeInTheDocument()
-      expect(screen.getByText('on')).toBeInTheDocument()
-      expect(screen.getByText('ends')).toBeInTheDocument()
+      expect(screen.getByText('every.string')).toBeInTheDocument()
+      expect(screen.getByText('on.string')).toBeInTheDocument()
+      expect(screen.getByText('ends.string')).toBeInTheDocument()
     })
   })
 
@@ -131,8 +131,8 @@ describe('RecurrenceSelector', () => {
         />
       )
 
-      expect(screen.getByText('onDay')).toBeInTheDocument()
-      expect(screen.getByText('ofTheMonth')).toBeInTheDocument()
+      expect(screen.getByText('onDay.string')).toBeInTheDocument()
+      expect(screen.getByText('ofTheMonth.string')).toBeInTheDocument()
       expect(screen.getByDisplayValue('12')).toBeInTheDocument()
     })
 
@@ -168,7 +168,7 @@ describe('RecurrenceSelector', () => {
       )
 
       expect(screen.getByDisplayValue('5')).toBeInTheDocument()
-      expect(screen.getByText('occurrences')).toBeInTheDocument()
+      expect(screen.getByText('occurrences.string')).toBeInTheDocument()
     })
   })
 
@@ -200,7 +200,7 @@ describe('RecurrenceSelector', () => {
       const onChange = jest.fn()
       render(<RecurrenceSelector value={null} onChange={onChange} />)
 
-      expect(screen.getByLabelText('repeat')).toBeInTheDocument()
+      expect(screen.getByLabelText('repeat.string')).toBeInTheDocument()
       expect(screen.getByRole('switch')).toHaveAttribute('id', 'recurrence-toggle')
     })
 
@@ -239,8 +239,8 @@ describe('RecurrenceSelector', () => {
         />
       )
 
-      expect(screen.getByRole('button', { name: 'days.mo' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'days.tu' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'days.mo.string' })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'days.tu.string' })).toBeInTheDocument()
     })
   })
 
@@ -278,14 +278,14 @@ describe('RecurrenceSelector', () => {
         />
       )
 
-      await user.click(screen.getByRole('button', { name: 'days.mo' }))
+      await user.click(screen.getByRole('button', { name: 'days.mo.string' }))
 
       await waitFor(() => {
-        const tu = screen.getByRole('button', { name: 'days.tu' })
+        const tu = screen.getByRole('button', { name: 'days.tu.string' })
         expect(tu).toHaveClass('bg-primary')
       })
 
-      const mo = screen.getByRole('button', { name: 'days.mo' })
+      const mo = screen.getByRole('button', { name: 'days.mo.string' })
       expect(mo).toHaveClass('bg-muted')
     })
   })

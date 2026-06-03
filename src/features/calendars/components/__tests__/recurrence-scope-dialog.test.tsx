@@ -17,9 +17,9 @@ describe('RecurrenceScopeDialog', () => {
         onCancel={jest.fn()}
       />
     )
-    expect(screen.getByText('recurrenceScope.ONE')).toBeInTheDocument()
-    expect(screen.getByText('recurrenceScope.THISANDFUTURE')).toBeInTheDocument()
-    expect(screen.getByText('recurrenceScope.ALL')).toBeInTheDocument()
+    expect(screen.getByText('recurrenceScope.ONE.string')).toBeInTheDocument()
+    expect(screen.getByText('recurrenceScope.THISANDFUTURE.string')).toBeInTheDocument()
+    expect(screen.getByText('recurrenceScope.ALL.string')).toBeInTheDocument()
   })
 
   it('calls onSelect with correct scope on click', () => {
@@ -32,7 +32,7 @@ describe('RecurrenceScopeDialog', () => {
         onCancel={jest.fn()}
       />
     )
-    fireEvent.click(screen.getByText('recurrenceScope.ONE'))
+    fireEvent.click(screen.getByText('recurrenceScope.ONE.string'))
     expect(onSelect).toHaveBeenCalledWith('ONE')
   })
 
@@ -46,7 +46,7 @@ describe('RecurrenceScopeDialog', () => {
         onCancel={onCancel}
       />
     )
-    fireEvent.click(screen.getByText('recurrenceScope.cancel'))
+    fireEvent.click(screen.getByText('recurrenceScope.cancel.string'))
     expect(onCancel).toHaveBeenCalled()
   })
 
