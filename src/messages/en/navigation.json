@@ -20,6 +20,17 @@
         "loading": "Loading events…",
         "error": "Could not load events"
       },
+      "tasks": {
+        "title": "Tasks",
+        "view_all": "View all tasks",
+        "overdue": "Overdue",
+        "today": "Today",
+        "upcoming": "Upcoming",
+        "no_due_date": "No due date",
+        "empty": "You're all caught up",
+        "loading": "Loading tasks…",
+        "error": "Could not load tasks"
+      },
       "coming_soon": {
         "title": "Feature incoming",
         "description": "This section is under development and will be available soon."

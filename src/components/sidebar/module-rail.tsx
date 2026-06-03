@@ -72,7 +72,7 @@ const ModuleRail: React.FC = () => {
   return (
     <Sidebar
       className={cn(
-        'text-sidebar-foreground bg-sidebar-background-secondary mt-12 hidden border-0 md:block'
+        'text-sidebar-foreground-secondary bg-sidebar-background-secondary mt-12 hidden border-0 md:block'
       )}
       side="right"
     >
@@ -84,7 +84,7 @@ const ModuleRail: React.FC = () => {
                 <SidebarMenuItem key={item.id} className="mt-4 align-middle">
                   <SidebarMenuButton
                     className={cn(
-                      'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground [&_svg]:size-5'
+                      'text-sidebar-foreground-secondary hover:bg-sidebar-accent hover:text-sidebar-accent-foreground [&_svg]:size-5'
                     )}
                     onClick={() => handleSelect(item.id)}
                     data-active={

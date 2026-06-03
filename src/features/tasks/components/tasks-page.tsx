@@ -10,11 +10,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Input } from '@/components/ui/input'
 import { useTaskState } from '../hooks/use-task-state'
 import { useGetTaskByIdQuery } from '../store/tasks-api'
 import { skipToken } from '@reduxjs/toolkit/query'
-import { Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useMemo, useState } from 'react'
 import TaskForm from './task-form'
@@ -35,7 +33,6 @@ function TasksPage() {
     openCreateForm,
     openEditForm,
     closeForm,
-    setSearch,
   } = useTaskState()
 
   const [deleteKey, setDeleteKey] = useState<string | null>(null)
@@ -90,17 +87,6 @@ function TasksPage() {
         <h1 className="text-2xl font-semibold">{t('page_title.string')}</h1>
         <p className="text-muted-foreground text-sm">{pageSubtitle}</p>
       </header>
-
-      <div className="relative max-w-2xl">
-        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
-        <Input
-          className="pl-9"
-          placeholder={t('search_placeholder.string')}
-          value={ui.searchQuery}
-          onChange={(e) => setSearch(e.target.value)}
-          data-testid="tasks-search"
-        />
-      </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         <TaskList

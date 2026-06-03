@@ -4,7 +4,6 @@ import {
   endOfDay,
   isAfter,
   isBefore,
-  isPast,
   isToday,
   parseISO,
   startOfDay,
@@ -21,7 +20,7 @@ export function isTaskOverdue(task: TaskDueFields): boolean {
     return false
   }
   try {
-    return isPast(parseISO(task.due))
+    return isBefore(parseISO(task.due), startOfDay(new Date()))
   } catch {
     return false
   }
