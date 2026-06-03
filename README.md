@@ -23,8 +23,8 @@ For **coding conventions**, the `src/` layout, and detailed commands, see **[`AG
 ## Prerequisites
 
 - **Node.js** ≥ 18
-- **VS Code** + [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension *(recommended, matches team setup)*
-- A reachable **SOGo** (or compatible) instance on your machine, *optional* if you work only against the mock API
+- **VS Code** + [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension _(recommended, matches team setup)_
+- A reachable **SOGo** (or compatible) instance on your machine, _optional_ if you work only against the mock API
 
 ## Quick start
 
@@ -59,14 +59,14 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ### Main variables
 
-| Variable | Notes |
-|----------|--------|
-| `REACT_APP_API_BASE_URL` | User API base URL (e.g. `http://localhost:5000/api/user/v1/`). If missing or backend unreachable in dev, the app may switch to `/fakeApi`. |
-| `REACT_APP_API_URL` | Optional secondary URL (see `/env`). |
-| `NEXT_PUBLIC_ADMIN_DOMAINS` | Comma-separated admin hostnames. Server default if unset: `admin.localhost`. |
-| `SSE_ENABLED` | Exposed via `/env`: **`true` when the variable is unset**; only the string **`false`** explicitly disables SSE. |
-| `LOGIN_PREFILL_EMAIL` | Prefills the email field on **`/auth/login`** (optional). Read at **runtime** by `GET /env` — works with container env (e.g. Rancher) without rebuilding the image. |
-| `LOGIN_PREFILL_PASSWORD` | Prefills the password on **`/auth/login/pwd`** (same as above). |
+| Variable                    | Notes                                                                                                                                                               |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `REACT_APP_API_BASE_URL`    | User API base URL (e.g. `http://localhost:5000/api/user/v1/`). If missing or backend unreachable in dev, the app may switch to `/fakeApi`.                          |
+| `REACT_APP_API_URL`         | Optional secondary URL (see `/env`).                                                                                                                                |
+| `NEXT_PUBLIC_ADMIN_DOMAINS` | Comma-separated admin hostnames. Server default if unset: `admin.localhost`.                                                                                        |
+| `SSE_ENABLED`               | Exposed via `/env`: **`true` when the variable is unset**; only the string **`false`** explicitly disables SSE.                                                     |
+| `LOGIN_PREFILL_EMAIL`       | Prefills the email field on **`/auth/login`** (optional). Read at **runtime** by `GET /env` — works with container env (e.g. Rancher) without rebuilding the image. |
+| `LOGIN_PREFILL_PASSWORD`    | Prefills the password on **`/auth/login/pwd`** (same as above).                                                                                                     |
 
 `GET /env` also falls back to legacy `NEXT_PUBLIC_LOGIN_PREFILL_EMAIL` / `NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD` on the **server** if the `LOGIN_*` vars are unset (local `.env` compatibility).
 
@@ -88,11 +88,11 @@ Implementation: `src/app/env/route.ts` (exposure) and `src/features/auth/compone
 
 ## Multi-domain routing
 
-| Type | Behavior |
-|------|----------|
-| **User domain** (e.g. `localhost`) | Full app; `/admin_panel` is not available. |
-| **Admin domain** (e.g. `admin.localhost`) | Experience centered on `/admin_panel`. |
-| **Login** `/auth/login` | Available on both domain types. |
+| Type                                      | Behavior                                   |
+| ----------------------------------------- | ------------------------------------------ |
+| **User domain** (e.g. `localhost`)        | Full app; `/admin_panel` is not available. |
+| **Admin domain** (e.g. `admin.localhost`) | Experience centered on `/admin_panel`.     |
+| **Login** `/auth/login`                   | Available on both domain types.            |
 
 ### Local example
 
@@ -109,24 +109,24 @@ In `.env.local` or `.env.development`:
 NEXT_PUBLIC_ADMIN_DOMAINS=admin.localhost
 ```
 
-- User UI: http://localhost:3000  
-- Admin UI: http://admin.localhost:3000  
+- User UI: http://localhost:3000
+- Admin UI: http://admin.localhost:3000
 
 ## Scripts
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Dev server (Turbopack, port 3000) |
-| `npm run build` | Production build (`output: 'standalone'`) |
-| `npm run start` | Next.js server after build |
-| `npm run lint` | ESLint on `src` |
-| `npm run type-check` | `tsc` (no emit) |
-| `npm test` | Jest suite |
-| `npm run test:fast` | Jest, fast path without coverage |
-| `npm run test:watch` | Jest watch mode |
-| `npm run test:coverage` | Jest with coverage |
-| `npm run test:changed` | Tests related to changed files |
-| `npm run check:translations` | Translation key checks |
+| Command                      | Purpose                                   |
+| ---------------------------- | ----------------------------------------- |
+| `npm run dev`                | Dev server (Turbopack, port 3000)         |
+| `npm run build`              | Production build (`output: 'standalone'`) |
+| `npm run start`              | Next.js server after build                |
+| `npm run lint`               | ESLint on `src`                           |
+| `npm run type-check`         | `tsc` (no emit)                           |
+| `npm test`                   | Jest suite                                |
+| `npm run test:fast`          | Jest, fast path without coverage          |
+| `npm run test:watch`         | Jest watch mode                           |
+| `npm run test:coverage`      | Jest with coverage                        |
+| `npm run test:changed`       | Tests related to changed files            |
+| `npm run check:translations` | Translation key checks                    |
 
 > **Build:** `next.config.mjs` currently allows production builds to **succeed** despite TypeScript and ESLint issues (`ignoreBuildErrors` / `ignoreDuringBuilds`). Before opening a PR, run **`npm run type-check`** and **`npm run lint`** manually.
 
@@ -147,4 +147,4 @@ The suite covers Redux slices, RTK Query endpoints, components, hooks, and some 
 
 ## License
 
-[Apache License 2.0](./LICENSE)
+[GPL-3.0 License](./LICENSE)
