@@ -734,29 +734,6 @@ describe('EventForm', () => {
     })
   })
 
-  describe('color picker', () => {
-    it('renders color input', () => {
-      render(<EventForm calendarKey="cal-1" onCancel={onCancel} />)
-
-      const colorInputs = screen.getAllByDisplayValue(/^#/)
-      expect(colorInputs.length).toBeGreaterThan(0)
-    })
-
-    it('uses calendar color as default', () => {
-      render(
-        <EventForm
-          calendarKey="cal-1"
-          calendars={mockCalendars}
-          onCancel={onCancel}
-        />
-      )
-
-      expect(
-        screen.getByText('eventForm.color.label.string')
-      ).toBeInTheDocument()
-    })
-  })
-
   describe('url field', () => {
     it('renders URL input', () => {
       render(<EventForm calendarKey="cal-1" onCancel={onCancel} />)

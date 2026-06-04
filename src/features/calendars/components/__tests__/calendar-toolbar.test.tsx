@@ -15,6 +15,7 @@ jest.mock('next-intl', () => ({
       'views.week.string': 'Week',
       'views.day.string': 'Day',
       'views.schedule.string': 'Schedule',
+      'pickDate.string': 'Pick a date',
     }
     return translations[key] || key
   },
@@ -62,6 +63,28 @@ jest.mock('@/components/ui/dates/timezones', () => ({
 jest.mock('lucide-react', () => ({
   ChevronLeft: jest.fn(() => <span data-testid="chevron-left">←</span>),
   ChevronRight: jest.fn(() => <span data-testid="chevron-right">→</span>),
+  CalendarIcon: jest.fn(() => <span data-testid="calendar-icon">📅</span>),
+}))
+
+jest.mock('../calendar-day-date-picker', () => ({
+  CalendarDayDatePicker: ({
+    label,
+    onDateSelect,
+  }: {
+    label: React.ReactNode
+    onDateSelect: (date: Date) => void
+  }) => (
+    <div data-testid="day-date-picker">
+      {label}
+      <button
+        type="button"
+        aria-label="Pick a date"
+        onClick={() => onDateSelect(new Date('2024-02-01'))}
+      >
+        pick
+      </button>
+    </div>
+  ),
 }))
 
 jest.mock('@/hooks/useMediaQuery', () => ({
@@ -76,6 +99,7 @@ describe('CalendarToolbar', () => {
     onNavigatePrevious: jest.fn(),
     onNavigateToday: jest.fn(),
     onNavigateNext: jest.fn(),
+    onNavigateDate: jest.fn(),
     timezone: 'UTC',
     onTimezoneChange: jest.fn(),
   }
@@ -112,5 +136,15 @@ describe('CalendarToolbar', () => {
     render(<CalendarToolbar {...mockProps} view={Views.MONTH} />)
 
     expect(screen.getByText(/January 2024/i)).toBeInTheDocument()
+  })
+
+  it('should show day date picker in day view and navigate on select', () => {
+    render(<CalendarToolbar {...mockProps} view={Views.DAY} />)
+
+    expect(screen.getByTestId('day-date-picker')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Pick a date' }))
+    expect(mockProps.onNavigateDate).toHaveBeenCalledWith(
+      new Date('2024-02-01')
+    )
   })
 })

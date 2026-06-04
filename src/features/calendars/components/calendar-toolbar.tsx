@@ -18,6 +18,8 @@ import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { View, Views } from 'react-big-calendar'
 
+import { CalendarDayDatePicker } from './calendar-day-date-picker'
+
 export interface CalendarToolbarProps {
   view: View
   date: Date
@@ -25,6 +27,7 @@ export interface CalendarToolbarProps {
   onNavigatePrevious: () => void
   onNavigateToday: () => void
   onNavigateNext: () => void
+  onNavigateDate: (date: Date) => void
   timezone: string
   onTimezoneChange: (timezone: string) => void
   className?: string
@@ -37,6 +40,7 @@ export function CalendarToolbar({
   onNavigatePrevious,
   onNavigateToday,
   onNavigateNext,
+  onNavigateDate,
   timezone,
   onTimezoneChange,
   className,
@@ -109,7 +113,11 @@ export function CalendarToolbar({
               <div className="font-bold">{weekMonthDisplay}</div>
             )}
             {view === Views.DAY && (
-              <div className="font-bold">{dayDisplay}</div>
+              <CalendarDayDatePicker
+                date={date}
+                onDateSelect={onNavigateDate}
+                label={<span className="font-bold">{dayDisplay}</span>}
+              />
             )}
             {view === Views.MONTH && (
               <div className="font-bold">{monthDisplay}</div>
@@ -150,10 +158,16 @@ export function CalendarToolbar({
       </div>
 
       {isMobile && (
-        <div className="w-full text-center text-sm font-bold">
-          {view === Views.WEEK && weekMonthDisplay}
-          {view === Views.DAY && dayDisplay}
-          {view === Views.MONTH && monthDisplay}
+        <div className="flex w-full items-center justify-center text-sm font-bold">
+          {view === Views.WEEK && <span>{weekMonthDisplay}</span>}
+          {view === Views.DAY && (
+            <CalendarDayDatePicker
+              date={date}
+              onDateSelect={onNavigateDate}
+              label={<span>{dayDisplay}</span>}
+            />
+          )}
+          {view === Views.MONTH && <span>{monthDisplay}</span>}
         </div>
       )}
     </div>

@@ -6,6 +6,10 @@ export const tasksSidebarMenuButtonClassName = cn(
   'group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none'
 )
 
+/** Neutral sidebar icons (same tone as mail folders). */
+export const tasksSidebarMenuIconClassName =
+  'h-5 w-5 shrink-0 text-sidebar-foreground/85'
+
 export const tasksSidebarMenuLabelRowClassName =
   'flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden'
 

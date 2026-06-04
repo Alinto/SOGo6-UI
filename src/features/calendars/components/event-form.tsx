@@ -84,7 +84,6 @@ const formSchema = z.object({
   show_as: z.enum(['busy', 'free', 'out-of-office', 'tentative']),
   status: z.enum(['confirmed', 'tentative', 'cancelled']).default('confirmed'),
   url: z.string().url().optional().or(z.literal('')),
-  color: z.string().optional(),
   categories: z.array(z.string()).default([]),
   reminders: z
     .array(
@@ -116,7 +115,7 @@ const formSchema = z.object({
     .default(null),
 })
 
-type EventFormProps = {
+export type EventFormProps = {
   calendarKey: string
   calendars?: Calendar[]
   start?: Date
@@ -259,7 +258,6 @@ export function EventForm({
       show_as: event?.show_as ?? 'busy',
       status: event?.status ?? 'confirmed',
       url: event?.url ?? '',
-      color: event?.color ?? '',
       categories: event?.categories ?? [],
       reminders:
         event?.reminders?.map((reminder) => ({
@@ -360,38 +358,14 @@ export function EventForm({
   const allDay = form.watch('all_day')
   const watchedCalendarKey = form.watch('calendar_key')
 
-  const selectedCalendar = useMemo(
-    () =>
-      calendars?.find(
-        (cal) => calendarRowKey(cal) === watchedCalendarKey.trim()
-      ),
-    [calendars, watchedCalendarKey]
-  )
-  const calendarColor = selectedCalendar?.color ?? DEFAULT_CALENDAR_COLOR
-
-  const isFirstCalendarKeyEffect = useRef(true)
-  const skipNextCalendarColorClear = useRef(false)
   const prevStartRef = useRef<string>(watchedStart)
 
   useEffect(() => {
     if (!resolvedCalendarKey) return
     const current = form.getValues('calendar_key')
     if (current === resolvedCalendarKey) return
-    skipNextCalendarColorClear.current = true
     form.setValue('calendar_key', resolvedCalendarKey)
   }, [resolvedCalendarKey, form])
-
-  useEffect(() => {
-    if (isFirstCalendarKeyEffect.current) {
-      isFirstCalendarKeyEffect.current = false
-      return
-    }
-    if (skipNextCalendarColorClear.current) {
-      skipNextCalendarColorClear.current = false
-      return
-    }
-    form.setValue('color', '')
-  }, [watchedCalendarKey, form])
 
   useEffect(() => {
     // When start date changes, update end date to keep the same duration
@@ -435,7 +409,6 @@ export function EventForm({
     show_as: values.show_as,
     status: values.status,
     url: values.url || undefined,
-    color: values.color || calendarColor,
     categories: values.categories.length > 0 ? values.categories : undefined,
     reminders:
       values.reminders.length > 0
@@ -828,37 +801,6 @@ export function EventForm({
                       </SelectItem>
                     </SelectContent>
                   </Select>
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('eventForm.color.label.string')}</FormLabel>
-                  <FormControl>
-                    <div className={cn('flex items-center gap-2')}>
-                      <input
-                        type="color"
-                        value={field.value || calendarColor}
-                        onChange={(e) => field.onChange(e.target.value)}
-                        className={cn(
-                          'border-input bg-background h-9 w-9 cursor-pointer rounded border p-0.5'
-                        )}
-                      />
-                      {field.value && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => field.onChange('')}
-                        >
-                          {t('eventForm.color.reset')}
-                        </Button>
-                      )}
-                    </div>
-                  </FormControl>
                 </FormItem>
               )}
             />

@@ -25,6 +25,8 @@ import { usePostEventAttendanceMutation } from '../../store/calendars-api'
 
 interface VisualizationProps {
   data: CalendarEvent
+  /** Calendar color; events inherit color from their calendar, not per-event overrides. */
+  accentColor?: string
 }
 
 const getStatusClassName = (status: NonNullable<CalendarEvent['status']>) =>
@@ -103,7 +105,7 @@ function AttendeeParticipationStatus({
 
 const RSVP_STATUSES: AttendanceStatus[] = ['accepted', 'tentative', 'declined']
 
-const Visualization: React.FC<VisualizationProps> = ({ data }) => {
+const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
   const t = useTranslations('CALENDARS')
   const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
   const [postAttendance, { isLoading: isAttendanceLoading }] =
@@ -392,7 +394,9 @@ const Visualization: React.FC<VisualizationProps> = ({ data }) => {
     <div className="space-y-5">
       <div
         className="-mx-6 -mt-6 mb-5 h-1 rounded-t-lg"
-        style={{ backgroundColor: data.color ?? 'hsl(var(--primary))' }}
+        style={{
+          backgroundColor: accentColor ?? 'hsl(var(--primary))',
+        }}
       />
       <div className="space-y-2">
         <h2 className="text-xl font-semibold">{data.title}</h2>

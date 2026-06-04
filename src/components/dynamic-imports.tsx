@@ -57,16 +57,16 @@ import { ComponentLoader } from './lazy-components'
  */
 
 // Utility function for creating dynamic imports with default options
-export function createDynamicComponent(
-  importFn: () => Promise<{ default: ComponentType }>,
+export function createDynamicComponent<P extends object = object>(
+  importFn: () => Promise<{ default: ComponentType<P> }>,
   options: {
     loading?: () => ReactElement
     ssr?: boolean
   } = {}
-) {
+): ComponentType<P> {
   const { loading = () => <ComponentLoader />, ssr = true } = options
 
-  return dynamic(importFn, { loading, ssr })
+  return dynamic(importFn, { loading, ssr }) as ComponentType<P>
 }
 
 // Example usage:

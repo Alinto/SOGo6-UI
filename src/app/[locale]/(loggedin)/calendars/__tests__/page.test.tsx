@@ -62,10 +62,9 @@ jest.mock('@/features/calendars/components/calendar-toolbar', () => ({
   CalendarToolbar: () => <div data-testid="calendar-toolbar">Toolbar</div>,
 }))
 
-// Mock CalendarView component
-jest.mock('@/features/calendars/components/calendar-view', () => ({
-  __esModule: true,
-  default: () => <div data-testid="calendar-view">Calendar View</div>,
+// Mock lazy calendar view (page imports calendar-view-lazy, not calendar-view directly)
+jest.mock('@/features/calendars/components/calendar-view-lazy', () => ({
+  LazyCalendarView: () => <div data-testid="calendar-view">Calendar View</div>,
 }))
 
 const mockDeleteCalendarEventUnwrap = jest.fn().mockResolvedValue(undefined)

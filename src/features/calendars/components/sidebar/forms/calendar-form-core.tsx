@@ -31,6 +31,19 @@ import type {
 // Union type
 type CalendarFormDataUnion = CalendarCreateFormData | CalendarEditFormData
 
+/** Avoid browser select-all when Radix Dialog focuses the pre-filled name input. */
+function placeCaretAtEndOnFocus(
+  e: React.FocusEvent<HTMLInputElement>,
+  fieldOnFocus?: (event: React.FocusEvent<HTMLInputElement>) => void
+) {
+  fieldOnFocus?.(e)
+  const input = e.currentTarget
+  const len = input.value.length
+  requestAnimationFrame(() => {
+    input.setSelectionRange(len, len)
+  })
+}
+
 interface CalendarFormCoreProps {
   form: UseFormReturn<CalendarFormDataUnion>
   onSubmit: (values: CalendarFormDataUnion) => Promise<void> | void
@@ -95,6 +108,13 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
                         `forms.${formPrefix}.namePlaceholder.string`
                       )}
                       {...field}
+                      onFocus={(e) => {
+                        if (formPrefix === 'editCalendar') {
+                          placeCaretAtEndOnFocus(e, field.onFocus)
+                        } else {
+                          field.onFocus(e)
+                        }
+                      }}
                     />
                   </FormControl>
                   <FormMessage />

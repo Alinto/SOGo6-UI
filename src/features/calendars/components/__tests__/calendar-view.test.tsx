@@ -57,8 +57,8 @@ jest.mock('@/features/calendars/components/agenda-view', () => ({
   },
 }))
 
-jest.mock('@/features/calendars/components/event-form', () => ({
-  EventForm: function MockEventForm({ onCancel }: { onCancel: () => void }) {
+jest.mock('@/features/calendars/components/event-form-lazy', () => ({
+  LazyEventForm: function MockEventForm({ onCancel }: { onCancel: () => void }) {
     return (
       <form
         data-testid="event-form"

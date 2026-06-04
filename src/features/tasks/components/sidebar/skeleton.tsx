@@ -15,21 +15,21 @@ function TasksSidebarSkeleton() {
       <SidebarGroup className="px-2 pt-2">
         <Skeleton className="h-10 w-full rounded-lg" />
       </SidebarGroup>
-      <SidebarGroup className="px-0">
-        <SidebarGroupLabel className="px-4">
+      <SidebarGroup>
+        <SidebarGroupLabel>
           {t('sidebar.smart_views.title.string')}
         </SidebarGroupLabel>
-        <SidebarGroupContent className="space-y-1 px-2">
+        <SidebarGroupContent className="space-y-1">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-8 w-full" />
           ))}
         </SidebarGroupContent>
       </SidebarGroup>
-      <SidebarGroup className="px-0">
-        <SidebarGroupLabel className="px-4">
+      <SidebarGroup>
+        <SidebarGroupLabel>
           {t('sidebar.calendars.title.string')}
         </SidebarGroupLabel>
-        <SidebarGroupContent className="space-y-1 px-2">
+        <SidebarGroupContent className="space-y-1">
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-full" />
         </SidebarGroupContent>

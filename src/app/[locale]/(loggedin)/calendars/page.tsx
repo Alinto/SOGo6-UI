@@ -25,10 +25,13 @@ import {
   type CalendarEvent,
 } from '@/features/calendars'
 import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
-import type { Calendar } from '@/features/calendars/calendars-types'
+import {
+  DEFAULT_CALENDAR_COLOR,
+  type Calendar,
+} from '@/features/calendars/calendars-types'
 import { CalendarToolbar } from '@/features/calendars/components/calendar-toolbar'
-import CalendarView from '@/features/calendars/components/calendar-view'
-import { EventForm } from '@/features/calendars/components/event-form'
+import { LazyCalendarView } from '@/features/calendars/components/calendar-view-lazy'
+import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
 import {
   eventNeedsRecurrenceScope,
   RecurrenceScopeDialog,
@@ -241,12 +244,13 @@ const CalendarPage = () => {
           onNavigatePrevious={calendarState.navigateToPrevious}
           onNavigateToday={calendarState.navigateToToday}
           onNavigateNext={calendarState.navigateToNext}
+          onNavigateDate={calendarState.handleNavigate}
           timezone={calendarState.timezone}
           onTimezoneChange={calendarState.setTimezone}
         />
       </div>
       <div className="flex-1 overflow-hidden">
-        <CalendarView
+        <LazyCalendarView
           view={calendarState.view}
           date={calendarState.date}
           events={visibleEvents}
@@ -297,7 +301,12 @@ const CalendarPage = () => {
                   <Skeleton className={cn('h-4 w-1/2')} />
                 </div>
               ) : (
-                <Visualization data={displayEvent} />
+                <Visualization
+                  data={displayEvent}
+                  accentColor={
+                    selectedEventCalendar?.color ?? DEFAULT_CALENDAR_COLOR
+                  }
+                />
               )}
               <div
                 className={cn(
@@ -362,7 +371,7 @@ const CalendarPage = () => {
               <div
                 className={cn('flex min-h-0 flex-1 flex-col overflow-hidden')}
               >
-                <EventForm
+                <LazyEventForm
                   key={eventKeyForQuery ?? 'edit-event'}
                   event={displayEvent}
                   calendarKey={eventCalendarKey}

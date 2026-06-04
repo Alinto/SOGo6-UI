@@ -1,11 +1,6 @@
 'use client'
-import { Button } from '@/components/ui/button'
 import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import {
-  useDeleteCalendarMutation,
-  useUpdateCalendarMutation,
-} from '@/features/calendars/store/calendars-api'
-import { cn } from '@/lib/utils'
+import { useUpdateCalendarMutation } from '@/features/calendars/store/calendars-api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
@@ -47,7 +42,6 @@ const EditForm: React.FC<EditFormProps> = ({
 }) => {
   const t = useTranslations('CALENDARS')
   const [updateCalendar, { isLoading }] = useUpdateCalendarMutation()
-  const [deleteCalendar, { isLoading: isDeleting }] = useDeleteCalendarMutation()
 
   const form = useForm<CalendarEditFormData>({
     resolver: zodResolver(schema),
@@ -81,15 +75,6 @@ const EditForm: React.FC<EditFormProps> = ({
     }
   }
 
-  const handleDelete = async () => {
-    try {
-      await deleteCalendar(id).unwrap()
-      onClose?.()
-    } catch {
-      // Notifications are handled by RTK Query onQueryStarted.
-    }
-  }
-
   const handleCancel = () => {
     onClose?.()
     form.reset()
@@ -100,16 +85,6 @@ const EditForm: React.FC<EditFormProps> = ({
       <DialogHeader>
         <DialogTitle>{t('forms.editCalendar.title.string')}</DialogTitle>
       </DialogHeader>
-      <div className={cn('flex justify-end')}>
-        <Button
-          type="button"
-          variant="destructive"
-          disabled={isDeleting}
-          onClick={handleDelete}
-        >
-          {t('forms.deleteCalendar.confirm.string')}
-        </Button>
-      </div>
       <CalendarFormCore
         form={
           form as unknown as ReturnType<
@@ -122,7 +97,7 @@ const EditForm: React.FC<EditFormProps> = ({
           ) => Promise<void>
         }
         onCancel={handleCancel}
-        isLoading={isLoading || isDeleting}
+        isLoading={isLoading}
         formPrefix="editCalendar"
         showButtons={true}
         isFormDirty={form.formState.isDirty}

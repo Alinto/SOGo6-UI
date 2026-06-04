@@ -66,6 +66,9 @@
       "next": {
         "string": "Next"
       },
+      "pickDate": {
+        "string": "Pick a date"
+      },
       "search": {
         "string": "Search events...",
         "no_results": {

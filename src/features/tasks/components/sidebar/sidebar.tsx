@@ -20,13 +20,12 @@ import {
 import type { TaskListFilter } from '../../tasks-types'
 import { taskMatchesListFilter } from '../../utils/task-list-filter'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { cn } from '@/lib/utils'
 import {
-  AlertCircle,
+  CalendarClock,
   CalendarDays,
-  CheckCircle2,
+  Check,
+  Clock,
   ListTodo,
-  Sun,
   type LucideIcon,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -35,6 +34,7 @@ import CreateTaskOpener from './create-task-opener'
 import {
   tasksSidebarMenuButtonClassName,
   tasksSidebarMenuCountClassName,
+  tasksSidebarMenuIconClassName,
   tasksSidebarMenuLabelRowClassName,
 } from './sidebar-menu-button-classes'
 import TasksSidebarSkeleton from './skeleton'
@@ -43,7 +43,6 @@ type SmartView = {
   id: TaskListFilter
   label: string
   icon: LucideIcon
-  iconClassName?: string
   showCount: boolean
   destructiveBadge?: boolean
 }
@@ -103,8 +102,7 @@ function TasksSidebar() {
       {
         id: 'today',
         label: t('sidebar.smart_views.today.string'),
-        icon: Sun,
-        iconClassName: 'text-amber-500',
+        icon: CalendarClock,
         showCount: true,
       },
       {
@@ -116,20 +114,18 @@ function TasksSidebar() {
       {
         id: 'overdue',
         label: t('sidebar.smart_views.overdue.string'),
-        icon: AlertCircle,
-        iconClassName: cn(counts.overdue > 0 && 'text-destructive'),
+        icon: Clock,
         showCount: true,
         destructiveBadge: true,
       },
       {
         id: 'completed',
         label: t('sidebar.smart_views.completed.string'),
-        icon: CheckCircle2,
-        iconClassName: 'text-green-600',
+        icon: Check,
         showCount: false,
       },
     ],
-    [t, counts.overdue]
+    [t]
   )
 
   if (tasksLoading || calendarsLoading) {
@@ -146,8 +142,8 @@ function TasksSidebar() {
         </SidebarMenu>
       </SidebarGroup>
 
-      <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto px-0 pb-4 group-data-[collapsible=icon]:p-0">
-        <SidebarGroupLabel className="px-4">
+      <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto pb-4 group-data-[collapsible=icon]:p-0">
+        <SidebarGroupLabel>
           {t('sidebar.smart_views.title.string')}
         </SidebarGroupLabel>
         <SidebarGroupContent>
@@ -167,12 +163,7 @@ function TasksSidebar() {
                     tooltip={view.label}
                     title={view.label}
                   >
-                    <Icon
-                      className={cn(
-                        'h-5 w-5 shrink-0',
-                        view.iconClassName
-                      )}
-                    />
+                    <Icon className={tasksSidebarMenuIconClassName} />
                     <div className={tasksSidebarMenuLabelRowClassName}>
                       <span className="min-w-0 shrink truncate leading-none">
                         {view.label}
@@ -193,7 +184,7 @@ function TasksSidebar() {
 
         {calendars.length > 0 && (
           <>
-            <SidebarGroupLabel className="mt-2 px-4">
+            <SidebarGroupLabel className="mt-2">
               {t('sidebar.calendars.title.string')}
             </SidebarGroupLabel>
             <SidebarGroupContent>

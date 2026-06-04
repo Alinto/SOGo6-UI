@@ -4,7 +4,7 @@ import ShadcnBigCalendar from '@/components/calendar'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { type Calendar, type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
-import { EventForm } from '@/features/calendars/components/event-form'
+import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { DATE_LOCALES } from '@/lib/i18n/date-locales'
@@ -63,7 +63,7 @@ const calendarSlotSelectionGuardComponents = {
   },
 }
 
-interface CalendarViewProps {
+export interface CalendarViewProps {
   view: View
   date: Date
   events: CalendarEventWithDate[]
@@ -107,7 +107,7 @@ function EventDialog({
         </DialogHeader>
         {selectedSlot && (
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <EventForm
+            <LazyEventForm
               calendarKey={calendarKey}
               calendars={calendars}
               start={selectedSlot.start}
@@ -182,7 +182,7 @@ function CalendarView({
 
   const eventStyleGetter = (event: CalendarEventWithDate) => {
     const color =
-      event.color || calendarColorMap[event.calendar_id ?? ''] || defaultColor
+      calendarColorMap[event.calendar_id ?? ''] || defaultColor
 
     return {
       style: {
