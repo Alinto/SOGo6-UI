@@ -101,7 +101,11 @@
         },
         "attachment": {
             "string": "Insert attachment",
-            "context": "Button to insert an attachment into the message body"
+            "context": "Button to insert an attachment into the message body",
+            "title": {
+                "string": "Attachment",
+                "context": "Title for the attachment button"
+            }
         },
         "return_receipt": {
             "string": "Return receipt",
@@ -130,6 +134,14 @@
         "highest": {
             "string": "Highest",
             "context": "Option to set the email priority to highest"
+        },
+        "attachment_error": {
+            "string": "Attachment upload failed",
+            "context": "Error message shown when an attachment fails to upload"
+        },
+        "attachment_upload": {
+            "string": "Uploading attachment...",
+            "context": "Message shown while an attachment is being uploaded"
         }
     }
 }

@@ -639,6 +639,24 @@
                     "string": "An error occurred while discarding your draft. Please try again."
                 }
             }
+        },
+        "attachment_upload": {
+            "success": {
+                "title": {
+                    "string": "Attachment uploaded"
+                },
+                "message": {
+                    "string": "Your attachment has been uploaded successfully."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to upload attachment"
+                },
+                "message": {
+                    "string": "An error occurred while uploading your attachment. Please try again."
+                }
+            }
         }
     }
 }

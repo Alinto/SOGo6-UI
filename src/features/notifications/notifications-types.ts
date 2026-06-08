@@ -5,6 +5,7 @@ export interface Notification {
   type: NotificationType
   title: string
   message: string
+  details?: string
   duration?: number // in milliseconds, if 0 or undefined, notification won't auto-dismiss
   timestamp: number
 }
@@ -13,5 +14,6 @@ export interface NotificationPayload {
   type: NotificationType
   title: string
   message: string
+  details?: string
   duration?: number
 }

@@ -40,6 +40,7 @@ const patchPreferencesOnQueryStarted = async (
   }
 ) => {
   await createApiNotificationHandler(dispatch, {
+    displayNotificationOnSuccess: true,
     successTitle: 'title.success.string',
     successMessage: 'message.success.string',
     errorTitle: 'title.error.string',

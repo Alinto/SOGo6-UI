@@ -39,6 +39,7 @@ import {
   Link,
   List,
   MediaEmbed,
+  Mention,
   Paragraph,
   PasteFromOffice,
   RemoveFormat,
@@ -123,6 +124,7 @@ const EDITOR_PLUGINS = [
   Undo,
   SignatureWidget,
   PlainTextModePlugin,
+  Mention,
 ]
 
 export interface ComposeEditorCoreProps {

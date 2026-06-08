@@ -25,6 +25,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { formatFileSize } from '@/features/mails/components/utils'
 import { useProfile } from '@/features/user-profile'
 import { useInterval } from '@/hooks/use-interval'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -32,6 +33,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { motion, useDragControls, useMotionValue } from 'framer-motion'
 import {
+  Download,
   Maximize2,
   Minimize2,
   Minus,
@@ -44,24 +46,34 @@ import {
   X,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import * as React from 'react'
+import React from 'react'
 import { closeDraft, setActiveDraft } from '../../store'
 import {
+  useDeleteAttachmentMutation,
   useDeleteMailMutation,
+  useLazyDownloadAttachmentQuery,
   useSaveDraftMutation,
   useSendMailMutation,
+  useUploadAttachmentMutation,
 } from '../../store/mail-api'
+import { selectDraftData } from '../../store/mail-compose-selectors'
 import {
   MAIL_PRIORITY_HIGH,
   MAIL_PRIORITY_HIGHEST,
   MAIL_PRIORITY_LOW,
   MAIL_PRIORITY_LOWEST,
   MAIL_PRIORITY_NORMAL,
+  MailComposeAttachment,
   MailComposeDraft,
+  MailComposeRecipient,
+  addAttachment,
   markDraftSaved,
+  removeAttachment,
+  renameAttachment,
   setPendingInsert,
   toggleReadReceipt,
-  updateMailUid,
+  updateAttachmentProgress,
+  updateMailKey,
   updatePriority,
 } from '../../store/mail-compose-slice'
 import CustomEditor from './compose'
@@ -72,13 +84,6 @@ interface FloatingComposeProps {
   draftId: string
 }
 
-/**
- * Resolves the mailbox account ID from the selected identity.
- *
- * The identity's mail is matched against mainAccount and externalAccounts
- * to find which account owns it, then returns that account's id.
- * Falls back to '0' (default mailbox) when no match is found.
- */
 function resolveAccountId(
   identityMail: string | undefined,
   mainAccount: ReturnType<typeof useProfile>['mainAccount'],
@@ -86,11 +91,9 @@ function resolveAccountId(
 ): string {
   if (!identityMail) return '0'
 
-  // Check main account identities
   const inMain = mainAccount?.identities?.some((id) => id.mail === identityMail)
   if (inMain && mainAccount?.id) return String(mainAccount.id)
 
-  // Check external accounts
   for (const account of externalAccounts) {
     const inExternal = account.identities?.some(
       (id) => id.mail === identityMail
@@ -109,15 +112,63 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   const [isMinimized, setIsMinimized] = React.useState(false)
   const [isMaximized, setIsMaximized] = React.useState(false)
   const dispatch = useAppDispatch()
-  const draft = useAppSelector((state) => state.mailCompose.drafts[draftId])
-  const mailUid = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.mailUid
-  )
-  const subject = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.subject ?? ''
-  )
-  const dragControls = useDragControls()
-  const x = useMotionValue(0)
+
+  // const draft = useAppSelector((state) => state.mailCompose.drafts[draftId])
+  // const mailKey = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.mailKey
+  // )
+  // const subject = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.subject ?? ''
+  // )
+  // const activeDraftId = useAppSelector(
+  //   (state) => state.mailCompose.activeDraftId
+  // )
+  // const isActive = activeDraftId === draftId
+
+  // const selectedPriority = useAppSelector(
+  //   (state) =>
+  //     state.mailCompose.drafts[draftId]?.priority ?? MAIL_PRIORITY_NORMAL
+  // )
+  // const requestReadReceipt = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.requestReadReceipt ?? false
+  // )
+  // const selectedIdentity = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.selectedIdentity ?? null
+  // )
+  // const toRecipients = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.to ?? []
+  // )
+  // const ccRecipients = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.cc ?? []
+  // )
+  // const bccRecipients = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.bcc ?? []
+  // )
+  // const body = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.body ?? ''
+  // )
+  // const isDirty = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.isDirty ?? false
+  // )
+  // const attachments = useAppSelector(
+  //   (state) => state.mailCompose.drafts[draftId]?.attachments ?? []
+  // )
+
+  const {
+    draft,
+    mailKey,
+    subject,
+    selectedPriority,
+    requestReadReceipt,
+    selectedIdentity,
+    toRecipients,
+    ccRecipients,
+    bccRecipients,
+    body,
+    isDirty,
+    attachments,
+  } = useAppSelector(selectDraftData(draftId))
+
   const activeDraftId = useAppSelector(
     (state) => state.mailCompose.activeDraftId
   )
@@ -131,46 +182,31 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     externalAccounts,
   } = useProfile()
 
+  const accountId = React.useMemo(
+    () =>
+      resolveAccountId(selectedIdentity?.mail, mainAccount, externalAccounts),
+    [selectedIdentity?.mail, mainAccount, externalAccounts]
+  )
+
   const SOGO_D_MAIL_DRAFT_AUTOSAVE = uiSettings?.SOGO_D_MAIL_DRAFT_AUTOSAVE
 
-  const selectedPriority = useAppSelector(
-    (state) =>
-      state.mailCompose.drafts[draftId]?.priority ?? MAIL_PRIORITY_NORMAL
-  )
+  const dragControls = useDragControls()
+  const x = useMotionValue(0)
 
-  const requestReadReceipt = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.requestReadReceipt ?? false
-  )
-
-  // Selected identity — used to resolve the accountId for the send endpoint
-  const selectedIdentity = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.selectedIdentity ?? null
-  )
-
-  // Draft recipients / body
-  const toRecipients = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.to ?? []
-  )
-
-  const ccRecipients = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.cc ?? []
-  )
-  const bccRecipients = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.bcc ?? []
-  )
-  const body = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.body ?? ''
-  )
-
-  const isDirty = useAppSelector(
-    (state) => state.mailCompose.drafts[draftId]?.isDirty ?? false
-  )
   const [sendMail, { isLoading: isSending }] = useSendMailMutation()
-  const [saveDraft, { isLoading: isSaving }] = useSaveDraftMutation()
-  const [deleteMail, { isLoading: isDeleting }] = useDeleteMailMutation()
-  const [showNoRecipientAlert, setShowNoRecipientAlert] = React.useState(false)
+  const [saveDraft, { isLoading: isSavingDraft }] = useSaveDraftMutation()
+  const [deleteMail] = useDeleteMailMutation()
 
-  // Maximize on mobile
+  const [uploadAttachment, { isLoading: isUploading }] =
+    useUploadAttachmentMutation()
+  const [deleteAttachment] = useDeleteAttachmentMutation()
+  const [triggerDownloadAttachment] = useLazyDownloadAttachmentQuery()
+
+  const [showNoRecipientAlert, setShowNoRecipientAlert] = React.useState(false)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  console.log('isuploading', isUploading)
+
   React.useEffect(() => {
     if (isMobile) {
       setIsMaximized(true)
@@ -180,7 +216,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   }, [isMobile])
 
   const handleClose = () => {
-    handleSaveDraft(false, true)
+    handleSaveDraft(true, true, true)
   }
 
   const handleMinimize = () => {
@@ -207,70 +243,73 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     dispatch(setPendingInsert(`<a href="${link}">${link}</a>`))
   }
 
-  const handleSaveDraft: (
-    displayNotification: boolean,
+  const handleSaveDraft = async (
+    displayNotificationOnSuccess: boolean,
+    displayNotificationOnError: boolean,
     closeOnSave: boolean
-  ) => Promise<void> = async (displayNotification, closeOnSave) => {
-    const accountId = resolveAccountId(
-      selectedIdentity.mail,
-      mainAccount,
-      externalAccounts
-    )
-
-    const mailToSend = {
-      from: selectedIdentity.mail,
-      to: toRecipients.map((r) => r.email),
-      cc: ccRecipients.map((r) => r.email),
-      bcc: bccRecipients.map((r) => r.email),
-      subject,
-      body,
-      return_receipt: requestReadReceipt ? true : null,
-      attachments: [],
-    }
-
-    const { attachments, ...data } = mailToSend
-
+  ): Promise<void> => {
     const result = await saveDraft({
       accountId,
-      mailUid: mailUid,
-      mail: data,
-      displayNotification,
+      mailKey,
+      mail: {
+        from: selectedIdentity?.mail,
+        to: toRecipients.map((r: MailComposeRecipient) => r.email),
+        cc: ccRecipients.map((r: MailComposeRecipient) => r.email),
+        bcc: bccRecipients.map((r: MailComposeRecipient) => r.email),
+        subject,
+        body,
+        return_receipt: requestReadReceipt ? true : null,
+      },
+      close: closeOnSave,
+      displayNotificationOnError,
+      displayNotificationOnSuccess,
     })
 
-    // Only on success
     if (!('error' in result)) {
       dispatch(markDraftSaved({ draftId }))
-      if ('data' in result && result?.data?.data?.uid) {
-        dispatch(updateMailUid({ draftId, mailUid: result?.data?.data?.uid }))
+
+      if ('data' in result && result?.data?.data?.key) {
+        dispatch(
+          updateMailKey({
+            draftId,
+            mailKey: result.data.data.key,
+          })
+        )
       }
+
       if (closeOnSave) {
         dispatch(closeDraft({ draftId }))
       }
     }
   }
 
-  // Trigger useInterval every SOGO_D_CARDAV_ENABLED defined seconds (or 5s). Save draft only if unsaved changes
+  // Save draft immediately when compose is opened
+  React.useEffect(() => {
+    if (isActive && draft) {
+      handleSaveDraft(false, false, false)
+    }
+  }, [isActive, draftId])
+
   useInterval(
     () => {
-      if (isDirty) void handleSaveDraft(false, false)
+      if (
+        isActive &&
+        draft &&
+        isDirty &&
+        !isSavingDraft &&
+        !isSending &&
+        !isUploading
+      ) {
+        handleSaveDraft(false, false, false)
+      }
     },
     SOGO_D_MAIL_DRAFT_AUTOSAVE ? SOGO_D_MAIL_DRAFT_AUTOSAVE * 1000 : 5000,
     !isMinimized
   )
 
   const handleDiscardDraft = async () => {
-    const accountId = resolveAccountId(
-      selectedIdentity.mail,
-      mainAccount,
-      externalAccounts
-    )
-
-    if (mailUid !== null) {
-      await deleteMail({
-        accountId,
-        folder: 'Drafts',
-        mailUid: mailUid!,
-      })
+    if (mailKey != null) {
+      await deleteMail({ accountId, mailKey })
     }
 
     dispatch(closeDraft({ draftId }))
@@ -284,52 +323,163 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       return
     }
 
-    const accountId = resolveAccountId(
-      selectedIdentity.mail,
-      mainAccount,
-      externalAccounts
-    )
-
-    const mailToSend = {
-      from: selectedIdentity.mail,
-      to: toRecipients.map((r) => r.email),
-      cc: ccRecipients.map((r) => r.email),
-      bcc: bccRecipients.map((r) => r.email),
-      subject,
-      body,
-      return_receipt: requestReadReceipt ? true : null,
-      attachments: [],
-    }
-
     const result = await sendMail({
       accountId,
-      mail: mailToSend,
-      mailUid,
+      mailKey,
+      mail: {
+        from: selectedIdentity.mail,
+        to: toRecipients.map((r: MailComposeRecipient) => r.email),
+        cc: ccRecipients.map((r: MailComposeRecipient) => r.email),
+        bcc: bccRecipients.map((r: MailComposeRecipient) => r.email),
+        subject,
+        body,
+        return_receipt: requestReadReceipt ? true : null,
+        attachments: [],
+      },
     })
 
-    // Only close on success
     if (!('error' in result)) {
       dispatch(closeDraft({ draftId }))
     }
   }
 
-  if (!draft) return null
+  const handleAttachmentClick = () => {
+    fileInputRef.current?.click()
+  }
 
-  const getContainerClasses = () => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    for (const file of Array.from(files)) {
+      const tempId = crypto.randomUUID()
+
+      dispatch(
+        addAttachment({
+          draftId,
+          attachment: {
+            id: tempId,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadStatus: 'uploading',
+            uploadProgress: 0,
+          },
+        })
+      )
+
+      try {
+        const result = await uploadAttachment({
+          accountId,
+          mailKey,
+          file,
+        })
+        if (!('error' in result) && result.data?.data) {
+          const serverFilename = result.data.data.filename
+          const serverMailKey = result.data.data.key
+
+          dispatch(
+            updateAttachmentProgress({
+              draftId,
+              attachmentId: tempId,
+              progress: 100,
+              status: 'completed',
+            })
+          )
+
+          if (serverFilename) {
+            dispatch(
+              renameAttachment({
+                draftId,
+                attachmentId: tempId,
+                name: serverFilename,
+              })
+            )
+          }
+          if (serverMailKey) {
+            dispatch(updateMailKey({ draftId, mailKey: serverMailKey }))
+          }
+        } else {
+          dispatch(
+            updateAttachmentProgress({
+              draftId,
+              attachmentId: tempId,
+              progress: 0,
+              status: 'error',
+            })
+          )
+        }
+      } catch (error) {
+        // Handle upload error
+        dispatch(
+          updateAttachmentProgress({
+            draftId,
+            attachmentId: tempId,
+            progress: 0,
+            status: 'error',
+          })
+        )
+      }
+    }
+
+    e.target.value = ''
+  }
+
+  const handleDeleteAttachment = async (attachment: MailComposeAttachment) => {
+    // If not yet uploaded or no mailKey, just remove from store
+    if (attachment.uploadStatus !== 'completed' || mailKey == null) {
+      dispatch(removeAttachment({ draftId, attachmentId: attachment.id }))
+      return
+    }
+    const result = await deleteAttachment({
+      accountId,
+      mailKey,
+      filename: attachment.name,
+    })
+
+    if (!('error' in result)) {
+      dispatch(removeAttachment({ draftId, attachmentId: attachment.id }))
+    }
+  }
+
+  const handleDownloadAttachment = async (
+    attachment: MailComposeAttachment
+  ) => {
+    if (attachment.uploadStatus !== 'completed' || mailKey == null) return
+
+    try {
+      const blob = await triggerDownloadAttachment({
+        accountId,
+        mailKey,
+        filename: attachment.name,
+      }).unwrap()
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = attachment.name
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to download attachment:', error)
+    }
+  }
+
+  const getContainerClasses = React.useMemo(() => {
     const zClass = isActive
       ? 'z-50 shadow-2xl'
       : 'z-40 shadow-md opacity-95 hover:opacity-100'
-
-    if (isMinimized) {
-      return `h-12 w-80 ${zClass}`
-    }
-    if (isMaximized) {
+    if (isMinimized) return `h-12 w-80 ${zClass}`
+    if (isMaximized)
       return `fixed inset-0 !m-auto h-[calc(100vh-2rem)] w-[calc(100vw-8rem)] max-w-[calc(100vw-8rem)] rounded-lg ${zClass}`
-    }
     return `h-[550px] w-[540px] max-w-[calc(100vw-2rem)] ${zClass}`
-  }
+  }, [isActive, isMinimized, isMaximized])
 
   const isDraggable = !isMinimized && !isMaximized
+
+  if (!draft) return null
 
   return (
     <motion.div
@@ -344,10 +494,11 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       className={cn(
         'bg-background pointer-events-auto flex flex-col border transition-all duration-300',
         !isMaximized && 'relative rounded-t-lg',
-        getContainerClasses(),
+        getContainerClasses,
         isMaximized && 'rounded-lg'
       )}
     >
+      {/* ── Header ─────────────────────────────────────────────────────── */}
       <div
         className={cn(
           'bg-primary text-primary-foreground flex h-12 shrink-0 items-center rounded-t-lg px-4 select-none',
@@ -388,7 +539,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
                 title={t('discard_draft.string')}
                 onClick={(e) => {
                   e.stopPropagation()
-                  handleDiscardDraft()
+                  void handleDiscardDraft()
                 }}
               >
                 <Trash className="h-4 w-4" />
@@ -422,6 +573,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
           <Button
             variant="ghost"
             size="icon"
+            disabled={isSending || isUploading}
             className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8"
             onClick={(e) => {
               e.stopPropagation()
@@ -436,6 +588,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
 
       {!isMinimized && (
         <>
+          {/* ── Body ───────────────────────────────────────────────────── */}
           <div className="flex-1 overflow-hidden">
             <div className="flex h-full flex-col">
               <ComposeHeader draftId={draftId} />
@@ -450,16 +603,96 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
             </div>
           </div>
 
+          {/* ── Attachment list ─────────────────────────────────────────── */}
+          {attachments.length > 0 && (
+            <div className="flex flex-col gap-1 border-t px-4 py-2">
+              {attachments.map((att: MailComposeAttachment) => (
+                <div
+                  key={att.id}
+                  className={cn(
+                    'bg-muted flex flex-col rounded px-2 py-1.5 text-xs',
+                    att.uploadStatus === 'error' && 'border-destructive border'
+                  )}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <Paperclip
+                        className={cn(
+                          'h-3 w-3 shrink-0',
+                          att.uploadStatus === 'uploading' && 'animate-pulse'
+                        )}
+                      />
+                      <span className="truncate">{att.name}</span>
+                      <span className="text-muted-foreground shrink-0">
+                        {formatFileSize(att.size)}
+                      </span>
+                      {att.uploadStatus === 'error' && (
+                        <span className="text-destructive shrink-0">
+                          {t('attachment_error.string')}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex gap-1">
+                      {att.uploadStatus === 'completed' && (
+                        <button
+                          className="hover:text-primary ml-2 shrink-0"
+                          onClick={() => void handleDownloadAttachment(att)}
+                          title={t('attachment.title.string')}
+                        >
+                          <Download className="h-3 w-3" />
+                        </button>
+                      )}
+                      <button
+                        className="hover:text-destructive shrink-0"
+                        onClick={() => void handleDeleteAttachment(att)}
+                        disabled={att.uploadStatus === 'uploading'}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {att.uploadStatus === 'uploading' && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="bg-muted-foreground/20 h-1 flex-1 overflow-hidden rounded-full">
+                        <div
+                          className="bg-primary h-full rounded-full transition-all duration-300"
+                          style={{ width: `${att.uploadProgress ?? 0}%` }}
+                        />
+                      </div>
+                      <span className="text-muted-foreground w-7 shrink-0 text-right">
+                        {att.uploadProgress ?? 0}%
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* ── Toolbar ─────────────────────────────────────────────────── */}
           <div className="bg-muted/50 flex items-center justify-between border-t px-4 py-2">
             <div className="flex items-center gap-2">
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                className="hidden"
+                onChange={handleFileChange}
+              />
+
               <Button
                 variant="outline"
                 className="rounded"
                 size="sm"
                 title={t('attachment.string')}
+                onClick={handleAttachmentClick}
               >
-                <Paperclip className="h-5 w-5" />
+                <Paperclip
+                  className={cn('h-5 w-5', isUploading && 'animate-pulse')}
+                />
               </Button>
+
               {jitsiLinkEnabled && jitsiBaseUrl && (
                 <Button
                   variant="outline"
@@ -471,6 +704,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
                   <Video className="h-5 w-5" />
                 </Button>
               )}
+
               <ButtonGroup className="z-9999">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -538,12 +772,12 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
               </ButtonGroup>
             </div>
 
-            {/* ── Send / Schedule ─────────────────────────────────────────── */}
+            {/* ── Send / Schedule ──────────────────────────────────────── */}
             <ButtonGroup>
               <Button
                 variant="default"
                 size="sm"
-                onClick={handleSend}
+                onClick={() => void handleSend()}
                 disabled={isSending}
               >
                 <Send className="mr-2 h-4 w-4" />
@@ -571,6 +805,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
           </div>
         </>
       )}
+
       <AlertDialog
         open={showNoRecipientAlert}
         onOpenChange={setShowNoRecipientAlert}

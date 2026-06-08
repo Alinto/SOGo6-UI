@@ -80,9 +80,9 @@ describe('mail-api.ts', () => {
       expect(fileContent).toMatch(/sendMail[\s\S]*?method:\s*'POST'/)
     })
 
-    it('should include mailUid as uid query param when present', () => {
-      expect(fileContent).toContain('uid: mailUid')
-      expect(fileContent).toContain('mailUid != null')
+    it('should include mailKey as key query param when present', () => {
+      expect(fileContent).toContain('key: mailKey')
+      expect(fileContent).toContain('mailKey != null')
     })
 
     it('should default cc to empty array', () => {
@@ -139,8 +139,32 @@ describe('mail-api.ts', () => {
       expect(fileContent).toMatch(/saveDraft[\s\S]*?method:\s*'POST'/)
     })
 
-    it('should include mailUid as uid query param when present', () => {
-      expect(fileContent).toMatch(/saveDraft[\s\S]*?uid:\s*mailUid/)
+    it('should include mailKey in URL when present', () => {
+      expect(fileContent).toContain(
+        '`mailboxes/${accountId}/mail/${mailKey}/save`'
+      )
+    })
+
+    it('should include close as query param when close is true', () => {
+      expect(fileContent).toMatch(
+        /params:\s*close\s*\?\s*\{\s*close:\s*true\s*\}/
+      )
+    })
+
+    it('should use PUT method when mailKey is present', () => {
+      expect(fileContent).toMatch(
+        /method:\s*mailKey != null\s*\?\s*['"]PUT['"]\s*:\s*['"]POST['"]/
+      )
+    })
+
+    it('should build correct URL with mailKey', () => {
+      expect(fileContent).toMatch(
+        /`mailboxes\/\$\{accountId\}\/mail\/\$\{mailKey\}\/save`/
+      )
+    })
+
+    it('should build correct URL without mailKey', () => {
+      expect(fileContent).toMatch(/`mailboxes\/\$\{accountId\}\/mail\/save`/)
     })
 
     it('should default cc to empty array', () => {
@@ -187,20 +211,171 @@ describe('mail-api.ts', () => {
       expect(fileContent).toContain('deleteMail: builder.mutation')
     })
 
-    it('should use correct URL with accountId, folder and mailUid', () => {
-      expect(fileContent).toContain(
-        'mailboxes/${accountId}/folders/${folder}/mails/${mailUid}'
-      )
-    })
-
     it('should use DELETE method', () => {
       expect(fileContent).toMatch(/deleteMail[\s\S]*?method:\s*'DELETE'/)
     })
 
-    it('should accept accountId, folder and mailUid params', () => {
-      expect(fileContent).toMatch(
-        /deleteMail[\s\S]*?accountId[\s\S]*?folder[\s\S]*?mailUid/
-      )
+    it('should accept accountId and mailKey params', () => {
+      expect(fileContent).toMatch(/deleteMail[\s\S]*?accountId[\s\S]*?mailKey/)
+    })
+
+    it('should use correct URL with accountId and mailKey', () => {
+      expect(fileContent).toContain('`mailboxes/${accountId}/mail/${mailKey}`')
+    })
+
+    describe('Exports', () => {
+      // Already has useSendMailMutation, useSaveDraftMutation, useDeleteMailMutation
+      // Missing:
+      it('should export useUploadAttachmentMutation', () => {
+        expect(fileContent).toContain('useUploadAttachmentMutation')
+      })
+
+      it('should export useDeleteAttachmentMutation', () => {
+        expect(fileContent).toContain('useDeleteAttachmentMutation')
+      })
+
+      it('should export useLazyDownloadAttachmentQuery', () => {
+        expect(fileContent).toContain('useLazyDownloadAttachmentQuery')
+      })
+    })
+
+    describe('deleteMail endpoint', () => {
+      it('should use correct URL with accountId and mailKey', () => {
+        expect(fileContent).toContain(
+          '`mailboxes/${accountId}/mail/${mailKey}`'
+        )
+      })
+
+      it('should accept accountId and mailKey params', () => {
+        expect(fileContent).toMatch(
+          /deleteMail[\s\S]*?accountId[\s\S]*?mailKey/
+        )
+      })
+
+      it('should call createApiNotificationHandler in deleteMail', () => {
+        expect(fileContent).toMatch(
+          /deleteMail[\s\S]*?createApiNotificationHandler/
+        )
+      })
+
+      it('should use correct success i18n keys for deleteMail', () => {
+        expect(fileContent).toContain('discard_draft.success.title.string')
+        expect(fileContent).toContain('discard_draft.success.message.string')
+      })
+
+      it('should use correct error i18n keys for deleteMail', () => {
+        expect(fileContent).toContain('discard_draft.error.title.string')
+        expect(fileContent).toContain('discard_draft.error.message.string')
+      })
+    })
+
+    describe('uploadAttachment endpoint', () => {
+      it('should define uploadAttachment mutation', () => {
+        expect(fileContent).toContain('uploadAttachment: builder.mutation')
+      })
+
+      it('should use POST method', () => {
+        expect(fileContent).toMatch(/uploadAttachment[\s\S]*?method:\s*'POST'/)
+      })
+
+      it('should use correct URL with mailKey when present', () => {
+        expect(fileContent).toContain(
+          '`mailboxes/${accountId}/mail/${mailKey}/attachments`'
+        )
+      })
+
+      it('should use correct URL without mailKey', () => {
+        expect(fileContent).toContain(
+          '`mailboxes/${accountId}/mail/attachments`'
+        )
+      })
+
+      it('should append file to FormData', () => {
+        expect(fileContent).toContain('formData.append')
+        expect(fileContent).toContain("formData.append('file', file)")
+      })
+
+      it('should call createApiNotificationHandler in uploadAttachment', () => {
+        expect(fileContent).toMatch(
+          /uploadAttachment[\s\S]*?createApiNotificationHandler/
+        )
+      })
+
+      it('should not show success notification for uploadAttachment', () => {
+        expect(fileContent).toMatch(
+          /uploadAttachment[\s\S]*?displayNotificationOnSuccess:\s*false/
+        )
+      })
+
+      it('should use correct error i18n keys for uploadAttachment', () => {
+        expect(fileContent).toContain('attachment_upload.error.title.string')
+        expect(fileContent).toContain('attachment_upload.error.message.string')
+      })
+    })
+
+    describe('deleteAttachment endpoint', () => {
+      it('should define deleteAttachment mutation', () => {
+        expect(fileContent).toContain('deleteAttachment: builder.mutation')
+      })
+
+      it('should use DELETE method', () => {
+        expect(fileContent).toMatch(
+          /deleteAttachment[\s\S]*?method:\s*'DELETE'/
+        )
+      })
+
+      it('should use correct URL with accountId, mailKey and filename', () => {
+        expect(fileContent).toContain(
+          '`mailboxes/${accountId}/mail/${mailKey}/attachments/${filename}`'
+        )
+      })
+
+      it('should not show success notification for deleteAttachment', () => {
+        expect(fileContent).toMatch(
+          /deleteAttachment[\s\S]*?displayNotificationOnSuccess:\s*false/
+        )
+      })
+
+      it('should use correct error i18n keys for deleteAttachment', () => {
+        expect(fileContent).toContain('attachment_delete.error.title.string')
+        expect(fileContent).toContain('attachment_delete.error.message.string')
+      })
+    })
+
+    describe('downloadAttachment endpoint', () => {
+      it('should define downloadAttachment query', () => {
+        expect(fileContent).toContain('downloadAttachment: builder.query')
+      })
+
+      it('should use GET method', () => {
+        expect(fileContent).toMatch(/downloadAttachment[\s\S]*?method:\s*'GET'/)
+      })
+
+      it('should use correct URL with accountId, mailKey and filename', () => {
+        expect(fileContent).toContain(
+          '`mailboxes/${accountId}/mail/${mailKey}/attachments/${filename}`'
+        )
+      })
+
+      it('should use a custom responseHandler to return a Blob', () => {
+        expect(fileContent).toContain('responseHandler')
+        expect(fileContent).toContain('response.blob()')
+      })
+    })
+
+    describe('saveDraft endpoint', () => {
+      // Fix broken ones:
+      it('should pass displayNotificationOnError from arg', () => {
+        expect(fileContent).toContain(
+          'displayNotificationOnError: arg.displayNotificationOnError'
+        )
+      })
+
+      it('should pass displayNotificationOnSuccess from arg', () => {
+        expect(fileContent).toContain(
+          'displayNotificationOnSuccess: arg.displayNotificationOnSuccess'
+        )
+      })
     })
   })
 })

@@ -46,6 +46,21 @@ jest.mock('@/features/mails/store/mail-api.ts', () => ({
   useDeleteMailMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }))
 
+jest.mock('@/features/mails/store/mail-api.ts', () => ({
+  useSendMailMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useSaveDraftMutation: jest.fn(() => [
+    jest.fn().mockResolvedValue({ data: { data: { uid: null } } }),
+    { isLoading: false },
+  ]),
+  useDeleteMailMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useUploadAttachmentMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useDeleteAttachmentMutation: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useLazyDownloadAttachmentQuery: jest.fn(() => [
+    jest.fn(),
+    { isLoading: false, isFetching: false },
+  ]),
+}))
+
 const createMockState = (hasDraft = false, isActive = false) => ({
   mailCompose: {
     drafts: hasDraft

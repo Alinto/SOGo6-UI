@@ -23,15 +23,34 @@ export interface SendMailArg {
   /** The mailbox account ID — derived from the selected identity's account */
   accountId: string
   mail: SendMailBody
-  mailUid?: string | null
+  mailKey?: string | null
 }
 
 export interface SaveDraftArg {
-  /** The mailbox account ID — derived from the selected identity's account */
-  accountId: string
-  mailUid: string | null
+  accountId: string // The mailbox account ID — derived from the selected identity's account
+  mailKey: string | null // The mail key, if updating an existing draft. Null when creating a new draft.
   mail: SendMailBody
-  displayNotification: boolean
+  close?: boolean // Whether to close the compose window after saving
+  displayNotificationOnSuccess?: boolean
+  displayNotificationOnError?: boolean
+}
+
+export interface UploadAttachmentArg {
+  accountId: string
+  mailKey: string | null
+  file: File
+}
+
+export interface DeleteAttachmentArg {
+  accountId: string
+  mailKey: string
+  filename: string
+}
+
+export interface DownloadAttachmentArg {
+  accountId: string
+  mailKey: string
+  filename: string
 }
 
 export interface BackendResponse<T> {

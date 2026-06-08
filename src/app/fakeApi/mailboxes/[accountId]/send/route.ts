@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+//POST fakeApi/mailboxes/[accountId]/send
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: { accountId: string } }
 ) {
   const body = await req.json()
-
-  console.log(`[fakeApi] POST /mailboxes/${params.id}/send`, body)
 
   // Basic validation — mirror what the real backend would reject
   if (!body.from || !Array.isArray(body.to) || body.to.length === 0) {
