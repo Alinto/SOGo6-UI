@@ -19,12 +19,13 @@ const notificationsSlice = createSlice({
   reducers: {
     // Add a new notification
     addNotification: (state, action: PayloadAction<NotificationPayload>) => {
-      const { type, title, message, duration } = action.payload
+      const { type, title, message, details, duration } = action.payload
       const notification: Notification = {
         id: generateId(),
         type,
         title,
         message,
+        details,
         duration: duration ?? 5000, // Default 5 seconds
         timestamp: Date.now(),
       }

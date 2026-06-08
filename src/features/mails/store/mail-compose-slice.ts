@@ -26,7 +26,7 @@ export interface MailComposeRecipient {
 
 export interface MailComposeDraft {
   id: string
-  mailUid: string | null
+  mailKey: string | null
   to: MailComposeRecipient[]
   cc: MailComposeRecipient[]
   bcc: MailComposeRecipient[]
@@ -91,7 +91,7 @@ const mailComposeSlice = createSlice({
       const now = Date.now()
       state.drafts[id] = {
         id,
-        mailUid: null,
+        mailKey: null,
         to: initialData?.to ?? [],
         cc: initialData?.cc ?? [],
         bcc: initialData?.bcc ?? [],
@@ -149,14 +149,14 @@ const mailComposeSlice = createSlice({
       }
     },
 
-    updateMailUid: (
+    updateMailKey: (
       state,
-      action: PayloadAction<{ draftId: string; mailUid: string }>
+      action: PayloadAction<{ draftId: string; mailKey: string }>
     ) => {
-      const { draftId, mailUid } = action.payload
+      const { draftId, mailKey } = action.payload
       const draft = state.drafts[draftId]
       if (draft) {
-        draft.mailUid = mailUid
+        draft.mailKey = mailKey
       }
     },
 
@@ -218,6 +218,24 @@ const mailComposeSlice = createSlice({
         if (attachment) {
           attachment.uploadProgress = progress
           attachment.uploadStatus = status
+        }
+      }
+    },
+
+    renameAttachment: (
+      state,
+      action: PayloadAction<{
+        draftId: string
+        attachmentId: string
+        name: string
+      }>
+    ) => {
+      const { draftId, attachmentId, name } = action.payload
+      const draft = state.drafts[draftId]
+      if (draft) {
+        const attachment = draft.attachments.find((a) => a.id === attachmentId)
+        if (attachment) {
+          attachment.name = name
         }
       }
     },
@@ -336,6 +354,7 @@ export const {
   addAttachment,
   updateAttachmentProgress,
   removeAttachment,
+  renameAttachment,
   updatePriority,
   toggleReadReceipt,
   markDraftSaved,
@@ -346,7 +365,7 @@ export const {
   setPendingInsert,
   updateIdentity,
   updateSelectedSignatureKey,
-  updateMailUid,
+  updateMailKey,
 } = mailComposeSlice.actions
 
 export default mailComposeSlice.reducer

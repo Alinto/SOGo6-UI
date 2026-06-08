@@ -66,6 +66,7 @@ describe('NotificationProvider', () => {
       message: 'Error Message',
       duration: 5000,
       timestamp: Date.now(),
+      details: '',
     }
 
     ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
@@ -268,5 +269,184 @@ describe('NotificationProvider', () => {
     })
 
     jest.useRealTimers()
+  })
+
+  it('renders null when there are no notifications', () => {
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([])
+    const { container } = render(<NotificationProvider />)
+    expect(container.firstChild).toBeNull()
+  })
+
+  it('translates title using NOTIFICATIONS namespace', async () => {
+    const notification = {
+      id: '1',
+      type: 'success' as const,
+      title: 'some.title.key',
+      message: 'some.message.key',
+      duration: 3000,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    await waitFor(() => {
+      expect(mockTranslate).toHaveBeenCalledWith('some.title.key')
+      expect(mockTranslate).toHaveBeenCalledWith('some.message.key')
+    })
+  })
+
+  it('uses details as JSX description when details is provided', async () => {
+    const notification = {
+      id: '1',
+      type: 'error' as const,
+      title: 'Error Title',
+      message: 'Error Message',
+      details: 'Some extra detail',
+      duration: 5000,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    await waitFor(() => {
+      const callArgs = (toast.error as jest.Mock).mock.calls[0]
+      const description = callArgs[1].description
+      // When details is present, description is JSX (not a plain string)
+      expect(description).not.toBe('translated_Error Message')
+    })
+  })
+
+  it('uses plain translated string as description when details is absent', async () => {
+    const notification = {
+      id: '1',
+      type: 'success' as const,
+      title: 'Title',
+      message: 'Message',
+      details: undefined,
+      duration: 3000,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    await waitFor(() => {
+      const callArgs = (toast.success as jest.Mock).mock.calls[0]
+      const description = callArgs[1].description
+      expect(description).toBe('translated_Message')
+    })
+  })
+
+  it('uses duration || undefined — does not pass 0 as duration', async () => {
+    const notification = {
+      id: '1',
+      type: 'info' as const,
+      title: 'Title',
+      message: 'Message',
+      duration: 0,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    await waitFor(() => {
+      const callArgs = (toast.info as jest.Mock).mock.calls[0]
+      expect(callArgs[1].duration).toBeUndefined()
+    })
+  })
+
+  it('does not schedule auto-removal when duration is 0', async () => {
+    jest.useFakeTimers()
+
+    const notification = {
+      id: 'no-auto-remove',
+      type: 'info' as const,
+      title: 'Title',
+      message: 'Message',
+      duration: 0,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    jest.advanceTimersByTime(10000)
+
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      removeNotification('no-auto-remove')
+    )
+
+    jest.useRealTimers()
+  })
+
+  it('does not schedule auto-removal when duration is undefined', async () => {
+    jest.useFakeTimers()
+
+    const notification = {
+      id: 'no-duration',
+      type: 'error' as const,
+      title: 'Title',
+      message: 'Message',
+      duration: undefined,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    jest.advanceTimersByTime(10000)
+
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      removeNotification('no-duration')
+    )
+
+    jest.useRealTimers()
+  })
+
+  it('dispatches removeNotification on dismiss for error toast', async () => {
+    const notification = {
+      id: 'error-dismiss',
+      type: 'error' as const,
+      title: 'Title',
+      message: 'Message',
+      duration: 5000,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    await waitFor(() => {
+      const callArgs = (toast.error as jest.Mock).mock.calls[0]
+      callArgs[1].onDismiss()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        removeNotification('error-dismiss')
+      )
+    })
+  })
+
+  it('dispatches removeNotification on dismiss for info toast', async () => {
+    const notification = {
+      id: 'info-dismiss',
+      type: 'info' as const,
+      title: 'Title',
+      message: 'Message',
+      duration: 4000,
+      timestamp: Date.now(),
+    }
+
+    ;(useAppSelector as jest.Mock).mockReturnValueOnce([notification])
+    render(<NotificationProvider />)
+
+    await waitFor(() => {
+      const callArgs = (toast.info as jest.Mock).mock.calls[0]
+      callArgs[1].onDismiss()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        removeNotification('info-dismiss')
+      )
+    })
   })
 })

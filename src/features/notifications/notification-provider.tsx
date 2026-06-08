@@ -32,11 +32,22 @@ export const NotificationProvider = () => {
       }
       shownIdsRef.current.add(notification.id)
 
-      const { id, type, title, message, duration } = notification
+      const { id, type, title, message, details, duration } = notification
+
+         const description = details ? (
+        <span>
+          {translate(message)}
+          <br />
+          <br />
+          {details}
+        </span>
+      ) : (
+        t(message)
+      )
 
       const toastOptions = {
         id,
-        description: translate(message),
+        description: description,
         duration: duration || undefined,
         onDismiss: () => {
           shownIdsRef.current.delete(id)

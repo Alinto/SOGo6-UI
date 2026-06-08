@@ -45,6 +45,7 @@ describe('createApiNotificationHandler', () => {
         title: 'success.title',
         message: 'success.message',
         duration: 3000,
+        details: '',
       })
     )
   })
@@ -57,7 +58,14 @@ describe('createApiNotificationHandler', () => {
       errorMessage: 'error.message',
     })
 
-    const mockQueryFulfilled = Promise.reject(new Error('Query failed'))
+    const mockQueryFulfilled = Promise.reject(
+      new Error('Query failed', {
+        cause: {
+          status: 500,
+          data: { error_code: 'ERR_500', error_msg: 'Internal Server Error' },
+        },
+      })
+    )
 
     await handler(undefined, { queryFulfilled: mockQueryFulfilled })
 
@@ -67,6 +75,7 @@ describe('createApiNotificationHandler', () => {
         title: 'error.title',
         message: 'error.message',
         duration: 5000,
+        details: '',
       })
     )
   })
@@ -123,6 +132,7 @@ describe('createApiNotificationHandler', () => {
         title: customStrings.successTitle,
         message: customStrings.successMessage,
         duration: 3000,
+        details: '',
       })
     )
   })
