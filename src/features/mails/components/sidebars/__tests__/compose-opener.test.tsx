@@ -226,7 +226,7 @@ describe('ComposeOpener Component', () => {
         expect.objectContaining({
           type: createDraft.type,
           payload: expect.objectContaining({
-            id: expect.any(String),
+            draftId: expect.any(String),
           }),
         })
       )
@@ -271,7 +271,7 @@ describe('ComposeOpener Component', () => {
         expect.objectContaining({
           type: createDraft.type,
           payload: expect.objectContaining({
-            id: expect.any(String),
+            draftId: expect.any(String),
           }),
         })
       )
@@ -291,7 +291,7 @@ describe('ComposeOpener Component', () => {
         expect.objectContaining({
           type: createDraft.type,
           payload: expect.objectContaining({
-            id: expect.any(String),
+            draftId: expect.any(String),
           }),
         })
       )
@@ -384,7 +384,7 @@ describe('ComposeOpener Component', () => {
         expect.objectContaining({
           type: createDraft.type,
           payload: expect.objectContaining({
-            id: expect.any(String),
+            draftId: expect.any(String),
           }),
         })
       )

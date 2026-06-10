@@ -10,7 +10,7 @@ import type { RootState } from '@/lib/redux/store'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { useMailItemActions } from '../hooks/use-mail-item-actions'
 import type { ImapMessagesList } from '../mails-types'
 import ListItem from './list-item'
@@ -117,13 +117,19 @@ const MessagesList: React.FC<MessagesListProps> = ({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex min-h-0 w-full flex-1 flex-col rounded overflow-hidden">
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded">
         {!hideToolbar && (
           <div className="text-foreground flex min-w-0 shrink-0 flex-row flex-wrap items-center justify-between gap-y-1">
             <span className="text-muted-foreground hidden text-sm md:inline-block" />
           </div>
         )}
-        <ul className={cn('min-h-0 flex-1 overflow-y-auto rounded transition-opacity', isMobile && 'pb-12', isFetching && 'opacity-60')}>
+        <ul
+          className={cn(
+            'min-h-0 flex-1 overflow-y-auto rounded transition-opacity',
+            isMobile && 'pb-12',
+            isFetching && 'opacity-60'
+          )}
+        >
           {items.length === 0 && (
             <li className="text-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center">
               {t('no_items.string')}

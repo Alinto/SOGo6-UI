@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import {
   Calendar,
@@ -15,7 +16,16 @@ import {
 import { useParams } from 'next/navigation'
 import React, { memo, useCallback, useRef } from 'react'
 import { ImapMessagesList } from '../mails-types'
-import { useMailActionMutation, useMoveToTrashMutation } from '../store'
+import {
+  createDraft,
+  selectAllDrafts,
+  selectOpenDraftIds,
+  setActiveDraft,
+  useLazyGetEditMessageQuery,
+  useMailActionMutation,
+  useMoveToTrashMutation,
+} from '../store'
+import { apiDataToMailComposeDraft } from '../utils/mail-compose-from-api'
 import { formatDate } from './list-item-utils'
 import SwipeableMailItem from './swipeable-mail-item'
 
@@ -36,11 +46,20 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const [onDelete] = useMoveToTrashMutation()
   const [mailAction] = useMailActionMutation()
-  const { id, from, flagged, hasAttachment } = data
+  const dispatch = useAppDispatch()
+  const openDraftIds = useAppSelector(selectOpenDraftIds)
+  const allDrafts = useAppSelector(selectAllDrafts)
+  const [triggerGetEditMessage] = useLazyGetEditMessageQuery()
+  const { id, from, to, flagged, hasAttachment } = data
   const showHighPriority = data.priority <= 2
   const showSnippet = data.snippet.trim().length > 0
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
+  const isDraftsFolder = folderString.toLocaleLowerCase() === 'drafts'
+  const recipient = to[0]
+  const displayName = isDraftsFolder
+    ? recipient?.name || recipient?.email || ''
+    : from.name || from.email
   const containerRef = useRef<HTMLDivElement>(null)
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -129,10 +148,43 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               data.seen ? '' : 'bg-primary/15 font-semibold',
               data.deleted && 'opacity-60'
             )}
-            onClick={() => {
+            onClick={async () => {
               // Don't navigate if we were swiping
               if (isSwipingRef.current) return
-              push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
+
+              if (isDraftsFolder) {
+                const existingDraftId = openDraftIds.find(
+                  (draftId) => allDrafts[draftId]?.mailKey === id
+                )
+                if (existingDraftId) {
+                  dispatch(setActiveDraft(existingDraftId))
+                  return
+                }
+
+                const result = await triggerGetEditMessage({
+                  folder: folderString,
+                  mailId: id,
+                  accountId: accountString,
+                })
+                const draftId =
+                  typeof crypto !== 'undefined' &&
+                  typeof crypto.randomUUID === 'function'
+                    ? crypto.randomUUID()
+                    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+                dispatch(
+                  createDraft({
+                    draftId,
+                    initialData: apiDataToMailComposeDraft(draftId, {
+                      ...result.data,
+                    }),
+                  })
+                )
+                return
+              }
+
+              push(
+                `/u/${accountString}/${encodeURIComponent(folderString)}/${id}`
+              )
             }}
           >
             <div className="flex flex-row items-center gap-2">
@@ -171,7 +223,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                     <div
                       className={`text-md truncate select-none ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
                     >
-                      {from.name || from.email}
+                      {displayName}
                     </div>
                   </div>
                   <span className="text-muted-foreground select-none">

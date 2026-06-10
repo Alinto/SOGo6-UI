@@ -72,17 +72,18 @@ describe('mail-api.ts', () => {
       expect(fileContent).toContain('sendMail: builder.mutation')
     })
 
+    it('should use correct URL with accountId and mailKey', () => {
+      expect(fileContent).toContain(
+        'mailboxes/${accountId}/mail/${mailKey}/send'
+      )
+    })
+
     it('should use correct URL with accountId', () => {
-      expect(fileContent).toContain('mailboxes/${accountId}/send')
+      expect(fileContent).toContain('mailboxes/${accountId}/mail/send')
     })
 
     it('should use POST method', () => {
       expect(fileContent).toMatch(/sendMail[\s\S]*?method:\s*'POST'/)
-    })
-
-    it('should include mailKey as key query param when present', () => {
-      expect(fileContent).toContain('key: mailKey')
-      expect(fileContent).toContain('mailKey != null')
     })
 
     it('should default cc to empty array', () => {

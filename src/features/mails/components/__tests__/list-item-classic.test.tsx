@@ -1,7 +1,11 @@
+import { mailComposeReducer } from '@/features/mails/store'
+import { apiSlice } from '@/lib/redux/api/api-slice'
 import { useRouter } from '@/lib/i18n/navigation'
+import { configureStore } from '@reduxjs/toolkit'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useParams, usePathname } from 'next/navigation'
+import { Provider } from 'react-redux'
 import { ImapMessagesList } from '../../mails-types'
 import ListItemClassic from '../list-item-classic'
 
@@ -42,6 +46,19 @@ describe('ListItemClassic', () => {
 
   const mockOnHandleCheckboxClick = jest.fn()
 
+  const createTestStore = () =>
+    configureStore({
+      reducer: {
+        mailCompose: mailComposeReducer,
+        [apiSlice.reducerPath]: apiSlice.reducer,
+      },
+      middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(apiSlice.middleware),
+    })
+
+  const renderWithRedux = (ui: React.ReactElement) =>
+    render(<Provider store={createTestStore()}>{ui}</Provider>)
+
   beforeEach(() => {
     mockUseRouter.mockReturnValue({
       push: jest.fn(),
@@ -55,7 +72,7 @@ describe('ListItemClassic', () => {
   })
 
   it('should render correctly', () => {
-    render(
+    renderWithRedux(
       <ListItemClassic
         data={mockData}
         isSelected={false}
@@ -75,7 +92,7 @@ describe('ListItemClassic', () => {
     pastDate.setDate(pastDate.getDate() - 10) // 10 days ago, not in current week
     const mockDataWithPastDate = { ...mockData, date: pastDate.toISOString() }
 
-    render(
+    renderWithRedux(
       <ListItemClassic
         data={mockDataWithPastDate}
         isSelected={false}
@@ -93,7 +110,7 @@ describe('ListItemClassic', () => {
   it('should not show attachment icon when hasAttachment is false', () => {
     const mockDataNoAttachment = { ...mockData, hasAttachment: false }
 
-    render(
+    renderWithRedux(
       <ListItemClassic
         data={mockDataNoAttachment}
         isSelected={false}
@@ -108,7 +125,7 @@ describe('ListItemClassic', () => {
   it('should not apply unread background when seen is true', () => {
     const mockDataSeen = { ...mockData, seen: true }
 
-    render(
+    renderWithRedux(
       <ListItemClassic
         data={mockDataSeen}
         isSelected={false}
@@ -123,7 +140,7 @@ describe('ListItemClassic', () => {
   it('should use email initial when name is empty', () => {
     const mockDataNoName = { ...mockData, from: { name: '', email: 'john@example.com' } }
 
-    render(
+    renderWithRedux(
       <ListItemClassic
         data={mockDataNoName}
         isSelected={false}

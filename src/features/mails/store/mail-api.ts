@@ -1,10 +1,16 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  FOLDER_MESSAGES_SLICE,
+  MAILS_FOLDERS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   BackendResponse,
+  CurrentMailItem,
   DeleteAttachmentArg,
   DownloadAttachmentArg,
+  GetCurrentMailArg,
   SaveDraftArg,
   SendMailArg,
   UploadAttachmentArg,
@@ -14,8 +20,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     sendMail: builder.mutation<BackendResponse<void>, SendMailArg>({
       query: ({ accountId, mail, mailKey }) => ({
-        url: `mailboxes/${accountId}/send`,
-        params: mailKey != null ? { key: mailKey } : undefined,
+        url:
+          mailKey != null
+            ? `mailboxes/${accountId}/mail/${mailKey}/send`
+            : `mailboxes/${accountId}/mail/send`,
         method: 'POST',
         body: {
           ...mail,
@@ -33,6 +41,11 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'mail_send.error.message.string',
         })(undefined, { queryFulfilled })
       },
+      invalidatesTags: (_result, _error) => [
+        { type: FOLDER_MESSAGES_SLICE, folder: 'Drafts' },
+        { type: FOLDER_MESSAGES_SLICE, folder: 'Sent' },
+        MAILS_FOLDERS_SLICE,
+      ],
     }),
 
     // POST mail/save — create new draft (no key yet)
@@ -65,6 +78,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             successMessage: 'save_draft.success.message.string',
           })(undefined, { queryFulfilled })
         },
+        invalidatesTags: (_result, _error) => [
+          { type: FOLDER_MESSAGES_SLICE, folder: 'Drafts' },
+          MAILS_FOLDERS_SLICE,
+        ],
       }
     ),
 
@@ -82,6 +99,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'discard_draft.error.message.string',
         })(undefined, { queryFulfilled })
       },
+      invalidatesTags: (_result, _error) => [
+        { type: FOLDER_MESSAGES_SLICE, folder: 'Drafts' },
+        MAILS_FOLDERS_SLICE,
+      ],
     }),
 
     // POST mail/:key/attachments or POST mail/attachments (no key yet)
@@ -125,6 +146,17 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    // GET mail/current
+    getCurrentDrafts: builder.query<
+      BackendResponse<CurrentMailItem[]>,
+      GetCurrentMailArg
+    >({
+      query: ({ accountId }) => ({
+        url: `mailboxes/${accountId}/mail/current`,
+        method: 'GET',
+      }),
+    }),
+
     // GET mail/:key/attachments/:filename
     downloadAttachment: builder.query<Blob, DownloadAttachmentArg>({
       query: ({ accountId, mailKey, filename }) => ({
@@ -146,6 +178,7 @@ export const {
   useUploadAttachmentMutation,
   useDeleteAttachmentMutation,
   useLazyDownloadAttachmentQuery,
+  useLazyGetCurrentDraftsQuery,
 } = injectedEndpoints
 
 export const mailSendApiEndpoints = injectedEndpoints

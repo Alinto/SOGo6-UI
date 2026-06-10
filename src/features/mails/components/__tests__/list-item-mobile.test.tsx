@@ -1,3 +1,4 @@
+import { mailComposeReducer } from '@/features/mails/store'
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { configureStore, PreloadedState } from '@reduxjs/toolkit'
 import '@testing-library/jest-dom'
@@ -88,6 +89,7 @@ describe('ListItemMobile Component', () => {
   const createTestStore = (preloadedState?: PreloadedState<any>) => {
     return configureStore({
       reducer: {
+        mailCompose: mailComposeReducer,
         [apiSlice.reducerPath]: apiSlice.reducer,
       },
       middleware: (getDefaultMiddleware) =>

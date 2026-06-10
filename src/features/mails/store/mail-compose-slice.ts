@@ -2,14 +2,14 @@
 import type { Identity } from '@/features/user-profile/profile-types'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export const MAIL_PRIORITY_LOWEST = 'lowest'
-export const MAIL_PRIORITY_LOW = 'low'
-export const MAIL_PRIORITY_NORMAL = 'normal'
-export const MAIL_PRIORITY_HIGH = 'high'
-export const MAIL_PRIORITY_HIGHEST = 'highest'
+export const MAIL_PRIORITY_LOWEST = 0
+export const MAIL_PRIORITY_LOW = 1
+export const MAIL_PRIORITY_NORMAL = 2
+export const MAIL_PRIORITY_HIGH = 3
+export const MAIL_PRIORITY_HIGHEST = 4
 
 export interface MailComposeAttachment {
-  id: string
+  draftId: string
   name: string
   size: number
   type: string
@@ -25,7 +25,7 @@ export interface MailComposeRecipient {
 }
 
 export interface MailComposeDraft {
-  id: string
+  draftId: string
   mailKey: string | null
   to: MailComposeRecipient[]
   cc: MailComposeRecipient[]
@@ -53,6 +53,7 @@ export interface MailComposeDraft {
 export interface MailComposeState {
   drafts: Record<string, MailComposeDraft>
   activeDraftId: string | null
+  activeDraftUid?: string | null
   openDraftIds: string[]
   isSending: boolean
   sendError: string | null
@@ -77,21 +78,24 @@ const mailComposeSlice = createSlice({
     createDraft: (
       state,
       action: PayloadAction<{
-        id: string
+        draftId: string
         inReplyTo?: string
         forwardOf?: string
         initialData?: Partial<
-          Omit<MailComposeDraft, 'id' | 'createdAt' | 'updatedAt' | 'isDirty'>
+          Omit<
+            MailComposeDraft,
+            'draftId' | 'createdAt' | 'updatedAt' | 'isDirty'
+          >
         >
       }>
     ) => {
       if (state.openDraftIds.length >= MAX_OPEN_DRAFTS) return
 
-      const { id, inReplyTo, forwardOf, initialData } = action.payload
+      const { draftId, inReplyTo, forwardOf, initialData } = action.payload
       const now = Date.now()
-      state.drafts[id] = {
-        id,
-        mailKey: null,
+      state.drafts[draftId] = {
+        draftId,
+        mailKey: initialData?.mailKey || null,
         to: initialData?.to ?? [],
         cc: initialData?.cc ?? [],
         bcc: initialData?.bcc ?? [],
@@ -114,8 +118,8 @@ const mailComposeSlice = createSlice({
             >) ?? {}
           )[0] ?? null,
       }
-      state.openDraftIds.push(id)
-      state.activeDraftId = id
+      state.openDraftIds.push(draftId)
+      state.activeDraftId = draftId
     },
 
     setActiveDraft: (state, action: PayloadAction<string | null>) => {
@@ -124,7 +128,7 @@ const mailComposeSlice = createSlice({
 
     closeDraft: (state, action: PayloadAction<{ draftId: string }>) => {
       state.openDraftIds = state.openDraftIds.filter(
-        (id) => id !== action.payload.draftId
+        (draftId) => draftId !== action.payload.draftId
       )
       if (state.activeDraftId === action.payload.draftId) {
         state.activeDraftId =
@@ -214,7 +218,9 @@ const mailComposeSlice = createSlice({
       const { draftId, attachmentId, progress, status } = action.payload
       const draft = state.drafts[draftId]
       if (draft) {
-        const attachment = draft.attachments.find((a) => a.id === attachmentId)
+        const attachment = draft.attachments.find(
+          (a) => a.draftId === attachmentId
+        )
         if (attachment) {
           attachment.uploadProgress = progress
           attachment.uploadStatus = status
@@ -233,7 +239,9 @@ const mailComposeSlice = createSlice({
       const { draftId, attachmentId, name } = action.payload
       const draft = state.drafts[draftId]
       if (draft) {
-        const attachment = draft.attachments.find((a) => a.id === attachmentId)
+        const attachment = draft.attachments.find(
+          (a) => a.draftId === attachmentId
+        )
         if (attachment) {
           attachment.name = name
         }
@@ -248,7 +256,7 @@ const mailComposeSlice = createSlice({
       const draft = state.drafts[draftId]
       if (draft) {
         draft.attachments = draft.attachments.filter(
-          (a) => a.id !== attachmentId
+          (a) => a.draftId !== attachmentId
         )
         draft.isDirty = true
         draft.updatedAt = Date.now()
@@ -293,7 +301,9 @@ const mailComposeSlice = createSlice({
     deleteDraft: (state, action: PayloadAction<{ draftId: string }>) => {
       const { draftId } = action.payload
       delete state.drafts[draftId]
-      state.openDraftIds = state.openDraftIds.filter((id) => id !== draftId)
+      state.openDraftIds = state.openDraftIds.filter(
+        (draftId) => draftId !== draftId
+      )
       if (state.activeDraftId === draftId) {
         state.activeDraftId =
           state.openDraftIds[state.openDraftIds.length - 1] ?? null

@@ -8,6 +8,34 @@ import { selectOpenDraftIds } from '@/features/mails/store'
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: jest.fn(),
+  useAppDispatch: jest.fn(() => jest.fn()),
+}))
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: jest.fn(() => ({ mainAccount: null })),
+}))
+
+jest.mock('@/features/mails/store/mail-api', () => ({
+  useLazyGetCurrentDraftsQuery: jest.fn(() => [
+    jest.fn(),
+    { isLoading: false },
+  ]),
+}))
+
+jest.mock('@/features/mails/store/mails-api', () => ({
+  useLazyGetMailQuery: jest.fn(() => [jest.fn(), { isLoading: false }]),
+}))
+
+jest.mock('@/features/mails/store/mail-compose-slice', () => ({
+  createDraft: jest.fn(),
+}))
+
+jest.mock('@/features/mails/utils/mail-compose-from-api', () => ({
+  apiDataToMailComposeDraft: jest.fn(),
+}))
+
+jest.mock('@/features/mails/components/constants', () => ({
+  FOLDERS_NAME: { DRAFT: 'Drafts' },
 }))
 
 const mockFloatingCompose = jest.fn(

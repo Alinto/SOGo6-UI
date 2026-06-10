@@ -1,12 +1,59 @@
 'use client'
 
-import { useAppSelector } from '@/lib/redux/hooks'
+import { useProfile } from '@/features/user-profile'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import React from 'react'
 import { selectOpenDraftIds } from '../../store'
+import { useLazyGetCurrentDraftsQuery } from '../../store/mail-api'
+import { createDraft } from '../../store/mail-compose-slice'
+import { useLazyGetMailQuery } from '../../store/mails-api'
+import { apiDataToMailComposeDraft } from '../../utils/mail-compose-from-api'
+import { FOLDERS_NAME } from '../constants'
 import FloatingCompose from './floating-compose'
 
 const FloatingComposeContainer = () => {
+  const dispatch = useAppDispatch()
   const openDraftIds = useAppSelector(selectOpenDraftIds)
-  console.log('Open draft IDs:', openDraftIds) // Debug log to check the value of openDraftIds
+  const { mainAccount } = useProfile()
+  const [triggerGetCurrentDrafts] = useLazyGetCurrentDraftsQuery()
+  const [triggerGetMail] = useLazyGetMailQuery()
+  const hasInitialized = React.useRef(false)
+
+  React.useEffect(() => {
+    if (!mainAccount?.id || hasInitialized.current) return
+    hasInitialized.current = true
+
+    const accountId = String(mainAccount.id)
+
+    const initDrafts = async () => {
+      if (accountId) {
+        const result = await triggerGetCurrentDrafts({ accountId })
+        if (!result.data?.data?.length) return
+
+        for (const item of result.data.data) {
+          const draftId = crypto.randomUUID()
+          const editResult = await triggerGetMail({
+            folder: FOLDERS_NAME.DRAFT,
+            mailId: item.mail_server_uid,
+            accountId,
+          })
+          if (editResult.data) {
+            dispatch(
+              createDraft({
+                draftId,
+                initialData: apiDataToMailComposeDraft(draftId, {
+                  ...editResult.data,
+                  key: item.key,
+                }),
+              })
+            )
+          }
+        }
+      }
+    }
+
+    void initDrafts()
+  }, [mainAccount?.id])
 
   if (openDraftIds.length === 0) {
     return null

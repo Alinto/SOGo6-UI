@@ -58,3 +58,13 @@ export interface BackendResponse<T> {
   error_code: string
   error_msg: string
 }
+
+export interface CurrentMailItem {
+  key: string
+  locked: boolean
+  mail_server_uid: string
+}
+
+export interface GetCurrentMailArg {
+  accountId: string
+}

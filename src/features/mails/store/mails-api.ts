@@ -6,9 +6,8 @@ import {
   MAIL_SLICE,
   MAILS_FOLDERS_SLICE,
 } from '@/lib/redux/api/api-slice'
-import type { UnknownAction } from '@reduxjs/toolkit'
-import type { ThunkDispatch } from '@reduxjs/toolkit'
 import type { RootState } from '@/lib/redux/store'
+import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   CreateFolderBody,
@@ -119,8 +118,7 @@ function mapMailToListItem(mail: RawMailListItem): ImapMessagesList {
     .replace(/\n/g, ' ')
     .trim()
     .substring(0, 100)
-  const apiSnippet =
-    typeof mail.snippet === 'string' ? mail.snippet.trim() : ''
+  const apiSnippet = typeof mail.snippet === 'string' ? mail.snippet.trim() : ''
   const snippet = apiSnippet || snippetFromContents
 
   return {
@@ -261,6 +259,18 @@ const getMailQuery = ({
   mailId: string
 }) =>
   `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}`
+
+const getEditMailQuery = ({
+  accountId = '0',
+  folder,
+  mailId,
+}: {
+  accountId?: string
+  folder: string
+  mailId: string
+}) => {
+  return getMailQuery({ accountId, folder, mailId }) + '/edit'
+}
 
 const moveToTrashQuery = ({
   accountId = '0',
@@ -713,8 +723,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             arg.folder,
             arg.mailId
           )
-          const alreadyApplied =
-            listItem != null && listItem.seen === seen
+          const alreadyApplied = listItem != null && listItem.seen === seen
 
           if (!alreadyApplied) {
             patchResults.push(
@@ -750,10 +759,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
         const notifKeys = getMailActionNotificationKeys(arg)
         if (notifKeys) {
-          await createApiNotificationHandler(dispatch, notifKeys)(
-            undefined,
-            { queryFulfilled }
-          )
+          await createApiNotificationHandler(dispatch, notifKeys)(undefined, {
+            queryFulfilled,
+          })
         }
       },
       invalidatesTags: (_result, _error, arg) =>
@@ -941,6 +949,40 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         })(undefined, { queryFulfilled })
       },
     }),
+
+    getEditMessage: builder.query<
+      ImapMessages,
+      {
+        folder: string
+        accountId?: string
+        mailId: string
+      }
+    >({
+      query: getEditMailQuery,
+      transformResponse: (
+        response: BackendResponse<ImapMessages> | ImapMessages
+      ) => {
+        let mail = 'data' in response ? response.data : response
+
+        if (mail.contents && mail.contents.length > 0 && !mail.body) {
+          mail = {
+            ...mail,
+            body: extractBodyFromContents(mail.contents),
+          }
+        }
+
+        if (mail.attachments) {
+          mail = {
+            ...mail,
+            attachments: normalizeAttachments(mail.attachments),
+          }
+        }
+        return mail
+      },
+      providesTags: (result, error, { mailId }) => [
+        { type: MAIL_SLICE, id: mailId },
+      ],
+    }),
   }),
   overrideExisting: true,
 })
@@ -949,6 +991,8 @@ export const {
   useGetFoldersQuery,
   useGetFolderMessagesQuery,
   useGetMailQuery,
+  useLazyGetMailQuery,
+  useLazyGetEditMessageQuery,
   useMoveToTrashMutation,
   useMailActionMutation,
   useDownloadMailMutation,
