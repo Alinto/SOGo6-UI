@@ -101,7 +101,7 @@ export function blockExternalImages(html: string): string {
  * @param html - HTML brut du mail
  * @returns HTML nettoyé et sécurisé
  */
-function sanitizeEmailHtml(html: string): string {
+export function sanitizeEmailHtml(html: string): string {
   if (!html || typeof html !== 'string') return ''
   
   try {

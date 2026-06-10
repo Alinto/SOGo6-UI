@@ -22,6 +22,88 @@
                 "developer_comment": "Informational message."
             }
         },
+        "mail_action": {
+            "spam": {
+                "successTitle": {
+                    "string": "Marked as spam"
+                },
+                "successMessage": {
+                    "string": "The message was moved to Junk."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not mark this message as spam."
+                }
+            },
+            "ham": {
+                "successTitle": {
+                    "string": "Moved to Inbox"
+                },
+                "successMessage": {
+                    "string": "The message was moved to your Inbox."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not restore this message."
+                }
+            },
+            "move": {
+                "successTitle": {
+                    "string": "Message moved"
+                },
+                "successMessage": {
+                    "string": "The message was moved successfully."
+                },
+                "errorTitle": {
+                    "string": "Move failed"
+                },
+                "errorMessage": {
+                    "string": "Could not move this message."
+                }
+            },
+            "tag": {
+                "successTitle": {
+                    "string": "Label applied"
+                },
+                "successMessage": {
+                    "string": "The label was applied to this message."
+                },
+                "errorTitle": {
+                    "string": "Label failed"
+                },
+                "errorMessage": {
+                    "string": "Could not apply the label."
+                }
+            },
+            "untag_label": {
+                "successTitle": {
+                    "string": "Label removed"
+                },
+                "successMessage": {
+                    "string": "The label was removed from this message."
+                },
+                "errorTitle": {
+                    "string": "Label failed"
+                },
+                "errorMessage": {
+                    "string": "Could not remove the label."
+                }
+            }
+        },
+        "mail_print": {
+            "popup_blocked": {
+                "title": {
+                    "string": "Print blocked"
+                },
+                "message": {
+                    "string": "Allow pop-ups for this site to print messages."
+                }
+            }
+        },
         "folders_purge": {
             "successTitle": {
                 "string": "Folder purged"

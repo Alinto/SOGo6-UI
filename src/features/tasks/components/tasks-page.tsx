@@ -38,7 +38,7 @@ function TasksPage() {
   const [deleteKey, setDeleteKey] = useState<string | null>(null)
 
   const editingKey = ui.editingTaskKey
-  const { data: editingTask } = useGetTaskByIdQuery(
+  const { currentData: editingTask } = useGetTaskByIdQuery(
     editingKey ?? skipToken
   )
 
@@ -103,7 +103,7 @@ function TasksPage() {
       <TaskForm
         open={ui.isFormOpen}
         calendars={writableCalendars}
-        task={editingTask ?? null}
+        task={editingKey ? (editingTask ?? null) : null}
         defaultCalendarKey={ui.selectedCalendarKey}
         onClose={closeForm}
         onSubmit={handleFormSubmit}

@@ -6,6 +6,8 @@ import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
   Archive,
+  Flame,
+  Inbox,
   Calendar,
   ChevronsUp,
   Forward,
@@ -30,6 +32,8 @@ interface ListItemDesktopProps {
   onToggleRead?: (id: string) => void
   onDelete?: (id: string) => void
   onArchive?: (id: string) => void
+  onSpam?: (id: string) => void
+  onMoveToInbox?: (id: string) => void
 }
 
 const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
@@ -39,8 +43,11 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   onToggleRead,
   onDelete,
   onArchive,
+  onSpam,
+  onMoveToInbox,
 }) => {
   const t = useTranslations('MAILS_LIST')
+  const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const { push } = useRouter()
   const { account, folder } = useParams()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
@@ -197,6 +204,33 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
               <Archive size={16} />
             </button>
           </TooltipWrapper>
+
+          {onMoveToInbox ? (
+            <TooltipWrapper content={tBar('move_to_inbox.string')} side="top">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveToInbox(data.id)
+                }}
+                className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+              >
+                <Inbox size={16} />
+              </button>
+            </TooltipWrapper>
+          ) : null}
+          {onSpam ? (
+            <TooltipWrapper content={tBar('report_spam.string')} side="top">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSpam(data.id)
+                }}
+                className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+              >
+                <Flame size={16} />
+              </button>
+            </TooltipWrapper>
+          ) : null}
         </div>
       </div>
       <Separator className="m-0" />

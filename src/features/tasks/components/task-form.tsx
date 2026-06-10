@@ -18,17 +18,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import type { Task, TaskCreateBody } from '@/features/tasks/tasks-types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import { memo, useEffect } from 'react'
+import TaskProgressField from '@/features/tasks/components/task-progress-field'
+import { clampTaskProgress } from '@/features/tasks/utils/task-progress'
+import { memo, useEffect, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
@@ -149,6 +152,23 @@ function TaskForm({
   }, [open, task, calendars, defaultCalendarKey, form])
 
   const status = form.watch('status')
+  const prevStatusRef = useRef<string | undefined>(undefined)
+
+  useEffect(() => {
+    if (!open) {
+      prevStatusRef.current = undefined
+      return
+    }
+    const prev = prevStatusRef.current
+    prevStatusRef.current = status
+    if (prev === undefined || prev === status) return
+
+    if (status === 'completed') {
+      form.setValue('percent_complete', 100)
+    } else if (status === 'needs_action' || status === 'cancelled') {
+      form.setValue('percent_complete', 0)
+    }
+  }, [status, open, form])
 
   const handleSubmit = form.handleSubmit(async (values) => {
     const body: TaskCreateBody = {
@@ -158,7 +178,12 @@ function TaskForm({
       date_start: fromDatetimeLocal(values.date_start ?? ''),
       status: values.status,
       priority: values.priority,
-      percent_complete: values.percent_complete ?? null,
+      percent_complete:
+        values.status === 'completed'
+          ? 100
+          : values.status === 'in_process'
+            ? clampTaskProgress(values.percent_complete)
+            : 0,
       visibility: values.visibility ?? null,
       completed_at:
         values.status === 'completed' ? new Date().toISOString() : null,
@@ -173,18 +198,22 @@ function TaskForm({
   })
 
   return (
-    <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
-      <SheetContent className="overflow-y-auto sm:max-w-md">
-        <SheetHeader>
-          <SheetTitle>
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent
+        className={cn(
+          'flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl'
+        )}
+      >
+        <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
+          <DialogTitle className="text-xl font-semibold tracking-tight">
             {isEdit ? t('form.edit_title.string') : t('form.create_title.string')}
-          </SheetTitle>
-        </SheetHeader>
+          </DialogTitle>
+        </DialogHeader>
 
         <Form {...form}>
           <form
             onSubmit={handleSubmit}
-            className="mt-6 space-y-4"
+            className="scrollbar-thin-gray space-y-4 overflow-y-auto px-6 py-6"
             data-testid="task-form"
           >
             <FormField
@@ -315,24 +344,15 @@ function TaskForm({
                 name="percent_complete"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>
-                      {t('form.percent_complete.string')}: {field.value ?? 0}%
-                    </FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        min={0}
-                        max={100}
-                        step={5}
+                      <TaskProgressField
                         value={field.value ?? 0}
-                        onChange={(e) =>
-                          field.onChange(
-                            Math.min(
-                              100,
-                              Math.max(0, Number(e.target.value) || 0)
-                            )
-                          )
-                        }
+                        onChange={(value) => {
+                          field.onChange(value)
+                          if (value > 0 && form.getValues('status') === 'needs_action') {
+                            form.setValue('status', 'in_process')
+                          }
+                        }}
                       />
                     </FormControl>
                   </FormItem>
@@ -361,8 +381,8 @@ function TaskForm({
             </div>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   )
 }
 

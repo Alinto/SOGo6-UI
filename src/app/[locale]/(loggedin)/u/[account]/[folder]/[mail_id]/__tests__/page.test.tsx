@@ -53,6 +53,10 @@ jest.mock('@/features/mails/components/mail/mail-action-bar', () =>
   jest.fn(() => <div data-testid="mail-actions-bar">Mail Actions Bar</div>)
 )
 
+jest.mock('@/features/mails/components/mail/mail-detail-action-bar', () =>
+  jest.fn(() => <div data-testid="mail-detail-action-bar">Mail Detail Actions</div>)
+)
+
 jest.mock('@/features/mails/components/mail/mail-content', () =>
   jest.fn(() => <div data-testid="mail-content">Mail Content</div>)
 )
@@ -90,6 +94,8 @@ describe('MailPage', () => {
     date: new Date().toISOString(),
     isMailingList: false,
     attachments: [],
+    seen: true,
+    flags: [],
   }
 
   beforeEach(() => {

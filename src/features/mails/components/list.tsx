@@ -11,34 +11,11 @@ import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useCallback, useEffect, useMemo } from 'react'
-import type { ImapFolder, ImapMessagesList } from '../mails-types'
-import {
-  useGetFoldersQuery,
-  useMailActionMutation,
-  useMoveToTrashMutation,
-} from '../store/mails-api'
+import { useMailItemActions } from '../hooks/use-mail-item-actions'
+import type { ImapMessagesList } from '../mails-types'
 import ListItem from './list-item'
 import ListItemClassic from './list-item-classic'
 import AddressBookListSkeleton from './skeletons/skeleton'
-
-/**
- * Repli si aucun dossier nommé « Archive » n’est trouvé dans l’arbre renvoyé par getFolders.
- * TODO: relier au chemin d’archive des préférences utilisateur / backend quand disponible.
- */
-const ARCHIVE_FOLDER = 'Archive'
-
-function findArchiveFolderPath(folders: ImapFolder[] | undefined): string | null {
-  if (!folders?.length) return null
-  for (const node of folders) {
-    if (node.name.toLowerCase() === 'archive') {
-      return node.path
-    }
-    const nested = node.subfolders ?? node.children ?? []
-    const found = findArchiveFolderPath(nested)
-    if (found) return found
-  }
-  return null
-}
 
 interface MessagesListProps {
   items: ImapMessagesList[]
@@ -73,54 +50,47 @@ const MessagesList: React.FC<MessagesListProps> = ({
         ? folder.join('/')
         : ''
 
-  const { data: foldersData } = useGetFoldersQuery({
-    accountId: accountIdStr,
-  })
-  const archiveDestination = useMemo(
-    () => findArchiveFolderPath(foldersData) ?? ARCHIVE_FOLDER,
-    [foldersData]
-  )
-
-  const [mailAction] = useMailActionMutation()
-  const [moveToTrash] = useMoveToTrashMutation()
+  const { deleteMail, toggleRead, archiveMail, markSpam, markHam, isJunk } =
+    useMailItemActions({
+      accountId: accountIdStr,
+      folder: folderStr,
+    })
 
   const handleToggleRead = useCallback(
     (id: string) => {
       const item = items.find((m) => String(m.id) === String(id))
       if (!item) return
-      mailAction({
-        accountId: accountIdStr,
-        folder: folderStr,
-        mailId: id,
-        action: item.seen ? 'untag' : 'tag',
-        data: ['\\Seen'],
-      })
+      void toggleRead(id, item.seen)
     },
-    [items, accountIdStr, folderStr, mailAction]
+    [items, toggleRead]
   )
 
   const handleDelete = useCallback(
     (id: string) => {
-      moveToTrash({
-        accountId: accountIdStr,
-        folder: folderStr,
-        mailId: id,
-      })
+      void deleteMail(id)
     },
-    [moveToTrash, accountIdStr, folderStr]
+    [deleteMail]
   )
 
   const handleArchive = useCallback(
     (id: string) => {
-      mailAction({
-        accountId: accountIdStr,
-        folder: folderStr,
-        mailId: id,
-        action: 'move',
-        data: archiveDestination,
-      })
+      void archiveMail(id)
     },
-    [mailAction, accountIdStr, folderStr, archiveDestination]
+    [archiveMail]
+  )
+
+  const handleSpam = useCallback(
+    (id: string) => {
+      void markSpam(id)
+    },
+    [markSpam]
+  )
+
+  const handleMoveToInbox = useCallback(
+    (id: string) => {
+      void markHam(id)
+    },
+    [markHam]
   )
 
   const selectedIds = useAppSelector(
@@ -177,6 +147,8 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     onToggleRead={handleToggleRead}
                     onDelete={handleDelete}
                     onArchive={handleArchive}
+                    onSpam={isJunk ? undefined : handleSpam}
+                    onMoveToInbox={isJunk ? handleMoveToInbox : undefined}
                   />
                 )
               return (
