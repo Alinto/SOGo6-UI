@@ -1,9 +1,11 @@
 import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic'
 import React from 'react'
+import { TooltipProvider, TooltipWrapper } from './tooltip'
 
 interface TagProps {
   value: string
+  tooltip?: string
   icon?: IconName
   action?: () => void
   className?: string
@@ -13,16 +15,17 @@ interface TagProps {
 
 const Tag: React.FC<TagProps> = ({
   value,
+  tooltip,
   action,
   icon,
   className,
   'aria-label': ariaLabel,
   'data-testid': dataTestId,
 }) => {
-  return (
+  const tag = (
     <div
       className={cn(
-        'tag bg-muted flex h-9 items-center rounded-full text-sm',
+        'tag bg-muted flex h-9 max-w-[200px] items-center rounded-full text-sm',
         icon ? 'gap-2 pr-1 pl-3' : 'px-3',
         className
       )}
@@ -41,6 +44,16 @@ const Tag: React.FC<TagProps> = ({
         </button>
       )}
     </div>
+  )
+
+  if (!tooltip) return tag
+
+  return (
+    <TooltipProvider>
+      <TooltipWrapper content={tooltip} side="top">
+        {tag}
+      </TooltipWrapper>
+    </TooltipProvider>
   )
 }
 

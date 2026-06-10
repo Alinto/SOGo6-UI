@@ -82,7 +82,7 @@ describe('Tooltip component', () => {
         (el) => !el.getAttribute('style')?.includes('position: absolute')
       )
       expect(visibleTooltip).toHaveClass(
-        'z-50',
+        'z-[9999]',
         'overflow-hidden',
         'rounded-md',
         'bg-primary',

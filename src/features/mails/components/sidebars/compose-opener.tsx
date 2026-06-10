@@ -32,20 +32,20 @@ const ComposeOpener: React.FC = () => {
       typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
         ? crypto.randomUUID()
         : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
-    dispatch(createDraft({ id }))
+    dispatch(createDraft({ draftId: id }))
   }
 
   return (
-      <SidebarMenuButton
-        onClick={handleOpenCompose}
-        className="h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
-      >
-        <span className="sr-only">{t('new_message.string')}</span>
-        <Pencil className="hidden h-5 w-5 transition-transform group-data-[collapsible=icon]:flex" />
-        <span className="truncate group-data-[collapsible=icon]:hidden">
-          {t('new_message.string')}
-        </span>
-      </SidebarMenuButton>
+    <SidebarMenuButton
+      onClick={handleOpenCompose}
+      className="h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
+    >
+      <span className="sr-only">{t('new_message.string')}</span>
+      <Pencil className="hidden h-5 w-5 transition-transform group-data-[collapsible=icon]:flex" />
+      <span className="truncate group-data-[collapsible=icon]:hidden">
+        {t('new_message.string')}
+      </span>
+    </SidebarMenuButton>
   )
 }
 

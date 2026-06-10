@@ -24,11 +24,13 @@ import { PenLine } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useCallback, useRef } from 'react'
 import {
+  MailComposeRecipient,
   updateIdentity,
   updateRecipients,
   updateSelectedSignatureKey,
   updateSubject,
 } from '../../store/mail-compose-slice'
+import { selectDraftData } from '../../store/mail-compose-selectors'
 
 interface ComposeHeaderProps {
   draftId: string
@@ -63,9 +65,32 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
     mailMaxRecipient,
   } = useProfile()
 
+  const { toRecipients, ccRecipients, bccRecipients } =
+    useAppSelector(selectDraftData(draftId)) ?? {}
+
   const [toTags, setToTags] = React.useState<RecipientTag[]>([])
   const [ccTags, setCcTags] = React.useState<RecipientTag[]>([])
   const [bccTags, setBccTags] = React.useState<RecipientTag[]>([])
+
+  const hasInitializedRecipients = React.useRef(false)
+
+  React.useEffect(() => {
+    if (hasInitializedRecipients.current) return
+    if (!toRecipients?.length && !ccRecipients?.length && !bccRecipients?.length)
+      return
+    hasInitializedRecipients.current = true
+    setToTags(
+      toRecipients?.map((r: MailComposeRecipient) => ({ id: crypto.randomUUID(), value: r.email }))
+    )
+    setCcTags(
+      ccRecipients?.map((r: MailComposeRecipient) => ({ id: crypto.randomUUID(), value: r.email }))
+    )
+    setBccTags(
+      bccRecipients?.map((r: MailComposeRecipient) => ({ id: crypto.randomUUID(), value: r.email }))
+    )
+    if (ccRecipients?.length > 0) setShowCc(true)
+    if (bccRecipients?.length > 0) setShowBcc(true)
+  }, [toRecipients, ccRecipients, bccRecipients])
 
   const dispatchRecipients = useCallback(
     (field: RecipientField, tags: RecipientTag[]) => {
@@ -266,33 +291,37 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
         </div>
       </div>
 
-      <div className="mt-2 flex w-full items-center">
-        <InputWithTags
-          tags={toTags}
-          remove={toHandlers.remove}
-          handleAdd={toHandlers.handleAdd}
-          name="to"
-          placeholder={t('to.string')}
-          disabled={isOverLimit}
-          className="w-full"
-        />
-        <div className="flex items-center">
-          <Button
-            variant="outline"
-            className={`rounded-none border-r-0 border-l-0 ${showCc ? 'bg-accent text-accent-foreground' : ''}`}
-            size="sm"
+      <div className="mt-2 flex w-full items-stretch">
+        <div className="flex-1 min-w-0">
+          <InputWithTags
+            tags={toTags}
+            remove={toHandlers.remove}
+            handleAdd={toHandlers.handleAdd}
+            name="to"
+            placeholder={t('to.string')}
+            disabled={isOverLimit}
+          />
+        </div>
+
+        <div className="flex items-center gap-2 px-2">
+          <span
+            role="button"
+            tabIndex={0}
             onClick={() => setShowCc((prev) => !prev)}
+            onKeyDown={(e) => e.key === 'Enter' && setShowCc((prev) => !prev)}
+            className={`cursor-pointer select-none text-sm ${showCc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           >
             {t('cc.string')}
-          </Button>
-          <Button
-            variant="outline"
-            className={`rounded-tl-none rounded-bl-none ${showBcc ? 'bg-accent text-accent-foreground' : ''}`}
-            size="sm"
+          </span>
+          <span
+            role="button"
+            tabIndex={0}
             onClick={() => setShowBcc((prev) => !prev)}
+            onKeyDown={(e) => e.key === 'Enter' && setShowBcc((prev) => !prev)}
+            className={`cursor-pointer select-none text-sm ${showBcc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           >
             {t('bcc.string')}
-          </Button>
+          </span>
         </div>
       </div>
 
@@ -311,7 +340,6 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
             name="cc"
             placeholder={t('cc.string')}
             disabled={isOverLimit}
-            className="w-full"
           />
         </div>
       )}
@@ -325,7 +353,6 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
             name="bcc"
             placeholder={t('bcc.string')}
             disabled={isOverLimit}
-            className="w-full"
           />
         </div>
       )}

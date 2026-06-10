@@ -113,47 +113,6 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   const [isMaximized, setIsMaximized] = React.useState(false)
   const dispatch = useAppDispatch()
 
-  // const draft = useAppSelector((state) => state.mailCompose.drafts[draftId])
-  // const mailKey = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.mailKey
-  // )
-  // const subject = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.subject ?? ''
-  // )
-  // const activeDraftId = useAppSelector(
-  //   (state) => state.mailCompose.activeDraftId
-  // )
-  // const isActive = activeDraftId === draftId
-
-  // const selectedPriority = useAppSelector(
-  //   (state) =>
-  //     state.mailCompose.drafts[draftId]?.priority ?? MAIL_PRIORITY_NORMAL
-  // )
-  // const requestReadReceipt = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.requestReadReceipt ?? false
-  // )
-  // const selectedIdentity = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.selectedIdentity ?? null
-  // )
-  // const toRecipients = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.to ?? []
-  // )
-  // const ccRecipients = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.cc ?? []
-  // )
-  // const bccRecipients = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.bcc ?? []
-  // )
-  // const body = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.body ?? ''
-  // )
-  // const isDirty = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.isDirty ?? false
-  // )
-  // const attachments = useAppSelector(
-  //   (state) => state.mailCompose.drafts[draftId]?.attachments ?? []
-  // )
-
   const {
     draft,
     mailKey,
@@ -168,6 +127,21 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     isDirty,
     attachments,
   } = useAppSelector(selectDraftData(draftId))
+
+  console.log('selectors', {
+    draft,
+    mailKey,
+    subject,
+    selectedPriority,
+    requestReadReceipt,
+    selectedIdentity,
+    toRecipients,
+    ccRecipients,
+    bccRecipients,
+    body,
+    isDirty,
+    attachments,
+  })
 
   const activeDraftId = useAppSelector(
     (state) => state.mailCompose.activeDraftId
@@ -204,8 +178,6 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
 
   const [showNoRecipientAlert, setShowNoRecipientAlert] = React.useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
-
-  console.log('isuploading', isUploading)
 
   React.useEffect(() => {
     if (isMobile) {
@@ -283,7 +255,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     }
   }
 
-  // Save draft immediately when compose is opened
+  // Save draft immediately when compose is selected
   React.useEffect(() => {
     if (isActive && draft) {
       handleSaveDraft(false, false, false)
@@ -358,7 +330,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         addAttachment({
           draftId,
           attachment: {
-            id: tempId,
+            draftId: tempId,
             name: file.name,
             size: file.size,
             type: file.type,
@@ -428,7 +400,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   const handleDeleteAttachment = async (attachment: MailComposeAttachment) => {
     // If not yet uploaded or no mailKey, just remove from store
     if (attachment.uploadStatus !== 'completed' || mailKey == null) {
-      dispatch(removeAttachment({ draftId, attachmentId: attachment.id }))
+      dispatch(removeAttachment({ draftId, attachmentId: attachment.draftId }))
       return
     }
     const result = await deleteAttachment({
@@ -438,7 +410,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     })
 
     if (!('error' in result)) {
-      dispatch(removeAttachment({ draftId, attachmentId: attachment.id }))
+      dispatch(removeAttachment({ draftId, attachmentId: attachment.draftId }))
     }
   }
 
@@ -472,10 +444,14 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       ? 'z-50 shadow-2xl'
       : 'z-40 shadow-md opacity-95 hover:opacity-100'
     if (isMinimized) return `h-12 w-80 ${zClass}`
-    if (isMaximized)
+    if (isMaximized) {
+      if (isMobile) {
+        return `fixed inset-0 h-full w-full max-w-full rounded-none border-0 ${zClass}`
+      }
       return `fixed inset-0 !m-auto h-[calc(100vh-2rem)] w-[calc(100vw-8rem)] max-w-[calc(100vw-8rem)] rounded-lg ${zClass}`
+    }
     return `h-[550px] w-[540px] max-w-[calc(100vw-2rem)] ${zClass}`
-  }, [isActive, isMinimized, isMaximized])
+  }, [isActive, isMinimized, isMaximized, isMobile])
 
   const isDraggable = !isMinimized && !isMaximized
 
@@ -495,7 +471,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         'bg-background pointer-events-auto flex flex-col border transition-all duration-300',
         !isMaximized && 'relative rounded-t-lg',
         getContainerClasses,
-        isMaximized && 'rounded-lg'
+        isMaximized && !isMobile && 'rounded-lg'
       )}
     >
       {/* ── Header ─────────────────────────────────────────────────────── */}
@@ -504,7 +480,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
           'bg-primary text-primary-foreground flex h-12 shrink-0 items-center rounded-t-lg px-4 select-none',
           isDraggable && 'cursor-grab active:cursor-grabbing',
           isMinimized && 'cursor-pointer',
-          isMaximized && 'rounded-t-lg'
+          isMaximized && (isMobile ? 'rounded-none' : 'rounded-t-lg')
         )}
         onPointerDown={
           isDraggable ? (event) => dragControls.start(event) : undefined
@@ -608,7 +584,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
             <div className="flex flex-col gap-1 border-t px-4 py-2">
               {attachments.map((att: MailComposeAttachment) => (
                 <div
-                  key={att.id}
+                  key={att.draftId}
                   className={cn(
                     'bg-muted flex flex-col rounded px-2 py-1.5 text-xs',
                     att.uploadStatus === 'error' && 'border-destructive border'
@@ -740,27 +716,36 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
                               dispatch(
                                 updatePriority({
                                   draftId,
-                                  priority:
-                                    value as MailComposeDraft['priority'],
+                                  priority: Number(
+                                    value
+                                  ) as MailComposeDraft['priority'],
                                 })
                               )
                             }
                           >
                             <DropdownMenuRadioItem
-                              value={MAIL_PRIORITY_HIGHEST}
+                              value={MAIL_PRIORITY_HIGHEST.toString()}
                             >
                               {t('highest.string')}
                             </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value={MAIL_PRIORITY_HIGH}>
+                            <DropdownMenuRadioItem
+                              value={MAIL_PRIORITY_HIGH.toString()}
+                            >
                               {t('high.string')}
                             </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value={MAIL_PRIORITY_NORMAL}>
+                            <DropdownMenuRadioItem
+                              value={MAIL_PRIORITY_NORMAL.toString()}
+                            >
                               {t('normal.string')}
                             </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value={MAIL_PRIORITY_LOW}>
+                            <DropdownMenuRadioItem
+                              value={MAIL_PRIORITY_LOW.toString()}
+                            >
                               {t('low.string')}
                             </DropdownMenuRadioItem>
-                            <DropdownMenuRadioItem value={MAIL_PRIORITY_LOWEST}>
+                            <DropdownMenuRadioItem
+                              value={MAIL_PRIORITY_LOWEST.toString()}
+                            >
                               {t('lowest.string')}
                             </DropdownMenuRadioItem>
                           </DropdownMenuRadioGroup>

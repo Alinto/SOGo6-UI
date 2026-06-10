@@ -1,9 +1,4 @@
 import {
-  MAX_OPEN_DRAFTS,
-  type MailComposeDraft,
-  type MailComposeState,
-} from '@/features/mails/store/mail-compose-slice'
-import {
   selectActiveDraft,
   selectActiveDraftId,
   selectAllDrafts,
@@ -15,13 +10,20 @@ import {
   selectOpenDraftIds,
   selectSendError,
 } from '@/features/mails/store/mail-compose-selectors'
+import {
+  MAX_OPEN_DRAFTS,
+  type MailComposeDraft,
+  type MailComposeState,
+} from '@/features/mails/store/mail-compose-slice'
 
 type RootState = {
   mailCompose: MailComposeState
 }
 
-const createDraft = (overrides: Partial<MailComposeDraft> = {}): MailComposeDraft => ({
-  id: 'draft-1',
+const createDraft = (
+  overrides: Partial<MailComposeDraft> = {}
+): MailComposeDraft => ({
+  draftId: 'draft-1',
   to: [],
   cc: [],
   bcc: [],
@@ -36,14 +38,12 @@ const createDraft = (overrides: Partial<MailComposeDraft> = {}): MailComposeDraf
   ...overrides,
 })
 
-const createState = (
-  overrides: Partial<MailComposeState> = {}
-): RootState => ({
+const createState = (overrides: Partial<MailComposeState> = {}): RootState => ({
   mailCompose: {
     drafts: {
       'draft-1': createDraft(),
       'draft-2': createDraft({
-        id: 'draft-2',
+        draftId: 'draft-2',
         subject: 'Second draft',
         createdAt: 2,
         updatedAt: 2,
@@ -87,7 +87,9 @@ describe('mail-compose-selectors', () => {
     it('should return the active draft', () => {
       const state = createState({ activeDraftId: 'draft-2' })
 
-      expect(selectActiveDraft(state)).toEqual(state.mailCompose.drafts['draft-2'])
+      expect(selectActiveDraft(state)).toEqual(
+        state.mailCompose.drafts['draft-2']
+      )
     })
 
     it('should return null when no active draft id is set', () => {
@@ -125,7 +127,11 @@ describe('mail-compose-selectors', () => {
         openDraftIds: ['draft-3', 'draft-1', 'draft-2'],
       })
 
-      expect(selectOpenDraftIds(state)).toEqual(['draft-3', 'draft-1', 'draft-2'])
+      expect(selectOpenDraftIds(state)).toEqual([
+        'draft-3',
+        'draft-1',
+        'draft-2',
+      ])
     })
 
     it('should allow opening a new draft below the limit', () => {
@@ -161,4 +167,3 @@ describe('mail-compose-selectors', () => {
     })
   })
 })
-

@@ -1,8 +1,9 @@
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import {
   Calendar,
@@ -19,6 +20,14 @@ import { useTranslations } from 'next-intl'
 import { useParams, usePathname } from 'next/navigation'
 import React, { useState } from 'react'
 import { ImapMessagesList } from '../mails-types'
+import {
+  createDraft,
+  selectAllDrafts,
+  selectOpenDraftIds,
+  setActiveDraft,
+  useLazyGetEditMessageQuery,
+} from '../store'
+import { apiDataToMailComposeDraft } from '../utils/mail-compose-from-api'
 import { formatDate } from './list-item-utils'
 
 interface ListItemClassicProps {
@@ -35,19 +44,28 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   onToggleRead,
 }) => {
   const t = useTranslations('MAILS_LIST')
-  const tMinutesAgo = (count: number) =>
-    t('time.minutes_ago.string', { count })
+  const tMinutesAgo = (count: number) => t('time.minutes_ago.string', { count })
   const { push } = useRouter()
   const { account, folder } = useParams()
   const pathname = usePathname()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
-  const { id, from, flagged, hasAttachment } = data
+  const { id, from, to, flagged, hasAttachment } = data
   const [isHovered, setIsHovered] = useState(false)
   const showHighPriority = data.priority <= 2
   const showSnippet = data.snippet.trim().length > 0
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
+  const isDraftsFolder = folderString.toLocaleLowerCase() === 'drafts'
+  const recipient = to[0]
+  const displayName = isDraftsFolder
+    ? recipient?.name || recipient?.email || ''
+    : from.name || from.email
+  const dispatch = useAppDispatch()
+  const openDraftIds = useAppSelector(selectOpenDraftIds)
+  const allDrafts = useAppSelector(selectAllDrafts)
+
+  const [triggerGetEditMessage] = useLazyGetEditMessageQuery()
 
   // Highlight when this mail is open in the right panel
   const isOpenInPanel = decodeURIComponent(pathname).endsWith(`/${id}`)
@@ -70,6 +88,37 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
           push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
+
+          if (isDraftsFolder) {
+            const existingDraftId = openDraftIds.find(
+              (draftId) => allDrafts[draftId]?.mailKey === id
+            )
+            if (existingDraftId) {
+              dispatch(setActiveDraft(existingDraftId))
+              return
+            }
+
+            void (async () => {
+              const result = await triggerGetEditMessage({
+                folder: folderString,
+                mailId: id,
+                accountId: accountString,
+              })
+              const draftId =
+                typeof crypto !== 'undefined' &&
+                typeof crypto.randomUUID === 'function'
+                  ? crypto.randomUUID()
+                  : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+              dispatch(
+                createDraft({
+                  draftId,
+                  initialData: apiDataToMailComposeDraft(draftId, {
+                    ...result.data,
+                  }),
+                })
+              )
+            })()
+          }
         }}
       >
         {(isHovered || isSelected) && (
@@ -100,7 +149,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
             <span
               className={`text-md min-w-0 truncate ${data.seen ? '' : 'font-semibold'}`}
             >
-              {from.name || from.email}
+              {displayName}
             </span>
             <div className="flex shrink-0 items-center gap-1">
               {onToggleRead && (

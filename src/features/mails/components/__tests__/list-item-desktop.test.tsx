@@ -1,6 +1,10 @@
+import { mailComposeReducer } from '@/features/mails/store'
+import { apiSlice } from '@/lib/redux/api/api-slice'
+import { configureStore } from '@reduxjs/toolkit'
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
+import { Provider } from 'react-redux'
 import ListItemDesktop from '../list-item-desktop'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
@@ -79,39 +83,52 @@ const defaultProps = {
   onHandleCheckboxClick: jest.fn(),
 }
 
+const createTestStore = () =>
+  configureStore({
+    reducer: {
+      mailCompose: mailComposeReducer,
+      [apiSlice.reducerPath]: apiSlice.reducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(apiSlice.middleware),
+  })
+
+const renderWithRedux = (ui: React.ReactElement) =>
+  render(<Provider store={createTestStore()}>{ui}</Provider>)
+
 beforeEach(() => jest.clearAllMocks())
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 describe('ListItemDesktop', () => {
   it('renders sender name and subject', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByText('John Doe')).toBeInTheDocument()
     expect(screen.getByText('Test Email Subject')).toBeInTheDocument()
   })
 
   it('renders avatar with sender initial', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByTestId('avatar-fallback')).toHaveTextContent('J')
   })
 
   it('shows attachment icon when hasAttachment is true', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByTestId('paperclip-icon')).toBeInTheDocument()
   })
 
   it('hides attachment icon when hasAttachment is false', () => {
-    render(<ListItemDesktop {...defaultProps} data={{ ...mockData, hasAttachment: false }} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} data={{ ...mockData, hasAttachment: false }} />)
     expect(screen.queryByTestId('paperclip-icon')).not.toBeInTheDocument()
   })
 
   it('shows checkbox when isSelected is true', () => {
-    render(<ListItemDesktop {...defaultProps} isSelected />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} isSelected />)
     expect(screen.getByTestId('checkbox')).toBeInTheDocument()
     expect(screen.getByTestId('checkbox')).toBeChecked()
   })
 
   it('shows action buttons on hover', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
     expect(screen.getByTestId('trash-icon')).toBeInTheDocument()
@@ -119,14 +136,14 @@ describe('ListItemDesktop', () => {
   })
 
   it('shows checkbox on hover', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
     expect(screen.getByTestId('checkbox')).toBeInTheDocument()
   })
 
   it('hides checkbox on mouse leave', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
     fireEvent.mouseLeave(container)
@@ -134,28 +151,28 @@ describe('ListItemDesktop', () => {
   })
 
   it('calls onHandleCheckboxClick when checkbox clicked', () => {
-    render(<ListItemDesktop {...defaultProps} isSelected />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} isSelected />)
     fireEvent.click(screen.getByTestId('checkbox'))
     expect(defaultProps.onHandleCheckboxClick).toHaveBeenCalledWith(expect.any(Object), mockData)
   })
 
   it('applies font-semibold for unread emails', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByText('John Doe')).toHaveClass('font-semibold')
   })
 
   it('applies muted style for read emails', () => {
-    render(<ListItemDesktop {...defaultProps} data={{ ...mockData, seen: true }} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} data={{ ...mockData, seen: true }} />)
     expect(screen.getByText('John Doe')).toHaveClass('text-muted-foreground')
   })
 
   it('falls back to email when name is empty', () => {
-    render(<ListItemDesktop {...defaultProps} data={{ ...mockData, from: { name: '', email: 'john@example.com' } }} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} data={{ ...mockData, from: { name: '', email: 'john@example.com' } }} />)
     expect(screen.getByText('john@example.com')).toBeInTheDocument()
   })
 
   it('renders separator', () => {
-    render(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByTestId('separator')).toBeInTheDocument()
   })
 })
