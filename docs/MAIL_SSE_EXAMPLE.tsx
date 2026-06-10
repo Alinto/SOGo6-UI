@@ -9,7 +9,7 @@
 
 import type { ImapMessagesList } from '@/features/mails/mails-types'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
-import { useMailReceivedListener } from '@/lib/redux/hooks/use-mail-received-listener'
+import { useMailReceivedListener } from '@/lib/redux/sse/hooks/use-mail-received-listener'
 
 interface MailListExampleProps {
   folder?: string
@@ -33,7 +33,7 @@ export function MailListExample({ folder = 'INBOX' }: MailListExampleProps) {
 
   // Fetch the mail messages for the folder
   const {
-    data: messagesData,
+    data: folderMessages,
     isLoading,
     isFetching,
     error,
@@ -63,7 +63,7 @@ export function MailListExample({ folder = 'INBOX' }: MailListExampleProps) {
   }
 
   // Empty state
-  if (!messagesData?.messages || messagesData.messages.length === 0) {
+  if (!folderMessages?.mails || folderMessages.mails.length === 0) {
     return (
       <div className="py-12 text-center">
         <p className="text-gray-500">No mails in {folder}</p>
@@ -82,19 +82,19 @@ export function MailListExample({ folder = 'INBOX' }: MailListExampleProps) {
           )}
         </h2>
         <span className="text-sm text-gray-600">
-          {messagesData.messages.length} of {messagesData.total} mails
+          {folderMessages.mails.length} of {folderMessages.total} mails
         </span>
       </div>
 
       {/* Mail list */}
       <div className="divide-y overflow-hidden rounded-lg border">
-        {messagesData.messages.map((mail) => (
+        {folderMessages.mails.map((mail) => (
           <MailItemExample key={mail.id} mail={mail} />
         ))}
       </div>
 
       {/* Pagination info */}
-      {messagesData.hasNextPage && (
+      {folderMessages.hasNextPage && (
         <button className="w-full rounded px-4 py-2 text-sm text-blue-600 hover:bg-blue-50">
           Load more mails
         </button>

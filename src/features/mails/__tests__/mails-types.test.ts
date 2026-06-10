@@ -20,11 +20,12 @@ describe('Mails Types', () => {
     const folder: ImapFolder = {
       name: 'INBOX',
       path: 'INBOX',
-      unseen: 5,
+      unseen_count: 5,
       messages: 10,
       flags: ['\\Seen'],
       delimiter: '/',
       readOnly: false,
+      selectable: true,
     }
     expect(folder.name).toBe('INBOX')
   })
@@ -40,6 +41,11 @@ describe('Mails Types', () => {
       flagged: false,
       hasAttachment: false,
       snippet: 'Test snippet',
+      answered: false,
+      forwarded: false,
+      deleted: false,
+      priority: 3,
+      mailType: [],
     }
     expect(message.id).toBe('1')
   })

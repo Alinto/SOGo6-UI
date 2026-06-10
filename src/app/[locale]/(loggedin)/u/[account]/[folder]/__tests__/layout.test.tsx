@@ -1,16 +1,45 @@
 import * as userPreferencesApi from '@/features/app-data/store/user-preferences-api'
 import * as useIsMobileModule from '@/hooks/use-mobile'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import Layout from '../layout'
+
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}))
+
+jest.mock('@/components/sidebar/module-rail', () => ({
+  __esModule: true,
+  default: () => <div data-testid="module-rail">Module Rail</div>,
+}))
 
 // Mock the dependencies
 jest.mock('@/hooks/use-mobile')
 jest.mock('@/features/app-data/store/user-preferences-api')
 jest.mock('@/components/ui/sidebar', () => ({
   SIDEBAR_WIDTH: '16rem',
-  SidebarProvider: ({ children, className, ...props }: any) => (
-    <div data-testid="sidebar-provider" className={className} {...props}>
+  SidebarProvider: ({
+    children,
+    className,
+    name,
+    open: _open,
+    defaultOpen: _defaultOpen,
+    width: _width,
+    ...rest
+  }: {
+    children: ReactNode
+    className?: string
+    name?: string
+    open?: boolean
+    defaultOpen?: boolean
+    width?: string
+  }) => (
+    <div
+      data-testid="sidebar-provider"
+      data-name={name}
+      className={className}
+      {...rest}
+    >
       {children}
     </div>
   ),
@@ -19,8 +48,12 @@ jest.mock('@/components/ui/sidebar', () => ({
       {children}
     </div>
   ),
-  SidebarTrigger: ({ ...props }: any) => (
-    <button data-testid="sidebar-trigger" {...props}>
+  SidebarTrigger: ({
+    onClose: _onClose,
+    reverseIcon: _reverseIcon,
+    ...props
+  }: any) => (
+    <button type="button" data-testid="sidebar-trigger" {...props}>
       Trigger
     </button>
   ),
@@ -30,23 +63,6 @@ jest.mock('@/features/mails/components/sidebars/fast-access/content', () => {
     return <div data-testid="fast-access-content">{name}</div>
   }
 })
-jest.mock(
-  '@/features/mails/components/sidebars/fast-access/sidebar-fast-access',
-  () => {
-    return function MockSidebarFastAccess({ handleOpen }: any) {
-      return (
-        <div data-testid="sidebar-fast-access">
-          <button
-            data-testid="fast-access-btn"
-            onClick={() => handleOpen('address-book')}
-          >
-            Address Book
-          </button>
-        </div>
-      )
-    }
-  }
-)
 jest.mock('@/features/mails/components/list/list-toolbar', () => ({
   __esModule: true,
   default: () => <div data-testid="list-toolbar">Toolbar</div>,
@@ -100,23 +116,6 @@ describe('Mail Folder Layout', () => {
     expect(contentDiv).toHaveClass('w-full', 'overflow-hidden', 'p-1')
   })
 
-  it('should render SidebarFastAccess component', () => {
-    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
-    expect(screen.getByTestId('sidebar-fast-access')).toBeInTheDocument()
-  })
-
-  it('should toggle fast access sidebar when button is clicked', async () => {
-    const user = userEvent.setup()
-    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
-
-    const fastAccessBtn = screen.getByTestId('fast-access-btn')
-    await user.click(fastAccessBtn)
-
-    await waitFor(() => {
-      expect(screen.getByTestId('fast-access-content')).toBeInTheDocument()
-    })
-  })
-
   it('should show SidebarTrigger on desktop', () => {
     ;(useIsMobileModule.useIsMobile as jest.Mock).mockReturnValue(false)
     render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
@@ -133,19 +132,6 @@ describe('Mail Folder Layout', () => {
     expect(trigger).not.toBeInTheDocument()
   })
 
-  it('should handle fast access toggle for the same panel', async () => {
-    const user = userEvent.setup()
-    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
-
-    const fastAccessBtn = screen.getByTestId('fast-access-btn')
-
-    // First click - opens
-    await user.click(fastAccessBtn)
-    await waitFor(() => {
-      expect(screen.getByTestId('fast-access-content')).toBeInTheDocument()
-    })
-  })
-
   it('should render with correct sidebar provider configuration', () => {
     const { container } = render(
       <Layout classic={mockClassic}>{mockChildren}</Layout>
@@ -153,7 +139,8 @@ describe('Mail Folder Layout', () => {
     const sidebarProviders = container.querySelectorAll(
       '[data-testid="sidebar-provider"]'
     )
-    expect(sidebarProviders.length).toBeGreaterThanOrEqual(2)
+    // Nested: right-global-rail + right-mail-sidebar-2
+    expect(sidebarProviders.length).toBe(2)
   })
 
   it('should use header height CSS variable', () => {

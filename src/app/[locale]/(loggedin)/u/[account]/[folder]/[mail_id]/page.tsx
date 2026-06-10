@@ -66,6 +66,7 @@ const MailPage: React.FC = () => {
   const { data, isLoading, isError } = useGetMailQuery({
     folder,
     mailId: mail_id,
+    accountId: account,
   })
 
   if (isLoading) return <MailDetailSkeleton />

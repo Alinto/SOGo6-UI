@@ -1,23 +1,42 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useRouter } from '@/lib/i18n/navigation'
-import { Paperclip, Star } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  Calendar,
+  ChevronsUp,
+  Forward,
+  Mail,
+  MailOpen,
+  Paperclip,
+  Reply,
+  Star,
+  User,
+} from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useParams, usePathname } from 'next/navigation'
 import React, { useState } from 'react'
 import { ImapMessagesList } from '../mails-types'
+import { formatDate } from './list-item-utils'
 
 interface ListItemClassicProps {
   data: ImapMessagesList
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
+  onToggleRead?: (id: string) => void
 }
 
 const ListItemClassic: React.FC<ListItemClassicProps> = ({
   data,
   isSelected,
   onHandleCheckboxClick,
+  onToggleRead,
 }) => {
+  const t = useTranslations('MAILS_LIST')
+  const tMinutesAgo = (count: number) =>
+    t('time.minutes_ago.string', { count })
   const { push } = useRouter()
   const { account, folder } = useParams()
   const pathname = usePathname()
@@ -25,6 +44,10 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
   const { id, from, flagged, hasAttachment } = data
   const [isHovered, setIsHovered] = useState(false)
+  const showHighPriority = data.priority <= 2
+  const showSnippet = data.snippet.trim().length > 0
+  const hasEventType = data.mailType.includes('event')
+  const hasContactType = data.mailType.includes('contact')
 
   // Highlight when this mail is open in the right panel
   const isOpenInPanel = decodeURIComponent(pathname).endsWith(`/${id}`)
@@ -34,46 +57,15 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
       ? 'bg-secondary'
       : ''
 
-  function formatDate(dateString: string): string {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMinutes = Math.floor(diffMs / (1000 * 60))
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-
-    const isToday =
-      date.getDate() === now.getDate() &&
-      date.getMonth() === now.getMonth() &&
-      date.getFullYear() === now.getFullYear()
-
-    const startOfWeek = new Date(now)
-    startOfWeek.setDate(now.getDate() - now.getDay())
-    startOfWeek.setHours(0, 0, 0, 0)
-    const isCurrentWeek = date >= startOfWeek && date < now && !isToday
-
-    if (diffHours < 1 && isToday) {
-      return `${diffMinutes} min ago`
-    } else if (isToday) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    } else if (isCurrentWeek) {
-      return date.toLocaleDateString([], { weekday: 'long' }) // e.g., "Monday"
-    } else if (date.getFullYear() < now.getFullYear()) {
-      return date.toLocaleDateString([], {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      })
-    } else {
-      return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
-    }
-  }
-
   return (
     <>
       <div
-        className={`hover:bg-secondary flex h-14 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75 ${
-          isSelectedClass
-        } ${data.seen ? '' : 'bg-primary/15 font-semibold'} `}
+        className={cn(
+          'group hover:bg-secondary flex min-h-14 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75',
+          isSelectedClass,
+          data.seen ? '' : 'bg-primary/15 font-semibold',
+          data.deleted && 'opacity-60'
+        )}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => {
@@ -92,11 +84,8 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
           </span>
         )}
         <Avatar className={!isHovered && !isSelected ? 'h-6 w-6' : 'hidden'}>
-          <AvatarImage src="/images/account-avatar.svg" />
           <AvatarFallback>
-            {from.name.length
-              ? from.name[0]?.toUpperCase()
-              : from.email[0]?.toUpperCase()}
+            {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
           </AvatarFallback>
         </Avatar>
         <div>
@@ -106,24 +95,95 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
             strokeWidth={1}
           />
         </div>
-        <div className="flex w-full flex-col justify-center">
-          <div className="flex w-full items-center justify-between">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
+          <div className="flex w-full items-center justify-between gap-2">
             <span
-              className={`text-md truncate ${data.seen ? '' : 'font-semibold'}`}
+              className={`text-md min-w-0 truncate ${data.seen ? '' : 'font-semibold'}`}
             >
               {from.name || from.email}
             </span>
-            <span className="text-muted-foreground ml-2 text-sm whitespace-nowrap">
-              {formatDate(data.date)}
-            </span>
+            <div className="flex shrink-0 items-center gap-1">
+              {onToggleRead && (
+                <div className="hidden group-hover:flex">
+                  <TooltipWrapper
+                    content={
+                      data.seen
+                        ? t('actions.mark_as_unread.string')
+                        : t('actions.mark_as_read.string')
+                    }
+                    side="top"
+                  >
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onToggleRead(data.id)
+                      }}
+                      className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                    >
+                      {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
+                    </button>
+                  </TooltipWrapper>
+                </div>
+              )}
+              <span className="text-muted-foreground shrink-0 text-sm whitespace-nowrap">
+                {formatDate(data.date, undefined, tMinutesAgo)}
+              </span>
+            </div>
           </div>
-          <div className="flex w-full items-center justify-between">
-            <span
-              className={`truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
-            >
-              {data.subject}
-            </span>
-            {hasAttachment && <Paperclip className="ml-2 h-4 w-4 shrink-0" />}
+          <div className="flex w-full min-w-0 items-start justify-between gap-2">
+            <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <div
+                className={`flex min-w-0 items-center gap-1 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
+              >
+                {showHighPriority && (
+                  <ChevronsUp
+                    className="h-4 w-4 shrink-0 text-orange-600"
+                    aria-hidden
+                  />
+                )}
+                {hasEventType && (
+                  <Calendar
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                {hasContactType && (
+                  <User
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                {data.answered && (
+                  <Reply
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                {data.forwarded && (
+                  <Forward
+                    className="text-muted-foreground h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                )}
+                <span
+                  className={cn(
+                    'min-w-0 flex-1 truncate',
+                    data.deleted && 'line-through'
+                  )}
+                >
+                  {data.subject}
+                </span>
+              </div>
+              {showSnippet && (
+                <p className="text-muted-foreground truncate text-sm">
+                  {data.snippet}
+                </p>
+              )}
+            </div>
+            {hasAttachment && (
+              <Paperclip className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
+            )}
           </div>
         </div>
       </div>

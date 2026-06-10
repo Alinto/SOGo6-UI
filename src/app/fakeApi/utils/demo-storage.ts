@@ -3,11 +3,18 @@ import { NextRequest, NextResponse } from 'next/server'
 /**
  * Configuration for cookies for demo data storage
  */
+function isRequestSecure(req: NextRequest): boolean {
+  const forwarded = req.headers.get('x-forwarded-proto')
+  if (forwarded) {
+    return forwarded.split(',')[0]?.trim() === 'https'
+  }
+  return req.nextUrl.protocol === 'https:'
+}
+
 const COOKIE_CONFIG = {
   maxAge: 60 * 60 * 24 * 30, // 30 jours
   sameSite: 'lax' as const,
   httpOnly: false, // Necessary for the client to read (if needed)
-  secure: process.env.NODE_ENV === 'production',
 }
 
 /**
@@ -82,7 +89,8 @@ export function getDemoData<T>(
 export function setDemoData<T>(
   response: NextResponse,
   cookieName: string,
-  data: T
+  data: T,
+  req: NextRequest
 ): void {
   try {
     // Serialize the data to JSON
@@ -98,8 +106,11 @@ export function setDemoData<T>(
       )
     }
 
-    // Set the cookie in the response
-    response.cookies.set(cookieName, jsonString, COOKIE_CONFIG)
+    // Match request scheme so cookies persist on HTTP Docker demos (Secure is ignored on HTTP).
+    response.cookies.set(cookieName, jsonString, {
+      ...COOKIE_CONFIG,
+      secure: isRequestSecure(req),
+    })
   } catch (error) {
     // Log the error but do not block the response
     console.error(

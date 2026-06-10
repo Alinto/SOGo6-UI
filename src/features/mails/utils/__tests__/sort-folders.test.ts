@@ -10,11 +10,12 @@ import {
 function make(overrides: Partial<ImapFolder> & { name: string }): ImapFolder {
   return {
     path: overrides.path ?? overrides.name,
-    unseen: 0,
+    unseen_count: 0,
     messages: 0,
     flags: [],
     delimiter: '/',
     readOnly: false,
+    selectable: true,
     ...overrides,
   }
 }
@@ -250,14 +251,14 @@ describe('sortImapFoldersTree', () => {
         name: 'Inbox',
         type: 'INBOX',
         path: 'mail/INBOX',
-        unseen: 3,
+        unseen_count: 3,
         messages: 10,
         flags: ['\\HasNoChildren'],
         default: true,
       })
       const [out] = sortImapFoldersTree([folder])
       expect(out.path).toBe('mail/INBOX')
-      expect(out.unseen).toBe(3)
+      expect(out.unseen_count).toBe(3)
       expect(out.messages).toBe(10)
       expect(out.flags).toEqual(['\\HasNoChildren'])
       expect(out.default).toBe(true)

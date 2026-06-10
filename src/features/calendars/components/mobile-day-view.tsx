@@ -134,7 +134,7 @@ export function MobileDayView({
                   )
                   .map((event) => {
                     const color =
-                      calendarColorMap[event.calendar_id] || defaultColor
+                      calendarColorMap[event.calendar_id ?? ''] || defaultColor
                     const startTime = new Date(event.start)
                     const endTime = new Date(event.end)
 

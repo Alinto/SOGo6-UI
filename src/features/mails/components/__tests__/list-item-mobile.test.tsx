@@ -47,6 +47,11 @@ jest.mock('lucide-react', () => ({
       ⭐
     </button>
   )),
+  Calendar: jest.fn(() => <span data-testid="calendar-icon" />),
+  ChevronsUp: jest.fn(() => <span data-testid="chevrons-up-icon" />),
+  Forward: jest.fn(() => <span data-testid="forward-icon" />),
+  Reply: jest.fn(() => <span data-testid="reply-icon" />),
+  User: jest.fn(() => <span data-testid="user-icon" />),
 }))
 
 jest.mock('../list-item-utils', () => ({
@@ -72,6 +77,11 @@ describe('ListItemMobile Component', () => {
     flagged: false,
     hasAttachment: true,
     snippet: 'This is a test email snippet',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [] as string[],
   }
   const mockOnHandleCheckboxClick = jest.fn()
 

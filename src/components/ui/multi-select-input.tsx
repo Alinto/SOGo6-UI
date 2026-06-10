@@ -1,7 +1,7 @@
 'use client'
 
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { XCircle } from 'lucide-react'
 import * as React from 'react'
 
@@ -101,7 +101,9 @@ export const MultiSelectInput: React.FC<MultiSelectInputProps> = ({
                 if (disabled) return
                 removeTagAt(idx)
               }}
-              className="-mr-1 ml-1 inline-flex h-4 w-4 items-center justify-center rounded hover:bg-white/10"
+              className={tagDismissButtonClassName(
+                '-mr-1 ml-1 h-4 w-4 rounded hover:bg-white/10'
+              )}
             >
               <XCircle className="h-3 w-3" />
             </button>

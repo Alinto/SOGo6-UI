@@ -5,20 +5,39 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import {
+  useDeleteCalendarMutation,
+  useDeleteExternalCalendarMutation,
+} from '@/features/calendars/store/calendars-api'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import React, { memo } from 'react'
 
 interface DeleteActionProps {
   id: string
   name?: string
+  sourceType?: string
+  onClose?: () => void
 }
 
-const DeleteAction: React.FC<DeleteActionProps> = ({ id }) => {
+const DeleteAction: React.FC<DeleteActionProps> = ({ id, sourceType, onClose }) => {
   const t = useTranslations('CALENDARS')
+  const [deleteCalendar, { isLoading: isDeletingLocal }] =
+    useDeleteCalendarMutation()
+  const [deleteExternalCalendar, { isLoading: isDeletingExternal }] =
+    useDeleteExternalCalendarMutation()
+  const isLoading = isDeletingLocal || isDeletingExternal
 
-  const handleDelete = () => {
-    // TODO: Implement delete mutation
-    console.log('Delete calendar:', id)
+  const handleDelete = async () => {
+    try {
+      if (sourceType === 'ics') {
+        await deleteExternalCalendar(id).unwrap()
+      } else {
+        await deleteCalendar(id).unwrap()
+      }
+      onClose?.()
+    } catch {
+      // Notifications are handled by RTK Query onQueryStarted.
+    }
   }
 
   return (
@@ -30,10 +49,10 @@ const DeleteAction: React.FC<DeleteActionProps> = ({ id }) => {
         </DialogDescription>
       </DialogHeader>
       <DialogFooter>
-        <Button variant="outline" onClick={() => {}}>
+        <Button variant="outline" onClick={onClose}>
           {t('forms.deleteCalendar.cancel.string')}
         </Button>
-        <Button variant="destructive" onClick={handleDelete}>
+        <Button variant="destructive" disabled={isLoading} onClick={handleDelete}>
           {t('forms.deleteCalendar.confirm.string')}
         </Button>
       </DialogFooter>
@@ -41,4 +60,4 @@ const DeleteAction: React.FC<DeleteActionProps> = ({ id }) => {
   )
 }
 
-export default DeleteAction
+export default memo(DeleteAction)

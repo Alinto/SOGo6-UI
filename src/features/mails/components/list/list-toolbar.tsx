@@ -7,17 +7,18 @@ import ListFilterDropdown from '@/features/mails/components/list/list-filter-dro
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListSort from '@/features/mails/components/list/list-sort'
 import { nameSelector } from '@/features/mails/components/utils'
+import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
-import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
+import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
 import { Archive, Flame, Mail, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import React, { useMemo } from 'react'
 
 const ListToolbar: React.FC = () => {
@@ -25,18 +26,31 @@ const ListToolbar: React.FC = () => {
   const tCommons = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
   const dispatch = useAppDispatch()
-  const { folder } = useParams()
+  const { folder, account } = useParams()
   const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const accountString = Array.isArray(account) ? account[0] : (account ?? '0')
+  const searchParams = useSearchParams()
+  const activeFilter = searchParams.get('filter') ?? 'all'
+  const clientFilterActive = activeFilter !== 'all'
 
-  const { data } = useGetFolderMessagesQuery({ folder: folderString })
+  const { data, currentPage } = useFolderMessages({ folder: folderString, accountId: accountString })
+
+  const filteredMails = useMemo(
+    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
+    [data, activeFilter]
+  )
+
+  const displayedCount = clientFilterActive
+    ? filteredMails.length
+    : (data?.total ?? 0)
 
   const selectedIds = useAppSelector(
     (state: RootState) => state.mailLayout.selectedMailIds
   )
 
   const allIds = useMemo(
-    () => (data?.mails ?? []).map((m) => String(m.id)),
-    [data]
+    () => filteredMails.map((m) => String(m.id)),
+    [filteredMails]
   )
 
   const allSelected = allIds.length > 0 && selectedIds.length === allIds.length
@@ -88,7 +102,7 @@ const ListToolbar: React.FC = () => {
                 {folderTranslation ? tCommons(folderTranslation) : folderString}
               </span>
               <span className="text-muted-foreground hidden text-sm md:inline-block">
-                {t('messages_number.string', { number: data?.total ?? 0 })}
+                {t('messages_number.string', { number: displayedCount })}
               </span>
             </>
           )}
@@ -97,9 +111,9 @@ const ListToolbar: React.FC = () => {
           {isMobile ? <ListFilterDropdown /> : <ListFilter />}
           {!isMobile && <ListSort />}
           <ListPagination
-            hasNextPage={data?.hasNextPage ?? false}
-            hasPreviousPage={data?.hasPreviousPage ?? false}
-            currentPage={data?.page ?? 1}
+            hasNextPage={currentPage < (data?.totalPages ?? 1)}
+            hasPreviousPage={currentPage > 1}
+            currentPage={currentPage}
             totalPages={data?.totalPages ?? 1}
           />
         </div>

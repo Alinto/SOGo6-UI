@@ -1,8 +1,8 @@
 import type {
+  ExternalAccountDetail,
   ImapAccountCreate,
-  ImapAccountDetail,
   ImapAccountListItem,
-} from '@/features/user-settings/mail/imap-accounts/types'
+} from '@/features/user-settings/mail/external-accounts/types'
 import { NextRequest, NextResponse } from 'next/server'
 
 let nextId = 2
@@ -11,7 +11,7 @@ const accounts: ImapAccountListItem[] = [
   { id: '1', email: 'user@entreprise.com', readReceipts: 'never' },
 ]
 
-const accountDetails: Record<string, ImapAccountDetail> = {
+const accountDetails: Record<string, ExternalAccountDetail> = {
   '1': {
     id: '1',
     imapServer: 'imap.entreprise.com',
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     readReceipts: body.readReceipts,
   }
 
-  const newDetail: ImapAccountDetail = {
+  const newDetail: ExternalAccountDetail = {
     id: newId,
     ...body,
   }

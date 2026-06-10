@@ -10,8 +10,6 @@ describe('add-schema', () => {
       name: 'Test Calendar',
       color: '#3b82f6',
       description: 'Test description',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
     }
 
     const result = schema.safeParse(validData)
@@ -22,8 +20,6 @@ describe('add-schema', () => {
     const invalidData = {
       name: 'Test Calendar',
       color: 'invalid-color',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
     }
 
     const result = schema.safeParse(invalidData)
@@ -34,8 +30,6 @@ describe('add-schema', () => {
     const invalidData = {
       name: '',
       color: '#3b82f6',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
     }
 
     const result = schema.safeParse(invalidData)

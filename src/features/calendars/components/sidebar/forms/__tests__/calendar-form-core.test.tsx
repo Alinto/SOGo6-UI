@@ -62,18 +62,6 @@ jest.mock('@/components/ui/select', () => ({
   SelectValue: () => <div data-testid="select-value" />,
 }))
 
-jest.mock('@/components/ui/popover', () => ({
-  Popover: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="popover">{children}</div>
-  ),
-  PopoverContent: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="popover-content">{children}</div>
-  ),
-  PopoverTrigger: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="popover-trigger">{children}</div>
-  ),
-}))
-
 jest.mock('@/components/ui/checkbox', () => ({
   Checkbox: (props: Record<string, unknown>) => (
     <input type="checkbox" data-testid="checkbox" {...props} />
@@ -85,10 +73,7 @@ const TestWrapper = ({ showButtons = true }: { showButtons?: boolean }) => {
     defaultValues: {
       name: '',
       color: '#3b82f6',
-      eventDuration: '30 minutes',
-      showBusyStatus: false,
-      eventNotifications: [],
-      allDayNotifications: [],
+      description: '',
     },
   })
 
@@ -121,13 +106,11 @@ describe('CalendarFormCore', () => {
   it('should render buttons when showButtons is true', () => {
     render(<TestWrapper showButtons={true} />)
     const buttons = screen.getAllByTestId('button')
-    expect(buttons.length).toBeGreaterThanOrEqual(4)
+    expect(buttons.length).toBe(2)
   })
 
   it('should not render submit/cancel buttons when showButtons is false', () => {
     render(<TestWrapper showButtons={false} />)
-    const buttons = screen.getAllByTestId('button')
-
-    expect(buttons.length).toBe(2)
+    expect(screen.queryAllByTestId('button')).toHaveLength(0)
   })
 })

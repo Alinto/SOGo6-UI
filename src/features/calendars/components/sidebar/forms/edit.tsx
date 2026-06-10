@@ -3,8 +3,9 @@ import { DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useUpdateCalendarMutation } from '@/features/calendars/store/calendars-api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import React from 'react'
+import React, { memo } from 'react'
 import { useForm } from 'react-hook-form'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import CalendarFormCore from './calendar-form-core'
 import type { CalendarAddFormData } from './calendar-form-types'
 import { schema, type CalendarEditFormData } from './edit-schema'
@@ -47,7 +48,7 @@ const EditForm: React.FC<EditFormProps> = ({
     defaultValues: {
       id,
       name,
-      color: color || '#3b82f6',
+      color: color || DEFAULT_CALENDAR_COLOR,
       description: description || '',
       eventDuration:
         eventDuration ||
@@ -60,11 +61,17 @@ const EditForm: React.FC<EditFormProps> = ({
 
   const handleSubmit = async (values: CalendarEditFormData) => {
     try {
-      await updateCalendar(values).unwrap()
+      await updateCalendar({
+        key: values.id,
+        name: values.name,
+        color: values.color,
+        description: values.description || undefined,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      }).unwrap()
       onClose?.()
       form.reset(values)
-    } catch (error) {
-      console.error('Failed to update calendar:', error)
+    } catch {
+      // Notifications are handled by RTK Query onQueryStarted.
     }
   }
 
@@ -99,4 +106,4 @@ const EditForm: React.FC<EditFormProps> = ({
   )
 }
 
-export default EditForm
+export default memo(EditForm)

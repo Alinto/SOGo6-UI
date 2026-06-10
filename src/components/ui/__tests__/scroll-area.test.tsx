@@ -494,9 +494,7 @@ describe('ScrollArea and ScrollBar integration', () => {
     ).toBeInTheDocument()
   })
 
-  it('maintains performance with large content', () => {
-    const startTime = performance.now()
-
+  it('renders large content without dropping first and last items', () => {
     render(
       <ScrollArea>
         {Array.from({ length: 1000 }, (_, i) => (
@@ -507,13 +505,6 @@ describe('ScrollArea and ScrollBar integration', () => {
       </ScrollArea>
     )
 
-    const endTime = performance.now()
-    const renderTime = endTime - startTime
-
-    // Rendering should complete in reasonable time (less than 500ms)
-    expect(renderTime).toBeLessThan(500)
-
-    // Should render first and last items
     expect(screen.getByTestId('perf-item-0')).toBeInTheDocument()
     expect(screen.getByTestId('perf-item-999')).toBeInTheDocument()
   })

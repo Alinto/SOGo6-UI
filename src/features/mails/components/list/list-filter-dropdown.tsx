@@ -27,20 +27,27 @@ const ListFilterDropdown: React.FC = () => {
   }
 
   return (
-    <Select value={filter} onValueChange={handleFilterChange}>
-      <SelectTrigger className="hover:bg-accent hover:text-accent-foreground w-auto cursor-pointer">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="all">{t('filter.all.string')}</SelectItem>
-        <SelectItem value="read">{t('filter.read.string')}</SelectItem>
-        <SelectItem value="unread">{t('filter.unread.string')}</SelectItem>
-        <SelectItem value="starred">{t('filter.starred.string')}</SelectItem>
-        <SelectItem value="attachments">
-          {t('filter.attachments.string')}
-        </SelectItem>
-      </SelectContent>
-    </Select>
+    <div className="flex flex-col items-start gap-1">
+      <Select value={filter} onValueChange={handleFilterChange}>
+        <SelectTrigger className="hover:bg-accent hover:text-accent-foreground w-auto cursor-pointer">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">{t('filter.all.string')}</SelectItem>
+          <SelectItem value="read">{t('filter.read.string')}</SelectItem>
+          <SelectItem value="unread">{t('filter.unread.string')}</SelectItem>
+          <SelectItem value="starred">{t('filter.starred.string')}</SelectItem>
+          <SelectItem value="attachments">
+            {t('filter.attachments.string')}
+          </SelectItem>
+        </SelectContent>
+      </Select>
+      {filter !== 'all' && (
+        <p className="text-muted-foreground max-w-[12rem] text-xs">
+          {t('filter.client_scope_notice.string')}
+        </p>
+      )}
+    </div>
   )
 }
 

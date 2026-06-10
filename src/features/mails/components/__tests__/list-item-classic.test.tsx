@@ -14,6 +14,10 @@ jest.mock('next/navigation', () => ({
   usePathname: jest.fn(),
 }))
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>
@@ -29,6 +33,11 @@ describe('ListItemClassic', () => {
     flagged: true,
     hasAttachment: true,
     snippet: 'Test snippet',
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
   }
 
   const mockOnHandleCheckboxClick = jest.fn()
@@ -56,6 +65,7 @@ describe('ListItemClassic', () => {
 
     expect(screen.getByText('John Doe')).toBeInTheDocument()
     expect(screen.getByText('Test Subject')).toBeInTheDocument()
+    expect(screen.getByText('Test snippet')).toBeInTheDocument()
     expect(screen.getByText('J')).toBeInTheDocument() // Avatar fallback
   })
 

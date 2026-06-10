@@ -13,10 +13,12 @@ import { useIsMobile } from '@/hooks/useMediaQuery'
 import { getDateFnsLocale } from '@/lib/i18n/date-locales'
 import { cn } from '@/lib/utils'
 import { addDays, format, isSameMonth, startOfWeek } from 'date-fns'
-import { ChevronLeft, ChevronRight, Plus } from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 import { View, Views } from 'react-big-calendar'
+
+import { CalendarDayDatePicker } from './calendar-day-date-picker'
 
 export interface CalendarToolbarProps {
   view: View
@@ -25,7 +27,7 @@ export interface CalendarToolbarProps {
   onNavigatePrevious: () => void
   onNavigateToday: () => void
   onNavigateNext: () => void
-  onCreateEvent: () => void
+  onNavigateDate: (date: Date) => void
   timezone: string
   onTimezoneChange: (timezone: string) => void
   className?: string
@@ -38,7 +40,7 @@ export function CalendarToolbar({
   onNavigatePrevious,
   onNavigateToday,
   onNavigateNext,
-  onCreateEvent,
+  onNavigateDate,
   timezone,
   onTimezoneChange,
   className,
@@ -47,10 +49,8 @@ export function CalendarToolbar({
   const locale = useLocale()
   const isMobile = useIsMobile()
 
-  // Get date-fns locale for current user locale
   const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
 
-  // Calculate date displays (memoized for performance)
   const weekMonthDisplay = useMemo(() => {
     const weekStart = startOfWeek(date, {
       weekStartsOn: 1,
@@ -60,9 +60,8 @@ export function CalendarToolbar({
 
     if (isSameMonth(weekStart, weekEnd)) {
       return format(weekStart, 'MMMM yyyy', { locale: dateFnsLocale })
-    } else {
-      return `${format(weekStart, 'MMM', { locale: dateFnsLocale })} – ${format(weekEnd, 'MMM yyyy', { locale: dateFnsLocale })}`
     }
+    return `${format(weekStart, 'MMM', { locale: dateFnsLocale })} – ${format(weekEnd, 'MMM yyyy', { locale: dateFnsLocale })}`
   }, [date, dateFnsLocale])
 
   const dayDisplay = useMemo(() => {
@@ -81,7 +80,6 @@ export function CalendarToolbar({
         className
       )}
     >
-      {/* Navigation and date display */}
       <div className={cn('flex items-center gap-2', isMobile && 'flex-1')}>
         <div className="flex items-center gap-1">
           <Button
@@ -115,7 +113,11 @@ export function CalendarToolbar({
               <div className="font-bold">{weekMonthDisplay}</div>
             )}
             {view === Views.DAY && (
-              <div className="font-bold">{dayDisplay}</div>
+              <CalendarDayDatePicker
+                date={date}
+                onDateSelect={onNavigateDate}
+                label={<span className="font-bold">{dayDisplay}</span>}
+              />
             )}
             {view === Views.MONTH && (
               <div className="font-bold">{monthDisplay}</div>
@@ -124,7 +126,6 @@ export function CalendarToolbar({
         )}
       </div>
 
-      {/* Right side controls */}
       <div className={cn('flex items-center gap-2', isMobile && 'flex-wrap')}>
         <Select
           value={view}
@@ -154,19 +155,19 @@ export function CalendarToolbar({
             className="w-[280px]"
           />
         )}
-
-        <Button onClick={onCreateEvent} size={isMobile ? 'sm' : 'default'}>
-          <Plus className={cn('h-4 w-4', !isMobile && 'mr-2')} />
-          {!isMobile && t('createEvent.string')}
-        </Button>
       </div>
 
-      {/* Mobile: Date display on second row */}
       {isMobile && (
-        <div className="w-full text-center text-sm font-bold">
-          {view === Views.WEEK && weekMonthDisplay}
-          {view === Views.DAY && dayDisplay}
-          {view === Views.MONTH && monthDisplay}
+        <div className="flex w-full items-center justify-center text-sm font-bold">
+          {view === Views.WEEK && <span>{weekMonthDisplay}</span>}
+          {view === Views.DAY && (
+            <CalendarDayDatePicker
+              date={date}
+              onDateSelect={onNavigateDate}
+              label={<span>{dayDisplay}</span>}
+            />
+          )}
+          {view === Views.MONTH && <span>{monthDisplay}</span>}
         </div>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { getExternalCalendars } from '@/app/fakeApi/external-calendars/route'
 import { DEFAULT_CALENDARS } from '@/app/fakeApi/utils/default-data'
 import {
   cleanupOldData,
@@ -13,16 +14,13 @@ import { NextRequest, NextResponse } from 'next/server'
 function formatNotifications(
   notifications: Array<{ type: string; timing: string | number }> | undefined
 ): Array<{
-  method: 'email' | 'popup' | 'notification'
+  method: 'email' | 'popup'
   minutes_before: number
 }> {
   if (!notifications || !Array.isArray(notifications)) return []
 
   return notifications.map((notif) => ({
-    method: (notif.type === 'email' ? 'email' : 'popup') as
-      | 'email'
-      | 'popup'
-      | 'notification',
+    method: notif.type === 'email' ? 'email' : 'popup',
     minutes_before: Number(notif.timing) || 0,
   }))
 }
@@ -36,11 +34,25 @@ function formatNotifications(
  */
 export async function GET(req: NextRequest) {
   const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
+  const externalIcs = getExternalCalendars(req)
+  const mergedSubscriptions = [
+    ...userCalendars.subscriptions,
+    ...externalIcs.filter(
+      (ext) =>
+        !userCalendars.subscriptions.some(
+          (sub) => (sub.key ?? sub.id) === (ext.key ?? ext.id)
+        )
+    ),
+  ]
+  const responsePayload = {
+    ...userCalendars,
+    subscriptions: mergedSubscriptions,
+  }
 
-  const response = NextResponse.json(userCalendars)
+  const response = NextResponse.json(responsePayload)
   // Only if the cookie does not exist yet (first visit)
   if (!req.cookies.get('demo_calendars')) {
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', responsePayload, req)
   }
   return response
 }
@@ -56,13 +68,16 @@ export async function POST(req: NextRequest) {
     name,
     description,
     color,
-    type,
+    type: rawType,
     eventDuration,
     showBusyStatus,
     eventNotifications,
     allDayNotifications,
     url,
   } = body
+
+  const type =
+    rawType === 'shared' || rawType === 'subscription' ? rawType : 'personal'
 
   // Read the data from the cookie
   const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
@@ -138,7 +153,7 @@ export async function POST(req: NextRequest) {
 
   // Save in the cookie
   const response = NextResponse.json(newCalendar, { status: 201 })
-  setDemoData(response, 'demo_calendars', userCalendars)
+  setDemoData(response, 'demo_calendars', userCalendars, req)
   return response
 }
 

@@ -175,11 +175,14 @@ export function MobileWeekView({
                         justifyContent: 'center',
                         maxWidth: '100%',
                       }}
-                      aria-label={`${dayEvents.length} events`}
+                      aria-label={t('weekView.eventsCount.string', {
+                        count: dayEvents.length,
+                      })}
                     >
                       {dayEvents.slice(0, 3).map((event, idx) => {
                         const color =
-                          calendarColorMap[event.calendar_id] || defaultColor
+                          calendarColorMap[event.calendar_id ?? ''] ||
+                          defaultColor
                         return (
                           <div
                             key={`${event.id}-${idx}`}

@@ -5,7 +5,9 @@ import { PurgeFolderDialog } from '../purge-folder-dialog'
 
 // --- Mocks ---
 
-const mockPurgeFolder = jest.fn().mockResolvedValue({ unwrap: () => Promise.resolve() })
+const mockPurgeFolder = jest.fn(() => ({
+  unwrap: () => Promise.resolve(),
+}))
 jest.mock('@/features/mails/store/mails-api', () => ({
   usePurgeFolderMutation: jest.fn(() => [mockPurgeFolder, { isLoading: false }]),
 }))
@@ -54,7 +56,9 @@ const defaultProps = {
 describe('PurgeFolderDialog', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockPurgeFolder.mockResolvedValue({ unwrap: () => Promise.resolve() })
+    mockPurgeFolder.mockImplementation(() => ({
+      unwrap: () => Promise.resolve(),
+    }))
   })
 
   describe('basic rendering', () => {
@@ -144,6 +148,7 @@ describe('PurgeFolderDialog', () => {
       const purgeButton = screen.getByRole('button', {
         name: 'folders.actions.purge.confirm.string',
       })
+      await waitFor(() => expect(purgeButton).not.toBeDisabled())
       await user.click(purgeButton)
 
       await waitFor(() => {

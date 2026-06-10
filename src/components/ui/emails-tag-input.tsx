@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/badge'
-import { cn } from '@/lib/utils'
+import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useRef, useState } from 'react'
@@ -130,7 +130,7 @@ export function EmailsTagInput({
                 e.stopPropagation()
                 removeEmail(email)
               }}
-              className="hover:bg-muted-foreground/20 focus:ring-ring ml-0.5 rounded-full p-0.5 transition-colors focus:ring-1 focus:outline-none"
+              className={tagDismissButtonClassName('ml-0.5 p-0.5')}
               aria-label={`Remove ${email}`}
             >
               <X className="h-2.5 w-2.5" />

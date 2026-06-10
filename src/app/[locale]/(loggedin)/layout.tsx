@@ -2,7 +2,7 @@
 
 import AppHeader from '@/components/app-header'
 import { useAppSelector } from '@/lib/redux/hooks'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useRouter } from 'next/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -26,7 +26,7 @@ import {
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Contact2 } from 'lucide-react'
-import React, { useEffect } from 'react'
+import React, { startTransition, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 
 function ProfilePrefetch() {
@@ -36,13 +36,20 @@ function ProfilePrefetch() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const token = useAppSelector((state) => state.auth.token)
-  const { push } = useRouter()
+  const router = useRouter()
+  const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
-    if (!token) {
-      push('/auth/login')
+    startTransition(() => {
+      setIsHydrated(true)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (isHydrated && !token) {
+      router.push('/auth/login')
     }
-  }, [token, push])
+  }, [isHydrated, token, router])
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
@@ -63,7 +70,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     connect(config)
   }, [connect])
 
-  if (!token) return null
+  if (!isHydrated || !token) return null
 
   return (
     <>
@@ -71,7 +78,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <DemoWarningToast />
       <NotificationToaster />
       <NotificationProvider />
-      <SidebarProvider>
+      <SidebarProvider name="left-global-sidebar">
         <DndContext sensors={sensors}>
           <AppSidebar />
           <SidebarInset className="flex h-screen flex-col">

@@ -2,15 +2,15 @@
 
 import ShadcnBigCalendar from '@/components/calendar'
 import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
-import { type CalendarEvent } from '@/features/calendars'
+import { type Calendar, type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
-import { EventForm } from '@/features/calendars/components/event-form'
+import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
 import { useIsMobile } from '@/hooks/useMediaQuery'
-import { getDateFnsLocale } from '@/lib/i18n/date-locales'
+import { DATE_LOCALES } from '@/lib/i18n/date-locales'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
 import { useLocale, useTranslations } from 'next-intl'
-import { useEffect, useMemo } from 'react'
+import { memo, useEffect } from 'react'
 import {
   dateFnsLocalizer,
   type DateLocalizer,
@@ -27,23 +27,58 @@ import 'react-big-calendar/lib/css/react-big-calendar.css'
 type CalendarEventWithDate = CalendarEvent & {
   start: Date
   end: Date
+  allDay: boolean
 }
+
+const localizer = dateFnsLocalizer({
+  format,
+  parse,
+  startOfWeek,
+  getDay,
+  locales: DATE_LOCALES,
+})
 
 const DnDCalendar = withDragAndDrop<CalendarEventWithDate>(ShadcnBigCalendar)
 
-interface CalendarViewProps {
+const calendarSlotSelectionGuardComponents = {
+  week: {
+    header: ({ label }: { date: Date; label: string }) => (
+      <div
+        className="rbc-header-content"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {label}
+      </div>
+    ),
+  },
+  month: {
+    dateHeader: ({ label }: { date: Date; label: string }) => (
+      <span
+        className="sogo-month-date-header"
+        onMouseDown={(e) => e.stopPropagation()}
+      >
+        {label}
+      </span>
+    ),
+  },
+}
+
+export interface CalendarViewProps {
   view: View
   date: Date
   events: CalendarEventWithDate[]
   selectedSlot: SlotInfo | null
   calendarColorMap: Record<string, string | undefined>
   defaultColor: string
+  defaultCalendarId?: string
+  calendars: Calendar[]
 
   onViewChange: (view: View) => void
   onNavigate: (date: Date) => void
   onSelectSlot: (slot: SlotInfo) => void
   onSelectedSlotClose: () => void
-  onCreateEvent: (data: { title: string; start: string; end: string }) => void
+  onSelectEvent?: (event: CalendarEvent) => void
+  onDeleteEvent?: (event: CalendarEventWithDate) => Promise<void>
   onEventDrop: (args: EventInteractionArgs<CalendarEventWithDate>) => void
   onEventResize: (args: EventInteractionArgs<CalendarEventWithDate>) => void
 }
@@ -51,70 +86,60 @@ interface CalendarViewProps {
 // Extracted dialog component to avoid duplication
 function EventDialog({
   selectedSlot,
+  calendarKey,
+  calendars,
   onClose,
-  onSubmit,
 }: {
   selectedSlot: SlotInfo | null
+  calendarKey: string
+  calendars: Calendar[]
   onClose: () => void
-  onSubmit: (data: { title: string; start: string; end: string }) => void
 }) {
   const t = useTranslations('CALENDARS')
 
   return (
     <Dialog open={selectedSlot !== null} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
           <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
             {t('events.create.string')}
           </h2>
         </DialogHeader>
         {selectedSlot && (
-          <EventForm
-            start={selectedSlot.start}
-            end={selectedSlot.end}
-            onSubmit={onSubmit}
-            onCancel={onClose}
-          />
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <LazyEventForm
+              calendarKey={calendarKey}
+              calendars={calendars}
+              start={selectedSlot.start}
+              end={selectedSlot.end}
+              onCancel={onClose}
+            />
+          </div>
         )}
       </DialogContent>
     </Dialog>
   )
 }
 
-export default function CalendarView({
+function CalendarView({
   view,
   date,
   events,
   selectedSlot,
   calendarColorMap,
   defaultColor,
+  defaultCalendarId,
+  calendars,
   onViewChange,
   onNavigate,
   onSelectSlot,
   onSelectedSlotClose,
-  onCreateEvent,
+  onSelectEvent,
   onEventDrop,
   onEventResize,
 }: CalendarViewProps) {
   const locale = useLocale()
   const isMobile = useIsMobile()
-
-  const dateFnsLocale = useMemo(() => getDateFnsLocale(locale), [locale])
-
-  const localizer = useMemo(
-    () =>
-      dateFnsLocalizer({
-        format: (date: Date, formatStr: string) =>
-          format(date, formatStr, { locale: dateFnsLocale }),
-        parse: (dateStr: string, formatStr: string) =>
-          parse(dateStr, formatStr, new Date(), { locale: dateFnsLocale }),
-        startOfWeek: (date: Date) =>
-          startOfWeek(date, { locale: dateFnsLocale }),
-        getDay,
-        locales: { [locale]: dateFnsLocale },
-      }),
-    [locale, dateFnsLocale]
-  )
 
   // Inject dynamic CSS for calendar colors
   useEffect(() => {
@@ -156,15 +181,18 @@ export default function CalendarView({
   }, [defaultColor, calendarColorMap])
 
   const eventStyleGetter = (event: CalendarEventWithDate) => {
-    const calendarColor = calendarColorMap[event.calendar_id] || defaultColor
+    const color =
+      calendarColorMap[event.calendar_id ?? ''] || defaultColor
+
     return {
       style: {
-        backgroundColor: calendarColor,
+        backgroundColor: color,
         borderRadius: '4px',
-        opacity: 0.9,
+        opacity: event.status === 'cancelled' ? 0.5 : 0.9,
         color: '#fff',
-        border: `1px solid ${calendarColor}`,
+        border: `1px solid ${color}`,
         display: 'block',
+        textDecoration: event.status === 'cancelled' ? 'line-through' : 'none',
       },
     }
   }
@@ -175,8 +203,9 @@ export default function CalendarView({
       <div className="flex h-full flex-col">
         <EventDialog
           selectedSlot={selectedSlot}
+          calendarKey={defaultCalendarId ?? ''}
+          calendars={calendars}
           onClose={onSelectedSlotClose}
-          onSubmit={onCreateEvent}
         />
 
         {view === Views.AGENDA ? (
@@ -185,6 +214,7 @@ export default function CalendarView({
               events={events}
               date={date}
               calendarColorMap={calendarColorMap}
+              onEventClick={onSelectEvent}
             />
           </div>
         ) : (
@@ -196,6 +226,7 @@ export default function CalendarView({
             defaultColor={defaultColor}
             onNavigate={onNavigate}
             onViewChange={onViewChange}
+            onEventClick={onSelectEvent}
           />
         )}
       </div>
@@ -207,8 +238,9 @@ export default function CalendarView({
     <div className="flex h-full flex-col">
       <EventDialog
         selectedSlot={selectedSlot}
+        calendarKey={defaultCalendarId ?? ''}
+        calendars={calendars}
         onClose={onSelectedSlotClose}
-        onSubmit={onCreateEvent}
       />
 
       {view === Views.AGENDA ? (
@@ -217,53 +249,61 @@ export default function CalendarView({
             events={events}
             date={date}
             calendarColorMap={calendarColorMap}
+            onEventClick={onSelectEvent}
           />
         </div>
       ) : (
         <div className="flex h-full flex-1 flex-col overflow-hidden">
-          <DnDCalendar
-            localizer={localizer}
-            selectable
-            date={date}
-            onNavigate={onNavigate}
-            view={view}
-            onView={onViewChange}
-            resizable
-            draggableAccessor={() => true}
-            resizableAccessor={() => true}
-            events={events}
-            onSelectSlot={onSelectSlot}
-            onEventDrop={onEventDrop}
-            onEventResize={onEventResize}
-            eventPropGetter={eventStyleGetter}
-            toolbar={false}
-            culture={locale}
-            formats={{
-              timeGutterFormat: (
-                date: Date,
-                culture: string | undefined,
-                localizer: DateLocalizer | undefined
-              ) => (localizer ? localizer.format(date, 'h a', culture) : ''),
-              eventTimeRangeFormat: (
-                { start, end }: { start: Date; end: Date },
-                culture: string | undefined,
-                localizer: DateLocalizer | undefined
-              ) =>
-                localizer
-                  ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
-                  : '',
-              agendaTimeRangeFormat: (
-                { start, end }: { start: Date; end: Date },
-                culture: string | undefined,
-                localizer: DateLocalizer | undefined
-              ) =>
-                localizer
-                  ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
-                  : '',
-            }}
-          />
+          <div className="sogo-calendar-wrapper h-full min-h-0 w-full flex-1">
+            <DnDCalendar
+              localizer={localizer}
+              style={{ height: '100%' }}
+              components={calendarSlotSelectionGuardComponents}
+              selectable
+              date={date}
+              onNavigate={onNavigate}
+              view={view}
+              onView={onViewChange}
+              resizable
+              draggableAccessor={() => true}
+              resizableAccessor={() => true}
+              events={events}
+              onSelectSlot={onSelectSlot}
+              onSelectEvent={onSelectEvent}
+              onEventDrop={onEventDrop}
+              onEventResize={onEventResize}
+              eventPropGetter={eventStyleGetter}
+              toolbar={false}
+              culture={locale}
+              formats={{
+                timeGutterFormat: (
+                  date: Date,
+                  culture: string | undefined,
+                  localizer: DateLocalizer | undefined
+                ) => (localizer ? localizer.format(date, 'h a', culture) : ''),
+                eventTimeRangeFormat: (
+                  { start, end }: { start: Date; end: Date },
+                  culture: string | undefined,
+                  localizer: DateLocalizer | undefined
+                ) =>
+                  localizer
+                    ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
+                    : '',
+                agendaTimeRangeFormat: (
+                  { start, end }: { start: Date; end: Date },
+                  culture: string | undefined,
+                  localizer: DateLocalizer | undefined
+                ) =>
+                  localizer
+                    ? `${localizer.format(start, 'h:mm a', culture)} – ${localizer.format(end, 'h:mm a', culture)}`
+                    : '',
+              }}
+            />
+          </div>
         </div>
       )}
     </div>
   )
 }
+
+export default memo(CalendarView)

@@ -23,16 +23,13 @@ function findCalendar(
 function formatNotifications(
   notifications: Array<{ type: string; timing: string | number }> | undefined
 ): Array<{
-  method: 'email' | 'popup' | 'notification'
+  method: 'email' | 'popup'
   minutes_before: number
 }> {
   if (!notifications || !Array.isArray(notifications)) return []
 
   return notifications.map((notif) => ({
-    method: (notif.type === 'email' ? 'email' : 'popup') as
-      | 'email'
-      | 'popup'
-      | 'notification',
+    method: notif.type === 'email' ? 'email' : 'popup',
     minutes_before: Number(notif.timing) || 0,
   }))
 }
@@ -109,7 +106,7 @@ export async function PATCH(
 
   // Save in the cookie
   const response = NextResponse.json(calendar)
-  setDemoData(response, 'demo_calendars', userCalendars)
+  setDemoData(response, 'demo_calendars', userCalendars, req)
   return response
 }
 
@@ -134,7 +131,7 @@ export async function DELETE(
   if (personalIndex !== -1) {
     userCalendars.personal.splice(personalIndex, 1)
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', userCalendars, req)
     return response
   }
 
@@ -144,7 +141,7 @@ export async function DELETE(
   if (sharedIndex !== -1) {
     userCalendars.shared.splice(sharedIndex, 1)
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', userCalendars, req)
     return response
   }
 
@@ -154,7 +151,7 @@ export async function DELETE(
   if (subscriptionIndex !== -1) {
     userCalendars.subscriptions.splice(subscriptionIndex, 1)
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_calendars', userCalendars)
+    setDemoData(response, 'demo_calendars', userCalendars, req)
     return response
   }
 

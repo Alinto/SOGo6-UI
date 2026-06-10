@@ -21,6 +21,7 @@ interface MobileCalendarViewProps {
   defaultColor: string
   onNavigate: (date: Date) => void
   onViewChange: (view: View) => void
+  onEventClick?: (event: CalendarEventWithDate) => void
 }
 
 export function MobileCalendarView({
@@ -31,6 +32,7 @@ export function MobileCalendarView({
   defaultColor,
   onNavigate,
   onViewChange,
+  onEventClick,
 }: MobileCalendarViewProps) {
   const isMobile = useIsMobile()
 
@@ -59,6 +61,7 @@ export function MobileCalendarView({
               calendarColorMap={calendarColorMap}
               defaultColor={defaultColor}
               onNavigate={onNavigate}
+              onEventClick={onEventClick}
             />
           </div>
         </div>
@@ -86,6 +89,7 @@ export function MobileCalendarView({
               calendarColorMap={calendarColorMap}
               defaultColor={defaultColor}
               onNavigate={onNavigate}
+              onEventClick={onEventClick}
             />
           </div>
         </div>
@@ -100,6 +104,7 @@ export function MobileCalendarView({
             calendarColorMap={calendarColorMap}
             defaultColor={defaultColor}
             onNavigate={onNavigate}
+            onEventClick={onEventClick}
           />
         </div>
       )}

@@ -91,9 +91,9 @@ export function MobileMonthView({
   }
 
   return (
-    <div className="bg-background flex shrink-0 flex-col gap-3 border-b p-4 overflow-hidden"> {/* ← FIX: Ajouter overflow-hidden */}
+    <div className="bg-background flex shrink-0 flex-col gap-3 border-b p-4 overflow-hidden">
       {/* Header with month navigation */}
-      <div className="flex items-center justify-center gap-2 min-w-0"> {/* ← FIX: Centrer les boutons de navigation avec espacement */}
+      <div className="flex items-center justify-center gap-2 min-w-0">
         <Button
           variant="ghost"
           size="icon"
@@ -114,12 +114,12 @@ export function MobileMonthView({
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1 overflow-hidden"> {/* ← FIX: Ajouter overflow-hidden */}
+      <div className="grid grid-cols-7 gap-1 overflow-hidden">
         {/* Weekday headers */}
         {weekDayHeaders.map((dayName, index) => (
           <div
             key={`header-${index}`}
-            className="text-muted-foreground flex h-8 items-center justify-center text-xs font-medium min-w-0 truncate" // ← FIX: Ajouter min-w-0 truncate
+            className="text-muted-foreground flex h-8 items-center justify-center text-xs font-medium min-w-0 truncate"
           >
             {dayName}
           </div>
@@ -137,7 +137,7 @@ export function MobileMonthView({
               key={`day-${index}`}
               onClick={() => handleDayClick(day)}
               className={cn(
-                'relative flex h-10 w-full flex-col items-center justify-center rounded-md text-sm transition-colors min-w-0', // ← FIX: Ajouter w-full et min-w-0
+                'relative flex h-10 w-full flex-col items-center justify-center rounded-md text-sm transition-colors min-w-0',
                 // Current month vs other months
                 isCurrentMonth
                   ? 'text-foreground'
@@ -151,9 +151,9 @@ export function MobileMonthView({
                 // Hover state - allow hover even for other months
                 'hover:bg-accent/50 cursor-pointer'
               )}
-              aria-label={format(day, 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale })} // ← FIX: Ajouter aria-label
+              aria-label={format(day, 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale })}
             >
-              <span className="truncate w-full text-center"> {/* ← FIX: Wrapper avec truncate */}
+              <span className="truncate w-full text-center">
                 {format(day, 'd')}
               </span>
 
@@ -161,14 +161,14 @@ export function MobileMonthView({
               {hasEvents && (
                 <div
                   className={cn(
-                    'absolute bottom-1 h-1 w-1 rounded-full shrink-0', // ← FIX: Ajouter shrink-0
+                    'absolute bottom-1 h-1 w-1 rounded-full shrink-0',
                     isToday
                       ? 'bg-primary-foreground'
                       : isSelected
                         ? 'bg-accent-foreground'
                         : 'bg-primary'
                   )}
-                  aria-hidden="true" // ← FIX: Ajouter aria-hidden
+                  aria-hidden="true"
                 />
               )}
             </button>

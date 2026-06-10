@@ -4,6 +4,7 @@ import Sidebar from '@/features/address_books/components/sidebar/sidebar'
 import AdminPanelSidebar from '@/features/admin-panel/components/sidebar/sidebar-content'
 import CalendarsSidebar from '@/features/calendars/components/sidebar/sidebar'
 import MailSidebar from '@/features/mails/components/sidebars/sidebar'
+import { TasksSidebar } from '@/features/tasks'
 import { useProfile } from '@/features/user-profile'
 import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 import { usePathname } from '@/lib/i18n/navigation'
@@ -17,6 +18,7 @@ const SidebarsContent = () => {
   const isAdminSidebar = firstSection === 'admin_panel'
   const isUserSettingsSidebar = firstSection === 'user_settings'
   const isCalendarsSidebar = firstSection === 'calendars'
+  const isTasksSidebar = firstSection === 'tasks'
   const isMailSidebar = firstSection === 'u'
 
   // Fallback permissif : si loading ou liste vide, tout est autorisé
@@ -38,6 +40,9 @@ const SidebarsContent = () => {
   }
   if (isCalendarsSidebar && hasModuleAccess('calendar')) {
     return <CalendarsSidebar />
+  }
+  if (isTasksSidebar) {
+    return <TasksSidebar />
   }
   if (isMailSidebar && hasModuleAccess('mail')) {
     return <MailSidebar />

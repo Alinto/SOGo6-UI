@@ -11,8 +11,8 @@ describe('Calendars Types and API', () => {
         id: 'personal-1',
         name: 'Personal',
         description: 'My personal calendar',
-        type: 'personal',
-        default: true,
+        source_type: 'personal',
+        is_default: true,
         color: '#FF5733',
         event_duration: 30,
         show_as_busy: true,
@@ -23,7 +23,7 @@ describe('Calendars Types and API', () => {
         id: 'personal-2',
         name: 'Work',
         description: 'Work calendar',
-        type: 'personal',
+        source_type: 'personal',
         color: '#33FF57',
         event_duration: 60,
         show_as_busy: true,
@@ -42,9 +42,8 @@ describe('Calendars Types and API', () => {
         id: 'shared-1',
         name: 'Team Calendar',
         description: 'Team calendar',
-        type: 'shared',
-        owner: 'admin@example.com',
-        permissions: 'readwrite',
+        source_type: 'shared',
+        owner_uid: 'admin@example.com',
         color: '#3357FF',
         event_duration: 60,
         show_as_busy: true,
@@ -57,8 +56,8 @@ describe('Calendars Types and API', () => {
         id: 'sub-1',
         name: 'Holidays',
         description: 'Public holidays',
-        type: 'subscription',
-        read_only: true,
+        source_type: 'subscription',
+        url: 'https://example.com/holidays.ics',
         event_notifications: [],
         all_day_notifications: [],
       },
@@ -83,8 +82,10 @@ describe('Calendars Types and API', () => {
       expect(calendar.id).toBeDefined()
       expect(calendar.name).toBeDefined()
       expect(calendar.description).toBeDefined()
-      expect(calendar.type).toBeDefined()
-      expect(['personal', 'shared', 'subscription']).toContain(calendar.type)
+      expect(calendar.source_type).toBeDefined()
+      expect(['personal', 'shared', 'subscription', 'ics']).toContain(
+        calendar.source_type
+      )
     })
 
     it('Calendar optional fields should be properly typed', () => {
@@ -92,81 +93,54 @@ describe('Calendars Types and API', () => {
         id: 'cal-1',
         name: 'Test',
         description: 'Test',
-        type: 'personal',
+        source_type: 'personal',
         color: '#FF0000',
-        default: true,
-        read_only: false,
-        owner: 'user@example.com',
-        permissions: 'readwrite',
+        is_default: true,
+        owner_uid: 'user@example.com',
         url: 'https://example.com/calendar',
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z',
       }
 
       expect(calendarWithOptionals.color).toBe('#FF0000')
-      expect(calendarWithOptionals.default).toBe(true)
-      expect(calendarWithOptionals.read_only).toBe(false)
-      expect(calendarWithOptionals.owner).toBe('user@example.com')
-      expect(calendarWithOptionals.permissions).toBe('readwrite')
+      expect(calendarWithOptionals.is_default).toBe(true)
+      expect(calendarWithOptionals.owner_uid).toBe('user@example.com')
       expect(calendarWithOptionals.url).toBe('https://example.com/calendar')
     })
   })
 
-  describe('Calendar Type Variants', () => {
-    it('should support personal calendar type', () => {
+  describe('Calendar source_type variants', () => {
+    it('should support personal calendar source_type', () => {
       const personal: Calendar = {
         id: 'p1',
         name: 'Personal',
         description: 'Personal calendar',
-        type: 'personal',
+        source_type: 'personal',
       }
-      expect(personal.type).toBe('personal')
+      expect(personal.source_type).toBe('personal')
     })
 
-    it('should support shared calendar type', () => {
+    it('should support shared calendar source_type', () => {
       const shared: Calendar = {
         id: 's1',
         name: 'Shared',
         description: 'Shared calendar',
-        type: 'shared',
-        owner: 'admin@example.com',
+        source_type: 'shared',
+        owner_uid: 'admin@example.com',
       }
-      expect(shared.type).toBe('shared')
+      expect(shared.source_type).toBe('shared')
     })
 
-    it('should support subscription calendar type', () => {
+    it('should support subscription calendar source_type with url', () => {
       const subscription: Calendar = {
         id: 'sub1',
         name: 'Subscription',
         description: 'Subscription calendar',
-        type: 'subscription',
+        source_type: 'subscription',
         url: 'https://example.com/cal.ics',
       }
-      expect(subscription.type).toBe('subscription')
-    })
-  })
-
-  describe('Permission Models', () => {
-    it('should support readwrite permission', () => {
-      const calendar: Calendar = {
-        id: 'c1',
-        name: 'Calendar',
-        description: 'Test',
-        type: 'shared',
-        permissions: 'readwrite',
-      }
-      expect(calendar.permissions).toBe('readwrite')
-    })
-
-    it('should support read-only permission', () => {
-      const calendar: Calendar = {
-        id: 'c1',
-        name: 'Calendar',
-        description: 'Test',
-        type: 'shared',
-        permissions: 'read',
-      }
-      expect(calendar.permissions).toBe('read')
+      expect(subscription.source_type).toBe('subscription')
+      expect(subscription.url).toBe('https://example.com/cal.ics')
     })
   })
 
@@ -237,23 +211,22 @@ describe('Calendars Types and API', () => {
   })
 
   describe('Calendar Collection Response', () => {
-    it('should group calendars by type in response', () => {
+    it('should group calendars by category in response', () => {
       const response = mockCalendarsResponse
 
-      // Personal calendars
       expect(response.personal.length).toBe(2)
-      expect(response.personal.every((c) => c.type === 'personal')).toBe(true)
-      expect(response.personal.some((c) => c.default)).toBe(true)
+      expect(response.personal.every((c) => c.source_type === 'personal')).toBe(
+        true
+      )
+      expect(response.personal.some((c) => c.is_default)).toBe(true)
 
-      // Shared calendars
       expect(response.shared.length).toBe(1)
-      expect(response.shared[0].type).toBe('shared')
-      expect(response.shared[0].owner).toBe('admin@example.com')
+      expect(response.shared[0].source_type).toBe('shared')
+      expect(response.shared[0].owner_uid).toBe('admin@example.com')
 
-      // Subscription calendars
       expect(response.subscriptions.length).toBe(1)
-      expect(response.subscriptions[0].type).toBe('subscription')
-      expect(response.subscriptions[0].read_only).toBe(true)
+      expect(response.subscriptions[0].source_type).toBe('subscription')
+      expect(response.subscriptions[0].url).toBeDefined()
     })
 
     it('should maintain calendar structure consistency', () => {
@@ -264,15 +237,13 @@ describe('Calendars Types and API', () => {
         ...response.subscriptions,
       ]
 
-      // All should have required fields
       allCalendars.forEach((cal) => {
         expect(cal.id).toBeTruthy()
         expect(cal.name).toBeTruthy()
         expect(cal.description).toBeTruthy()
-        expect(cal.type).toBeTruthy()
+        expect(cal.source_type).toBeTruthy()
       })
 
-      // IDs should be unique
       const ids = allCalendars.map((c) => c.id)
       expect(new Set(ids).size).toBe(ids.length)
     })

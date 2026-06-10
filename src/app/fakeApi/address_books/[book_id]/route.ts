@@ -39,7 +39,7 @@ export async function GET(
   const response = NextResponse.json(contacts)
   // Only if the cookie does not exist yet (first visit)
   if (!req.cookies.get('demo_vcards')) {
-    setDemoData(response, 'demo_vcards', userVCards)
+    setDemoData(response, 'demo_vcards', userVCards, req)
   }
   return response
 }
@@ -122,7 +122,7 @@ export async function POST(
 
   // Save in the cookie
   const response = NextResponse.json(newContact, { status: 201 })
-  setDemoData(response, 'demo_vcards', userVCards)
+  setDemoData(response, 'demo_vcards', userVCards, req)
   return response
 }
 
@@ -162,7 +162,7 @@ export async function PATCH(
 
   // Save in the cookie
   const response = NextResponse.json(addressBook)
-  setDemoData(response, 'demo_address_books', userAddressBooks)
+  setDemoData(response, 'demo_address_books', userAddressBooks, req)
   return response
 }
 
@@ -195,8 +195,8 @@ export async function DELETE(
     delete userVCards[book_id]
 
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_address_books', userAddressBooks)
-    setDemoData(response, 'demo_vcards', userVCards)
+    setDemoData(response, 'demo_address_books', userAddressBooks, req)
+    setDemoData(response, 'demo_vcards', userVCards, req)
     return response
   }
 
@@ -211,8 +211,8 @@ export async function DELETE(
     delete userVCards[book_id]
 
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_address_books', userAddressBooks)
-    setDemoData(response, 'demo_vcards', userVCards)
+    setDemoData(response, 'demo_address_books', userAddressBooks, req)
+    setDemoData(response, 'demo_vcards', userVCards, req)
     return response
   }
 
@@ -227,8 +227,8 @@ export async function DELETE(
     delete userVCards[book_id]
 
     const response = NextResponse.json({ success: true }, { status: 200 })
-    setDemoData(response, 'demo_address_books', userAddressBooks)
-    setDemoData(response, 'demo_vcards', userVCards)
+    setDemoData(response, 'demo_address_books', userAddressBooks, req)
+    setDemoData(response, 'demo_vcards', userVCards, req)
     return response
   }
 

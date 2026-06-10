@@ -21,12 +21,15 @@ jest.mock('@/features/mails/store/mails-api', () => ({
 }))
 
 jest.mock('next/navigation', () => ({
-  useParams: jest.fn(() => ({ folder: 'INBOX' })),
+  useParams: jest.fn(() => ({ folder: 'INBOX', account: '0' })),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
 }))
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
-  useAppSelector: jest.fn((fn: (s: any) => string[]) => fn({ mailLayout: { selectedMailIds: [] } })),
+  useAppSelector: jest.fn((fn: (s: any) => any) =>
+    fn({ mailLayout: { selectedMailIds: [] }, mailNavigation: { skipFolderFetch: false } })
+  ),
 }))
 
 jest.mock('@/hooks/use-mobile', () => ({
@@ -69,8 +72,8 @@ jest.mock('../list-pagination', () => ({
   default: () => <div data-testid="list-pagination" />,
 }))
 
-const mockUseAppSelector = jest.fn((fn: (s: any) => string[]) =>
-  fn({ mailLayout: { selectedMailIds: [] } })
+const mockUseAppSelector = jest.fn((fn: (s: any) => any) =>
+  fn({ mailLayout: { selectedMailIds: [] }, mailNavigation: { skipFolderFetch: false } })
 )
 
 describe('ListToolbar', () => {
@@ -102,6 +105,13 @@ describe('ListToolbar', () => {
       expect(screen.getByTestId('list-pagination')).toBeInTheDocument()
     })
 
+    it('renders ListPagination when a client-side URL filter is active', () => {
+      const { useSearchParams } = require('next/navigation')
+      useSearchParams.mockReturnValue(new URLSearchParams('filter=unread'))
+      render(<ListToolbar />)
+      expect(screen.getByTestId('list-pagination')).toBeInTheDocument()
+    })
+
     it('renders checkbox', () => {
       render(<ListToolbar />)
       expect(screen.getByTestId('checkbox')).toBeInTheDocument()
@@ -111,8 +121,8 @@ describe('ListToolbar', () => {
   describe('configuration', () => {
     it('shows MailActionsBar when items selected', () => {
       const { useAppSelector } = require('@/lib/redux/hooks')
-      useAppSelector.mockImplementation((fn: (s: any) => string[]) =>
-        fn({ mailLayout: { selectedMailIds: ['1'] } })
+      useAppSelector.mockImplementation((fn: (s: any) => any) =>
+        fn({ mailLayout: { selectedMailIds: ['1'] }, mailNavigation: { skipFolderFetch: false } })
       )
       render(<ListToolbar />)
       expect(screen.getByTestId('mail-actions-bar')).toBeInTheDocument()

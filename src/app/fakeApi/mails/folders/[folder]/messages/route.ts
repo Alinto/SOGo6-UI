@@ -1,7 +1,7 @@
 import { ImapMessagesList } from '@/features/mails/mails-types'
 import { NextResponse } from 'next/server'
 
-const messagesByFolder: Record<string, any[]> = {
+const messagesByFolder: Record<string, Partial<ImapMessagesList>[]> = {
   INBOX: [
     {
       id: '1',
@@ -716,7 +716,23 @@ export async function GET(
   const pageParam = searchParams.get('page')
   const page = pageParam ? parseInt(pageParam, 10) : 1
 
-  let messages: ImapMessagesList[] = messagesByFolder[folder] || []
+  const listDefaults: Pick<
+    ImapMessagesList,
+    'answered' | 'forwarded' | 'deleted' | 'priority' | 'mailType'
+  > = {
+    answered: false,
+    forwarded: false,
+    deleted: false,
+    priority: 3,
+    mailType: [],
+  }
+  let messages: ImapMessagesList[] = (messagesByFolder[folder] || []).map(
+    (m) =>
+      ({
+        ...listDefaults,
+        ...m,
+      }) as ImapMessagesList
+  )
 
   switch (filter) {
     case 'starred':

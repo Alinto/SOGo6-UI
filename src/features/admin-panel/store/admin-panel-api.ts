@@ -2,7 +2,16 @@ import type {
   //AdminConfig,
   AdminConfigSection,
 } from '@/features/admin-panel/types/admin-panel'
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  ADMIN_CONFIG_SLICE,
+  ADMIN_V1_CONFIG_DOMAIN_DEFAULT_SLICE,
+  ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE,
+  ADMIN_V1_CONFIG_DOMAINS_SLICE,
+  ADMIN_V1_CONFIG_DYNAMIC_FORM_SLICE,
+  ADMIN_V1_CONFIG_RULES_SLICE,
+  ADMIN_V1_CONFIG_SYSTEM_SLICE,
+  apiSlice,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import { Rule } from '../types/admin-panel'
 
@@ -18,28 +27,28 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: '/admin/v1/config/system',
         method: 'GET',
       }),
-      providesTags: ['/admin/v1/config/system'],
+      providesTags: [ADMIN_V1_CONFIG_SYSTEM_SLICE],
     }),
     getDomains: builder.query<DomainItem[], void>({
       query: () => ({
         url: '/admin/v1/config/domains',
         method: 'GET',
       }),
-      providesTags: ['/admin/v1/config/domains'],
+      providesTags: [ADMIN_V1_CONFIG_DOMAINS_SLICE],
     }),
     getRules: builder.query<Rule[], void>({
       query: () => ({
         url: '/admin/v1/config/rules',
         method: 'GET',
       }),
-      providesTags: ['/admin/v1/config/rules'],
+      providesTags: [ADMIN_V1_CONFIG_RULES_SLICE],
     }),
     getDynamicForm: builder.query<string[], void>({
       query: () => ({
         url: '/admin/v1/config/dynamic-form',
         method: 'GET',
       }),
-      providesTags: ['/admin/v1/config/dynamic-form'],
+      providesTags: [ADMIN_V1_CONFIG_DYNAMIC_FORM_SLICE],
     }),
     // New: fetch domain default settings
     getDomainDefault: builder.query<Record<string, any>, void>({
@@ -47,7 +56,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: '/admin/v1/config/domain-default',
         method: 'GET',
       }),
-      providesTags: ['/admin/v1/config/domain-default'],
+      providesTags: [ADMIN_V1_CONFIG_DOMAIN_DEFAULT_SLICE],
     }),
     getCustomDomainConfig: builder.query<AdminConfigSection, string>({
       query: (domainName) => ({
@@ -55,8 +64,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'GET',
       }),
       providesTags: (result, error, domainName) => [
-        'adminConfig',
-        { type: 'admin/v1/config/domains', id: domainName },
+        ADMIN_CONFIG_SLICE,
+        { type: ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE, id: domainName },
       ],
     }),
     saveCustomDomainConfig: builder.mutation<
@@ -68,7 +77,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'POST',
         body: config,
       }),
-      invalidatesTags: (result, error) => [{ type: 'admin/v1/config/domains' }],
+      invalidatesTags: (result, error) => [
+        { type: ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE },
+      ],
     }),
 
     // PATCH for domain-default
@@ -83,9 +94,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
       // you can invalidate specific tags if needed — here we invalidate domain config tag
       invalidatesTags: (result, error) => [
-        { type: 'admin/v1/config/domains' },
-        'adminConfig',
-        '/admin/v1/config/domain-default',
+        { type: ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE },
+        ADMIN_CONFIG_SLICE,
+        ADMIN_V1_CONFIG_DOMAIN_DEFAULT_SLICE,
       ],
     }),
 
@@ -100,8 +111,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         body: config,
       }),
       invalidatesTags: (result, error, arg) => [
-        { type: 'admin/v1/config/domains', id: arg?.customDomainId },
-        'adminConfig',
+        { type: ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE, id: arg?.customDomainId },
+        ADMIN_CONFIG_SLICE,
       ],
     }),
 
@@ -112,7 +123,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'DELETE',
       }),
       // invalidate domains list so getDomains refetches
-      invalidatesTags: (result, error) => [{ type: 'admin/v1/config/domains' }],
+      invalidatesTags: (result, error) => [
+        { type: ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE },
+      ],
     }),
   }),
   overrideExisting: false,

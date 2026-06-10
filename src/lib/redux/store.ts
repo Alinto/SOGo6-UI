@@ -1,4 +1,6 @@
 import { mailComposeReducer } from '@/features/mails/store'
+import calendarUiReducer from '@/features/calendars/store/calendar-ui-slice'
+import { tasksUiReducer } from '@/features/tasks'
 import mailLayoutReducer from '@/features/mails/store/mail-layout-slice'
 import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
 import { notificationsReducer } from '@/features/notifications'
@@ -22,6 +24,8 @@ const loadPreloadedState = () => {
 
 const staticReducers = {
   auth: authSlice,
+  calendarUi: calendarUiReducer,
+  tasksUi: tasksUiReducer,
   mailCompose: mailComposeReducer,
   mailLayout: mailLayoutReducer,
   mailNavigation: mailNavigationReducer,

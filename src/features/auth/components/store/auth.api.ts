@@ -27,7 +27,7 @@ export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
       query: (credentials) => ({
-        url: '/api/user/v1/auth/login',
+        url: 'auth/login',
         method: 'POST',
         body: credentials,
       }),
@@ -35,7 +35,7 @@ export const authApi = apiSlice.injectEndpoints({
 
     getAuthMode: builder.query<AuthModeResponse, { username: string }>({
       query: ({ username }) => ({
-        url: '/api/user/v1/auth/mode',
+        url: 'auth/mode',
         params: { username },
       }),
       // Pas de cache — l'email change à chaque tentative de login
@@ -43,7 +43,7 @@ export const authApi = apiSlice.injectEndpoints({
     }),
 
     getSystem: builder.query<SystemResponse, void>({
-      query: () => '/api/user/v1/system',
+      query: () => 'system',
       // Configuration statique définie par l'admin, cache 1h
       keepUnusedDataFor: 3600,
     }),

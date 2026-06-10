@@ -1,13 +1,15 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import React from 'react'
 import Page from '../page'
 
+jest.mock('@/features/tasks', () => ({
+  TasksPage: () => <div data-testid="tasks-page" />,
+}))
+
 describe('Tasks Page', () => {
-  it('should render the feature in progress page', () => {
+  it('should render the tasks page', () => {
     render(<Page />)
 
-    expect(screen.getByTestId('page-incoming-feature')).toBeInTheDocument()
-    expect(screen.getByText('Incoming Feature')).toBeInTheDocument()
+    expect(screen.getByTestId('tasks-page')).toBeInTheDocument()
   })
 })

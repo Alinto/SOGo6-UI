@@ -1,4 +1,7 @@
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  MAIL_VACATION_SETTINGS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type { MailVacation } from '../mail-vacation-types'
 
@@ -6,7 +9,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getMailVacationSettings: builder.query<MailVacation, void>({
       query: () => 'settings/mail/vacation',
-      providesTags: ['mail_vacation_settings'],
+      providesTags: [MAIL_VACATION_SETTINGS_SLICE],
     }),
     updateMailVacationSettings: builder.mutation<
       MailVacation,
@@ -17,7 +20,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'PATCH',
         body: patch,
       }),
-      invalidatesTags: ['mail_vacation_settings'],
+      invalidatesTags: [MAIL_VACATION_SETTINGS_SLICE],
     }),
   }),
   overrideExisting: false,

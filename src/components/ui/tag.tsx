@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { DynamicIcon, type IconName } from 'lucide-react/dynamic'
 import React from 'react'
 
@@ -35,7 +35,7 @@ const Tag: React.FC<TagProps> = ({
           type="button"
           onClick={() => action && action()}
           aria-label={ariaLabel}
-          className="text-muted-foreground hover:text-foreground flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors"
+          className={tagDismissButtonClassName('h-7 w-7')}
         >
           <DynamicIcon size="16" name={icon} />
         </button>

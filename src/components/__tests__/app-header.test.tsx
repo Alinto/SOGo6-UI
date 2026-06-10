@@ -17,7 +17,19 @@ jest.mock('@/lib/i18n/navigation', () => ({
 
 jest.mock('@/features/mails/components/mails-search', () => ({
   __esModule: true,
-  default: () => <div data-testid="search-component">Search Component</div>,
+  default: () => <div data-testid="mails-search">Mails Search</div>,
+}))
+
+jest.mock('@/features/calendars/components/calendar-events-search', () => ({
+  __esModule: true,
+  default: () => (
+    <div data-testid="calendar-events-search">Calendar Events Search</div>
+  ),
+}))
+
+jest.mock('@/features/tasks/components/tasks-search', () => ({
+  __esModule: true,
+  default: () => <div data-testid="tasks-search">Tasks Search</div>,
 }))
 
 jest.mock('../ui/header-dropdown', () => {
@@ -58,13 +70,23 @@ describe('AppHeader', () => {
     )
   })
 
-  it('should render Search component', () => {
+  it('should render mails search on inbox route', () => {
     mockUseIsMobile.mockReturnValue(false)
 
     render(<AppHeader />)
 
-    expect(screen.getByTestId('search-component')).toBeInTheDocument()
-    expect(screen.getByText('Search Component')).toBeInTheDocument()
+    expect(screen.getByTestId('mails-search')).toBeInTheDocument()
+    expect(screen.getByText('Mails Search')).toBeInTheDocument()
+  })
+
+  it('should render calendar events search on calendars route', () => {
+    mockUseIsMobile.mockReturnValue(false)
+    mockUsePathname.mockReturnValue('/calendars')
+
+    render(<AppHeader />)
+
+    expect(screen.getByTestId('calendar-events-search')).toBeInTheDocument()
+    expect(screen.queryByTestId('mails-search')).not.toBeInTheDocument()
   })
 
   it('should render HeaderDropdown component', () => {
@@ -100,7 +122,7 @@ describe('AppHeader', () => {
     render(<AppHeader />)
 
     // Check search container has correct classes
-    const searchContainer = screen.getByTestId('search-component').parentElement
+    const searchContainer = screen.getByTestId('mails-search').parentElement
     expect(searchContainer).toHaveClass('min-w-0', 'flex-1')
 
     // Check header dropdown container has correct classes
@@ -119,7 +141,7 @@ describe('AppHeader', () => {
       expect(screen.getByTestId('sidebar-trigger')).toBeInTheDocument()
 
       // Should still show search and dropdown
-      expect(screen.getByTestId('search-component')).toBeInTheDocument()
+      expect(screen.getByTestId('mails-search')).toBeInTheDocument()
       expect(screen.getByTestId('header-dropdown')).toBeInTheDocument()
     })
 
@@ -132,7 +154,7 @@ describe('AppHeader', () => {
       expect(screen.queryByTestId('sidebar-trigger')).not.toBeInTheDocument()
 
       // Should still show search and dropdown
-      expect(screen.getByTestId('search-component')).toBeInTheDocument()
+      expect(screen.getByTestId('mails-search')).toBeInTheDocument()
       expect(screen.getByTestId('header-dropdown')).toBeInTheDocument()
     })
   })
