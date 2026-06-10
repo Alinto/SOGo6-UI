@@ -30,10 +30,14 @@ jest.mock('@/components/dnd/draggable', () => ({
   __esModule: true,
   default: ({ children }: any) => <div data-testid="draggable">{children}</div>,
 }))
-jest.mock('../../store/mails-api', () => ({
-  useGetFoldersQuery: jest.fn(() => ({ data: undefined })),
-  useMailActionMutation: jest.fn(() => [jest.fn()]),
-  useMoveToTrashMutation: jest.fn(() => [jest.fn()]),
+jest.mock('../../hooks/use-mail-item-actions', () => ({
+  useMailItemActions: jest.fn(() => ({
+    deleteMail: jest.fn(),
+    toggleRead: jest.fn(),
+    archiveMail: jest.fn(),
+    markSpam: jest.fn(),
+    isJunk: false,
+  })),
 }))
 jest.mock('../list-item', () => ({
   __esModule: true,

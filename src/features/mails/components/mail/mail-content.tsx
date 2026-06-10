@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { prepareMailBodyHtml } from '@/features/mails/utils/prepare-mail-body-html'
+import { useMemo, useState } from 'react'
 import { AttachmentDisplay } from './mail-attachment'
 import { MailShowImage } from './mail-show-image'
 import { MailContentProps } from './types'
 import {
-  blockExternalImages,
   containsExternalImages,
   decodeBase64,
   isBase64,
@@ -14,15 +14,17 @@ import {
 export default function MailContent({ body, attachments }: MailContentProps) {
   const [showImages, setShowImages] = useState(false)
 
-  let html = body
-  if (isBase64(html)) {
-    html = decodeBase64(html)
-  }
+  const hasImages = useMemo(() => {
+    let html = body ?? ''
+    if (isBase64(html)) {
+      html = decodeBase64(html)
+    }
+    return containsExternalImages(replaceDataSrcWithSrc(html))
+  }, [body])
 
-  html = replaceDataSrcWithSrc(html)
-  const hasImages = containsExternalImages(html)
-
-  const htmlToRender = showImages ? html : blockExternalImages(html)
+  const htmlToRender = prepareMailBodyHtml(body, {
+    includeExternalImages: showImages,
+  })
 
   return (
     <div className="w-full">

@@ -21,6 +21,7 @@ import type { TaskListFilter } from '../../tasks-types'
 import { taskMatchesListFilter } from '../../utils/task-list-filter'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import {
+  Calendar,
   CalendarClock,
   CalendarDays,
   Check,
@@ -189,6 +190,22 @@ function TasksSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    className={tasksSidebarMenuButtonClassName}
+                    isActive={selectedCalendarKey === null}
+                    onClick={() => dispatch(setCalendarFilter(null))}
+                    tooltip={t('sidebar.calendars.all.string')}
+                    title={t('sidebar.calendars.all.string')}
+                  >
+                    <Calendar className={tasksSidebarMenuIconClassName} />
+                    <div className={tasksSidebarMenuLabelRowClassName}>
+                      <span className="min-w-0 shrink truncate leading-none text-sm">
+                        {t('sidebar.calendars.all.string')}
+                      </span>
+                    </div>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
                 {calendars.map((calendar) => {
                   const key = calendar.key ?? calendar.id ?? ''
                   const isSelected = selectedCalendarKey === key

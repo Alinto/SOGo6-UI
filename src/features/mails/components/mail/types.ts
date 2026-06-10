@@ -3,14 +3,27 @@ import React, { type JSX } from 'react'
 export const ActionId = {
   GO_BACK: 'go-back',
   GO_NEXT: 'go-next',
-}
+  DELETE: 'delete',
+  SPAM: 'spam',
+  HAM: 'ham',
+  MARK_UNREAD: 'mark-unread',
+  LABEL: 'label',
+  MORE: 'more',
+  ARCHIVE: 'archive',
+  DOWNLOAD: 'download',
+  MOVE: 'move',
+  PRINT: 'print',
+  VIEW_SOURCE: 'view-source',
+} as const
+
+export type ActionIdValue = (typeof ActionId)[keyof typeof ActionId]
 
 export interface MailSubjectProps {
   subject: string
 }
 
 export type Action = {
-  id: string
+  id?: ActionIdValue | string
   icon: React.ReactNode
   title?: string
   disabled?: boolean

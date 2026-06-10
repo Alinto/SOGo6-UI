@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import { useGetCalendarsQuery } from '@/features/calendars/store/calendars-api'
 import TaskCompleteCheckbox from '@/features/tasks/components/task-complete-checkbox'
+import TaskProgressBar from '@/features/tasks/components/task-progress-bar'
 import {
   useGetTasksQuery,
   useUpdateTaskMutation,
@@ -16,7 +17,11 @@ import {
   isTaskOverdue,
   isTaskUpcoming,
 } from '@/features/tasks/utils/task-due'
-import { getPriorityLevel } from '@/features/tasks/utils/task-priority'
+import {
+  getPriorityBadgeClassName,
+  getPriorityLevel,
+} from '@/features/tasks/utils/task-priority'
+import { getDisplayTaskProgress } from '@/features/tasks/utils/task-progress'
 import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 import { useTranslations } from 'next-intl'
@@ -53,6 +58,7 @@ function TaskRow({
 }) {
   const tPriority = useTranslations('TASKS')
   const priorityLevel = getPriorityLevel(task.priority)
+  const progressPercent = getDisplayTaskProgress(task)
 
   const handleToggle = useCallback(
     () => onToggleComplete(task),
@@ -80,22 +86,34 @@ function TaskRow({
             <p className="text-foreground line-clamp-2 text-sm font-medium leading-snug">
               {task.title}
             </p>
-            {(dueLabel || priorityLevel === 'high') && (
-              <div className="mt-0.5 flex flex-wrap items-center gap-1.5">
-                {priorityLevel === 'high' && (
-                  <span className="bg-destructive/10 text-destructive rounded px-1 py-0.5 text-[10px] font-medium">
-                    {tPriority('priority.high.string')}
-                  </span>
-                )}
-                {dueLabel && (
-                  <span
-                    className={cn(
-                      'text-muted-foreground text-xs',
-                      dueClassName
-                    )}
-                  >
-                    {dueLabel}
-                  </span>
+            {(dueLabel ||
+              priorityLevel !== 'none' ||
+              progressPercent !== null) && (
+              <div className="mt-0.5 space-y-1">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {priorityLevel !== 'none' && (
+                    <span
+                      className={cn(
+                        'rounded px-1 py-0.5 text-[10px] font-medium',
+                        getPriorityBadgeClassName(priorityLevel)
+                      )}
+                    >
+                      {tPriority(`priority.${priorityLevel}.string`)}
+                    </span>
+                  )}
+                  {dueLabel && (
+                    <span
+                      className={cn(
+                        'text-muted-foreground text-xs',
+                        dueClassName
+                      )}
+                    >
+                      {dueLabel}
+                    </span>
+                  )}
+                </div>
+                {progressPercent !== null && (
+                  <TaskProgressBar value={progressPercent} />
                 )}
               </div>
             )}

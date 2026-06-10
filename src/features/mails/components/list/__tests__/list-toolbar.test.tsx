@@ -3,6 +3,35 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
 import ListToolbar from '../list-toolbar'
 
+jest.mock('@/features/mails/hooks/use-mail-item-actions', () => ({
+  useMailItemActions: jest.fn(() => ({
+    deleteMail: jest.fn(),
+    archiveMail: jest.fn(),
+    toggleRead: jest.fn(),
+    markSpam: jest.fn(),
+    isJunk: false,
+  })),
+}))
+
+jest.mock('@/features/mails/hooks/use-folder-messages', () => ({
+  useFolderMessages: jest.fn(() => ({
+    data: {
+      mails: [
+        { id: '1', subject: 'Test' },
+        { id: '2', subject: 'Test 2' },
+      ],
+      total: 2,
+      page: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    },
+    isLoading: false,
+    currentPage: 1,
+    params: {},
+  })),
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(() => ({
     data: {

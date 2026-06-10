@@ -96,6 +96,22 @@ describe('TaskItem', () => {
     })
   })
 
+  describe('progress', () => {
+    it('shows progress bar for in_process tasks', () => {
+      render(
+        <TaskItem
+          task={{ ...task, status: 'in_process', percent_complete: 40 }}
+          calendars={calendars}
+          onToggleComplete={jest.fn()}
+          onEdit={jest.fn()}
+          onDelete={jest.fn()}
+        />
+      )
+      expect(screen.getByTestId('task-progress-bar')).toBeInTheDocument()
+      expect(screen.getByText('40%')).toBeInTheDocument()
+    })
+  })
+
   describe('custom styling', () => {
     it('applies line-through when completed', () => {
       render(

@@ -32,7 +32,99 @@
                 },
                 "label": {
                     "string": "Label",
-                    "description": "Label"
+                    "description": "Label",
+                    "coming_soon": {
+                        "string": "Labels coming soon",
+                        "description": "Tooltip when label picker is not yet available"
+                    }
+                },
+                "move_to_inbox": {
+                    "string": "Move to Inbox",
+                    "description": "Move message from Junk back to the Inbox"
+                },
+                "archive": {
+                    "string": "Archive",
+                    "description": "Move message to archive folder"
+                },
+                "download": {
+                    "string": "Download",
+                    "description": "Download message as .eml file"
+                },
+                "move": {
+                    "string": "Move to folder",
+                    "description": "Move message to another folder"
+                },
+                "print": {
+                    "string": "Print",
+                    "description": "Print the current message"
+                },
+                "print_labels": {
+                    "from": {
+                        "string": "From",
+                        "description": "From label in print view"
+                    },
+                    "to": {
+                        "string": "To",
+                        "description": "To label in print view"
+                    },
+                    "cc": {
+                        "string": "Cc",
+                        "description": "Cc label in print view"
+                    },
+                    "date": {
+                        "string": "Date",
+                        "description": "Date label in print view"
+                    },
+                    "attachments": {
+                        "string": "Attachments",
+                        "description": "Attachments label in print view"
+                    }
+                },
+                "view_source": {
+                    "string": "View source",
+                    "description": "View raw message source"
+                },
+                "delete_confirm": {
+                    "title": {
+                        "string": "Delete message"
+                    },
+                    "message": {
+                        "string": "This message will be moved to Trash."
+                    },
+                    "confirm": {
+                        "string": "Delete"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
+                },
+                "spam_confirm": {
+                    "title": {
+                        "string": "Mark as spam"
+                    },
+                    "message": {
+                        "string": "This message will be moved to Junk."
+                    },
+                    "confirm": {
+                        "string": "Move to Junk"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
+                },
+                "ham_confirm": {
+                    "title": {
+                        "string": "Move to Inbox"
+                    },
+                    "message": {
+                        "string": "This message will be moved to your Inbox."
+                    },
+                    "confirm": {
+                        "string": "Move to Inbox"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
                 },
                 "more": {
                     "string": "More actions",

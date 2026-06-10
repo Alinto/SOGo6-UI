@@ -21,6 +21,7 @@ import type {
   ImapMessagesBackendResponse,
   ImapMessagesList,
 } from '../mails-types'
+import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
 import { sortImapFoldersTree } from '../utils/sort-folders'
 
 interface BackendResponse<T> {
@@ -442,6 +443,41 @@ function dispatchSeenPatchOnAllFolderMessageCaches(
   return patches
 }
 
+function dispatchGetMailSeenPatch(
+  dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
+  arg: {
+    accountId?: string
+    folder: string
+    mailId: string
+    seen: boolean
+  }
+): { undo: () => void } | undefined {
+  const action = (
+    apiSlice.util as unknown as {
+      updateQueryData: (
+        name: string,
+        queryArg: { accountId?: string; folder: string; mailId: string },
+        recipe: (draft: ImapMessages) => void
+      ) => unknown
+    }
+  ).updateQueryData(
+    'getMail',
+    {
+      accountId: arg.accountId,
+      folder: arg.folder,
+      mailId: arg.mailId,
+    },
+    (draft) => {
+      draft.seen = arg.seen
+    }
+  )
+  const patch = dispatch(action as UnknownAction) as unknown
+  if (patch && typeof (patch as { undo?: () => void }).undo === 'function') {
+    return patch as { undo: () => void }
+  }
+  return undefined
+}
+
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getFolders: builder.query<ImapFolder[], { accountId?: string }>({
@@ -647,9 +683,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'message.error.string',
         })(undefined, { queryFulfilled })
       },
-      invalidatesTags: (_result, _error, { folder }) => [
+      invalidatesTags: (_result, _error, { folder, mailId }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
         MAILS_FOLDERS_SLICE,
+        { type: MAIL_SLICE, id: mailId },
       ],
     }),
 
@@ -665,35 +702,58 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     >({
       query: mailActionQuery,
       async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
-        if (!isMailActionSeenFlagToggle(arg)) {
+        const patchResults: Array<{ undo: () => void }> = []
+        let getMailPatch: { undo: () => void } | undefined
+
+        if (isMailActionSeenFlagToggle(arg)) {
+          const seen = arg.action === 'tag'
+          const listItem = findListItemInFolderCaches(
+            getState() as RootState,
+            arg.accountId ?? '0',
+            arg.folder,
+            arg.mailId
+          )
+          const alreadyApplied =
+            listItem != null && listItem.seen === seen
+
+          if (!alreadyApplied) {
+            patchResults.push(
+              ...dispatchSeenPatchOnAllFolderMessageCaches(
+                dispatch,
+                getState() as RootState,
+                {
+                  accountId: arg.accountId,
+                  folder: arg.folder,
+                  mailId: arg.mailId,
+                  seen,
+                }
+              )
+            )
+          }
+
+          const mailPatch = dispatchGetMailSeenPatch(dispatch, {
+            accountId: arg.accountId,
+            folder: arg.folder,
+            mailId: arg.mailId,
+            seen,
+          })
+          if (mailPatch) getMailPatch = mailPatch
+
+          try {
+            await queryFulfilled
+          } catch {
+            patchResults.forEach((p) => p.undo())
+            getMailPatch?.undo()
+          }
           return
         }
-        const seen = arg.action === 'tag'
-        const listItem = findListItemInFolderCaches(
-          getState() as RootState,
-          arg.accountId ?? '0',
-          arg.folder,
-          arg.mailId
-        )
-        const alreadyApplied =
-          listItem != null && listItem.seen === seen
 
-        const patchResults = alreadyApplied
-          ? []
-          : dispatchSeenPatchOnAllFolderMessageCaches(
-              dispatch,
-              getState() as RootState,
-              {
-                accountId: arg.accountId,
-                folder: arg.folder,
-                mailId: arg.mailId,
-                seen,
-              }
-            )
-        try {
-          await queryFulfilled
-        } catch {
-          patchResults.forEach((p) => p.undo())
+        const notifKeys = getMailActionNotificationKeys(arg)
+        if (notifKeys) {
+          await createApiNotificationHandler(dispatch, notifKeys)(
+            undefined,
+            { queryFulfilled }
+          )
         }
       },
       invalidatesTags: (_result, _error, arg) =>
@@ -702,7 +762,40 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           : [
               { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
               MAILS_FOLDERS_SLICE,
+              { type: MAIL_SLICE, id: arg.mailId },
             ],
+    }),
+
+    downloadMail: builder.mutation<
+      Blob,
+      {
+        accountId?: string
+        folder: string
+        mailId: string
+        format?: 'eml' | 'zip'
+      }
+    >({
+      query: ({ accountId = '0', folder, mailId, format = 'eml' }) => ({
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}/download`,
+        method: 'POST',
+        body: { format },
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+
+    getMailRaw: builder.query<
+      string,
+      {
+        accountId?: string
+        folder: string
+        mailId: string
+      }
+    >({
+      query: ({ accountId = '0', folder, mailId }) =>
+        `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}/raw`,
+      transformResponse: (
+        response: BackendResponse<{ raw: string }> | { raw: string }
+      ) => ('data' in response ? response.data.raw : response.raw),
     }),
 
     purgeFolder: builder.mutation<
@@ -858,6 +951,8 @@ export const {
   useGetMailQuery,
   useMoveToTrashMutation,
   useMailActionMutation,
+  useDownloadMailMutation,
+  useLazyGetMailRawQuery,
   usePurgeFolderMutation,
   useExpungeFolderMutation,
   useGetFolderShareQuery,

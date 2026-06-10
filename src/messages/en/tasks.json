@@ -165,6 +165,9 @@
       "calendars": {
         "title": {
           "string": "Calendars"
+        },
+        "all": {
+          "string": "All calendars"
         }
       }
     },

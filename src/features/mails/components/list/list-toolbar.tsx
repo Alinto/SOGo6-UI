@@ -12,14 +12,15 @@ import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
+import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
-import { Archive, Flame, Mail, Tag, Trash2 } from 'lucide-react'
+import { Archive, Flame, Inbox, Mail, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams, useSearchParams } from 'next/navigation'
-import React, { useMemo } from 'react'
+import React, { useCallback, useMemo } from 'react'
 
 const ListToolbar: React.FC = () => {
   const t = useTranslations('MAILS_LIST')
@@ -69,6 +70,61 @@ const ListToolbar: React.FC = () => {
     }
   }
 
+  const tActions = useTranslations('MAILS_LIST.actions')
+  const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
+  const { deleteMail, archiveMail, toggleRead, markSpam, markHam, isJunk } =
+    useMailItemActions({
+      accountId: accountString,
+      folder: folderString,
+    })
+
+  const handleBulkAction = useCallback(
+    async (idx: number) => {
+      const mailsById = new Map(
+        filteredMails.map((m) => [String(m.id), m])
+      )
+      for (const id of selectedIds) {
+        const item = mailsById.get(id)
+        switch (idx) {
+          case 0:
+            await deleteMail(id)
+            break
+          case 1:
+            await archiveMail(id)
+            break
+          case 2:
+            if (item && !item.seen) {
+              await toggleRead(id, false)
+            }
+            break
+          case 3:
+            if (isJunk) {
+              await markHam(id)
+            } else {
+              await markSpam(id)
+            }
+            break
+          case 4:
+            break
+          default:
+            break
+        }
+      }
+      dispatch(clearSelectedMails())
+    },
+    [
+      filteredMails,
+      selectedIds,
+      deleteMail,
+      archiveMail,
+      toggleRead,
+      markSpam,
+      markHam,
+      isJunk,
+      dispatch,
+    ]
+  )
+
   return (
     <div className="bg-background border-b border-border flex w-full shrink-0 flex-col gap-1 px-3 py-2">
       <div className="flex min-w-0 flex-row flex-wrap items-center justify-between gap-y-1">
@@ -80,20 +136,37 @@ const ListToolbar: React.FC = () => {
           {selectedIds.length > 0 ? (
             <MailActionsBar
               actions={[
-                { id: 'bulk-delete', title: 'Delete', icon: <Trash2 size={16} /> },
-                { id: 'bulk-archive', title: 'Archive', icon: <Archive size={16} /> },
-                { id: 'bulk-mark-read', title: 'Mark as read', icon: <Mail size={16} /> },
-                { id: 'bulk-spam', title: 'Mark as spam', icon: <Flame size={16} /> },
-                { id: 'bulk-label', title: 'Label', icon: <Tag size={16} /> },
+                {
+                  id: 'bulk-delete',
+                  title: tActions('delete.string'),
+                  icon: <Trash2 size={16} />,
+                },
+                {
+                  id: 'bulk-archive',
+                  title: tActions('archive.string'),
+                  icon: <Archive size={16} />,
+                },
+                {
+                  id: 'bulk-mark-read',
+                  title: tActions('mark_as_read.string'),
+                  icon: <Mail size={16} />,
+                },
+                {
+                  id: 'bulk-spam',
+                  title: isJunk
+                    ? tBar('move_to_inbox.string')
+                    : tBar('report_spam.string'),
+                  icon: isJunk ? <Inbox size={16} /> : <Flame size={16} />,
+                },
+                {
+                  id: 'bulk-label',
+                  title: tBar('label.string'),
+                  icon: <Tag size={16} />,
+                  disabled: true,
+                },
               ]}
               onAction={(idx) => {
-                switch (idx) {
-                  case 0: console.log('TODO bulk delete', selectedIds); break
-                  case 1: console.log('TODO bulk archive', selectedIds); break
-                  case 2: console.log('TODO bulk mark as read', selectedIds); break
-                  case 3: console.log('TODO bulk spam', selectedIds); break
-                  case 4: console.log('TODO bulk label', selectedIds); break
-                }
+                void handleBulkAction(idx)
               }}
             />
           ) : (

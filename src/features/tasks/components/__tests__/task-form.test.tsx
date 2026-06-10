@@ -6,12 +6,12 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
-jest.mock('@/components/ui/sheet', () => ({
-  Sheet: ({ children, open }: { children: React.ReactNode; open?: boolean }) =>
-    open ? <div data-testid="task-form-sheet">{children}</div> : null,
-  SheetContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SheetHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SheetTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+jest.mock('@/components/ui/dialog', () => ({
+  Dialog: ({ children, open }: { children: React.ReactNode; open?: boolean }) =>
+    open ? <div data-testid="task-form-dialog">{children}</div> : null,
+  DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
 }))
 
 jest.mock('@/components/ui/select', () => ({
@@ -45,7 +45,7 @@ describe('TaskForm', () => {
           onSubmit={jest.fn()}
         />
       )
-      expect(screen.getByTestId('task-form-sheet')).toBeInTheDocument()
+      expect(screen.getByTestId('task-form-dialog')).toBeInTheDocument()
       expect(screen.getByTestId('task-form')).toBeInTheDocument()
       expect(screen.getByText('form.create_title.string')).toBeInTheDocument()
     })
@@ -59,7 +59,7 @@ describe('TaskForm', () => {
           onSubmit={jest.fn()}
         />
       )
-      expect(screen.queryByTestId('task-form-sheet')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('task-form-dialog')).not.toBeInTheDocument()
     })
   })
 
@@ -81,6 +81,27 @@ describe('TaskForm', () => {
       )
       expect(screen.getByText('form.edit_title.string')).toBeInTheDocument()
       expect(screen.getByDisplayValue('Existing')).toBeInTheDocument()
+    })
+
+    it('shows progress slider for in_process tasks', () => {
+      render(
+        <TaskForm
+          open
+          calendars={calendars}
+          task={{
+            id: 't1',
+            key: 't1',
+            title: 'In progress task',
+            calendar_key: 'cal-1',
+            status: 'in_process',
+            percent_complete: 40,
+          }}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      )
+      expect(screen.getByTestId('task-progress-field')).toBeInTheDocument()
+      expect(screen.getByRole('slider')).toHaveValue('40')
     })
   })
 

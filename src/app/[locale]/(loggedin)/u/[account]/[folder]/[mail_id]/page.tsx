@@ -1,6 +1,7 @@
 'use client'
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
+import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailContent from '@/features/mails/components/mail/mail-content'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
@@ -9,6 +10,7 @@ import MailSubject from '@/features/mails/components/mail/mail-subject'
 import { RightActionsType } from '@/features/mails/components/mail/types'
 import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
+import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -18,14 +20,9 @@ import { Action, ActionId } from '@/features/mails/components/mail/types'
 import {
   ChevronLeft,
   ChevronRight,
-  Flame,
   Forward,
-  Mail,
-  MoreHorizontal,
   Reply,
   ReplyAll,
-  Tag,
-  Trash2,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
@@ -68,6 +65,8 @@ const MailPage: React.FC = () => {
     mailId: mail_id,
     accountId: account,
   })
+
+  const { handlePrint, isPrintDisabled } = usePrintMail(data)
 
   if (isLoading) return <MailDetailSkeleton />
   if (isError || !data) return null
@@ -116,22 +115,6 @@ const MailPage: React.FC = () => {
     }
   }
   const actions = {
-    mainMobile: [
-      { icon: <Trash2 size={18} />, title: t('delete.string') },
-      { icon: <MoreHorizontal size={18} />, title: t('more.string') },
-    ],
-    mainDesktop: [
-      { icon: <Trash2 size={18} />, title: t('delete.string') },
-      { icon: <Flame size={18} />, title: t('report_spam.string') },
-      { icon: <Mail size={18} />, title: t('mark_unread.string') },
-      { icon: <Tag size={18} />, title: t('label.string') },
-      { icon: <MoreHorizontal size={18} />, title: t('more.string') },
-    ],
-    moreActions: [
-      { icon: <Flame size={18} />, title: t('report_spam.string') },
-      { icon: <Mail size={18} />, title: t('mark_unread.string') },
-      { icon: <Tag size={18} />, title: t('label.string') },
-    ],
     navigation: [
       {
         id: ActionId.GO_BACK,
@@ -170,14 +153,16 @@ const MailPage: React.FC = () => {
     <div className="flex w-full flex-col">
       <div className="mb-4 flex items-center gap-2">
         <MailReturnButton folderPath={folder} />
-        {/* Mobile view */}
-        <div className="flex gap-2 sm:hidden">
-          <MailActionsBar actions={actions.mainMobile} />
-        </div>
-        {/* Desktop view */}
-        <div className="hidden sm:flex sm:gap-2">
-          <MailActionsBar actions={actions.mainDesktop} />
-        </div>
+        <MailDetailActionBar
+          accountId={Array.isArray(account) ? account[0] : account}
+          folder={Array.isArray(folder) ? folder.join('/') : folder}
+          mailId={mail_id}
+          seen={data.seen}
+          flags={data.flags}
+          navigation={mailNavigation}
+          onPrint={handlePrint}
+          isPrintDisabled={isPrintDisabled}
+        />
         <div className="ml-auto">
           {isMobile ? (
             <MailActionsBar actions={rightActions} />

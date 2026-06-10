@@ -4,15 +4,15 @@ import userEvent from '@testing-library/user-event'
 
 const mockDispatch = jest.fn()
 
+const mockTasksUiState = {
+  statusFilter: 'all' as const,
+  selectedCalendarKey: null as string | null,
+}
+
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
   useAppSelector: (selector: (s: unknown) => unknown) =>
-    selector({
-      tasksUi: {
-        statusFilter: 'all',
-        selectedCalendarKey: null,
-      },
-    }),
+    selector({ tasksUi: mockTasksUiState }),
 }))
 
 jest.mock('@/features/calendars', () => ({
@@ -72,7 +72,7 @@ jest.mock('next-intl', () => ({
 
 import { useGetCalendarsQuery } from '@/features/calendars'
 import { useTasksSource } from '../../../hooks/use-tasks-source'
-import { setStatusFilter } from '../../../store/tasks-ui-slice'
+import { setCalendarFilter, setStatusFilter } from '../../../store/tasks-ui-slice'
 import TasksSidebar from '../sidebar'
 
 const mockUseGetCalendarsQuery = useGetCalendarsQuery as jest.Mock
@@ -98,6 +98,8 @@ const sampleTasks = [
 describe('TasksSidebar', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockTasksUiState.statusFilter = 'all'
+    mockTasksUiState.selectedCalendarKey = null
     mockUseTasksSource.mockReturnValue({
       tasks: sampleTasks,
       isLoading: false,
@@ -126,6 +128,7 @@ describe('TasksSidebar', () => {
       expect(screen.getByText('sidebar.smart_views.all.string')).toBeInTheDocument()
       expect(screen.getByText('sidebar.calendars.title.string')).toBeInTheDocument()
       expect(screen.getByText('Personal')).toBeInTheDocument()
+      expect(screen.getByText('sidebar.calendars.all.string')).toBeInTheDocument()
     })
   })
 
@@ -135,6 +138,21 @@ describe('TasksSidebar', () => {
       render(<TasksSidebar />)
       await user.click(screen.getByText('sidebar.smart_views.today.string'))
       expect(mockDispatch).toHaveBeenCalledWith(setStatusFilter('today'))
+    })
+
+    it('dispatches setCalendarFilter(null) when all calendars is clicked', async () => {
+      const user = userEvent.setup()
+      render(<TasksSidebar />)
+      await user.click(screen.getByText('sidebar.calendars.all.string'))
+      expect(mockDispatch).toHaveBeenCalledWith(setCalendarFilter(null))
+    })
+
+    it('toggles calendar filter off when the same calendar is clicked again', async () => {
+      const user = userEvent.setup()
+      mockTasksUiState.selectedCalendarKey = 'cal-1'
+      render(<TasksSidebar />)
+      await user.click(screen.getByText('Personal'))
+      expect(mockDispatch).toHaveBeenCalledWith(setCalendarFilter(null))
     })
   })
 })

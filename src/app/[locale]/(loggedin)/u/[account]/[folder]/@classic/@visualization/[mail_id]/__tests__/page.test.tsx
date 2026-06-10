@@ -11,6 +11,13 @@ jest.mock('@/features/mails/store/mails-api', () => ({
   })),
 }))
 
+jest.mock('@/features/mails/hooks/use-print-mail', () => ({
+  usePrintMail: jest.fn(() => ({
+    handlePrint: jest.fn(),
+    isPrintDisabled: false,
+  })),
+}))
+
 jest.mock('@/features/mails/components/mail/mail-return-button', () => ({
   MailReturnButton: ({ folderPath }: { folderPath: string }) => (
     <button data-testid="mail-return-button">{folderPath}</button>
@@ -24,6 +31,11 @@ jest.mock('@/features/mails/components/mail/mail-action-bar', () => ({
       {actions?.length ?? 0} actions
     </div>
   ),
+}))
+
+jest.mock('@/features/mails/components/mail/mail-detail-action-bar', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mail-detail-action-bar" />,
 }))
 
 jest.mock('@/features/mails/components/mail/mail-subject', () => ({

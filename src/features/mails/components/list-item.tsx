@@ -11,6 +11,8 @@ interface ListItemProps {
   onToggleRead?: (id: string) => void
   onDelete?: (id: string) => void
   onArchive?: (id: string) => void
+  onSpam?: (id: string) => void
+  onMoveToInbox?: (id: string) => void
 }
 
 const ListItem: React.FC<ListItemProps> = (props) => {

@@ -3,9 +3,14 @@
 import { Button } from '@/components/ui/button'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import TaskCompleteCheckbox from '@/features/tasks/components/task-complete-checkbox'
+import TaskProgressBar from '@/features/tasks/components/task-progress-bar'
 import type { Task } from '@/features/tasks/tasks-types'
 import { isTaskOverdue } from '@/features/tasks/utils/task-due'
-import { getPriorityLevel } from '@/features/tasks/utils/task-priority'
+import { getDisplayTaskProgress } from '@/features/tasks/utils/task-progress'
+import {
+  getPriorityBadgeClassName,
+  getPriorityLevel,
+} from '@/features/tasks/utils/task-priority'
 import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 import { Pencil, Trash2 } from 'lucide-react'
@@ -49,6 +54,7 @@ function TaskItem({
 
   const priorityLevel = getPriorityLevel(task.priority)
   const isCompleted = task.status === 'completed'
+  const progressPercent = useMemo(() => getDisplayTaskProgress(task), [task])
 
   const handleToggle = useCallback(
     () => onToggleComplete(task),
@@ -83,10 +89,8 @@ function TaskItem({
           {priorityLevel !== 'none' && (
             <span
               className={cn(
-                'rounded px-1.5 py-0.5',
-                priorityLevel === 'high' && 'bg-destructive/10 text-destructive',
-                priorityLevel === 'medium' && 'bg-blue-500/10 text-blue-600',
-                priorityLevel === 'low' && 'bg-muted text-muted-foreground'
+                'rounded px-1.5 py-0.5 font-medium',
+                getPriorityBadgeClassName(priorityLevel)
               )}
             >
               {t(`priority.${priorityLevel}.string`)}
@@ -126,6 +130,10 @@ function TaskItem({
             </span>
           )}
         </div>
+
+        {progressPercent !== null && (
+          <TaskProgressBar value={progressPercent} className="pt-0.5" />
+        )}
       </div>
 
       <div className="flex shrink-0 gap-1">
