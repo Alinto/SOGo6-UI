@@ -28,8 +28,22 @@ describe('Mail Types', () => {
       expect(ActionId.GO_NEXT).toBe('go-next')
     })
 
-    it('should have exactly two action types', () => {
-      expect(Object.keys(ActionId)).toHaveLength(2)
+    it('should define all mail action bar action ids', () => {
+      expect(ActionId).toEqual({
+        GO_BACK: 'go-back',
+        GO_NEXT: 'go-next',
+        DELETE: 'delete',
+        SPAM: 'spam',
+        HAM: 'ham',
+        MARK_UNREAD: 'mark-unread',
+        LABEL: 'label',
+        MORE: 'more',
+        ARCHIVE: 'archive',
+        DOWNLOAD: 'download',
+        MOVE: 'move',
+        PRINT: 'print',
+        VIEW_SOURCE: 'view-source',
+      })
     })
   })
 
