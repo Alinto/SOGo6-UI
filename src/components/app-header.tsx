@@ -1,4 +1,5 @@
 'use client'
+import ContactsSearch from '@/features/address_books/components/contacts-search'
 import CalendarEventsSearch from '@/features/calendars/components/calendar-events-search'
 import MailsSearch from '@/features/mails/components/mails-search'
 import TasksSearch from '@/features/tasks/components/tasks-search'
@@ -13,7 +14,7 @@ const AppHeader: React.FC = () => {
   const isMobile = useIsMobile()
   const pathname = usePathname()
   const showMailSearch = pathname.startsWith('/u/')
-  const showAddressBookSearch = pathname.startsWith('/address-books/')
+  const showAddressBookSearch = pathname.startsWith('/address_books')
   const showCalendarsSearch = pathname.startsWith('/calendars')
   const showTasksSearch = pathname.startsWith('/tasks')
 
@@ -25,13 +26,11 @@ const AppHeader: React.FC = () => {
         {isMobile && <SidebarTrigger />}
         <div className="min-w-0 flex-1">
           {showMailSearch && <MailsSearch />}
+          {showAddressBookSearch && <ContactsSearch />}
           {showCalendarsSearch && <CalendarEventsSearch />}
           {showTasksSearch && <TasksSearch />}
         </div>
       </div>
-      {showAddressBookSearch && (
-        <div className="ml-2 w-1/4 min-w-0 flex-1">{/* address book search */}</div>
-      )}
       {!showMailSearch &&
         !showAddressBookSearch &&
         !showCalendarsSearch &&

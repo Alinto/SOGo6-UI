@@ -1,3 +1,7 @@
+import {
+  normalizeGroupMembers,
+  removeContactFromDistributionLists,
+} from '@/app/fakeApi/address_books/vcard-utils'
 import { DEFAULT_VCARDS } from '@/app/fakeApi/utils/default-data'
 import { getDemoData, setDemoData } from '@/app/fakeApi/utils/demo-storage'
 import { NextRequest, NextResponse } from 'next/server'
@@ -57,17 +61,24 @@ export async function PATCH(
   const updates = await req.json()
 
   // Prevent modification of protected fields
-  const {
-    id: _,
-    book_id: __,
-    version: ___,
-    created_at: ____,
-    ...cleanUpdates
-  } = updates // ✅ FIX 2.1
+  const cleanUpdates = { ...updates } as Record<string, unknown>
+  delete cleanUpdates.id
+  delete cleanUpdates.book_id
+  delete cleanUpdates.version
+  delete cleanUpdates.created_at
 
-  // Apply the modifications with timestamp
+  if (cleanUpdates.kind === 'group' || contact.kind === 'group') {
+    cleanUpdates.lastName = ''
+    cleanUpdates.emails = []
+    cleanUpdates.phoneNumbers = []
+    cleanUpdates.addresses = []
+    if (cleanUpdates.members) {
+      cleanUpdates.members = normalizeGroupMembers(cleanUpdates.members)
+    }
+  }
+
   Object.assign(contact, cleanUpdates, {
-    updated_at: new Date().toISOString(), // ✅ FIX 2.2
+    updated_at: new Date().toISOString(),
   })
 
   // Save in the cookie
@@ -100,8 +111,8 @@ export async function DELETE(
     return NextResponse.json({ error: 'Contact not found' }, { status: 404 })
   }
 
-  // Delete the contact
   contacts.splice(contactIndex, 1)
+  removeContactFromDistributionLists(userVCards, book_id, contact_id)
 
   // Save in the cookie
   const response = NextResponse.json({ success: true }, { status: 200 })

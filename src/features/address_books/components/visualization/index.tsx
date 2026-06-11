@@ -1,136 +1,19 @@
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { useTranslations } from 'next-intl'
-import { useParams } from 'next/navigation'
 import React from 'react'
 import { VCard } from '../../address-books-types'
-import { ContactFieldRow } from './contact-field-row'
-import { ContactHeader } from './contact-header'
-import { EmailItem } from './email-item'
-import { NoteField } from './note-field'
+import { isDistributionList } from '../../utils/distribution-list'
+import ContactVisualization from './contact-visualization'
+import DistributionListVisualization from './distribution-list-visualization'
 
 interface VisualizationProps {
   data: VCard
 }
 
 const Visualization: React.FC<VisualizationProps> = ({ data }) => {
-  const {
-    firstName,
-    lastName,
-    organization,
-    jobTitle,
-    photo,
-    emails,
-    phoneNumbers,
-    addresses,
-    note,
-    urls,
-  } = data
+  if (isDistributionList(data)) {
+    return <DistributionListVisualization data={data} />
+  }
 
-  const { book_id, contact_id } = useParams()
-  const t = useTranslations('CONTACT_FORM')
-
-  return (
-    <Card className="flex h-full w-full flex-col">
-      <CardHeader className="pb-4">
-        <ContactHeader
-          firstName={firstName}
-          lastName={lastName}
-          organization={organization}
-          jobTitle={jobTitle}
-          photo={photo}
-        />
-      </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-6 overflow-y-auto">
-        {/* Email addresses section */}
-        {emails && emails.length > 0 && (
-          <section aria-labelledby="emails-heading" className="space-y-3">
-            <h2
-              id="emails-heading"
-              className="text-foreground text-base font-semibold sm:text-lg"
-            >
-              {t('emails.string')}
-            </h2>
-            <div className="space-y-1">
-              {emails.map((email, index) => (
-                <EmailItem key={index} email={email} />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Phone numbers section */}
-        {phoneNumbers && phoneNumbers.length > 0 && (
-          <section aria-labelledby="phone-heading" className="space-y-3">
-            <Separator />
-            <h2
-              id="phone-heading"
-              className="text-foreground text-base font-semibold sm:text-lg"
-            >
-              {t('phone_numbers.string')}
-            </h2>
-            <div className="space-y-1">
-              {phoneNumbers.map((phone, index) => (
-                <ContactFieldRow key={index} value={phone} type="phone" />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Addresses section */}
-        {addresses && addresses.length > 0 && (
-          <section aria-labelledby="addresses-heading" className="space-y-3">
-            <Separator />
-            <h2
-              id="addresses-heading"
-              className="text-foreground text-base font-semibold sm:text-lg"
-            >
-              {t('addresses.string')}
-            </h2>
-            <div className="space-y-1">
-              {addresses.map((address, index) => (
-                <ContactFieldRow key={index} value={address} type="text" />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* URLs section */}
-        {urls && urls.length > 0 && (
-          <section aria-labelledby="urls-heading" className="space-y-3">
-            <Separator />
-            <h2
-              id="urls-heading"
-              className="text-foreground text-base font-semibold sm:text-lg"
-            >
-              {t('urls.string')}
-            </h2>
-            <div className="space-y-1">
-              {urls.map((url, index) => (
-                <ContactFieldRow key={index} value={url} type="url" />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Notes section */}
-        <section aria-labelledby="notes-heading" className="space-y-3">
-          <Separator />
-          <h2
-            id="notes-heading"
-            className="text-foreground text-base font-semibold sm:text-lg"
-          >
-            {t('notes.string')}
-          </h2>
-          <NoteField
-            note={note}
-            contactId={contact_id as string}
-            bookId={book_id as string}
-          />
-        </section>
-      </CardContent>
-    </Card>
-  )
+  return <ContactVisualization data={data} />
 }
 
 export default Visualization

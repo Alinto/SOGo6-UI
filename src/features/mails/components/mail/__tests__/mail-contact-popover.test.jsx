@@ -3,6 +3,33 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { ContactPopoverContent } from '../mail-contact-popover'
 
+const mockDispatch = jest.fn()
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
+}))
+
+jest.mock('@/features/address_books', () => ({
+  useGetAddressBooksQuery: () => ({
+    data: { personals: [{ id: 'work', default: true }] },
+  }),
+  openCreateForm: jest.fn((payload) => ({
+    type: 'addressBooksUi/openCreateForm',
+    payload,
+  })),
+  parseContactName: (name) => ({
+    firstName: name?.split(' ')[0] ?? '',
+    lastName: name?.split(' ').slice(1).join(' ') ?? '',
+  }),
+}))
+
+jest.mock('@/features/mails/store', () => ({
+  createDraft: jest.fn((payload) => ({
+    type: 'mailCompose/createDraft',
+    payload,
+  })),
+}))
+
 jest.mock('next-intl', () => ({
   useTranslations: () => (key) => {
     const translations = {
@@ -15,52 +42,35 @@ jest.mock('next-intl', () => ({
   },
 }))
 
+const contact = { name: 'John Doe', email: 'john@example.com' }
+
 describe('ContactPopoverContent', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('renders add to address book button', () => {
-    render(<ContactPopoverContent />)
+    render(<ContactPopoverContent contact={contact} />)
 
     const addButton = screen.getByText('Add to address book')
     expect(addButton).toBeInTheDocument()
     expect(addButton).toHaveAttribute('type', 'button')
-    expect(addButton).toHaveAttribute('tabIndex', '0')
-    expect(addButton).toHaveClass('hover:bg-muted', 'cursor-pointer')
   })
 
   it('renders write new message button', () => {
-    render(<ContactPopoverContent />)
+    render(<ContactPopoverContent contact={contact} />)
 
     const writeButton = screen.getByText('Write new message')
     expect(writeButton).toBeInTheDocument()
-    expect(writeButton).toHaveAttribute('type', 'button')
-    expect(writeButton).toHaveAttribute('tabIndex', '0')
-    expect(writeButton).toHaveClass('hover:bg-muted', 'cursor-pointer')
   })
 
-  it('has proper structure with icons', () => {
-    render(<ContactPopoverContent />)
+  it('dispatches actions on click', async () => {
+    const user = userEvent.setup()
+    render(<ContactPopoverContent contact={contact} />)
 
-    const container = screen.getByText('Add to address book').closest('div')
-    expect(container).toHaveClass('flex', 'flex-col', 'gap-1')
+    await user.click(screen.getByText('Add to address book'))
+    await user.click(screen.getByText('Write new message'))
 
-    // Check that buttons have proper flex layout with icons
-    const addButton = screen.getByText('Add to address book')
-    expect(addButton).toHaveClass('flex', 'gap-2')
-
-    const writeButton = screen.getByText('Write new message')
-    expect(writeButton).toHaveClass('flex', 'gap-2')
-  })
-
-  it('buttons are clickable', async () => {
-    render(<ContactPopoverContent />)
-
-    const addButton = screen.getByText('Add to address book')
-    const writeButton = screen.getByText('Write new message')
-
-    await userEvent.click(addButton)
-    await userEvent.click(writeButton)
-
-    // No errors should occur during clicks
-    expect(addButton).toBeInTheDocument()
-    expect(writeButton).toBeInTheDocument()
+    expect(mockDispatch).toHaveBeenCalledTimes(2)
   })
 })

@@ -31,6 +31,10 @@ describe('Address Books API Route', () => {
     req: NextRequest,
     context: { params: Promise<{ book_id: string }> }
   ) => Promise<{ json: () => Promise<unknown>; status: number }>
+  let POST: (
+    req: NextRequest,
+    context: { params: Promise<{ book_id: string }> }
+  ) => Promise<{ json: () => Promise<unknown>; status: number }>
   let OPTIONS: () => Promise<{ json: () => Promise<unknown>; status: number }>
 
   const mockRequest = new NextRequest('http://localhost:3000/api/test')
@@ -39,6 +43,7 @@ describe('Address Books API Route', () => {
   beforeAll(async () => {
     const routeModule = await import('../route')
     GET = routeModule.GET
+    POST = routeModule.POST
     OPTIONS = routeModule.OPTIONS
   })
 
@@ -90,6 +95,34 @@ describe('Address Books API Route', () => {
       if (data1.length > 0) {
         expect(data1[0]?.id).toBe(data2[0]?.id)
       }
+    })
+  })
+
+  describe('POST', () => {
+    it('should create a distribution list with members', async () => {
+      const request = {
+        json: async () => ({
+          kind: 'group',
+          firstName: 'Marketing Team',
+          members: [
+            {
+              contactId: '1',
+              email: 'john.doe@example.com',
+              displayName: 'John Doe',
+            },
+          ],
+        }),
+        cookies: { get: jest.fn(() => undefined) },
+      } as unknown as NextRequest
+
+      const response = await POST(request, { params: mockParams })
+      const data = (await response.json()) as VCard
+
+      expect(response.status).toBe(201)
+      expect(data.kind).toBe('group')
+      expect(data.firstName).toBe('Marketing Team')
+      expect(data.members).toHaveLength(1)
+      expect(data.members?.[0]?.email).toBe('john.doe@example.com')
     })
   })
 

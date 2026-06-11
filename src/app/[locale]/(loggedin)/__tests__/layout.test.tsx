@@ -61,6 +61,26 @@ jest.mock('@/features/mails/components/compose/floating-compose-container', () =
   }
 })
 
+jest.mock('@/features/address_books/components/contact-form-host', () => {
+  return function MockContactFormHost() {
+    return <div data-testid="contact-form-host">Contact Form Host</div>
+  }
+})
+
+jest.mock('@/features/address_books/components/distribution-list-form-host', () => {
+  return function MockDistributionListFormHost() {
+    return (
+      <div data-testid="distribution-list-form-host">
+        Distribution List Form Host
+      </div>
+    )
+  }
+})
+
+jest.mock('@/features/address_books/hooks/use-address-book-drag-end', () => ({
+  useAddressBookDragEnd: () => jest.fn(),
+}))
+
 jest.mock('@/features/notifications', () => ({
   NotificationProvider: () => (
     <div data-testid="notification-provider">Provider</div>

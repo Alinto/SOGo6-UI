@@ -1,11 +1,13 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { setSearchQuery } from '@/features/address_books/store/address-books-ui-slice'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch } from '@/lib/redux/hooks'
 import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 export default function Layout({
   children,
@@ -16,8 +18,15 @@ export default function Layout({
 }) {
   const pathname = usePathname()
   const { push } = useRouter()
+  const dispatch = useAppDispatch()
   const { book_id } = useParams()
   const t = useTranslations('CONTACT_FORM')
+
+  useEffect(() => {
+    if (typeof book_id === 'string') {
+      dispatch(setSearchQuery(''))
+    }
+  }, [book_id, dispatch])
 
   // Check if a contact is selected (pathname contains a contact ID after book_id)
   const basePath = `/address_books/${book_id}`

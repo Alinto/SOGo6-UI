@@ -7,10 +7,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useRouter } from '@/lib/i18n/navigation'
+import { Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useState } from 'react'
 import { VCard } from '../address-books-types'
+import { getContactDisplayName } from '../utils/contact-list'
+import {
+  getDistributionListMemberCount,
+  isDistributionList,
+} from '../utils/distribution-list'
 
 interface ListItemProps {
   data: VCard
@@ -32,6 +38,8 @@ const ListItem: React.FC<ListItemProps> = ({
   const { firstName, lastName, id } = data
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const [isHovered, setIsHovered] = useState(false)
+  const isList = isDistributionList(data)
+  const displayName = getContactDisplayName(data)
 
   const shouldShowCheckbox = showCheckbox || isHovered || isSelected
 
@@ -90,15 +98,30 @@ const ListItem: React.FC<ListItemProps> = ({
       )}
       {!shouldShowCheckbox && (
         <Avatar className="h-10 w-10 shrink-0">
-          <AvatarImage src="/images/account-avatar.svg" />
-          <AvatarFallback>
-            {firstName[0]?.toUpperCase()}
-            {lastName[0]?.toUpperCase()}
-          </AvatarFallback>
+          {isList ? (
+            <AvatarFallback className="bg-primary/10 text-primary">
+              <Users className="h-4 w-4" />
+            </AvatarFallback>
+          ) : (
+            <>
+              <AvatarImage src="/images/account-avatar.svg" />
+              <AvatarFallback>
+                {firstName[0]?.toUpperCase()}
+                {lastName[0]?.toUpperCase()}
+              </AvatarFallback>
+            </>
+          )}
         </Avatar>
       )}
-      <div className="flex min-w-0 flex-1 truncate text-sm">
-        {firstName} {lastName}
+      <div className="flex min-w-0 flex-1 flex-col truncate">
+        <span className="truncate text-sm">{displayName}</span>
+        {isList && (
+          <span className="text-muted-foreground truncate text-xs">
+            {t('list_member_count.string', {
+              number: getDistributionListMemberCount(data),
+            })}
+          </span>
+        )}
       </div>
     </div>
   )

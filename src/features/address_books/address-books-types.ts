@@ -16,9 +16,19 @@ export interface AddressBooks {
   subscriptions: AddressBook[]
 }
 
+export type ContactKind = 'individual' | 'group'
+
+export interface ContactMember {
+  contactId?: string
+  email: string
+  displayName?: string
+}
+
 export interface VCard {
   id: string
   version: string
+  kind?: ContactKind
+  members?: ContactMember[]
   firstName: string
   lastName: string
   middleName?: string

@@ -26,7 +26,7 @@ export function ContactBadge({ contact }: { contact: EmailContact }) {
         </TooltipButton>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-2">
-        <ContactPopoverContent />
+        <ContactPopoverContent contact={contact} />
       </PopoverContent>
     </Popover>
   )

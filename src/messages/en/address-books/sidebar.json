@@ -1,5 +1,13 @@
 {
     "ADDRESS_BOOKS_SIDEBAR": {
+        "new_contact": {
+            "string": "New contact",
+            "context": "Button for creating a new contact in the sidebar"
+        },
+        "new_distribution_list": {
+            "string": "New distribution list",
+            "context": "Button for creating a new distribution list in the sidebar"
+        },
         "globals": {
             "string": "Global address books"
         },
@@ -38,6 +46,10 @@
                     "name": {
                         "string": "CardDAV URL"
                     }
+                },
+                "copy": {
+                    "string": "Copy URL",
+                    "context": "Aria label for copying the address book CardDAV URL."
                 }
             },
             "delete": {

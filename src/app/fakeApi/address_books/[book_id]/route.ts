@@ -3,8 +3,11 @@ import {
   DEFAULT_VCARDS,
 } from '@/app/fakeApi/utils/default-data'
 import { getDemoData, setDemoData } from '@/app/fakeApi/utils/demo-storage'
-import { VCard } from '@/features/address_books/address-books-types'
 import { NextRequest, NextResponse } from 'next/server'
+import {
+  buildVCardFromBody,
+  normalizeGroupMembers,
+} from '../vcard-utils'
 
 /**
  * Find an address book by ID in all categories
@@ -80,37 +83,14 @@ export async function POST(
     }
   }
 
-  // Create the new contact with explicit whitelist
-  const newContact: VCard = {
+  const newContact = buildVCardFromBody({
+    ...body,
     id: contactId,
-    version: '4.0',
-    firstName: body.firstName || '',
-    lastName: body.lastName || '',
-    middleName: body.middleName,
-    prefix: body.prefix,
-    suffix: body.suffix,
-    nickname: body.nickname,
-    title: body.title,
-    organization: body.organization,
-    department: body.department,
-    jobTitle: body.jobTitle,
-    note: body.note,
-    categories: body.categories || [],
-    urls: body.urls || [],
-    photos: body.photos || [],
-    emails: body.emails || [],
-    phoneNumbers: body.phoneNumbers || [],
-    addresses: body.addresses || [],
-    impp: body.impp || [],
-    geo: body.geo,
-    birthday: body.birthday,
-    anniversary: body.anniversary,
-    sound: body.sound,
-    uid: body.uid,
-    key: body.key,
-    created_at: new Date().toISOString(), // ✅ FIX 1
-    updated_at: new Date().toISOString(), // ✅ FIX 1
-  }
+    members:
+      body.kind === 'group'
+        ? normalizeGroupMembers(body.members)
+        : body.members,
+  })
 
   // Add the contact
   userVCards[book_id].push(newContact)

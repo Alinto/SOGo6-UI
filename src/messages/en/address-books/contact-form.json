@@ -79,6 +79,91 @@
     "no_notes": {
       "string": "No notes",
       "context": "Placeholder text when there are no notes."
+    },
+    "new_contact": {
+      "string": "New contact",
+      "context": "Title for the new contact dialog"
+    },
+    "edit_contact": {
+      "string": "Edit contact",
+      "context": "Title for the edit contact dialog"
+    },
+    "create": {
+      "string": "Create",
+      "context": "Button to create a new contact"
+    },
+    "delete": {
+      "string": "Delete",
+      "context": "Button to delete a contact"
+    },
+    "add_email": {
+      "string": "Add email",
+      "context": "Button to add another email field"
+    },
+    "add_phone": {
+      "string": "Add phone",
+      "context": "Button to add another phone field"
+    },
+    "remove_field": {
+      "string": "Remove field",
+      "context": "Aria label for removing a dynamic form field"
+    },
+    "fields": {
+      "first_name": {
+        "string": "First name"
+      },
+      "last_name": {
+        "string": "Last name"
+      },
+      "organization": {
+        "string": "Organization"
+      },
+      "job_title": {
+        "string": "Job title"
+      }
+    },
+    "delete_dialog": {
+      "title": {
+        "string": "Delete contact?"
+      },
+      "description": {
+        "string": "This contact will be permanently removed from your address book."
+      },
+      "confirm": {
+        "string": "Delete"
+      }
+    },
+    "write_message": {
+      "string": "Write message",
+      "context": "Button to compose an email to this contact."
+    },
+    "compose_email": {
+      "string": "Compose",
+      "context": "Button to compose an email to a specific address on the contact card."
+    },
+    "selection_placeholder": {
+      "title": {
+        "string": "Select a contact",
+        "context": "Title shown when no contact is selected in the detail panel."
+      },
+      "description": {
+        "string": "Choose a contact or distribution list from the list to view details.",
+        "context": "Description shown when no contact is selected."
+      }
+    },
+    "load_error": {
+      "title": {
+        "string": "Could not load contact",
+        "context": "Error title when contact details fail to load."
+      },
+      "list": {
+        "string": "Could not load contacts",
+        "context": "Error message when the contact list fails to load."
+      },
+      "description": {
+        "string": "Please try again later.",
+        "context": "Error description when contact data fails to load."
+      }
     }
   }
 }

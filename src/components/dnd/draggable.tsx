@@ -4,12 +4,15 @@ import React from 'react'
 function Draggable({
   children,
   id,
+  data,
 }: {
   children: React.ReactNode
   id: string
+  data?: Record<string, unknown>
 }) {
   const { attributes, listeners, setNodeRef } = useDraggable({
-    id: id,
+    id,
+    data,
   })
 
   return (
