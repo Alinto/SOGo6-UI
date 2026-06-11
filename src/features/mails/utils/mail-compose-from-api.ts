@@ -83,6 +83,75 @@ function extractBody(data: Pick<ImapMessages, 'body' | 'contents'>): string {
   return plain?.content ?? ''
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function formatContactForForward(contact?: { name?: string; email?: string }): string {
+  if (!contact?.email) return ''
+  const safeEmail = escapeHtml(contact.email)
+  return contact.name ? `${escapeHtml(contact.name)} &lt;${safeEmail}&gt;` : safeEmail
+}
+
+function formatDateForForward(date: number | string): string {
+  return new Date(date).toLocaleString('fr-FR', {
+    weekday: 'short',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+function formatDateForReply(date: number | string): string {
+  const parsedDate = new Date(date)
+  const datePart = parsedDate.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+  const timePart = parsedDate.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+
+  return `${datePart} at ${timePart}`
+}
+
+export function buildForwardedBody(
+  mail: Pick<ImapMessages, 'from' | 'to' | 'date' | 'subject'>,
+  body: string
+): string {
+  const header = [
+    '<div>---------- Forwarded message ---------</div>',
+    `<div>From: ${formatContactForForward(mail.from)}</div>`,
+    `<div>Date: ${escapeHtml(formatDateForForward(mail.date))}</div>`,
+    `<div>Subject: ${escapeHtml(mail.subject ?? '')}</div>`,
+    `<div>To: ${(mail.to ?? []).map(formatContactForForward).filter(Boolean).join(', ')}</div>`,
+    '<br />',
+  ].join('')
+
+  return header + body
+}
+
+export function buildQuotedReplyBody(
+  mail: Pick<ImapMessages, 'from' | 'date'>,
+  body: string
+): string {
+  const header = `<div>On ${escapeHtml(formatDateForReply(mail.date))}, ${formatContactForForward(mail.from)} wrote:</div>`
+  const quoted = `<blockquote style="margin:0 0 0 .8ex;border-left:1px solid #ccc;padding-left:1ex;">${body}</blockquote>`
+
+  return header + quoted
+}
+
 export function apiDataToMailComposeDraft(
   draftId: string,
   data: ApiMailData

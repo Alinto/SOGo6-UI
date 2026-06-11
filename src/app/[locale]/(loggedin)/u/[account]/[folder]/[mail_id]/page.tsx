@@ -1,29 +1,23 @@
 'use client'
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
-import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailContent from '@/features/mails/components/mail/mail-content'
+import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
-import { RightActionsType } from '@/features/mails/components/mail/types'
 import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
+import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { useAppSelector } from '@/lib/redux/hooks'
 import { useRouter } from '@/lib/i18n/navigation'
+import { useAppSelector } from '@/lib/redux/hooks'
 
 import { Action, ActionId } from '@/features/mails/components/mail/types'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Forward,
-  Reply,
-  ReplyAll,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
@@ -40,7 +34,7 @@ const MailPage: React.FC = () => {
   const isMobile = useIsMobile()
   const mailNavigation = useAppSelector((state) => state.mailNavigation)
 
-  const folderKey = `${Array.isArray(account) ? account[0] : account ?? ''}/${Array.isArray(folder) ? (folder as string[]).join('/') : folder ?? ''}`
+  const folderKey = `${Array.isArray(account) ? account[0] : (account ?? '')}/${Array.isArray(folder) ? (folder as string[]).join('/') : (folder ?? '')}`
   const isNavigationValid = mailNavigation.folderKey === folderKey
   const currentIndex = isNavigationValid
     ? mailNavigation.orderedIds.indexOf(mail_id)
@@ -49,14 +43,12 @@ const MailPage: React.FC = () => {
   const prevId =
     currentIndex > 0 ? mailNavigation.orderedIds[currentIndex - 1] : null
   const nextId =
-    currentIndex !== -1 &&
-    currentIndex < mailNavigation.orderedIds.length - 1
+    currentIndex !== -1 && currentIndex < mailNavigation.orderedIds.length - 1
       ? mailNavigation.orderedIds[currentIndex + 1]
       : null
 
   const isFirstOfPage = currentIndex === 0
-  const isLastOfPage =
-    currentIndex === mailNavigation.orderedIds.length - 1
+  const isLastOfPage = currentIndex === mailNavigation.orderedIds.length - 1
   const hasPrevPage = mailNavigation.page > 1
   const hasNextPage = mailNavigation.page < mailNavigation.totalPages
 
@@ -67,6 +59,12 @@ const MailPage: React.FC = () => {
   })
 
   const { handlePrint, isPrintDisabled } = usePrintMail(data)
+  const { rightActions, handleMailAction } = useMailReplyActions({
+    mail: data,
+    mailId: mail_id,
+    folder,
+    accountId: account,
+  })
 
   if (isLoading) return <MailDetailSkeleton />
   if (isError || !data) return null
@@ -121,34 +119,18 @@ const MailPage: React.FC = () => {
         icon: <ChevronLeft size={18} />,
         title: t('previous-mail.string'),
         disabled:
-          !prevId &&
-          !(isNavigationValid && isFirstOfPage && hasPrevPage),
+          !prevId && !(isNavigationValid && isFirstOfPage && hasPrevPage),
       },
       {
         id: ActionId.GO_NEXT,
         icon: <ChevronRight size={18} />,
         title: t('next-mail.string'),
         disabled:
-          !nextId &&
-          !(isNavigationValid && isLastOfPage && hasNextPage),
+          !nextId && !(isNavigationValid && isLastOfPage && hasNextPage),
       },
     ],
   }
 
-  const rightActions: RightActionsType = [
-    {
-      icon: <Reply size={18} />,
-      title: t('reply.string'),
-    },
-    {
-      icon: <ReplyAll size={18} />,
-      title: t('reply_all.string'),
-    },
-    {
-      icon: <Forward size={18} />,
-      title: t('forward.string'),
-    },
-  ]
   return (
     <div className="flex w-full flex-col">
       <div className="mb-4 flex items-center gap-2">
@@ -165,7 +147,10 @@ const MailPage: React.FC = () => {
         />
         <div className="ml-auto">
           {isMobile ? (
-            <MailActionsBar actions={rightActions} />
+            <MailActionsBar
+              actions={rightActions}
+              onAction={(idx, action) => handleMailAction(idx, action)}
+            />
           ) : (
             <MailActionsBar
               actions={actions.navigation}
@@ -191,6 +176,10 @@ const MailPage: React.FC = () => {
             cc={cc}
             showUnsubscribeButton={!!isMailingList}
             date={date}
+            mail={data}
+            mailId={mail_id}
+            folder={folder}
+            accountId={account}
           />
         )}
         <MailContent body={data.body} attachments={data.attachments} />

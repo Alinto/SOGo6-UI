@@ -15,6 +15,10 @@ jest.mock('@/features/user-profile', () => ({
   useProfile: jest.fn(() => ({ mainAccount: null })),
 }))
 
+jest.mock('@/hooks/use-mobile', () => ({
+  useIsMobile: jest.fn(() => false),
+}))
+
 jest.mock('@/features/mails/store/mail-api', () => ({
   useLazyGetCurrentDraftsQuery: jest.fn(() => [
     jest.fn(),

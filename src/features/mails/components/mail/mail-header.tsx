@@ -1,12 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { Forward, Reply, ReplyAll } from 'lucide-react'
+import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import MailActionsBar from './mail-action-bar'
 import { ContactBadge } from './mail-contact-badge'
 import { UnsubscribeDialog } from './mail-unsubscribe-dialog'
-import { MailHeaderFullProps, RightActionsType } from './types'
+import { MailHeaderFullProps } from './types'
 import { formatMailTime } from './utils'
 
 const MAX_DISPLAY_TO = 5
@@ -18,11 +18,21 @@ export default function MailHeader({
   cc,
   showUnsubscribeButton,
   date,
+  mail,
+  mailId,
+  folder,
+  accountId,
 }: MailHeaderFullProps) {
   const t = useTranslations('MAILS_COMMONS')
   const [open, setOpen] = useState(false)
   const [showAllTo, setShowAllTo] = useState(false)
   const [showAllCc, setShowAllCc] = useState(false)
+  const { rightActions, handleMailAction } = useMailReplyActions({
+    mail,
+    mailId,
+    folder,
+    accountId,
+  })
 
   const totalTo = to.length
   const hiddenTo = totalTo - MAX_DISPLAY_TO
@@ -35,21 +45,6 @@ export default function MailHeader({
   const plusUndisplayElement = '+'
 
   const formattedTime = formatMailTime(date)
-
-  const rightActions: RightActionsType = [
-    {
-      icon: <Reply size={18} />,
-      title: t('mail_display.action-bar.reply.string'),
-    },
-    {
-      icon: <ReplyAll size={18} />,
-      title: t('mail_display.action-bar.reply_all.string'),
-    },
-    {
-      icon: <Forward size={18} />,
-      title: t('mail_display.action-bar.forward.string'),
-    },
-  ]
 
   return (
     <div className="mb-3 flex w-full items-start justify-between gap-4">
@@ -133,7 +128,10 @@ export default function MailHeader({
         <span className="text-muted-foreground text-sm whitespace-nowrap">
           {formattedTime}
         </span>
-        <MailActionsBar actions={rightActions} />
+        <MailActionsBar
+          actions={rightActions}
+          onAction={(idx, action) => handleMailAction(idx, action)}
+        />
       </div>
     </div>
   )

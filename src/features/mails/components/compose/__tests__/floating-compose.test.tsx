@@ -405,6 +405,18 @@ describe('FloatingCompose Component', () => {
       })
       expect(maximizeButton).toBeInTheDocument()
     })
+
+    it('should not display maximize/restore button on mobile', () => {
+      ;(useIsMobile as jest.Mock).mockReturnValue(true)
+      render(<FloatingCompose draftId="draft-1" />)
+
+      expect(
+        screen.queryByRole('button', { name: /maximize.string/i })
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /restore.string/i })
+      ).not.toBeInTheDocument()
+    })
   })
 
   describe('Accessibility', () => {

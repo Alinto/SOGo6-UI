@@ -48,6 +48,14 @@ jest.mock('@/features/mails/store/mails-api', () => ({
   useGetMailQuery: jest.fn(),
 }))
 
+// Mock du hook des actions de réponse/transfert
+jest.mock('@/features/mails/hooks/use-mail-reply-actions', () => ({
+  useMailReplyActions: jest.fn(() => ({
+    rightActions: [],
+    handleMailAction: jest.fn(),
+  })),
+}))
+
 // Mock des composants
 jest.mock('@/features/mails/components/mail/mail-action-bar', () =>
   jest.fn(() => <div data-testid="mail-actions-bar">Mail Actions Bar</div>)
