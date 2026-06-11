@@ -128,21 +128,6 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     attachments,
   } = useAppSelector(selectDraftData(draftId))
 
-  console.log('selectors', {
-    draft,
-    mailKey,
-    subject,
-    selectedPriority,
-    requestReadReceipt,
-    selectedIdentity,
-    toRecipients,
-    ccRecipients,
-    bccRecipients,
-    body,
-    isDirty,
-    attachments,
-  })
-
   const activeDraftId = useAppSelector(
     (state) => state.mailCompose.activeDraftId
   )
@@ -182,6 +167,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   React.useEffect(() => {
     if (isMobile) {
       setIsMaximized(true)
+      setIsMinimized(false)
     } else {
       setIsMaximized(false)
     }
@@ -443,17 +429,18 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     const zClass = isActive
       ? 'z-50 shadow-2xl'
       : 'z-40 shadow-md opacity-95 hover:opacity-100'
+    if (isMobile) {
+      return `fixed inset-0 h-full w-full max-w-full rounded-none border-0 ${zClass}`
+    }
     if (isMinimized) return `h-12 w-80 ${zClass}`
     if (isMaximized) {
-      if (isMobile) {
-        return `fixed inset-0 h-full w-full max-w-full rounded-none border-0 ${zClass}`
-      }
       return `fixed inset-0 !m-auto h-[calc(100vh-2rem)] w-[calc(100vw-8rem)] max-w-[calc(100vw-8rem)] rounded-lg ${zClass}`
     }
     return `h-[550px] w-[540px] max-w-[calc(100vw-2rem)] ${zClass}`
   }, [isActive, isMinimized, isMaximized, isMobile])
 
-  const isDraggable = !isMinimized && !isMaximized
+  const showMinimized = isMinimized && !isMobile
+  const isDraggable = !isMobile && !isMinimized && !isMaximized
 
   if (!draft) return null
 
@@ -469,7 +456,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       onPointerDownCapture={() => dispatch(setActiveDraft(draftId))}
       className={cn(
         'bg-background pointer-events-auto flex flex-col border transition-all duration-300',
-        !isMaximized && 'relative rounded-t-lg',
+        !isMobile && !isMaximized && 'relative rounded-t-lg',
         getContainerClasses,
         isMaximized && !isMobile && 'rounded-lg'
       )}
@@ -479,13 +466,13 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         className={cn(
           'bg-primary text-primary-foreground flex h-12 shrink-0 items-center rounded-t-lg px-4 select-none',
           isDraggable && 'cursor-grab active:cursor-grabbing',
-          isMinimized && 'cursor-pointer',
+          showMinimized && 'cursor-pointer',
           isMaximized && (isMobile ? 'rounded-none' : 'rounded-t-lg')
         )}
         onPointerDown={
           isDraggable ? (event) => dragControls.start(event) : undefined
         }
-        onClick={isMinimized ? handleRestore : undefined}
+        onClick={showMinimized ? handleRestore : undefined}
         style={{ touchAction: isDraggable ? 'none' : undefined }}
       >
         <div className="min-w-0 flex-1 truncate text-sm font-medium">
@@ -493,7 +480,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         </div>
 
         <div className="flex shrink-0 items-center gap-1">
-          {isMinimized ? (
+          {showMinimized ? (
             <Button
               variant="ghost"
               size="icon"
@@ -520,30 +507,34 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
               >
                 <Trash className="h-4 w-4" />
               </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8"
-                onClick={handleMinimize}
-              >
-                <Minus className="h-4 w-4" />
-                <span className="sr-only">{t('minimize.string')}</span>
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8"
-                onClick={isMaximized ? handleRestore : handleMaximize}
-              >
-                {isMaximized ? (
-                  <Minimize2 className="h-4 w-4" />
-                ) : (
-                  <Maximize2 className="h-4 w-4" />
-                )}
-                <span className="sr-only">
-                  {isMaximized ? t('restore.string') : t('maximize.string')}
-                </span>
-              </Button>
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8"
+                  onClick={handleMinimize}
+                >
+                  <Minus className="h-4 w-4" />
+                  <span className="sr-only">{t('minimize.string')}</span>
+                </Button>
+              )}
+              {!isMobile && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-primary-foreground hover:bg-primary-foreground/20 h-8 w-8"
+                  onClick={isMaximized ? handleRestore : handleMaximize}
+                >
+                  {isMaximized ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                  <span className="sr-only">
+                    {isMaximized ? t('restore.string') : t('maximize.string')}
+                  </span>
+                </Button>
+              )}
             </>
           )}
           <Button
@@ -562,7 +553,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         </div>
       </div>
 
-      {!isMinimized && (
+      {!showMinimized && (
         <>
           {/* ── Body ───────────────────────────────────────────────────── */}
           <div className="flex-1 overflow-hidden">

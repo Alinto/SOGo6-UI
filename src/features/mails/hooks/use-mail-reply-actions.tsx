@@ -1,0 +1,121 @@
+'use client'
+
+import type {
+  Action,
+  RightActionsType,
+} from '@/features/mails/components/mail/types'
+import { ActionId } from '@/features/mails/components/mail/types'
+import type { ImapMessages } from '@/features/mails/mails-types'
+import {
+  createDraft,
+  useLazyGetEditMessageQuery,
+  useLazyGetReplyMessageQuery,
+} from '@/features/mails/store'
+import {
+  apiDataToMailComposeDraft,
+  buildForwardedBody,
+  buildQuotedReplyBody,
+} from '@/features/mails/utils/mail-compose-from-api'
+import { useAppDispatch } from '@/lib/redux/hooks'
+import { Forward, Reply, ReplyAll } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+
+const generateDraftId = () =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+
+interface UseMailReplyActionsOptions {
+  mail?: ImapMessages
+  mailId?: string
+  folder?: string
+  accountId?: string
+}
+
+export function useMailReplyActions({
+  mail,
+  mailId,
+  folder,
+  accountId,
+}: UseMailReplyActionsOptions) {
+  const t = useTranslations('MAILS_COMMONS')
+  const dispatch = useAppDispatch()
+  const [triggerGetEditMessage] = useLazyGetEditMessageQuery()
+  const [triggerGetReplyMessage] = useLazyGetReplyMessageQuery()
+
+  const rightActions: RightActionsType = [
+    {
+      id: ActionId.REPLY,
+      icon: <Reply size={18} />,
+      title: t('mail_display.action-bar.reply.string'),
+    },
+    {
+      id: ActionId.REPLY_ALL,
+      icon: <ReplyAll size={18} />,
+      title: t('mail_display.action-bar.reply_all.string'),
+    },
+    {
+      id: ActionId.FORWARD,
+      icon: <Forward size={18} />,
+      title: t('mail_display.action-bar.forward.string'),
+    },
+  ]
+
+  const handleMailAction = (_idx: number, action: Action) => {
+    if (!mail || !mailId || !folder) return
+
+    if (action.id === ActionId.FORWARD) {
+      const draftId = generateDraftId()
+
+      void (async () => {
+        const result = await triggerGetEditMessage({
+          folder,
+          mailId,
+          accountId,
+        })
+        const mailData = { ...mail, ...result.data }
+        const draftData = apiDataToMailComposeDraft(draftId, mailData)
+        dispatch(
+          createDraft({
+            draftId,
+            forwardOf: mailId,
+            initialData: {
+              ...draftData,
+              to: [],
+              body: buildForwardedBody(mailData, draftData.body),
+            },
+          })
+        )
+      })()
+    } else if (
+      action.id === ActionId.REPLY ||
+      action.id === ActionId.REPLY_ALL
+    ) {
+      const draftId = generateDraftId()
+
+      void (async () => {
+        const result = await triggerGetReplyMessage({
+          folder,
+          mailId,
+          accountId,
+        })
+        const mailData = { ...mail, ...result.data }
+        const draftData = apiDataToMailComposeDraft(draftId, mailData)
+        dispatch(
+          createDraft({
+            draftId,
+            inReplyTo: mailId,
+            initialData: {
+              ...draftData,
+              cc: action.id === ActionId.REPLY_ALL ? draftData.cc : [],
+              bcc: [],
+              body: buildQuotedReplyBody(mailData, draftData.body),
+            },
+          })
+        )
+      })()
+    }
+  }
+
+  return { rightActions, handleMailAction }
+}

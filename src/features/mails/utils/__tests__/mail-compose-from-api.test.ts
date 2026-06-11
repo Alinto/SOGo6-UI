@@ -7,6 +7,8 @@ import {
 } from '@/features/mails/store/mail-compose-slice'
 import {
   apiDataToMailComposeDraft,
+  buildForwardedBody,
+  buildQuotedReplyBody,
   type ApiMailData,
 } from '@/features/mails/utils/mail-compose-from-api'
 
@@ -319,5 +321,86 @@ describe('apiDataToMailComposeDraft', () => {
 
     expect(draft.createdAt).toBe(123456789)
     expect(draft.updatedAt).toBe(123456789)
+  })
+})
+
+describe('buildForwardedBody', () => {
+  const mail = {
+    from: { name: 'John Doe', email: 'john@example.com' },
+    to: [
+      { name: 'Jane Doe', email: 'jane@example.com' },
+      { name: '', email: 'noname@example.com' },
+    ],
+    date: new Date('2024-01-15T10:00:00Z').getTime(),
+    subject: 'Original subject',
+  }
+
+  it('prepends a forwarded message header to the body', () => {
+    const result = buildForwardedBody(mail, '<p>Original body</p>')
+
+    expect(result).toContain('---------- Forwarded message ---------')
+    expect(result).toContain('From: John Doe &lt;john@example.com&gt;')
+    expect(result).toContain('Subject: Original subject')
+    expect(result).toContain(
+      'To: Jane Doe &lt;jane@example.com&gt;, noname@example.com'
+    )
+    expect(result.endsWith('<p>Original body</p>')).toBe(true)
+  })
+
+  it('escapes html special characters in subject and contact names', () => {
+    const result = buildForwardedBody(
+      {
+        from: { name: '<script>alert(1)</script>', email: 'evil@example.com' },
+        to: [],
+        date: mail.date,
+        subject: '<b>Hi</b> & "quotes"',
+      },
+      ''
+    )
+
+    expect(result).toContain(
+      'From: &lt;script&gt;alert(1)&lt;/script&gt; &lt;evil@example.com&gt;'
+    )
+    expect(result).toContain('Subject: &lt;b&gt;Hi&lt;/b&gt; &amp; &quot;quotes&quot;')
+  })
+
+  it('returns an empty To line when there are no recipients', () => {
+    const result = buildForwardedBody({ ...mail, to: [] }, '')
+
+    expect(result).toContain('<div>To: </div>')
+  })
+})
+
+describe('buildQuotedReplyBody', () => {
+  const mail = {
+    from: { name: 'Judith de Rebelles', email: 'rebelles@substack.com' },
+    date: new Date('2026-06-10T08:56:00Z').getTime(),
+  }
+
+  it('prepends an "On <date>, <sender> wrote:" header to the body', () => {
+    const result = buildQuotedReplyBody(mail, '<p>Original body</p>')
+
+    expect(result).toMatch(
+      /^<div>On .+, Judith de Rebelles &lt;rebelles@substack.com&gt; wrote:<\/div>/
+    )
+  })
+
+  it('wraps the original body in an indented blockquote', () => {
+    const result = buildQuotedReplyBody(mail, '<p>Original body</p>')
+
+    expect(result).toContain(
+      '<blockquote style="margin:0 0 0 .8ex;border-left:1px solid #ccc;padding-left:1ex;"><p>Original body</p></blockquote>'
+    )
+  })
+
+  it('escapes html special characters in the sender name', () => {
+    const result = buildQuotedReplyBody(
+      { from: { name: '<script>alert(1)</script>', email: 'evil@example.com' }, date: mail.date },
+      ''
+    )
+
+    expect(result).toContain(
+      '&lt;script&gt;alert(1)&lt;/script&gt; &lt;evil@example.com&gt;'
+    )
   })
 })

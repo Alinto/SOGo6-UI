@@ -19,32 +19,37 @@ import {
 } from '../types'
 
 describe('Mail Types', () => {
-  describe('ActionType', () => {
-    it('should have GO_BACK action type', () => {
-      expect(ActionId.GO_BACK).toBe('go-back')
-    })
+  it('should have GO_BACK action type', () => {
+    expect(ActionId.GO_BACK).toBe('go-back')
+  })
 
-    it('should have GO_NEXT action type', () => {
-      expect(ActionId.GO_NEXT).toBe('go-next')
-    })
+  it('should have GO_NEXT action type', () => {
+    expect(ActionId.GO_NEXT).toBe('go-next')
+  })
 
-    it('should define all mail action bar action ids', () => {
-      expect(ActionId).toEqual({
-        GO_BACK: 'go-back',
-        GO_NEXT: 'go-next',
-        DELETE: 'delete',
-        SPAM: 'spam',
-        HAM: 'ham',
-        MARK_UNREAD: 'mark-unread',
-        LABEL: 'label',
-        MORE: 'more',
-        ARCHIVE: 'archive',
-        DOWNLOAD: 'download',
-        MOVE: 'move',
-        PRINT: 'print',
-        VIEW_SOURCE: 'view-source',
-      })
+  it('should define all mail action bar action ids', () => {
+    expect(ActionId).toEqual({
+      GO_BACK: 'go-back',
+      GO_NEXT: 'go-next',
+      DELETE: 'delete',
+      SPAM: 'spam',
+      HAM: 'ham',
+      MARK_UNREAD: 'mark-unread',
+      LABEL: 'label',
+      MORE: 'more',
+      ARCHIVE: 'archive',
+      DOWNLOAD: 'download',
+      MOVE: 'move',
+      PRINT: 'print',
+      VIEW_SOURCE: 'view-source',
+      REPLY: 'reply',
+      REPLY_ALL: 'reply-all',
+      FORWARD: 'forward',
     })
+  })
+
+  it('should have exactly 16 action types', () => {
+    expect(Object.keys(ActionId)).toHaveLength(16)
   })
 
   describe('Type definitions', () => {

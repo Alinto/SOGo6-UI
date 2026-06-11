@@ -1,27 +1,22 @@
 'use client'
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
-import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailContent from '@/features/mails/components/mail/mail-content'
+import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
-import { ActionId, RightActionsType } from '@/features/mails/components/mail/types'
 import type { Action } from '@/features/mails/components/mail/types'
+import { ActionId } from '@/features/mails/components/mail/types'
 import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
+import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Forward,
-  Reply,
-  ReplyAll,
-} from 'lucide-react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
@@ -47,9 +42,20 @@ const VisualizationPage: React.FC = () => {
   })
 
   const { handlePrint, isPrintDisabled } = usePrintMail(data)
+  const { rightActions, handleMailAction } = useMailReplyActions({
+    mail: data,
+    mailId: mail_id,
+    folder,
+    accountId: account,
+  })
 
   if (!mail_id) return null
-  if (isLoading) return <div className="flex h-full w-full"><MailDetailSkeleton /></div>
+  if (isLoading)
+    return (
+      <div className="flex h-full w-full">
+        <MailDetailSkeleton />
+      </div>
+    )
   if (isError || !data) return null
 
   const {
@@ -67,24 +73,30 @@ const VisualizationPage: React.FC = () => {
   const handleNavigationAction = (_idx: number, action: Action) => {
     if (action.id === ActionId.GO_BACK) {
       const prevId = Math.max(1, Number(mail_id) - 1)
-      push(`/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(prevId))}`)
+      push(
+        `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(prevId))}`
+      )
     } else if (action.id === ActionId.GO_NEXT) {
-      push(`/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(Number(mail_id) + 1))}`)
+      push(
+        `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(Number(mail_id) + 1))}`
+      )
     }
   }
 
   const actions = {
     navigation: [
-      { id: ActionId.GO_BACK, icon: <ChevronLeft size={18} />, title: t('previous-mail.string') },
-      { id: ActionId.GO_NEXT, icon: <ChevronRight size={18} />, title: t('next-mail.string') },
+      {
+        id: ActionId.GO_BACK,
+        icon: <ChevronLeft size={18} />,
+        title: t('previous-mail.string'),
+      },
+      {
+        id: ActionId.GO_NEXT,
+        icon: <ChevronRight size={18} />,
+        title: t('next-mail.string'),
+      },
     ],
   }
-
-  const rightActions: RightActionsType = [
-    { icon: <Reply size={18} />, title: t('reply.string') },
-    { icon: <ReplyAll size={18} />, title: t('reply_all.string') },
-    { icon: <Forward size={18} />, title: t('forward.string') },
-  ]
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto">
@@ -102,7 +114,10 @@ const VisualizationPage: React.FC = () => {
           />
           <div className="ml-auto">
             {isMobile ? (
-              <MailActionsBar actions={rightActions} />
+              <MailActionsBar
+                actions={rightActions}
+                onAction={(idx, action) => handleMailAction(idx, action)}
+              />
             ) : (
               <MailActionsBar
                 actions={actions.navigation}
@@ -128,6 +143,10 @@ const VisualizationPage: React.FC = () => {
               cc={cc}
               showUnsubscribeButton={!!isMailingList}
               date={date}
+              mail={data}
+              mailId={mail_id}
+              folder={folder}
+              accountId={account}
             />
           )}
           <MailContent body={data.body} attachments={data.attachments} />

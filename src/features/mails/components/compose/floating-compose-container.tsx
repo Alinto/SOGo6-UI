@@ -1,6 +1,7 @@
 'use client'
 
 import { useProfile } from '@/features/user-profile'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import React from 'react'
 import { selectOpenDraftIds } from '../../store'
@@ -16,11 +17,13 @@ const FloatingComposeContainer = () => {
   const openDraftIds = useAppSelector(selectOpenDraftIds)
   const { mainAccount } = useProfile()
   const [triggerGetCurrentDrafts] = useLazyGetCurrentDraftsQuery()
+  const isMobile = useIsMobile()
+
   const [triggerGetMail] = useLazyGetMailQuery()
   const hasInitialized = React.useRef(false)
 
   React.useEffect(() => {
-    if (!mainAccount?.id || hasInitialized.current) return
+    if (!mainAccount?.id || hasInitialized.current || isMobile) return
     hasInitialized.current = true
 
     const accountId = String(mainAccount.id)

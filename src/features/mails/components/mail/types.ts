@@ -1,3 +1,4 @@
+import type { ImapMessages } from '@/features/mails/mails-types'
 import React, { type JSX } from 'react'
 
 export const ActionId = {
@@ -14,6 +15,9 @@ export const ActionId = {
   MOVE: 'move',
   PRINT: 'print',
   VIEW_SOURCE: 'view-source',
+  REPLY: 'reply',
+  REPLY_ALL: 'reply-all',
+  FORWARD: 'forward',
 } as const
 
 export type ActionIdValue = (typeof ActionId)[keyof typeof ActionId]
@@ -60,10 +64,18 @@ export type UnsubscribeDialogProps = {
   senderEmail?: string
 }
 
-export type RightActionsType = { icon: JSX.Element; title: string }[]
+export type RightActionsType = {
+  id: string
+  icon: JSX.Element
+  title: string
+}[]
 
 export type MailHeaderFullProps = MailHeaderProps & {
   date: number
+  mail?: ImapMessages
+  mailId?: string
+  folder?: string
+  accountId?: string
 }
 
 export type ImapAttachmentPart = {

@@ -272,6 +272,18 @@ const getEditMailQuery = ({
   return getMailQuery({ accountId, folder, mailId }) + '/edit'
 }
 
+const getReplyMailQuery = ({
+  accountId = '0',
+  folder,
+  mailId,
+}: {
+  accountId?: string
+  folder: string
+  mailId: string
+}) => {
+  return getMailQuery({ accountId, folder, mailId }) + '/reply'
+}
+
 const moveToTrashQuery = ({
   accountId = '0',
   folder,
@@ -983,6 +995,44 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         { type: MAIL_SLICE, id: mailId },
       ],
     }),
+
+    getReplyMessage: builder.query<
+      ImapMessages & { key?: string },
+      {
+        folder: string
+        accountId?: string
+        mailId: string
+      }
+    >({
+      query: getReplyMailQuery,
+      transformResponse: (
+        response:
+          | (BackendResponse<ImapMessages> & { key?: string })
+          | ImapMessages
+      ) => {
+
+        let mail: ImapMessages & { key?: string } =
+          'data' in response ? { ...response.data } : response
+
+        if (mail.contents && mail.contents.length > 0 && !mail.body) {
+          mail = {
+            ...mail,
+            body: extractBodyFromContents(mail.contents),
+          }
+        }
+
+        if (mail.attachments) {
+          mail = {
+            ...mail,
+            attachments: normalizeAttachments(mail.attachments),
+          }
+        }
+        return mail
+      },
+      providesTags: (result, error, { mailId }) => [
+        { type: MAIL_SLICE, id: mailId },
+      ],
+    }),
   }),
   overrideExisting: true,
 })
@@ -993,6 +1043,7 @@ export const {
   useGetMailQuery,
   useLazyGetMailQuery,
   useLazyGetEditMessageQuery,
+  useLazyGetReplyMessageQuery,
   useMoveToTrashMutation,
   useMailActionMutation,
   useDownloadMailMutation,

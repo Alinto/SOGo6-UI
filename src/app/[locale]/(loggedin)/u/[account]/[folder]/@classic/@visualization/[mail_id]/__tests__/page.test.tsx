@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import React from 'react'
 import VisualizationPage from '../page'
 
 jest.mock('@/features/mails/store/mails-api', () => ({
@@ -18,6 +17,13 @@ jest.mock('@/features/mails/hooks/use-print-mail', () => ({
   })),
 }))
 
+jest.mock('@/features/mails/hooks/use-mail-reply-actions', () => ({
+  useMailReplyActions: jest.fn(() => ({
+    rightActions: [],
+    handleMailAction: jest.fn(),
+  })),
+}))
+
 jest.mock('@/features/mails/components/mail/mail-return-button', () => ({
   MailReturnButton: ({ folderPath }: { folderPath: string }) => (
     <button data-testid="mail-return-button">{folderPath}</button>
@@ -27,9 +33,7 @@ jest.mock('@/features/mails/components/mail/mail-return-button', () => ({
 jest.mock('@/features/mails/components/mail/mail-action-bar', () => ({
   __esModule: true,
   default: ({ actions }: any) => (
-    <div data-testid="mail-actions-bar">
-      {actions?.length ?? 0} actions
-    </div>
+    <div data-testid="mail-actions-bar">{actions?.length ?? 0} actions</div>
   ),
 }))
 
@@ -95,21 +99,33 @@ describe('VisualizationPage', () => {
   describe('basic rendering', () => {
     it('returns null when mail_id is missing', () => {
       const { useParams } = require('next/navigation')
-      useParams.mockReturnValue({ account: '0', folder: 'INBOX', mail_id: undefined })
+      useParams.mockReturnValue({
+        account: '0',
+        folder: 'INBOX',
+        mail_id: undefined,
+      })
       const { container } = render(<VisualizationPage />)
       expect(container.firstChild).toBeNull()
     })
 
     it('renders skeleton when loading', () => {
       const { useGetMailQuery } = require('@/features/mails/store/mails-api')
-      useGetMailQuery.mockReturnValue({ data: undefined, isLoading: true, isError: false })
+      useGetMailQuery.mockReturnValue({
+        data: undefined,
+        isLoading: true,
+        isError: false,
+      })
       render(<VisualizationPage />)
       expect(screen.getByTestId('mail-detail-skeleton')).toBeInTheDocument()
     })
 
     it('returns null when error or no data', () => {
       const { useGetMailQuery } = require('@/features/mails/store/mails-api')
-      useGetMailQuery.mockReturnValue({ data: undefined, isLoading: false, isError: true })
+      useGetMailQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+      })
       const { container } = render(<VisualizationPage />)
       expect(container.firstChild).toBeNull()
     })
@@ -132,7 +148,9 @@ describe('VisualizationPage', () => {
       })
       render(<VisualizationPage />)
       expect(screen.getByTestId('mail-return-button')).toBeInTheDocument()
-      expect(screen.getByTestId('mail-subject')).toHaveTextContent('Test Subject')
+      expect(screen.getByTestId('mail-subject')).toHaveTextContent(
+        'Test Subject'
+      )
       expect(screen.getByTestId('mail-header')).toBeInTheDocument()
       expect(screen.getByTestId('mail-content')).toBeInTheDocument()
     })
