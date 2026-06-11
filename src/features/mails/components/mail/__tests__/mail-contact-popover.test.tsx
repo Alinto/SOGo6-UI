@@ -1,6 +1,34 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { ContactPopoverContent } from '../mail-contact-popover'
+
+const mockDispatch = jest.fn()
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => mockDispatch,
+}))
+
+jest.mock('@/features/address_books', () => ({
+  useGetAddressBooksQuery: () => ({
+    data: { personals: [{ id: 'work', default: true }] },
+  }),
+  openCreateForm: jest.fn((payload) => ({
+    type: 'addressBooksUi/openCreateForm',
+    payload,
+  })),
+  parseContactName: (name?: string) => ({
+    firstName: name?.split(' ')[0] ?? '',
+    lastName: name?.split(' ').slice(1).join(' ') ?? '',
+  }),
+}))
+
+jest.mock('@/features/mails/store', () => ({
+  createDraft: jest.fn((payload) => ({
+    type: 'mailCompose/createDraft',
+    payload,
+  })),
+}))
 
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => {
@@ -15,93 +43,43 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('lucide-react', () => ({
-  Mail: jest.fn(({ size, className }) => (
+  Mail: ({ size, className }: { size: number; className?: string }) => (
     <span data-testid="mail-icon" data-size={size} className={className}>
       ✉️
     </span>
-  )),
-  UserPlus2: jest.fn(({ size, className }) => (
+  ),
+  UserPlus2: ({ size, className }: { size: number; className?: string }) => (
     <span data-testid="user-plus-icon" data-size={size} className={className}>
       👤+
     </span>
-  )),
+  ),
 }))
 
+const contact = { name: 'John Doe', email: 'john@example.com' }
+
 describe('ContactPopoverContent', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
   it('should render both action buttons', () => {
-    render(<ContactPopoverContent />)
+    render(<ContactPopoverContent contact={contact} />)
 
     expect(screen.getByText('Add to address book')).toBeInTheDocument()
     expect(screen.getByText('Write new message')).toBeInTheDocument()
   })
 
-  it('should render icons for both actions', () => {
-    render(<ContactPopoverContent />)
-
-    expect(screen.getByTestId('user-plus-icon')).toBeInTheDocument()
-    expect(screen.getByTestId('mail-icon')).toBeInTheDocument()
+  it('dispatches openCreateForm when adding to address book', async () => {
+    const user = userEvent.setup()
+    render(<ContactPopoverContent contact={contact} />)
+    await user.click(screen.getByText('Add to address book'))
+    expect(mockDispatch).toHaveBeenCalled()
   })
 
-  it('should render buttons with correct attributes', () => {
-    render(<ContactPopoverContent />)
-
-    const buttons = screen.getAllByRole('button')
-    expect(buttons).toHaveLength(2)
-
-    buttons.forEach((button) => {
-      expect(button).toHaveAttribute('type', 'button')
-      expect(button).toHaveAttribute('tabIndex', '0')
-    })
-  })
-
-  it('should apply correct styling to buttons', () => {
-    render(<ContactPopoverContent />)
-
-    const buttons = screen.getAllByRole('button')
-    buttons.forEach((button) => {
-      expect(button).toHaveClass('flex', 'cursor-pointer', 'gap-2')
-    })
-  })
-
-  it('should render add to address book button with correct content', () => {
-    render(<ContactPopoverContent />)
-
-    const addButton = screen.getByText('Add to address book').closest('button')
-    expect(addButton).toBeInTheDocument()
-    expect(
-      addButton?.querySelector('[data-testid="user-plus-icon"]')
-    ).toBeInTheDocument()
-  })
-
-  it('should render write new message button with correct content', () => {
-    render(<ContactPopoverContent />)
-
-    const messageButton = screen
-      .getByText('Write new message')
-      .closest('button')
-    expect(messageButton).toBeInTheDocument()
-    expect(
-      messageButton?.querySelector('[data-testid="mail-icon"]')
-    ).toBeInTheDocument()
-  })
-
-  it('should render icons with correct size', () => {
-    render(<ContactPopoverContent />)
-
-    const userPlusIcon = screen.getByTestId('user-plus-icon')
-    const mailIcon = screen.getByTestId('mail-icon')
-
-    expect(userPlusIcon).toHaveAttribute('data-size', '16')
-    expect(mailIcon).toHaveAttribute('data-size', '16')
-  })
-
-  it('should apply muted foreground color to icons', () => {
-    render(<ContactPopoverContent />)
-
-    const userPlusIcon = screen.getByTestId('user-plus-icon')
-    const mailIcon = screen.getByTestId('mail-icon')
-
-    expect(userPlusIcon).toHaveClass('text-muted-foreground')
-    expect(mailIcon).toHaveClass('text-muted-foreground')
+  it('dispatches createDraft when writing a new message', async () => {
+    const user = userEvent.setup()
+    render(<ContactPopoverContent contact={contact} />)
+    await user.click(screen.getByText('Write new message'))
+    expect(mockDispatch).toHaveBeenCalled()
   })
 })

@@ -31,6 +31,14 @@
         "loading": "Loading tasks…",
         "error": "Could not load tasks"
       },
+      "address_book": {
+        "title": "Contacts",
+        "view_all": "View all contacts",
+        "loading": "Loading contacts…",
+        "error": "Could not load contacts",
+        "empty": "No address book available",
+        "no_contacts": "No contacts yet"
+      },
       "coming_soon": {
         "title": "Feature incoming",
         "description": "This section is under development and will be available soon."

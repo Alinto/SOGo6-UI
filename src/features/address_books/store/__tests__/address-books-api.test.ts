@@ -1,0 +1,31 @@
+import '@testing-library/jest-dom'
+
+import * as AddressBooksApi from '../address-books-api'
+
+describe('address-books-api', () => {
+  it('exports address book queries', () => {
+    expect(typeof AddressBooksApi.useGetAddressBooksQuery).toBe('function')
+    expect(typeof AddressBooksApi.useGetAddressBookVCardsQuery).toBe('function')
+    expect(typeof AddressBooksApi.useGetVCardQuery).toBe('function')
+  })
+
+  it('exports address book mutations', () => {
+    expect(typeof AddressBooksApi.useAddVCardToAddressBookMutation).toBe('function')
+    expect(typeof AddressBooksApi.useUpdateVCardMutation).toBe('function')
+    expect(typeof AddressBooksApi.useDeleteVCardFromAddressBookMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useMoveVCardToAddressBookMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useAddAddressBookMutation).toBe('function')
+    expect(typeof AddressBooksApi.useUpdateAddressBookMutation).toBe('function')
+    expect(typeof AddressBooksApi.useDeleteAddressBookMutation).toBe('function')
+  })
+
+  it('exports addressBooksApiEndpoints', () => {
+    expect(AddressBooksApi.addressBooksApiEndpoints).toBeDefined()
+    expect(AddressBooksApi.addressBooksApiEndpoints.endpoints.addVCardToAddressBook).toBeDefined()
+    expect(AddressBooksApi.addressBooksApiEndpoints.endpoints.moveVCardToAddressBook).toBeDefined()
+  })
+})

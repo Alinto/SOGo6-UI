@@ -23,6 +23,10 @@ jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => key),
 }))
 
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: jest.fn(() => jest.fn()),
+}))
+
 describe('AddressBook Layout', () => {
   const mockChildren = (
     <div data-testid="children-content">Children Content</div>

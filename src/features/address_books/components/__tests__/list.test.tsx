@@ -18,6 +18,11 @@ jest.mock('../list-item', () => ({
   )),
 }))
 
+jest.mock('@/components/dnd/draggable', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+}))
+
 jest.mock('../skeletons/skeleton', () => ({
   __esModule: true,
   default: jest.fn(() => <div data-testid="skeleton">Loading...</div>),
@@ -31,6 +36,22 @@ jest.mock('next-intl', () => ({
     if (key === 'filters.name.string') return 'Filter by name'
     return key
   }),
+}))
+
+jest.mock('next/navigation', () => ({
+  useParams: () => ({ book_id: 'work' }),
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => jest.fn(),
+  useAppSelector: (selector: (state: unknown) => unknown) =>
+    selector({
+      addressBooksUi: { searchQuery: '', sortOrder: 'asc' },
+    }),
+}))
+
+jest.mock('../../store/address-books-api', () => ({
+  useDeleteVCardFromAddressBookMutation: () => [jest.fn().mockReturnValue({ unwrap: jest.fn() })],
 }))
 
 import { VCard } from '../../address-books-types'
@@ -100,9 +121,9 @@ describe('AddressBookList Component', () => {
     expect(screen.getByTestId('skeleton')).toBeInTheDocument()
   })
 
-  it('renders "no items" message when items array is empty', () => {
+  it('renders empty state when items array is empty', () => {
     render(<AddressBookList items={[]} isLoading={false} />)
-    expect(screen.getByText('No items available')).toBeInTheDocument()
+    expect(screen.getByTestId('address-book-empty-state')).toBeInTheDocument()
   })
 
   it('renders the list of items when items are provided', () => {
@@ -130,6 +151,6 @@ describe('AddressBookList Component', () => {
 
   it('renders the correct number of contacts', () => {
     render(<AddressBookList items={mockItems} isLoading={false} />)
-    expect(screen.getByText('2 contacts')).toBeInTheDocument()
+    expect(screen.getAllByText('2 contacts')).toHaveLength(2)
   })
 })

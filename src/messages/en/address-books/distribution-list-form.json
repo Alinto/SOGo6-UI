@@ -1,0 +1,83 @@
+{
+  "DISTRIBUTION_LIST_FORM": {
+    "new_list": {
+      "string": "New distribution list",
+      "context": "Title for the new distribution list dialog"
+    },
+    "edit_list": {
+      "string": "Edit distribution list",
+      "context": "Title for the edit distribution list dialog"
+    },
+    "list_badge": {
+      "string": "Distribution list",
+      "context": "Badge shown on distribution list detail view"
+    },
+    "member_count": {
+      "string": "{number, plural, one {# member} other {# members}}",
+      "context": "Member count on distribution list detail"
+    },
+    "members": {
+      "string": "Members",
+      "context": "Label for members section"
+    },
+    "members_selected": {
+      "string": "{number, plural, one {# member selected} other {# members selected}}",
+      "context": "Selected member count in form"
+    },
+    "members_required": {
+      "string": "Select at least one member or add an email address",
+      "context": "Validation when no members are provided"
+    },
+    "manual_emails": {
+      "string": "Additional email addresses",
+      "context": "Label for manual email inputs"
+    },
+    "no_members": {
+      "string": "No members in this list",
+      "context": "Empty state for members section"
+    },
+    "write_message": {
+      "string": "Write message",
+      "context": "Button to compose mail to all list members"
+    },
+    "add_email": {
+      "string": "Add email",
+      "context": "Button to add manual email field"
+    },
+    "remove_email": {
+      "string": "Remove email",
+      "context": "Aria label for removing manual email field"
+    },
+    "create": {
+      "string": "Create",
+      "context": "Submit button for new list"
+    },
+    "save": {
+      "string": "Save",
+      "context": "Submit button for edit list"
+    },
+    "cancel": {
+      "string": "Cancel",
+      "context": "Cancel button"
+    },
+    "fields": {
+      "name": {
+        "string": "List name"
+      },
+      "note": {
+        "string": "Description"
+      }
+    },
+    "delete_dialog": {
+      "title": {
+        "string": "Delete distribution list?"
+      },
+      "description": {
+        "string": "This distribution list will be permanently removed from your address book."
+      },
+      "confirm": {
+        "string": "Delete"
+      }
+    }
+  }
+}

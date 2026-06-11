@@ -398,6 +398,132 @@
                 }
             }
         },
+        "address_book_entry_create": {
+            "success": {
+                "title": {
+                    "string": "Contact created"
+                },
+                "message": {
+                    "string": "The contact has been added to your address book."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Creation failed"
+                },
+                "message": {
+                    "string": "Could not create the contact. Please try again."
+                }
+            }
+        },
+        "address_book_entry_update": {
+            "success": {
+                "title": {
+                    "string": "Contact updated"
+                },
+                "message": {
+                    "string": "The contact has been updated."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Update failed"
+                },
+                "message": {
+                    "string": "Could not update the contact. Please try again."
+                }
+            }
+        },
+        "address_book_entry_delete": {
+            "success": {
+                "title": {
+                    "string": "Contact deleted"
+                },
+                "message": {
+                    "string": "The contact has been removed."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Deletion failed"
+                },
+                "message": {
+                    "string": "Could not delete the contact. Please try again."
+                }
+            }
+        },
+        "address_book_entry_move": {
+            "success": {
+                "title": {
+                    "string": "Contact moved"
+                },
+                "message": {
+                    "string": "The contact has been moved to another address book."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Move failed"
+                },
+                "message": {
+                    "string": "Could not move the contact. Please try again."
+                }
+            }
+        },
+        "address_book_create": {
+            "success": {
+                "title": {
+                    "string": "Address book created"
+                },
+                "message": {
+                    "string": "The address book has been created."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Creation failed"
+                },
+                "message": {
+                    "string": "Could not create the address book. Please try again."
+                }
+            }
+        },
+        "address_book_update": {
+            "success": {
+                "title": {
+                    "string": "Address book updated"
+                },
+                "message": {
+                    "string": "The address book has been updated."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Update failed"
+                },
+                "message": {
+                    "string": "Could not update the address book. Please try again."
+                }
+            }
+        },
+        "address_book_delete": {
+            "success": {
+                "title": {
+                    "string": "Address book deleted"
+                },
+                "message": {
+                    "string": "The address book has been removed."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Deletion failed"
+                },
+                "message": {
+                    "string": "Could not delete the address book. Please try again."
+                }
+            }
+        },
         "calendar_event_attendance": {
             "success": {
                 "accepted": {

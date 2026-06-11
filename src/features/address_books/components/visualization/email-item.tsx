@@ -5,16 +5,20 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { Copy, Mail } from 'lucide-react'
+import { createDraft } from '@/features/mails/store'
+import { useAppDispatch } from '@/lib/redux/hooks'
+import { Copy, Mail, Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useCopyToClipboard } from './hooks/use-copy-to-clipboard'
 
 interface EmailItemProps {
   email: string
+  displayName?: string
 }
 
-export function EmailItem({ email }: EmailItemProps) {
+export function EmailItem({ email, displayName }: EmailItemProps) {
+  const dispatch = useAppDispatch()
   const { copyToClipboard } = useCopyToClipboard()
   const t = useTranslations('CONTACT_FORM')
 
@@ -22,6 +26,19 @@ export function EmailItem({ email }: EmailItemProps) {
     e.preventDefault()
     e.stopPropagation()
     copyToClipboard(email, email)
+  }
+
+  const handleCompose = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    dispatch(
+      createDraft({
+        id: `compose-${Date.now()}`,
+        initialData: {
+          to: [{ email, name: displayName }],
+        },
+      })
+    )
   }
 
   return (
@@ -34,25 +51,47 @@ export function EmailItem({ email }: EmailItemProps) {
         <Mail className="text-muted-foreground h-4 w-4 shrink-0" />
         <span className="truncate">{email}</span>
       </a>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-              onClick={handleCopy}
-              aria-label={`${t('copy_email.string')} ${email}`}
-              tabIndex={0}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{t('copy_email.string')}</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCompose}
+                aria-label={t('compose_email.string')}
+                data-testid={`compose-email-${email}`}
+                tabIndex={0}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('compose_email.string')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleCopy}
+                aria-label={`${t('copy_email.string')} ${email}`}
+                tabIndex={0}
+              >
+                <Copy className="h-4 w-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('copy_email.string')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
     </div>
   )
 }

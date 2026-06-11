@@ -6,11 +6,13 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import AddAddressBook from './forms/add'
+import CreateContactOpener from './create-contact-opener'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -23,6 +25,13 @@ const Sidebar: React.FC = () => {
   const { globals = [], personals = [], subscriptions = [] } = data || {}
   return (
     <>
+      <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <CreateContactOpener />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarGroup>
       <SidebarGroup className="px-0">
         <SidebarGroupLabel>{t('personals.string')}</SidebarGroupLabel>
         <AddAddressBook type={'personals'} />

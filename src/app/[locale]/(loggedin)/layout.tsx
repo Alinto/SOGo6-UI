@@ -6,6 +6,9 @@ import { useRouter } from 'next/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import ContactFormHost from '@/features/address_books/components/contact-form-host'
+import DistributionListFormHost from '@/features/address_books/components/distribution-list-form-host'
+import { useAddressBookDragEnd } from '@/features/address_books/hooks/use-address-book-drag-end'
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import {
   NotificationProvider,
@@ -63,6 +66,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     },
   })
   const sensors = useSensors(mouseSensor, touchSensor)
+  const handleAddressBookDragEnd = useAddressBookDragEnd()
   const [connect] = useConnectSSEMutation()
 
   useEffect(() => {
@@ -79,7 +83,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <NotificationToaster />
       <NotificationProvider />
       <SidebarProvider name="left-global-sidebar">
-        <DndContext sensors={sensors}>
+        <DndContext sensors={sensors} onDragEnd={handleAddressBookDragEnd}>
           <AppSidebar />
           <SidebarInset className="flex h-screen flex-col">
             <AppHeader />
@@ -97,6 +101,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </DndContext>
       </SidebarProvider>
       <FloatingComposeContainer />
+      <ContactFormHost />
+      <DistributionListFormHost />
     </>
   )
 }

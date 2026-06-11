@@ -4,6 +4,20 @@
       "string": "{number, plural, one {# contact} other {# contacts}}",
       "context": "Displays the number of contacts in an address book."
     },
+    "lists_count": {
+      "string": "{number, plural, one {# list} other {# lists}}",
+      "context": "Displays the number of distribution lists in an address book."
+    },
+    "sections": {
+      "distribution_lists": {
+        "string": "Distribution lists",
+        "context": "Section heading for distribution lists in the address book list."
+      },
+      "contacts": {
+        "string": "Contacts",
+        "context": "Section heading for individual contacts in the address book list."
+      }
+    },
     "selected_count": {
       "string": "{number, plural, one {# selected} other {# selected}}",
       "context": "Displays the number of selected contacts."
@@ -27,6 +41,50 @@
     },
     "no_items": {
       "string": "No contact found."
+    },
+    "empty_title": {
+      "string": "No contacts yet",
+      "context": "Title when an address book has no contacts"
+    },
+    "empty_description": {
+      "string": "Add your first contact to get started.",
+      "context": "Description when an address book is empty"
+    },
+    "empty_create_contact": {
+      "string": "New contact",
+      "context": "Button to create the first contact from empty state"
+    },
+    "search_empty_title": {
+      "string": "No results",
+      "context": "Title when search returns no contacts"
+    },
+    "search_empty_description": {
+      "string": "Try a different search term or clear the filter.",
+      "context": "Description when search has no matches"
+    },
+    "clear_search": {
+      "string": "Clear search",
+      "context": "Button to reset the contacts search filter"
+    },
+    "search_placeholder": {
+      "string": "Search contacts…",
+      "context": "Placeholder for the contacts search input in the header"
+    },
+    "delete_selected": {
+      "string": "Delete selected contacts",
+      "context": "Aria label for bulk delete button"
+    },
+    "bulk_delete_description": {
+      "string": "Are you sure you want to delete {number, plural, one {# contact} other {# contacts}}? This action cannot be undone.",
+      "context": "Confirmation message for bulk delete"
+    },
+    "create_list_from_selection": {
+      "string": "Create distribution list from selection",
+      "context": "Aria label for bulk create list action"
+    },
+    "list_member_count": {
+      "string": "{number, plural, one {# member} other {# members}}",
+      "context": "Member count shown under a distribution list in the contact list"
     }
   }
 }
