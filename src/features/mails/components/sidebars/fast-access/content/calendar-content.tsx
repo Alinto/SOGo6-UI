@@ -1,6 +1,7 @@
 'use client'
 
 import { Calendar } from '@/components/ui/calendar-lazy'
+import { Button } from '@/components/ui/button'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import {
@@ -9,7 +10,8 @@ import {
 } from '@/features/calendars/store/calendars-api'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import React, { useMemo, useState } from 'react'
+import Link from 'next/link'
+import React, { memo, useMemo, useState } from 'react'
 
 function startOfDay(date: Date): Date {
   const d = new Date(date)
@@ -159,7 +161,6 @@ const CalendarContent: React.FC = () => {
 
   const hasCalendars = visibleCalendars.length > 0
 
-  // Fetch all events for the current displayed month to build the dot indicators
   const monthStart = startOfMonth(displayMonth).toISOString()
   const monthEnd = endOfMonth(displayMonth).toISOString()
   const { data: monthEvents } = useGetEventsQuery(
@@ -167,7 +168,6 @@ const CalendarContent: React.FC = () => {
     { skip: !hasCalendars }
   )
 
-  // Deduplicated list of dates that have at least one event
   const datesWithEvents = useMemo<Date[]>(() => {
     if (!monthEvents) return []
     const seen = new Set<string>()
@@ -188,7 +188,14 @@ const CalendarContent: React.FC = () => {
   const isToday = isSameDay(selectedDate, new Date())
 
   return (
-    <SidebarGroupContent className="flex flex-col gap-2">
+    <SidebarGroupContent className="flex flex-col gap-2" data-testid="calendar-panel">
+      <div className="flex items-center justify-between gap-2 px-3 pt-2">
+        <span className="text-sm font-medium">{t('title')}</span>
+        <Button variant="link" size="sm" className="h-auto shrink-0 p-0" asChild>
+          <Link href="/calendars">{t('view_all')}</Link>
+        </Button>
+      </div>
+
       <Calendar
         mode="single"
         selected={selectedDate}
@@ -222,4 +229,4 @@ const CalendarContent: React.FC = () => {
   )
 }
 
-export default CalendarContent
+export default memo(CalendarContent)

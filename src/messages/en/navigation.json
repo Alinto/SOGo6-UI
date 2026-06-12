@@ -14,6 +14,8 @@
     },
     "fast_access": {
       "calendar": {
+        "title": "Calendar",
+        "view_all": "View all",
         "today": "Today",
         "no_events": "No events today",
         "all_day": "All day",
@@ -23,21 +25,29 @@
       "tasks": {
         "title": "Tasks",
         "view_all": "View all tasks",
+        "search_placeholder": "Search tasks",
         "overdue": "Overdue",
         "today": "Today",
         "upcoming": "Upcoming",
         "no_due_date": "No due date",
         "empty": "You're all caught up",
+        "no_results": "No matches",
         "loading": "Loading tasks…",
         "error": "Could not load tasks"
       },
       "address_book": {
         "title": "Contacts",
-        "view_all": "View all contacts",
+        "view_all": "View all",
+        "search_placeholder": "Search contacts and lists",
+        "distribution_lists": "Distribution lists",
+        "contacts": "Contacts",
+        "member_count": "{number} members",
+        "compose": "Write message",
         "loading": "Loading contacts…",
         "error": "Could not load contacts",
         "empty": "No address book available",
-        "no_contacts": "No contacts yet"
+        "no_entries": "No contacts or lists yet",
+        "no_results": "No matches"
       },
       "coming_soon": {
         "title": "Feature incoming",

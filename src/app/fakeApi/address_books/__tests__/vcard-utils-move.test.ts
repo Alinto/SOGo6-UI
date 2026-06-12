@@ -1,5 +1,6 @@
 import type { VCard } from '@/features/address_books/address-books-types'
 import {
+  normalizeGroupMembers,
   normalizeGroupMembersForBook,
   removeContactFromAllDistributionLists,
 } from '../vcard-utils'
@@ -38,6 +39,18 @@ describe('vcard-utils move helpers', () => {
       { contactId: 'c2', email: 'b@example.com' },
     ])
     expect(store.home[0].members).toEqual([])
+  })
+
+  it('keeps members linked by contactId without email', () => {
+    const members = normalizeGroupMembers([
+      { contactId: 'c1', email: 'a@example.com', displayName: 'Alice' },
+      { contactId: 'c2', email: '', displayName: 'Bob NoMail' },
+    ])
+
+    expect(members).toEqual([
+      { contactId: 'c1', email: 'a@example.com', displayName: 'Alice' },
+      { contactId: 'c2', email: '', displayName: 'Bob NoMail' },
+    ])
   })
 
   it('strips invalid contactId refs when normalizing for target book', () => {

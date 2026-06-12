@@ -90,7 +90,13 @@ export function normalizeGroupMembers(
   if (!members?.length) return []
   const seen = new Set<string>()
   return members.filter((member) => {
-    const email = member.email.trim().toLowerCase()
+    const email = member.email?.trim().toLowerCase() ?? ''
+    if (member.contactId) {
+      const key = email || `contact:${member.contactId}`
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    }
     if (!email || seen.has(email)) return false
     seen.add(email)
     return true

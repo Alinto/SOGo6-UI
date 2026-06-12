@@ -57,6 +57,12 @@ jest.mock('@/components/ui/button', () => ({
   }) => (asChild ? children : <button type="button">{children}</button>),
 }))
 
+jest.mock('@/components/ui/input', () => ({
+  Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+    <input {...props} />
+  ),
+}))
+
 jest.mock('@/components/ui/badge', () => ({
   Badge: ({ children }: { children: ReactNode }) => <span>{children}</span>,
 }))
@@ -94,6 +100,8 @@ jest.mock('next-intl', () => ({
       upcoming: 'Upcoming',
       no_due_date: 'No due date',
       empty: "You're all caught up",
+      no_results: 'No matches',
+      search_placeholder: 'Search tasks',
       loading: 'Loading tasks…',
       error: 'Could not load tasks',
     }
@@ -144,6 +152,11 @@ describe('TasksContent', () => {
     it('shows empty state when no active tasks', () => {
       render(<TasksContent />)
       expect(screen.getByText("You're all caught up")).toBeInTheDocument()
+    })
+
+    it('renders search input when tasks are loaded', () => {
+      render(<TasksContent />)
+      expect(screen.getByTestId('fast-access-tasks-search')).toBeInTheDocument()
     })
   })
 
@@ -247,6 +260,60 @@ describe('TasksContent', () => {
       render(<TasksContent />)
       expect(screen.getByTestId('task-section-undated')).toBeInTheDocument()
       expect(screen.getByText('Backlog')).toBeInTheDocument()
+    })
+  })
+
+  describe('search', () => {
+    it('filters tasks by title', async () => {
+      const user = userEvent.setup()
+      mockUseGetTasksQuery.mockReturnValue({
+        data: [
+          {
+            key: 't1',
+            id: 't1',
+            title: 'Buy groceries',
+            status: 'needs_action',
+            due: daysFromNow(0),
+          },
+          {
+            key: 't2',
+            id: 't2',
+            title: 'Write report',
+            status: 'needs_action',
+            due: daysFromNow(1),
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      })
+
+      render(<TasksContent />)
+      await user.type(screen.getByTestId('fast-access-tasks-search'), 'report')
+
+      expect(screen.queryByText('Buy groceries')).not.toBeInTheDocument()
+      expect(screen.getByText('Write report')).toBeInTheDocument()
+    })
+
+    it('shows no results message when search matches nothing', async () => {
+      const user = userEvent.setup()
+      mockUseGetTasksQuery.mockReturnValue({
+        data: [
+          {
+            key: 't1',
+            id: 't1',
+            title: 'Buy groceries',
+            status: 'needs_action',
+            due: daysFromNow(0),
+          },
+        ],
+        isLoading: false,
+        isError: false,
+      })
+
+      render(<TasksContent />)
+      await user.type(screen.getByTestId('fast-access-tasks-search'), 'zzzz')
+
+      expect(screen.getByText('No matches')).toBeInTheDocument()
     })
   })
 

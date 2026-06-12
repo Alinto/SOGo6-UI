@@ -42,10 +42,10 @@ describe('AddressBook contact visualization Page', () => {
   })
 
   describe('basic rendering', () => {
-    it('renders skeleton while fetching', () => {
+    it('renders skeleton while loading', () => {
       mockUseGetVCardQuery.mockReturnValue({
         data: undefined,
-        isFetching: true,
+        isLoading: true,
         isError: false,
       })
 
@@ -56,7 +56,7 @@ describe('AddressBook contact visualization Page', () => {
     it('renders visualization when contact is loaded', () => {
       mockUseGetVCardQuery.mockReturnValue({
         data: contact,
-        isFetching: false,
+        isLoading: false,
         isError: false,
       })
 
@@ -66,10 +66,21 @@ describe('AddressBook contact visualization Page', () => {
   })
 
   describe('configuration', () => {
+    it('keeps visualization visible during background refetch', () => {
+      mockUseGetVCardQuery.mockReturnValue({
+        data: contact,
+        isLoading: false,
+        isError: false,
+      })
+
+      render(<Page />)
+      expect(screen.getByTestId('visualization')).toHaveTextContent('John')
+    })
+
     it('shows error when query fails', () => {
       mockUseGetVCardQuery.mockReturnValue({
         data: undefined,
-        isFetching: false,
+        isLoading: false,
         isError: true,
       })
 
@@ -80,7 +91,7 @@ describe('AddressBook contact visualization Page', () => {
     it('shows error when data is an array', () => {
       mockUseGetVCardQuery.mockReturnValue({
         data: [],
-        isFetching: false,
+        isLoading: false,
         isError: false,
       })
 

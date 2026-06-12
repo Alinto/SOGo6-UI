@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
@@ -43,7 +44,9 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const { push } = useRouter()
   const { account, folder } = useParams()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
-  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const folderString = folderPathFromParams(
+    folder as string | string[] | undefined
+  )
   const [onDelete] = useMoveToTrashMutation()
   const [mailAction] = useMailActionMutation()
   const dispatch = useAppDispatch()

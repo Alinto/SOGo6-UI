@@ -119,6 +119,40 @@ describe('DistributionListForm', () => {
       expect(screen.getByTestId('scroll-area')).toBeInTheDocument()
       expect(screen.getByText('Alice Smith')).toBeInTheDocument()
     })
+
+    it('prefills members without email from selection', async () => {
+      const contacts: VCard[] = [
+        ...bookContacts,
+        {
+          id: 'c2',
+          version: '4.0',
+          firstName: 'Bob',
+          lastName: 'NoMail',
+          emails: [],
+        },
+      ]
+
+      render(
+        <DistributionListForm
+          open
+          bookContacts={contacts}
+          prefillMembers={[
+            { contactId: 'c1', email: 'alice@example.com', displayName: 'Alice Smith' },
+            { contactId: 'c2', email: '', displayName: 'Bob NoMail' },
+          ]}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      )
+
+      await waitFor(() => {
+        const checkboxes = screen.getAllByRole('checkbox')
+        expect(checkboxes).toHaveLength(2)
+        checkboxes.forEach((checkbox) => {
+          expect(checkbox).toBeChecked()
+        })
+      })
+    })
   })
 
   describe('accessibility', () => {

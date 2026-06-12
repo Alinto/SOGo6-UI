@@ -3,6 +3,7 @@
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { RootState } from '@/lib/redux/store'
 import { useParams, useSearchParams } from 'next/navigation'
 import React from 'react'
@@ -10,13 +11,18 @@ import { useSelector } from 'react-redux'
 
 const Page: React.FC = () => {
   const { folder, account, mail_id } = useParams()
-  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const folderPath = folderPathFromParams(
+    folder as string | string[] | undefined
+  )
   const accountString = Array.isArray(account) ? account[0] : (account ?? '0')
   const mailLayoutMode = useSelector((state: RootState) => state.mailLayout.mode)
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
 
-  const { data, isFetching } = useFolderMessages({ folder: folderString, accountId: accountString })
+  const { data, isFetching } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
 
   const filteredMails = React.useMemo(() => {
     const mails = data?.mails ?? []

@@ -13,6 +13,7 @@ import { useParams } from 'next/navigation'
 import React, { useCallback, useEffect } from 'react'
 import { useMailItemActions } from '../hooks/use-mail-item-actions'
 import type { ImapMessagesList } from '../mails-types'
+import { folderPathFromParams } from '../utils/folder-path-from-params'
 import ListItem from './list-item'
 import ListItemClassic from './list-item-classic'
 import AddressBookListSkeleton from './skeletons/skeleton'
@@ -43,12 +44,9 @@ const MessagesList: React.FC<MessagesListProps> = ({
   const dispatch = useAppDispatch()
   const { folder, account } = useParams()
   const accountIdStr = (Array.isArray(account) ? account[0] : account) ?? '0'
-  const folderStr =
-    typeof folder === 'string'
-      ? folder
-      : Array.isArray(folder)
-        ? folder.join('/')
-        : ''
+  const folderStr = folderPathFromParams(
+    folder as string | string[] | undefined
+  )
 
   const { deleteMail, toggleRead, archiveMail, markSpam, markHam, isJunk } =
     useMailItemActions({

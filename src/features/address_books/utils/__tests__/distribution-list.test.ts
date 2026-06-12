@@ -55,4 +55,21 @@ describe('distribution-list utils', () => {
     expect(members).toHaveLength(2)
     expect(members[0].contactId).toBe('1')
   })
+
+  it('includes contacts without email when building members from selection', () => {
+    const noEmail: VCard = {
+      id: 'no-mail',
+      version: '4.0',
+      firstName: 'Bob',
+      lastName: 'Sans',
+      emails: [],
+    }
+    const members = membersFromContacts([individual('1'), noEmail])
+    expect(members).toHaveLength(2)
+    expect(members[1]).toEqual({
+      contactId: 'no-mail',
+      email: '',
+      displayName: 'Bob Sans',
+    })
+  })
 })
