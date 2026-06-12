@@ -8,6 +8,11 @@ import type { AppDispatch } from '@/lib/redux/store'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type { AddressBook, AddressBooks, VCard } from '../address-books-types'
 
+const vcardBookTag = (bookId: string) => ({
+  type: VCARD_SLICE,
+  id: `book:${bookId}`,
+})
+
 const notifyMutation =
   (options: {
     successTitle: string
@@ -85,7 +90,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
     getVCard: builder.query<VCard, { book_id: string; id: string }>({
       query: ({ book_id, id }) => `address_books/${book_id}/${id}`,
-      providesTags: (result, error, { id }) => [{ type: VCARD_SLICE, id }],
+      providesTags: (result, error, { id, book_id }) => [
+        { type: VCARD_SLICE, id },
+        vcardBookTag(book_id),
+      ],
     }),
     updateVCard: builder.mutation<VCard, Partial<VCard> & { book_id: string }>({
       query: ({ book_id, id, ...patch }) => ({
@@ -126,10 +134,13 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         method: 'POST',
         body: { targetBookId },
       }),
-      invalidatesTags: (result, error, { sourceBookId, targetBookId }) => [
+      invalidatesTags: (result, error, { sourceBookId, targetBookId, vCardId }) => [
         { type: ADDRESS_BOOKS_SLICE, id: sourceBookId },
         { type: ADDRESS_BOOKS_SLICE, id: targetBookId },
         { type: ADDRESS_BOOKS_SLICE, id: 'LIST' },
+        { type: VCARD_SLICE, id: vCardId },
+        vcardBookTag(sourceBookId),
+        vcardBookTag(targetBookId),
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         await notifyEntryMove(dispatch, { queryFulfilled })
@@ -143,9 +154,11 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: `address_books/${id}/${vCardId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: ADDRESS_BOOKS_SLICE, id },
+      invalidatesTags: (result, error, { id: bookId, vCardId }) => [
+        { type: ADDRESS_BOOKS_SLICE, id: bookId },
         { type: ADDRESS_BOOKS_SLICE, id: 'LIST' },
+        { type: VCARD_SLICE, id: vCardId },
+        vcardBookTag(bookId),
       ],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         await notifyEntryDelete(dispatch, { queryFulfilled })

@@ -14,6 +14,7 @@ import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
+import { folderPathFromParams } from '../../utils/folder-path-from-params'
 import { iconSelector, nameSelector } from '../utils'
 import { AccountSwitcher } from './account-switcher'
 import ComposeOpener from './compose-opener'
@@ -29,12 +30,9 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const { account, folder: urlFolderParam } = useParams()
   const t = useTranslations('MAILS_COMMONS')
 
-  const urlFolder =
-    typeof urlFolderParam === 'string'
-      ? urlFolderParam
-      : Array.isArray(urlFolderParam)
-        ? urlFolderParam.join('/')
-        : ''
+  const urlFolder = folderPathFromParams(
+    urlFolderParam as string | string[] | undefined
+  )
 
   const isActive = urlFolder === folder.path
 

@@ -73,7 +73,7 @@ export const ProfileAvatar = memo(function ProfileAvatar({
       {avatarSource.type === 'image' && avatarSource.src && (
         <AvatarImage src={avatarSource.src} alt={avatarSource.alt} />
       )}
-      <AvatarFallback className={`text-header-foreground ${textSizeClass}`}>
+      <AvatarFallback className={`text-foreground ${textSizeClass}`}>
         {useInitialsFallback ? getFallbackInitials() : fallbackUsername}
       </AvatarFallback>
     </Avatar>

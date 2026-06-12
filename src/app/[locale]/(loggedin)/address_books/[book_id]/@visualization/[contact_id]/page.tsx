@@ -9,12 +9,12 @@ import React from 'react'
 
 const Page: React.FC = () => {
   const { contact_id, book_id } = useParams()
-  const { data, isFetching, isError } = useGetVCardQuery({
+  const { data, isLoading, isError } = useGetVCardQuery({
     id: contact_id as string,
     book_id: book_id as string,
   })
 
-  if (isFetching) {
+  if (isLoading) {
     return <VisualizationSkeleton />
   }
 

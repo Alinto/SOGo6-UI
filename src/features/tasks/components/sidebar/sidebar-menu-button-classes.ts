@@ -15,3 +15,11 @@ export const tasksSidebarMenuLabelRowClassName =
 
 export const tasksSidebarMenuCountClassName =
   'shrink-0 text-xs font-medium leading-none tabular-nums'
+
+/** Compact destructive count pill: circle for single digits, expands for 10+. */
+export const tasksOverdueCountBadgeClassName =
+  'inline-grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-destructive text-[10px] font-semibold text-destructive-foreground'
+
+/** Inner label: line-height reset + slight downward nudge for optical centering. */
+export const tasksOverdueCountBadgeLabelClassName =
+  'block leading-none tabular-nums translate-y-px'

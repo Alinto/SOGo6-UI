@@ -1,7 +1,8 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import TaskOverdueCountBadge from '@/features/tasks/components/task-overdue-count-badge'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import { useGetCalendarsQuery } from '@/features/calendars/store/calendars-api'
 import TaskCompleteCheckbox from '@/features/tasks/components/task-complete-checkbox'
@@ -24,9 +25,10 @@ import {
 import { getDisplayTaskProgress } from '@/features/tasks/utils/task-progress'
 import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
+import { Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import React, { memo, useCallback, useMemo } from 'react'
+import React, { memo, useCallback, useMemo, useState } from 'react'
 
 const DEFAULT_COLOR = '#3b82f6'
 const SECTION_LIMIT = 5
@@ -41,6 +43,21 @@ function formatDueLabel(due: string): string | null {
   } catch {
     return null
   }
+}
+
+function taskMatchesSearch(task: Task, searchQuery: string): boolean {
+  const query = searchQuery.trim().toLowerCase()
+  if (!query) return true
+
+  const haystack = [
+    task.title,
+    task.description ?? '',
+    ...(task.categories ?? []),
+  ]
+    .join(' ')
+    .toLowerCase()
+
+  return haystack.includes(query)
 }
 
 function TaskRow({
@@ -140,12 +157,7 @@ function SectionHeader({
       </p>
       {count > 0 &&
         (destructive ? (
-          <Badge
-            variant="destructive"
-            className="h-5 min-w-5 justify-center px-1.5 text-[10px] tabular-nums"
-          >
-            {count}
-          </Badge>
+          <TaskOverdueCountBadge count={count} />
         ) : (
           <span className="text-muted-foreground text-xs tabular-nums">
             {count}
@@ -205,6 +217,7 @@ function TaskSection({
 const TasksContent: React.FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.tasks')
   const tTasks = useTranslations('TASKS')
+  const [searchQuery, setSearchQuery] = useState('')
 
   const { data: calendars = [] } = useGetCalendarsQuery()
   const { data: tasks = [], isLoading, isError } = useGetTasksQuery()
@@ -249,32 +262,41 @@ const TasksContent: React.FC = () => {
     [tasks]
   )
 
+  const filteredTasks = useMemo(
+    () => activeTasks.filter((task) => taskMatchesSearch(task, searchQuery)),
+    [activeTasks, searchQuery]
+  )
+
+  const isSearching = searchQuery.trim().length > 0
+  const sectionLimit = isSearching ? Number.POSITIVE_INFINITY : SECTION_LIMIT
+
   const overdueAll = useMemo(
-    () => activeTasks.filter(isTaskOverdue).sort(sortByDue),
-    [activeTasks]
+    () => filteredTasks.filter(isTaskOverdue).sort(sortByDue),
+    [filteredTasks]
   )
   const todayAll = useMemo(
     () =>
-      activeTasks
+      filteredTasks
         .filter((task) => isTaskDueToday(task) && !isTaskOverdue(task))
         .sort(sortByDue),
-    [activeTasks]
+    [filteredTasks]
   )
   const upcomingAll = useMemo(
-    () => activeTasks.filter(isTaskUpcoming).sort(sortByDue),
-    [activeTasks]
+    () => filteredTasks.filter(isTaskUpcoming).sort(sortByDue),
+    [filteredTasks]
   )
   const undatedAll = useMemo(
-    () => activeTasks.filter((task) => !task.due),
-    [activeTasks]
+    () => filteredTasks.filter((task) => !task.due),
+    [filteredTasks]
   )
 
-  const overdue = overdueAll.slice(0, SECTION_LIMIT)
-  const today = todayAll.slice(0, SECTION_LIMIT)
-  const upcoming = upcomingAll.slice(0, SECTION_LIMIT)
-  const undated = undatedAll.slice(0, SECTION_LIMIT)
+  const overdue = overdueAll.slice(0, sectionLimit)
+  const today = todayAll.slice(0, sectionLimit)
+  const upcoming = upcomingAll.slice(0, sectionLimit)
+  const undated = undatedAll.slice(0, sectionLimit)
 
-  const hasAnyTask =
+  const hasAnyTask = activeTasks.length > 0
+  const hasVisibleTask =
     overdue.length > 0 ||
     today.length > 0 ||
     upcoming.length > 0 ||
@@ -310,11 +332,31 @@ const TasksContent: React.FC = () => {
       className="flex flex-1 flex-col gap-3 overflow-hidden p-2"
       data-testid="tasks-panel"
     >
-      <div className="flex shrink-0 items-center justify-between px-1">
-        <span className="text-sm font-medium">{t('title')}</span>
-        <Button variant="link" size="sm" className="h-auto p-0" asChild>
-          <Link href="/tasks">{t('view_all')}</Link>
-        </Button>
+      <div className="flex shrink-0 flex-col gap-2 px-1">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium">{t('title')}</span>
+          <Button variant="link" size="sm" className="h-auto shrink-0 p-0" asChild>
+            <Link href="/tasks">{t('view_all')}</Link>
+          </Button>
+        </div>
+
+        {!isLoading && !isError && (
+          <div className="relative">
+            <Search
+              className="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 h-3.5 w-3.5 -translate-y-1/2"
+              aria-hidden
+            />
+            <Input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder={t('search_placeholder')}
+              className={cn('h-8 pl-8 text-sm')}
+              data-testid="fast-access-tasks-search"
+              autoComplete="off"
+            />
+          </div>
+        )}
       </div>
 
       <div className="scrollbar-thin-gray flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2">
@@ -330,7 +372,11 @@ const TasksContent: React.FC = () => {
           <p className="text-muted-foreground px-2 py-3 text-xs">{t('empty')}</p>
         )}
 
-        {!isLoading && !isError && hasAnyTask && (
+        {!isLoading && !isError && hasAnyTask && !hasVisibleTask && (
+          <p className="text-muted-foreground px-2 py-3 text-xs">{t('no_results')}</p>
+        )}
+
+        {!isLoading && !isError && hasVisibleTask && (
           <>
             <TaskSection
               sectionId="overdue"

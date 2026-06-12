@@ -30,9 +30,8 @@ function buildMembersFromForm(
   for (const contactId of values.memberContactIds) {
     const contact = bookContacts.find((item) => item.id === contactId)
     if (!contact) continue
-    const email = contact.emails?.[0]?.trim()
-    if (!email) continue
-    const key = email.toLowerCase()
+    const email = contact.emails?.[0]?.trim() ?? ''
+    const key = email ? email.toLowerCase() : `contact:${contactId}`
     if (seen.has(key)) continue
     seen.add(key)
     members.push({

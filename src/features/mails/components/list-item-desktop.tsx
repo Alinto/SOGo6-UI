@@ -10,6 +10,7 @@ import {
 } from '@/features/mails/store'
 import { useLazyGetEditMessageQuery } from '@/features/mails/store/mails-api'
 import { apiDataToMailComposeDraft } from '@/features/mails/utils/mail-compose-from-api'
+import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
@@ -60,7 +61,9 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const { push } = useRouter()
   const { account, folder } = useParams()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
-  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const folderString = folderPathFromParams(
+    folder as string | string[] | undefined
+  )
   const { id, from, to, flagged, hasAttachment } = data
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
   const showHighPriority = data.priority <= 2

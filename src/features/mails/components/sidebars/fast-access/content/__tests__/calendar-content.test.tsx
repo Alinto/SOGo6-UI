@@ -31,15 +31,37 @@ jest.mock('@/components/ui/calendar-lazy', () => ({
   ),
 }))
 
+jest.mock('@/components/ui/button', () => ({
+  Button: ({
+    children,
+    asChild,
+  }: {
+    children: ReactNode
+    asChild?: boolean
+  }) => (asChild ? children : <button type="button">{children}</button>),
+}))
+
+jest.mock('next/link', () => ({
+  __esModule: true,
+  default: ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode
+    href: string
+  }) => <a href={href}>{children}</a>,
+}))
+
 jest.mock('@/components/ui/sidebar', () => ({
   SidebarGroupContent: ({
     children,
     className,
+    ...props
   }: {
     children: ReactNode
     className?: string
   }) => (
-    <div data-testid="sidebar-group-content" className={className}>
+    <div data-testid="sidebar-group-content" className={className} {...props}>
       {children}
     </div>
   ),
@@ -53,6 +75,8 @@ jest.mock('@/lib/utils', () => ({
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => {
     const map: Record<string, string> = {
+      title: 'Calendar',
+      view_all: 'View all',
       today: 'Today',
       no_events: 'No events today',
       all_day: 'All day',
@@ -77,10 +101,15 @@ describe('CalendarContent', () => {
   })
 
   describe('basic rendering', () => {
-    it('renders calendar and event section', () => {
+    it('renders panel header, calendar and event section', () => {
       render(<CalendarContent />)
+      expect(screen.getByTestId('calendar-panel')).toBeInTheDocument()
+      expect(screen.getByText('Calendar')).toBeInTheDocument()
+      expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute(
+        'href',
+        '/calendars'
+      )
       expect(screen.getByTestId('mock-calendar')).toBeInTheDocument()
-      expect(screen.getByTestId('sidebar-group-content')).toBeInTheDocument()
     })
 
     it('shows Today label for current day selection', () => {

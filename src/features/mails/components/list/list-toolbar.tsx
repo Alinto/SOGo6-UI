@@ -6,7 +6,6 @@ import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListSort from '@/features/mails/components/list/list-sort'
-import { nameSelector } from '@/features/mails/components/utils'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import {
   clearSelectedMails,
@@ -14,6 +13,10 @@ import {
 } from '@/features/mails/store/mail-layout-slice'
 import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
+import {
+  folderPathFromParams,
+  getFolderDisplayName,
+} from '@/features/mails/utils/folder-path-from-params'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
@@ -28,13 +31,18 @@ const ListToolbar: React.FC = () => {
   const isMobile = useIsMobile()
   const dispatch = useAppDispatch()
   const { folder, account } = useParams()
-  const folderString = Array.isArray(folder) ? folder.join('/') : (folder ?? '')
+  const folderPath = folderPathFromParams(
+    folder as string | string[] | undefined
+  )
   const accountString = Array.isArray(account) ? account[0] : (account ?? '0')
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
   const clientFilterActive = activeFilter !== 'all'
 
-  const { data, currentPage } = useFolderMessages({ folder: folderString, accountId: accountString })
+  const { data, currentPage } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
 
   const filteredMails = useMemo(
     () => getClientFilteredMails(data?.mails ?? [], activeFilter),
@@ -57,9 +65,9 @@ const ListToolbar: React.FC = () => {
   const allSelected = allIds.length > 0 && selectedIds.length === allIds.length
   const someSelected = selectedIds.length > 0 && !allSelected
 
-  const folderTranslation = useMemo(
-    () => nameSelector(folderString),
-    [folderString]
+  const folderTitle = useMemo(
+    () => getFolderDisplayName(folderPath, tCommons),
+    [folderPath, tCommons]
   )
 
   const handleSelectAll = (checked: boolean | 'indeterminate') => {
@@ -75,7 +83,7 @@ const ListToolbar: React.FC = () => {
   const { deleteMail, archiveMail, toggleRead, markSpam, markHam, isJunk } =
     useMailItemActions({
       accountId: accountString,
-      folder: folderString,
+      folder: folderPath,
     })
 
   const handleBulkAction = useCallback(
@@ -171,9 +179,7 @@ const ListToolbar: React.FC = () => {
             />
           ) : (
             <>
-              <span className="text-lg font-semibold">
-                {folderTranslation ? tCommons(folderTranslation) : folderString}
-              </span>
+              <span className="text-lg font-semibold">{folderTitle}</span>
               <span className="text-muted-foreground hidden text-sm md:inline-block">
                 {t('messages_number.string', { number: displayedCount })}
               </span>

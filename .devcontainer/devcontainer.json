@@ -22,9 +22,9 @@
   "runArgs": [
     "--network=host",
     "--add-host=host.docker.internal:host-gateway",
-    "--memory=6g",
-    "--memory-swap=12g",
-    "--cpus=6"
+    "--memory=5g",
+    "--memory-swap=10g",
+    "--cpus=4"
   ],
 
   "customizations": {

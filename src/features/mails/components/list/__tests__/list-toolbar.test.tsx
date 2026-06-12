@@ -161,7 +161,14 @@ describe('ListToolbar', () => {
       const { useParams } = require('next/navigation')
       useParams.mockReturnValue({ folder: ['Archive', 'Old'] })
       render(<ListToolbar />)
-      expect(screen.getByText('Archive/Old')).toBeInTheDocument()
+      expect(screen.getByText('Old')).toBeInTheDocument()
+    })
+
+    it('shows subfolder name for encoded nested paths', () => {
+      const { useParams } = require('next/navigation')
+      useParams.mockReturnValue({ folder: 'INBOX%2Fnewsub', account: '0' })
+      render(<ListToolbar />)
+      expect(screen.getByText('newsub')).toBeInTheDocument()
     })
   })
 

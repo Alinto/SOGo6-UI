@@ -26,10 +26,7 @@ export function vCardToMember(contact: VCard): ContactMember {
 }
 
 export function membersFromContacts(contacts: VCard[]): ContactMember[] {
-  return contacts
-    .filter(isIndividualContact)
-    .map(vCardToMember)
-    .filter((member) => member.email)
+  return contacts.filter(isIndividualContact).map(vCardToMember)
 }
 
 export function getMemberDisplayLabel(member: ContactMember): string {

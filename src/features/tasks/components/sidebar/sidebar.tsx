@@ -1,6 +1,5 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -32,6 +31,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { memo, useMemo } from 'react'
 import CreateTaskOpener from './create-task-opener'
+import TaskOverdueCountBadge from '../task-overdue-count-badge'
 import {
   tasksSidebarMenuButtonClassName,
   tasksSidebarMenuCountClassName,
@@ -58,14 +58,7 @@ function ViewCount({
   if (count <= 0) return null
 
   if (destructive) {
-    return (
-      <Badge
-        variant="destructive"
-        className="h-5 min-w-5 shrink-0 justify-center px-1.5 text-[10px] tabular-nums"
-      >
-        {count}
-      </Badge>
-    )
+    return <TaskOverdueCountBadge count={count} />
   }
 
   return <span className={tasksSidebarMenuCountClassName}>{count}</span>
