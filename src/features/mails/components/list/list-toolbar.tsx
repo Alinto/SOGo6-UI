@@ -134,9 +134,9 @@ const ListToolbar: React.FC = () => {
   )
 
   return (
-    <div className="bg-background border-b border-border flex w-full shrink-0 flex-col gap-1 px-3 py-2">
+    <div className="bg-background border-border flex w-full min-w-0 shrink-0 flex-col gap-1 overflow-x-hidden border-b px-3 py-2">
       <div className="flex min-w-0 flex-row flex-wrap items-center justify-between gap-y-1">
-        <div className="flex flex-row items-center gap-4">
+        <div className="flex min-w-0 flex-row items-center gap-4">
           <Checkbox
             checked={allSelected ? true : someSelected ? 'indeterminate' : false}
             onCheckedChange={handleSelectAll}

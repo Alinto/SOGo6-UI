@@ -40,14 +40,20 @@ function MailLayoutInner({
   const content = isClassicLayout ? classic : children
 
   return (
-    <SidebarProvider name="right-global-rail" width="2.5rem" defaultOpen>
+    <SidebarProvider
+      name="right-global-rail"
+      width="2.5rem"
+      defaultOpen
+      className="min-w-0"
+    >
       <SidebarProvider
         name="right-mail-sidebar-2"
         defaultOpen={false}
         open={isOpen}
         width={`calc(${SIDEBAR_WIDTH} - 1.5rem)`}
+        className="min-w-0 flex-1"
       >
-        <SidebarInset className="flex flex-col">
+        <SidebarInset className="flex min-w-0 flex-col overflow-x-hidden">
           <ListToolbar />
           <div className="flex h-[calc(100vh-var(--header-height)-52px)] w-full overflow-hidden p-1">
             {content}

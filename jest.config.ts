@@ -35,7 +35,7 @@ const config: Config = {
   transformIgnorePatterns: ['node_modules/(?!(next-intl)/)'],
   // Performance optimizations
   maxWorkers: '50%', // Use half of available CPU cores
-  testTimeout: 10000, // 10 second timeout instead of default 5s
+  testTimeout: 20000, // integration tests under parallel pre-commit (findRelatedTests)
   // Cache test results
   cacheDirectory: '<rootDir>/.jest-cache',
   // Faster test discovery

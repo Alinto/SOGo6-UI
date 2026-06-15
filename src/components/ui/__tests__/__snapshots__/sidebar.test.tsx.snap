@@ -4,7 +4,7 @@ exports[`Sidebar Components matches snapshot for SidebarMenuSubItem 1`] = `
 <DocumentFragment>
   <div>
     <div
-      class="group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full"
+      class="group/sidebar-wrapper has-data-[variant=inset]:bg-sidebar flex min-h-svh w-full min-w-0 overflow-x-hidden"
       style="--sidebar-width: 17rem; --sidebar-width-icon: 3rem;"
     >
       <div

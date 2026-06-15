@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen, waitFor } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { DeleteFolderDialog } from '../delete-folder-dialog'
 
@@ -120,15 +119,18 @@ describe('DeleteFolderDialog', () => {
   })
 
   describe('integration', () => {
-    it('should call deleteFolder with accountId and folderPath', async () => {
-      const user = userEvent.setup()
-      render(<DeleteFolderDialog {...defaultProps} />)
-
-      await user.click(
+    const clickConfirm = () => {
+      fireEvent.click(
         screen.getByRole('button', {
           name: 'folders.actions.delete.confirm.string',
         })
       )
+    }
+
+    it('should call deleteFolder with accountId and folderPath', async () => {
+      render(<DeleteFolderDialog {...defaultProps} />)
+
+      clickConfirm()
 
       await waitFor(() => {
         expect(mockDeleteFolder).toHaveBeenCalledWith({
@@ -139,17 +141,12 @@ describe('DeleteFolderDialog', () => {
     })
 
     it('should call onOpenChange(false) after successful delete', async () => {
-      const user = userEvent.setup()
       const onOpenChange = jest.fn()
       render(
         <DeleteFolderDialog {...defaultProps} onOpenChange={onOpenChange} />
       )
 
-      await user.click(
-        screen.getByRole('button', {
-          name: 'folders.actions.delete.confirm.string',
-        })
-      )
+      clickConfirm()
 
       await waitFor(() => {
         expect(onOpenChange).toHaveBeenCalledWith(false)
@@ -161,7 +158,6 @@ describe('DeleteFolderDialog', () => {
         account: '1',
         folder: 'Trash',
       })
-      const user = userEvent.setup()
       render(
         <DeleteFolderDialog
           {...defaultProps}
@@ -170,11 +166,7 @@ describe('DeleteFolderDialog', () => {
         />
       )
 
-      await user.click(
-        screen.getByRole('button', {
-          name: 'folders.actions.delete.confirm.string',
-        })
-      )
+      clickConfirm()
 
       await waitFor(() => {
         expect(mockDispatch).toHaveBeenCalledWith(setSkipFolderFetch(true))
@@ -187,14 +179,9 @@ describe('DeleteFolderDialog', () => {
         account: '0',
         folder: 'INBOX',
       })
-      const user = userEvent.setup()
       render(<DeleteFolderDialog {...defaultProps} folderPath="Trash" />)
 
-      await user.click(
-        screen.getByRole('button', {
-          name: 'folders.actions.delete.confirm.string',
-        })
-      )
+      clickConfirm()
 
       await waitFor(() => {
         expect(mockDeleteFolder).toHaveBeenCalled()
@@ -208,18 +195,13 @@ describe('DeleteFolderDialog', () => {
       mockDeleteFolder.mockReturnValueOnce({
         unwrap: () => Promise.reject(new Error('fail')),
       })
-      const user = userEvent.setup()
       mockUseParams.mockReturnValue({
         account: '0',
         folder: 'Trash',
       })
       render(<DeleteFolderDialog {...defaultProps} />)
 
-      await user.click(
-        screen.getByRole('button', {
-          name: 'folders.actions.delete.confirm.string',
-        })
-      )
+      clickConfirm()
 
       await waitFor(() => {
         expect(mockDispatch).toHaveBeenCalledWith(setSkipFolderFetch(false))

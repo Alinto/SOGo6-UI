@@ -85,9 +85,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <SidebarProvider name="left-global-sidebar">
         <DndContext sensors={sensors} onDragEnd={handleAddressBookDragEnd}>
           <AppSidebar />
-          <SidebarInset className="flex h-screen flex-col">
+          <SidebarInset className="flex h-screen min-w-0 flex-col overflow-x-hidden">
             <AppHeader />
-            <div className="flex-1 gap-4 border-y">{children}</div>
+            <div className="min-h-0 min-w-0 flex-1 gap-4 overflow-x-hidden border-y">
+              {children}
+            </div>
           </SidebarInset>
           {typeof window !== 'undefined' &&
             ReactDOM.createPortal(

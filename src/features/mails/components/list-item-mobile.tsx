@@ -190,7 +190,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               )
             }}
           >
-            <div className="flex flex-row items-center gap-2">
+            <div className="flex min-w-0 flex-row items-center gap-2">
               {/* Avatar on the left */}
               {isSelected && (
                 <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden">
@@ -220,16 +220,16 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                 </AvatarFallback>
               </Avatar>
               {/* Content on the right */}
-              <div className="flex flex-1 flex-col gap-1">
-                <div className="flex flex-row items-center justify-between gap-2">
-                  <div className="flex flex-row items-center gap-2">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
+                <div className="flex min-w-0 flex-row items-center justify-between gap-2">
+                  <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
                     <div
-                      className={`text-md truncate select-none ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
+                      className={`text-md min-w-0 truncate select-none ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
                     >
                       {displayName}
                     </div>
                   </div>
-                  <span className="text-muted-foreground select-none">
+                  <span className="text-muted-foreground shrink-0 select-none">
                     {hasAttachment && (
                       <Paperclip className="mr-2 inline h-4 w-4" />
                     )}

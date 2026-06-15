@@ -599,7 +599,7 @@ describe('EventForm', () => {
     })
 
     it('submits with all filled data', async () => {
-      const user = userEvent.setup()
+      const user = userEvent.setup({ delay: null })
       render(
         <EventForm
           calendarKey="cal-1"
