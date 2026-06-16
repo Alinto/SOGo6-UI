@@ -1,47 +1,20 @@
-import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
-import { useIsMobile } from '@/hooks/use-mobile'
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { Pencil } from 'lucide-react'
+import { SidebarMenuButton } from '@/components/ui/sidebar'
+import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import { toast } from 'sonner'
-import {
-  createDraft,
-  MAX_OPEN_DRAFTS,
-  selectCanOpenNewDraft,
-} from '../../store'
+import { useComposeAction } from '../../hooks/use-compose-action'
 
 const ComposeOpener: React.FC = () => {
   const t = useTranslations('COMPOSE')
-  const isMobile = useIsMobile()
-  const { setOpenMobile } = useSidebar()
-  const dispatch = useAppDispatch()
-  const canOpen = useAppSelector(selectCanOpenNewDraft)
-
-  const handleOpenCompose = () => {
-    if (!canOpen) {
-      toast.error(t('max_windows_error.string', { max: MAX_OPEN_DRAFTS }))
-      return
-    }
-
-    if (isMobile) {
-      setOpenMobile(false)
-    }
-
-    const id =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
-    dispatch(createDraft({ draftId: id }))
-  }
+  const { onClick, icon: Icon } = useComposeAction()
 
   return (
     <SidebarMenuButton
-      onClick={handleOpenCompose}
+      onClick={onClick}
       className="h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
     >
       <span className="sr-only">{t('new_message.string')}</span>
-      <Pencil className="hidden h-5 w-5 transition-transform group-data-[collapsible=icon]:flex" />
+      <Icon className="hidden h-5 w-5 transition-transform group-data-[collapsible=icon]:flex" />
       <span className="truncate group-data-[collapsible=icon]:hidden">
         {t('new_message.string')}
       </span>

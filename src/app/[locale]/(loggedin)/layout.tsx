@@ -1,6 +1,7 @@
 'use client'
 
 import AppHeader from '@/components/app-header'
+import MobileCreateFab from '@/components/mobile-create-fab'
 import { useAppSelector } from '@/lib/redux/hooks'
 import { useRouter } from 'next/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
@@ -101,6 +102,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               document.body
             )}
         </DndContext>
+        <MobileCreateFab />
       </SidebarProvider>
       <FloatingComposeContainer />
       <ContactFormHost />

@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -19,6 +18,13 @@ import {
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import type { VCard } from '@/features/address_books/address-books-types'
+import {
+  formDialogBodyClassName,
+  formDialogContentClassName,
+  formDialogFooterClassName,
+  formDialogHeaderClassName,
+  formDialogTitleClassName,
+} from '@/lib/utils/form-dialog-layout'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -128,36 +134,48 @@ function ContactForm({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
+      <DialogContent className={formDialogContentClassName('lg')}>
+        <DialogHeader className={formDialogHeaderClassName}>
+          <DialogTitle className={formDialogTitleClassName}>
             {isEdit ? t('edit_contact.string') : t('new_contact.string')}
           </DialogTitle>
         </DialogHeader>
 
         {isLoading && (
-          <div className="flex justify-center py-12" data-testid="contact-form-loading">
+          <div
+            className="flex flex-1 items-center justify-center py-12"
+            data-testid="contact-form-loading"
+          >
             <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         )}
 
         {loadError && !isLoading && (
-          <div className="space-y-4 py-4" data-testid="contact-form-load-error">
-            <p className="text-destructive text-sm">{t('load_error.title.string')}</p>
-            <p className="text-muted-foreground text-sm">
-              {t('load_error.description.string')}
-            </p>
-            <DialogFooter>
+          <>
+            <div
+              className="space-y-4 px-6 py-4"
+              data-testid="contact-form-load-error"
+            >
+              <p className="text-destructive text-sm">{t('load_error.title.string')}</p>
+              <p className="text-muted-foreground text-sm">
+                {t('load_error.description.string')}
+              </p>
+            </div>
+            <div className={formDialogFooterClassName}>
               <Button type="button" variant="outline" onClick={onClose}>
                 {t('cancel.string')}
               </Button>
-            </DialogFooter>
-          </div>
+            </div>
+          </>
         )}
 
         {!isLoading && !loadError && (
         <Form {...form}>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
+          >
+            <div className={formDialogBodyClassName}>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -315,7 +333,9 @@ function ContactForm({
               )}
             />
 
-            <DialogFooter>
+            </div>
+
+            <div className={formDialogFooterClassName}>
               <Button
                 type="button"
                 variant="outline"
@@ -330,7 +350,7 @@ function ContactForm({
                 )}
                 {isEdit ? t('save.string') : t('create.string')}
               </Button>
-            </DialogFooter>
+            </div>
           </form>
         </Form>
         )}

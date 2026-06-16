@@ -1,34 +1,24 @@
 'use client'
 
-import { SidebarMenuButton, useSidebar } from '@/components/ui/sidebar'
-import { openCreateForm } from '../../store/tasks-ui-slice'
-import { useAppDispatch } from '@/lib/redux/hooks'
+import { SidebarMenuButton } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { ListPlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo } from 'react'
+import { useCreateTaskAction } from '../../hooks/use-create-task-action'
 
 function CreateTaskOpener() {
   const t = useTranslations('TASKS')
-  const { isMobile, setOpenMobile } = useSidebar()
-  const dispatch = useAppDispatch()
-
-  const handleClick = () => {
-    if (isMobile) {
-      setOpenMobile(false)
-    }
-    dispatch(openCreateForm())
-  }
+  const { onClick, icon: Icon } = useCreateTaskAction()
 
   return (
     <SidebarMenuButton
-      onClick={handleClick}
+      onClick={onClick}
       className={cn(
         'h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none'
       )}
     >
       <span className="sr-only">{t('new_task.string')}</span>
-      <ListPlus className="hidden h-5 w-5 group-data-[collapsible=icon]:flex" />
+      <Icon className="hidden h-5 w-5 group-data-[collapsible=icon]:flex" />
       <span className="truncate group-data-[collapsible=icon]:hidden">
         {t('new_task.string')}
       </span>

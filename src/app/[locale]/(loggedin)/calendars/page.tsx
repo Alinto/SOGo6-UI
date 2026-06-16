@@ -45,6 +45,11 @@ import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writa
 import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
+import {
+  formDialogContentClassName,
+  formDialogHeaderClassName,
+  formDialogTitleClassName,
+} from '@/lib/utils/form-dialog-layout'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
@@ -283,10 +288,9 @@ const CalendarPage = () => {
       >
         <DialogContent
           className={cn(
-            'max-h-[90vh] sm:max-w-2xl',
             dialogMode === 'edit'
-              ? 'flex min-h-0 flex-col gap-0 overflow-hidden p-0'
-              : 'overflow-y-auto'
+              ? formDialogContentClassName('2xl')
+              : 'max-h-[90vh] overflow-y-auto sm:max-w-2xl'
           )}
         >
           {selectedEvent && displayEvent && dialogMode === 'view' && (
@@ -361,10 +365,8 @@ const CalendarPage = () => {
           )}
           {selectedEvent && displayEvent && dialogMode === 'edit' && (
             <>
-              <DialogHeader className={cn('shrink-0 border-b px-6 pt-6 pb-4')}>
-                <DialogTitle
-                  className={cn('text-xl font-semibold tracking-tight')}
-                >
+              <DialogHeader className={formDialogHeaderClassName}>
+                <DialogTitle className={formDialogTitleClassName}>
                   {selectedEvent.title}
                 </DialogTitle>
               </DialogHeader>

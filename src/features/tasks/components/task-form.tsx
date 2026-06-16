@@ -23,7 +23,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { cn } from '@/lib/utils'
+import {
+  formDialogBodyClassName,
+  formDialogContentClassName,
+  formDialogFooterClassName,
+  formDialogHeaderClassName,
+  formDialogTitleClassName,
+} from '@/lib/utils/form-dialog-layout'
 import { Textarea } from '@/components/ui/textarea'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import {
@@ -207,13 +213,9 @@ function TaskForm({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent
-        className={cn(
-          'flex max-h-[90vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl'
-        )}
-      >
-        <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
-          <DialogTitle className="text-xl font-semibold tracking-tight">
+      <DialogContent className={formDialogContentClassName('2xl')}>
+        <DialogHeader className={formDialogHeaderClassName}>
+          <DialogTitle className={formDialogTitleClassName}>
             {isEdit ? t('form.edit_title.string') : t('form.create_title.string')}
           </DialogTitle>
         </DialogHeader>
@@ -221,9 +223,10 @@ function TaskForm({
         <Form {...form}>
           <form
             onSubmit={handleSubmit}
-            className="scrollbar-thin-gray space-y-4 overflow-y-auto px-6 py-6"
+            className="flex min-h-0 flex-1 flex-col overflow-hidden"
             data-testid="task-form"
           >
+            <div className={formDialogBodyClassName}>
             <FormField
               control={form.control}
               name="title"
@@ -381,7 +384,9 @@ function TaskForm({
               )}
             />
 
-            <div className="flex justify-end gap-2 pt-4">
+            </div>
+
+            <div className={formDialogFooterClassName}>
               <Button type="button" variant="outline" onClick={onClose}>
                 {t('form.cancel.string')}
               </Button>

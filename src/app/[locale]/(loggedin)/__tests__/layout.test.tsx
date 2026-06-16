@@ -51,6 +51,12 @@ jest.mock('@/components/ui/sidebar', () => ({
   ),
 }))
 
+jest.mock('@/components/mobile-create-fab', () => {
+  return function MockMobileCreateFab() {
+    return <div data-testid="mobile-create-fab">Mobile Create FAB</div>
+  }
+})
+
 jest.mock('@/features/mails/components/compose/floating-compose-container', () => {
   return function MockFloatingComposeContainer() {
     return (

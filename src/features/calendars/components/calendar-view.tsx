@@ -8,6 +8,11 @@ import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { DATE_LOCALES } from '@/lib/i18n/date-locales'
+import {
+  formDialogContentClassName,
+  formDialogHeaderClassName,
+  formDialogTitleClassName,
+} from '@/lib/utils/form-dialog-layout'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
 import { useLocale, useTranslations } from 'next-intl'
 import { memo, useEffect } from 'react'
@@ -99,9 +104,9 @@ function EventDialog({
 
   return (
     <Dialog open={selectedSlot !== null} onOpenChange={onClose}>
-      <DialogContent className="flex max-h-[90vh] min-h-0 flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
-        <DialogHeader className="shrink-0 border-b px-6 pt-6 pb-4">
-          <h2 className="scroll-m-20 text-xl font-semibold tracking-tight">
+      <DialogContent className={formDialogContentClassName('2xl')}>
+        <DialogHeader className={formDialogHeaderClassName}>
+          <h2 className={formDialogTitleClassName}>
             {t('events.create.string')}
           </h2>
         </DialogHeader>

@@ -28,6 +28,10 @@ import {
   type CalendarEventCreateBody,
 } from '@/features/calendars'
 import { cn, tagDismissButtonClassName } from '@/lib/utils'
+import {
+  formDialogBodyClassName,
+  formDialogFooterClassName,
+} from '@/lib/utils/form-dialog-layout'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { Link, Lock, MapPin, Plus, Trash2, X } from 'lucide-react'
@@ -503,11 +507,7 @@ export function EventForm({
         onSubmit={form.handleSubmit(handleSubmit)}
         className={cn('flex min-h-0 w-full flex-1 flex-col overflow-hidden')}
       >
-        <div
-          className={cn(
-            'flex min-h-0 flex-1 flex-col space-y-4 overflow-y-auto px-6 py-4'
-          )}
-        >
+        <div className={formDialogBodyClassName}>
           {calendars && calendars.length > 0 ? (
             <FormField
               control={form.control}
@@ -1020,11 +1020,7 @@ export function EventForm({
             )}
           />
         </div>
-        <div
-          className={cn(
-            'bg-background flex shrink-0 justify-end gap-2 border-t px-6 py-4'
-          )}
-        >
+        <div className={formDialogFooterClassName}>
           <Button variant="outline" type="button" onClick={onCancel}>
             {t('eventForm.cancel.string')}
           </Button>
