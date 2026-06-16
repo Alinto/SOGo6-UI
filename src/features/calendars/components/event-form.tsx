@@ -63,6 +63,11 @@ import {
 } from './recurrence-selector'
 import { TimelineFreeBusy } from './timeline-freebusy'
 import { mapBackendFreeBusyToAvailability } from './utils'
+import {
+  CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH,
+  CALENDAR_EVENT_LOCATION_MAX_LENGTH,
+  CALENDAR_EVENT_TITLE_MAX_LENGTH,
+} from '../calendar-constants'
 
 const recurrenceFrequencies = [
   'daily',
@@ -73,13 +78,16 @@ const recurrenceFrequencies = [
 
 const formSchema = z.object({
   calendar_key: z.string().min(1),
-  title: z.string().min(1),
+  title: z.string().min(1).max(CALENDAR_EVENT_TITLE_MAX_LENGTH),
   start: z.string(),
   end: z.string(),
   all_day: z.boolean(),
   timezone: z.string().default('UTC'),
-  description: z.string().optional(),
-  location: z.string().optional(),
+  description: z
+    .string()
+    .max(CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH)
+    .optional(),
+  location: z.string().max(CALENDAR_EVENT_LOCATION_MAX_LENGTH).optional(),
   visibility: z.enum(['public', 'private', 'confidential']),
   show_as: z.enum(['busy', 'free', 'out-of-office', 'tentative']),
   status: z.enum(['confirmed', 'tentative', 'cancelled']).default('confirmed'),

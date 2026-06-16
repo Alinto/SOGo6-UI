@@ -1,6 +1,7 @@
 import { getDemoData, setDemoData } from '@/app/fakeApi/utils/demo-storage'
 import type { ApiTaskListResponse, ApiTaskResponse, Task } from '@/features/tasks/tasks-types'
 import { normalizeTask } from '@/features/tasks/utils/normalize-task'
+import { textMatchesSearch } from '@/lib/utils/strip-accents'
 import { NextRequest, NextResponse } from 'next/server'
 
 const DEMO_TASKS_KEY = 'demo_tasks'
@@ -99,16 +100,16 @@ export function filterTasks(
   tasks: Task[],
   searchParams: URLSearchParams
 ): Task[] {
-  const search = searchParams.get('search')?.toLowerCase()
+  const search = searchParams.get('search')?.trim()
   const startDateTime = searchParams.get('start_date_time')
   const endDateTime = searchParams.get('end_date_time')
 
   let filtered = [...tasks]
 
-  if (search) {
+  if (search && search.length >= 2) {
     filtered = filtered.filter((t) =>
-      [t.title, t.description].some((v) =>
-        v?.toLowerCase().includes(search)
+      [t.title, t.description, ...(t.categories ?? [])].some((v) =>
+        v ? textMatchesSearch(v, search) : false
       )
     )
   }
@@ -174,6 +175,7 @@ export async function handleCreateTask(
 
   const newTask: Task = normalizeTask({
     ...body,
+    due: body.date_due ?? body.due,
     key,
     id: key,
     calendar_key: calendarId,
@@ -209,6 +211,7 @@ export async function handleUpdateTask(
   const updated = normalizeTask({
     ...tasks[index],
     ...body,
+    due: body.date_due ?? body.due,
     key: taskKey,
     id: taskKey,
     updated_at: new Date().toISOString(),

@@ -28,7 +28,8 @@ import { format, parseISO } from 'date-fns'
 import { Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState, type FC } from 'react'
+import { CALENDAR_TEXT_SEARCH_MAX_LENGTH } from '@/features/calendars/calendar-constants'
 
 const DEFAULT_COLOR = '#3b82f6'
 const SECTION_LIMIT = 5
@@ -45,20 +46,7 @@ function formatDueLabel(due: string): string | null {
   }
 }
 
-function taskMatchesSearch(task: Task, searchQuery: string): boolean {
-  const query = searchQuery.trim().toLowerCase()
-  if (!query) return true
-
-  const haystack = [
-    task.title,
-    task.description ?? '',
-    ...(task.categories ?? []),
-  ]
-    .join(' ')
-    .toLowerCase()
-
-  return haystack.includes(query)
-}
+const SEARCH_DEBOUNCE_MS = 300
 
 function TaskRow({
   task,
@@ -214,13 +202,26 @@ function TaskSection({
   )
 }
 
-const TasksContent: React.FC = () => {
+const TasksContent: FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.tasks')
   const tTasks = useTranslations('TASKS')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(searchInput.trim())
+    }, SEARCH_DEBOUNCE_MS)
+    return () => window.clearTimeout(timer)
+  }, [searchInput])
+
+  const searchParam =
+    debouncedSearch.length >= 2 ? debouncedSearch : undefined
 
   const { data: calendars = [] } = useGetCalendarsQuery()
-  const { data: tasks = [], isLoading, isError } = useGetTasksQuery()
+  const { data: tasks = [], isLoading, isError } = useGetTasksQuery(
+    searchParam ? { search: searchParam } : undefined
+  )
   const [updateTask] = useUpdateTaskMutation()
 
   const calendarColors = useMemo(() => {
@@ -262,32 +263,27 @@ const TasksContent: React.FC = () => {
     [tasks]
   )
 
-  const filteredTasks = useMemo(
-    () => activeTasks.filter((task) => taskMatchesSearch(task, searchQuery)),
-    [activeTasks, searchQuery]
-  )
-
-  const isSearching = searchQuery.trim().length > 0
+  const isSearching = debouncedSearch.length >= 2
   const sectionLimit = isSearching ? Number.POSITIVE_INFINITY : SECTION_LIMIT
 
   const overdueAll = useMemo(
-    () => filteredTasks.filter(isTaskOverdue).sort(sortByDue),
-    [filteredTasks]
+    () => activeTasks.filter(isTaskOverdue).sort(sortByDue),
+    [activeTasks]
   )
   const todayAll = useMemo(
     () =>
-      filteredTasks
+      activeTasks
         .filter((task) => isTaskDueToday(task) && !isTaskOverdue(task))
         .sort(sortByDue),
-    [filteredTasks]
+    [activeTasks]
   )
   const upcomingAll = useMemo(
-    () => filteredTasks.filter(isTaskUpcoming).sort(sortByDue),
-    [filteredTasks]
+    () => activeTasks.filter(isTaskUpcoming).sort(sortByDue),
+    [activeTasks]
   )
   const undatedAll = useMemo(
-    () => filteredTasks.filter((task) => !task.due),
-    [filteredTasks]
+    () => activeTasks.filter((task) => !task.due),
+    [activeTasks]
   )
 
   const overdue = overdueAll.slice(0, sectionLimit)
@@ -348,12 +344,13 @@ const TasksContent: React.FC = () => {
             />
             <Input
               type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              value={searchInput}
+              onChange={(event) => setSearchInput(event.target.value)}
               placeholder={t('search_placeholder')}
               className={cn('h-8 pl-8 text-sm')}
               data-testid="fast-access-tasks-search"
               autoComplete="off"
+              maxLength={CALENDAR_TEXT_SEARCH_MAX_LENGTH}
             />
           </div>
         )}
@@ -369,7 +366,9 @@ const TasksContent: React.FC = () => {
         )}
 
         {!isLoading && !isError && !hasAnyTask && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('empty')}</p>
+          <p className="text-muted-foreground px-2 py-3 text-xs">
+            {isSearching ? t('no_results') : t('empty')}
+          </p>
         )}
 
         {!isLoading && !isError && hasAnyTask && !hasVisibleTask && (

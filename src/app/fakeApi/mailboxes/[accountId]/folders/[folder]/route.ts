@@ -1,36 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { removeMailboxDemoFolder } from '@/app/fakeApi/utils/mailbox-demo-folders'
+import {
+  removeMailboxDemoFolder,
+  renameMailboxDemoFolder,
+} from '@/app/fakeApi/utils/mailbox-demo-folders'
 
-const data = {
-  data: {
-    certificates: {},
-    id: '0',
-    identities: [
-      {
-        isDefault: true,
-        mail: 'sogo-tests1@example.org',
-        name: 'John Paul',
-        replyTo: 'sogo-tests1@example.org',
-        signatures: {},
-      },
-    ],
-    receipts: {},
-  },
-  error_code: 'S000000',
-  error_msg: 'No Error',
-}
-export async function GET() {
-  return NextResponse.json(data)
-}
-
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  console.log(`PATCH /fakeApi/mailboxes/${params.id} body:`, await req.json())
-  return NextResponse.json(data, { status: 200 })
-}
+const ok = <T>(data: T) => ({
+  data,
+  error_code: 'S000000' as const,
+  error_msg: 'No Error' as const,
+})
 
 export async function DELETE(
   _req: NextRequest,
@@ -44,12 +23,38 @@ export async function DELETE(
       { status: 404 }
     )
   }
-  return NextResponse.json({
-    error_code: 'S000000',
-    error_msg: 'No Error',
-  })
+  return NextResponse.json(ok(null))
+}
+
+export async function PATCH(
+  req: NextRequest,
+  ctx: { params: Promise<{ accountId: string; folder: string }> }
+) {
+  const { folder } = await ctx.params
+  const body = (await req.json()) as { name?: string }
+  const newName = body.name?.trim()
+
+  if (!newName) {
+    return NextResponse.json(
+      { error_code: 'S000002', error_msg: 'Folder name is required' },
+      { status: 400 }
+    )
+  }
+
+  const updated = renameMailboxDemoFolder(folder, newName)
+  if (!updated) {
+    return NextResponse.json(
+      {
+        error_code: 'S000306',
+        error_msg: 'Folder cannot be renamed',
+      },
+      { status: 400 }
+    )
+  }
+
+  return NextResponse.json(ok(updated))
 }
 
 export async function OPTIONS() {
-  return NextResponse.json({ allow: ['GET', 'DELETE', 'OPTIONS'] })
+  return NextResponse.json({ allow: ['DELETE', 'PATCH', 'OPTIONS'] })
 }

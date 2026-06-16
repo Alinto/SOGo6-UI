@@ -21,7 +21,9 @@ import { CreateFolderDialog } from './create-folder-dialog'
 import { DeleteFolderDialog } from './delete-folder-dialog'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
 import { PurgeFolderDialog } from './purge-folder-dialog'
+import { RenameFolderDialog } from './rename-folder-dialog'
 import { ShareFolderDialog } from './share-folder-dialog'
+import { canRenameFolder } from '../../utils/can-rename-folder'
 
 interface SidebarItemProps {
   name: string
@@ -40,6 +42,7 @@ interface SidebarItemProps {
   selectable?: boolean
   unseenCount?: number
   folderType?: ImapFolderType
+  folderDelimiter?: string
 }
 
 type FolderActionType =
@@ -68,11 +71,16 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   selectable = true,
   unseenCount = 0,
   folderType,
+  folderDelimiter = '/',
 }) => {
   const [type, setType] = React.useState<FolderActionType>(null)
   const { mailPurgeAllow, folderSharingDisabled } = useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
+  const renameAllowed = canRenameFolder({
+    default: isDefault,
+    type: folderType,
+  })
 
   const showUnseenCount =
     unseenCount != null &&
@@ -146,9 +154,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               side={isMobile ? 'bottom' : 'right'}
               align={isMobile ? 'end' : 'start'}
             >
-              <DropdownMenuItem onClick={() => setType('rename')}>
-                <span>{t('folders.actions.rename.string')}</span>
-              </DropdownMenuItem>
+              {renameAllowed && (
+                <DropdownMenuItem onClick={() => setType('rename')}>
+                  <span>{t('folders.actions.rename.string')}</span>
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => setType('mark_as_read')}>
                 <span>{t('folders.actions.mark_as_read.string')}</span>
               </DropdownMenuItem>
@@ -227,6 +237,20 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               parentPath={folderPath}
             />
           )}
+          {type === 'rename' &&
+            renameAllowed &&
+            folderPath &&
+            folderName &&
+            accountId && (
+              <RenameFolderDialog
+                open={true}
+                onOpenChange={(open) => !open && setType(null)}
+                accountId={accountId}
+                folderPath={folderPath}
+                folderName={folderName}
+                folderDelimiter={folderDelimiter}
+              />
+            )}
         </>
       )}
     </>

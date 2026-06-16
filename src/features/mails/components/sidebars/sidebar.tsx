@@ -67,6 +67,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
           selectable={folder.selectable}
           unseenCount={folder.unseen_count}
           folderType={folder.type}
+          folderDelimiter={folder.delimiter}
         />
       </SidebarMenuItem>
     )
@@ -96,6 +97,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
           selectable={folder.selectable}
           unseenCount={folder.unseen_count}
           folderType={folder.type}
+          folderDelimiter={folder.delimiter}
         />
         <CollapsibleContent className="w-full">
           <SidebarMenuSub className="mr-0 pr-0">

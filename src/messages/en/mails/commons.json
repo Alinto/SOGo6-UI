@@ -294,6 +294,40 @@
                     "string": "Rename",
                     "description": "Button to rename the current folder"
                 },
+                "rename_dialog": {
+                    "title": {
+                        "string": "Rename folder",
+                        "description": "Title of the rename folder dialog"
+                    },
+                    "label": {
+                        "string": "Folder name",
+                        "description": "Label for the folder name input"
+                    },
+                    "placeholder": {
+                        "string": "e.g. Work, Archives…",
+                        "description": "Placeholder for the folder name input"
+                    },
+                    "submit": {
+                        "string": "Rename",
+                        "description": "Submit button label in the rename folder dialog"
+                    },
+                    "cancel": {
+                        "string": "Cancel",
+                        "description": "Cancel button label in the rename folder dialog"
+                    },
+                    "error_required": {
+                        "string": "Folder name is required",
+                        "description": "Validation error when folder name is empty"
+                    },
+                    "error_dot": {
+                        "string": "Folder name cannot contain a dot",
+                        "description": "Validation error when folder name contains a dot character"
+                    },
+                    "error_max": {
+                        "string": "Folder name must be at most 100 characters",
+                        "description": "Validation error when folder name exceeds max length"
+                    }
+                },
                 "mark_as_read": {
                     "string": "Mark as Read",
                     "description": "Button to mark the current folder as read"
@@ -495,7 +529,7 @@
                 "description": "Messages you have saved as drafts"
             },
             "trash": {
-                "string": "Junk",
+                "string": "Trash",
                 "description": "Deleted messages that can be restored or permanently deleted"
             },
             "junk": {

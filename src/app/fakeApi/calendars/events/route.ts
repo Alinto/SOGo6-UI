@@ -1,5 +1,6 @@
 import { getAllEvents } from '@/app/fakeApi/utils/calendar-events-store'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
+import { textMatchesSearch } from '@/lib/utils/strip-accents'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -52,13 +53,15 @@ export async function GET(request: NextRequest) {
 
     for (const [calendarId, events] of Object.entries(calendarEvents)) {
       for (const event of events) {
-        if (searchParam) {
-          const searchLower = searchParam.toLowerCase()
-          const titleMatch = event.title.toLowerCase().includes(searchLower)
+        if (searchParam && searchParam.trim().length >= 2) {
+          const titleMatch = textMatchesSearch(event.title, searchParam)
           const descriptionMatch = event.description
-            ? event.description.toLowerCase().includes(searchLower)
+            ? textMatchesSearch(event.description, searchParam)
             : false
-          if (titleMatch || descriptionMatch) {
+          const locationMatch = event.location
+            ? textMatchesSearch(event.location, searchParam)
+            : false
+          if (titleMatch || descriptionMatch || locationMatch) {
             eventsInRange.push(event)
           }
         }

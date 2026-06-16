@@ -55,3 +55,44 @@ export function removeMailboxDemoFolder(path: string): boolean {
   createdFlatFolders.splice(idx, 1)
   return true
 }
+
+function folderPathExists(path: string): boolean {
+  return getEffectiveFlatFolders().some((folder) => folder.path === path)
+}
+
+/** Renomme uniquement un dossier créé en session (les dossiers du seed sont protégés). */
+export function renameMailboxDemoFolder(
+  oldPath: string,
+  newName: string
+): ImapFolder | null {
+  const idx = createdFlatFolders.findIndex((folder) => folder.path === oldPath)
+  if (idx === -1) return null
+
+  const folder = createdFlatFolders[idx]
+  const delimiter = folder.delimiter
+  const parts = oldPath.split(delimiter)
+  parts[parts.length - 1] = newName
+  const newPath = parts.join(delimiter)
+
+  if (newPath === oldPath) {
+    return folder
+  }
+
+  if (folderPathExists(newPath)) {
+    return null
+  }
+
+  folder.name = newName
+  folder.path = newPath
+
+  const childPrefix = `${oldPath}${delimiter}`
+  for (const child of createdFlatFolders) {
+    if (child.path.startsWith(childPrefix)) {
+      child.path = newPath + child.path.slice(oldPath.length)
+      const childParts = child.path.split(child.delimiter)
+      child.name = childParts[childParts.length - 1] ?? child.name
+    }
+  }
+
+  return folder
+}

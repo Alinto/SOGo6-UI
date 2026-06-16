@@ -182,6 +182,24 @@
                 }
             }
         },
+        "folders_rename": {
+            "success": {
+                "title": {
+                    "string": "Folder renamed"
+                },
+                "message": {
+                    "string": "The folder has been successfully renamed."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to rename folder"
+                },
+                "message": {
+                    "string": "An error occurred while renaming the folder. Please try again."
+                }
+            }
+        },
         "calendar_create": {
             "success": {
                 "title": {

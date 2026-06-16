@@ -19,6 +19,7 @@ import type {
   ImapMessagesAPIResponse,
   ImapMessagesBackendResponse,
   ImapMessagesList,
+  UpdateFolderBody,
 } from '../mails-types'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
 import { sortImapFoldersTree } from '../utils/sort-folders'
@@ -962,6 +963,32 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    renameFolder: builder.mutation<
+      ImapFolder,
+      { accountId: string; folderPath: string; body: UpdateFolderBody }
+    >({
+      query: ({ accountId, folderPath, body }) => ({
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
+        method: 'PATCH',
+        body,
+      }),
+      transformResponse: (response: BackendResponse<RawImapFolder>) =>
+        normalizeImapFolder(response.data),
+      invalidatesTags: (_result, _error, { folderPath }) => [
+        MAILS_FOLDERS_SLICE,
+        { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        { type: FOLDER_SHARE_SLICE, folder: folderPath },
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_rename.success.title.string',
+          successMessage: 'folders_rename.success.message.string',
+          errorTitle: 'folders_rename.error.title.string',
+          errorMessage: 'folders_rename.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
     getEditMessage: builder.query<
       ImapMessages,
       {
@@ -1054,6 +1081,7 @@ export const {
   useSetFolderShareMutation,
   useCreateFolderMutation,
   useDeleteFolderMutation,
+  useRenameFolderMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints

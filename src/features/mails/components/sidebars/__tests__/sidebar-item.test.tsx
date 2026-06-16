@@ -113,4 +113,38 @@ describe('SidebarItem', () => {
       ).not.toBeInTheDocument()
     })
   })
+
+  describe('Rename menu item', () => {
+    const folderProps = {
+      folderPath: 'INBOX/Work',
+      folderName: 'Work',
+      accountId: '0',
+      isDefault: false,
+    }
+
+    it('should show rename for user-created folders', () => {
+      mockProfile()
+      render(<SidebarItem {...defaultProps} {...folderProps} />)
+      expect(
+        screen.getByText('folders.actions.rename.string')
+      ).toBeInTheDocument()
+    })
+
+    it('should not show rename for default system folders', () => {
+      mockProfile()
+      render(
+        <SidebarItem
+          {...defaultProps}
+          {...folderProps}
+          isDefault
+          folderType="INBOX"
+          folderPath="INBOX"
+          folderName="INBOX"
+        />
+      )
+      expect(
+        screen.queryByText('folders.actions.rename.string')
+      ).not.toBeInTheDocument()
+    })
+  })
 })

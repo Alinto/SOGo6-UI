@@ -6,6 +6,7 @@ import {
   PopoverAnchor,
   PopoverContent,
 } from '@/components/ui/popover'
+import { CALENDAR_TEXT_SEARCH_MAX_LENGTH } from '@/features/calendars/calendar-constants'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
 import {
@@ -112,6 +113,7 @@ export function CalendarEventsSearch() {
             aria-expanded={isSearchOpen}
             aria-controls="calendar-event-search-results"
             autoComplete="off"
+            maxLength={CALENDAR_TEXT_SEARCH_MAX_LENGTH}
           />
           {!searchInput && (
             <div className="text-muted-foreground pointer-events-none absolute inset-0 flex items-center gap-2 px-3 text-sm">

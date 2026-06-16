@@ -7,6 +7,7 @@ import type {
   ApiCalendarEventsResponse,
   CalendarEvent,
 } from '@/features/calendars/calendars-types'
+import { textMatchesSearch } from '@/lib/utils/strip-accents'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -22,7 +23,7 @@ export async function GET(
     searchParams.get('start_date_time') ?? searchParams.get('start_date')
   const endDateTime =
     searchParams.get('end_date_time') ?? searchParams.get('end_date')
-  const search = searchParams.get('search')?.toLowerCase()
+  const search = searchParams.get('search')?.trim()
 
   let events = getEventsForCalendar(request, calendarId)
 
@@ -40,10 +41,10 @@ export async function GET(
         new Date( e.date_start ?? '').getTime() <= endBoundary
     )
   }
-  if (search) {
+  if (search && search.length >= 2) {
     events = events.filter((e) =>
       [e.title, e.description, e.location].some((v) =>
-        v?.toLowerCase().includes(search)
+        v ? textMatchesSearch(v, search) : false
       )
     )
   }

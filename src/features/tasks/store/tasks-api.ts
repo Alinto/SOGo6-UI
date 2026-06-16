@@ -14,6 +14,7 @@ import type {
   TaskUpdateBody,
 } from '../tasks-types'
 import { normalizeTask, normalizeTasksList } from '../utils/normalize-task'
+import { serializeTaskBody } from '../utils/serialize-task'
 
 const calendarTasksUrl = (calendarKey: string) =>
   `calendars/${encodeURIComponent(calendarKey)}/tasks`
@@ -108,7 +109,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: ({ calendarKey, body }) => ({
         url: calendarTasksUrl(calendarKey),
         method: 'POST',
-        body,
+        body: serializeTaskBody(body),
       }),
       transformResponse: (response: ApiTaskResponse | Task) =>
         unwrapTaskResponse(response),
@@ -125,7 +126,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: ({ taskKey, body }) => ({
         url: taskUrl(taskKey),
         method: 'PATCH',
-        body,
+        body: serializeTaskBody(body),
       }),
       transformResponse: (response: ApiTaskResponse | Task) =>
         unwrapTaskResponse(response),

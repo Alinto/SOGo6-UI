@@ -2,6 +2,7 @@ import type { ApiTaskListResponse, Task } from '../tasks-types'
 
 /** Raw task payload from API (may include event-only fields). */
 type RawTask = Partial<Task> & {
+  date_due?: string | null
   date_end?: string | null
 }
 
@@ -10,8 +11,12 @@ export function normalizeTask(raw: RawTask): Task {
   const calendarKey =
     raw.calendar_key ?? raw.calendar_id ?? undefined
 
-  const due = raw.due ?? raw.date_end ?? null
-  const { date_end: _dateEnd, ...rest } = raw
+  const due = raw.due ?? raw.date_due ?? raw.date_end ?? null
+  const {
+    date_end: _dateEnd,
+    date_due: _dateDue,
+    ...rest
+  } = raw
 
   return {
     ...rest,

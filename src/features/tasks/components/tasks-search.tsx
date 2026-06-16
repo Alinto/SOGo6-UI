@@ -6,6 +6,7 @@ import { SearchIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useState } from 'react'
 import { selectTasksUi, setSearchQuery } from '../store/tasks-ui-slice'
+import { CALENDAR_TEXT_SEARCH_MAX_LENGTH } from '@/features/calendars/calendar-constants'
 
 function TasksSearch() {
   const t = useTranslations('TASKS')
@@ -34,6 +35,7 @@ function TasksSearch() {
         onChange={(e) => setSearchInput(e.target.value)}
         data-testid="tasks-search"
         autoComplete="off"
+        maxLength={CALENDAR_TEXT_SEARCH_MAX_LENGTH}
       />
       {!searchInput && (
         <div className="text-muted-foreground pointer-events-none absolute inset-0 flex items-center gap-2 px-3 text-sm">

@@ -26,6 +26,10 @@ import {
 import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
 import type { Calendar } from '@/features/calendars/calendars-types'
+import {
+  CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH,
+  CALENDAR_EVENT_TITLE_MAX_LENGTH,
+} from '@/features/calendars/calendar-constants'
 import type { Task, TaskCreateBody } from '@/features/tasks/tasks-types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
@@ -43,8 +47,12 @@ const taskStatuses = [
 ] as const
 
 const taskFormSchema = z.object({
-  title: z.string().min(1).max(255),
-  description: z.string().max(5000).optional().nullable(),
+  title: z.string().min(1).max(CALENDAR_EVENT_TITLE_MAX_LENGTH),
+  description: z
+    .string()
+    .max(CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH)
+    .optional()
+    .nullable(),
   calendar_key: z.string().min(1),
   due: z.string().optional().nullable(),
   date_start: z.string().optional().nullable(),

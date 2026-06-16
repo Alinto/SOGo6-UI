@@ -20,7 +20,7 @@
     "flags": ["\\HasNoChildren", "\\Drafts"],
     "delimiter": "/",
     "readOnly": true,
-    "selectable": false,
+    "selectable": true,
     "default": true
   },
   {
@@ -44,7 +44,7 @@
     "flags": ["\\HasNoChildren", "\\Trash"],
     "delimiter": "/",
     "readOnly": false,
-    "selectable": false,
+    "selectable": true,
     "default": true
   },
   {

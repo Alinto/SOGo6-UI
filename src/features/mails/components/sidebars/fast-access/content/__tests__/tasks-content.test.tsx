@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen, within } from '@testing-library/react'
+import { act, render, screen, within, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import TasksContent from '../tasks-content'
@@ -13,7 +13,7 @@ jest.mock('@/features/calendars/store/calendars-api', () => ({
 }))
 
 jest.mock('@/features/tasks', () => ({
-  useGetTasksQuery: () => mockUseGetTasksQuery(),
+  useGetTasksQuery: (params?: { search?: string }) => mockUseGetTasksQuery(params),
   useUpdateTaskMutation: () => [mockUpdateTask],
 }))
 
@@ -264,56 +264,78 @@ describe('TasksContent', () => {
   })
 
   describe('search', () => {
-    it('filters tasks by title', async () => {
-      const user = userEvent.setup()
-      mockUseGetTasksQuery.mockReturnValue({
-        data: [
-          {
-            key: 't1',
-            id: 't1',
-            title: 'Buy groceries',
-            status: 'needs_action',
-            due: daysFromNow(0),
-          },
-          {
-            key: 't2',
-            id: 't2',
-            title: 'Write report',
-            status: 'needs_action',
-            due: daysFromNow(1),
-          },
-        ],
-        isLoading: false,
-        isError: false,
+    const allTasks = [
+      {
+        key: 't1',
+        id: 't1',
+        title: 'Buy groceries',
+        status: 'needs_action' as const,
+        due: daysFromNow(0),
+      },
+      {
+        key: 't2',
+        id: 't2',
+        title: 'Write report',
+        status: 'needs_action' as const,
+        due: daysFromNow(1),
+      },
+    ]
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      mockUseGetTasksQuery.mockImplementation((params?: { search?: string }) => {
+        const query = params?.search?.toLowerCase()
+        const data =
+          query && query.length >= 2
+            ? allTasks.filter((task) => task.title.toLowerCase().includes(query))
+            : allTasks
+
+        return {
+          data,
+          isLoading: false,
+          isError: false,
+        }
+      })
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+    })
+
+    it('queries the API with search after debounce', async () => {
+      const user = userEvent.setup({
+        advanceTimers: jest.advanceTimers,
       })
 
       render(<TasksContent />)
       await user.type(screen.getByTestId('fast-access-tasks-search'), 'report')
 
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+
+      await waitFor(() => {
+        expect(mockUseGetTasksQuery).toHaveBeenCalledWith({ search: 'report' })
+      })
       expect(screen.queryByText('Buy groceries')).not.toBeInTheDocument()
       expect(screen.getByText('Write report')).toBeInTheDocument()
     })
 
     it('shows no results message when search matches nothing', async () => {
-      const user = userEvent.setup()
-      mockUseGetTasksQuery.mockReturnValue({
-        data: [
-          {
-            key: 't1',
-            id: 't1',
-            title: 'Buy groceries',
-            status: 'needs_action',
-            due: daysFromNow(0),
-          },
-        ],
-        isLoading: false,
-        isError: false,
+      const user = userEvent.setup({
+        advanceTimers: jest.advanceTimers,
       })
 
       render(<TasksContent />)
       await user.type(screen.getByTestId('fast-access-tasks-search'), 'zzzz')
 
-      expect(screen.getByText('No matches')).toBeInTheDocument()
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+
+      await waitFor(() => {
+        expect(screen.getByText('No matches')).toBeInTheDocument()
+      })
     })
   })
 

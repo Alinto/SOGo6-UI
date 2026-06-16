@@ -27,4 +27,16 @@ describe('normalizeTask', () => {
 
     expect(task.due).toBe('2026-03-15T12:00:00Z')
   })
+
+  it('maps date_due to due when due is absent', () => {
+    const task = normalizeTask({
+      key: 'task-3',
+      title: 'Backend task',
+      date_due: '2026-04-01T09:00:00Z',
+      calendar_key: 'cal-1',
+    })
+
+    expect(task.due).toBe('2026-04-01T09:00:00Z')
+    expect(task).not.toHaveProperty('date_due')
+  })
 })
