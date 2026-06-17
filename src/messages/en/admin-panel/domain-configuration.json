@@ -748,7 +748,540 @@
           "string": "Prevent user from sharing their folder with all authenticated user among mail, calendar and contact"
         },
         "developer_comment": ""
+      },
+      "SOGO_D_AUTOCOMPLETION_MIN_LEN": {
+        "name": {
+          "string": "Minimum character for autocompletion"
+        },
+        "description": {
+          "string": "Set the minimun number of character to trigger a autocompletion search (3 means a search will be made at the third char)"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_API_MAX_REQUEST": {
+        "name": {
+          "string": "Maximum API request"
+        },
+        "description": {
+          "string": "Set the maximun request a authenticated user can make during a time"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_API_MAX_REQUEST_INTERVAL": {
+        "name": {
+          "string": "Maximun API request time"
+        },
+        "description": {
+          "string": "Set the timespan where 'Maximum API request' is limiting"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_API_MAX_REQUEST_BLOCK_INTERVAL": {
+        "name": {
+          "string": "Block time after Maximum API request"
+        },
+        "description": {
+          "string": "Set the time where a using is blocked of doing request if 'Maximun API request' has been reached"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IDENTITIES_ENABLED": {
+        "name": {
+          "string": "Enable Identities"
+        },
+        "description": {
+          "string": "Allow user to create mail identities"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED": {
+        "name": {
+          "string": "Enable custome 'From'"
+        },
+        "description": {
+          "string": "Allow user to set custom 'From' in their identities"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IDENTITIES_CUSTOM_NAME_ENABLED": {
+        "name": {
+          "string": "Enable custom 'Name'"
+        },
+        "description": {
+          "string": "Allow user to set custom Name in their identities"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IDENTITIES_CUSTOM_REPLY_TO_ENABLED": {
+        "name": {
+          "string": "Enable custom 'Reply-to'"
+        },
+        "description": {
+          "string": "Allow user to set custom 'Reply-to' in their identities"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_ALLOW_EXT_MAIL_ACCOUNT": {
+        "name": {
+          "string": "Enable external mail account"
+        },
+        "description": {
+          "string": "Allow user to set external account"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_ALLOW_EXT_AVATAR": {
+        "name": {
+          "string": "Allow usage of external avatar"
+        },
+        "description": {
+          "string": "Allow user to set preferences to use external avatar (gravatar, libravatar...)"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_REFRESH_INTERVAL_ALLOWED": {
+        "name": {
+          "string": "Set allowed auto-refresh interval for mail"
+        },
+        "description": {
+          "string": "Set values the users can choose for the 'auto-refresh mail' value"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_JUNK_SETTINGS": {
+        "name": {
+          "string": "Set kind of trigger for ham/spam"
+        },
+        "description": {
+          "string": "Set a mechanism when users are flagging mail as spam/ham"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_JUNK_MAIL_SPAM": {
+        "name": {
+          "string": "Mail for spam"
+        },
+        "description": {
+          "string": "Set mail address where spam will be forwarded"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_SERVER_TYPE": {
+        "name": {
+          "string": "Mail server type"
+        },
+        "description": {
+          "string": "Set the kind of mail server"
+        },
+        "developer_comment": "" 
+      },
+      "SOGO_D_IMAP_SERVER": {
+        "name": {
+          "string": "IMAP server"
+        },
+        "description": {
+          "string": "Hostname of the IMAP server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IMAP_PORT": {
+        "name": {
+          "string": "IMAP port"
+        },
+        "description": {
+          "string": "Port of the imap server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IMAP_ENCRYPTION": {
+        "name": {
+          "string": "IMAP encryption"
+        },
+        "description": {
+          "string": "Encryption mechanism fo the IMAP server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_IMAP_AUTH_MECH": {
+        "name": {
+          "string": "IMAP auth mech"
+        },
+        "description": {
+          "string": "IMAP's authentication mechanism. Do not use 'login' without precaution"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SOFT_EMAIL_QUOTA": {
+        "name": {
+          "string": "Soft Quota"
+        },
+        "description": {
+          "string": "Set the percentage of the soft quota."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_PURGE_ALLOW": {
+        "name": {
+          "string": "Enable purge"
+        },
+        "description": {
+          "string": "Purge allow user to delete all their mail older than a date in a folder or fot their whole account."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_PURGE_MIN_DATE": {
+        "name": {
+          "string": "Purge minimun days"
+        },
+        "description": {
+          "string": "Set the minimun days a user can use the purge. 0 means a user can delete all their mail. 30 means a user can only delete mail older than 30 days"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_FILTERING_ENABLED": {
+        "name": {
+          "string": "Enable mail filtering"
+        },
+        "description": {
+          "string": "Allow user to set mail's filters"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_FILTERING_TYPE": {
+        "name": {
+          "string": "Mail filtering type"
+        },
+        "description": {
+          "string": "Kind of mail filtering protocol"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_SERVER": {
+        "name": {
+          "string": "Sieve server"
+        },
+        "description": {
+          "string": "Hostname of the sieve server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_PORT": {
+        "name": {
+          "string": "Sieve port"
+        },
+        "description": {
+          "string": "Port of the sieve server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_ENCRYPTION": {
+        "name": {
+          "string": "Sieve encryption"
+        },
+        "description": {
+          "string": "Encryption of the sieve server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_AUTH_MECH": {
+        "name": {
+          "string": "Sieve auth mech"
+        },
+        "description": {
+          "string": "Authentication mechanism for sieve. If None"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_FOLDER_ENCODING": {
+        "name": {
+          "string": "Sieve encoding"
+        },
+        "description": {
+          "string": "Set the encoding used by the sieve server."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_HEADER": {
+        "name": {
+          "string": "Sieve header"
+        },
+        "description": {
+          "string": "Set a sieve script that will be at the start of all user's sieve script"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_FOOTER": {
+        "name": {
+          "string": "Sieve footer"
+        },
+        "description": {
+          "string": "Set a sieve script that will be at the bottom of all user's sieve script"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SIEVE_FIRST_FILTER": {
+        "name": {
+          "string": "Initial sieve script"
+        },
+        "description": {
+          "string": "Set the initial sieve script for all new users. They will be able to modify it after"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_VACATION_ENABLED": {
+        "name": {
+          "string": "Allow vacation message"
+        },
+        "description": {
+          "string": "Allow user to set a vacation message. Use the 'vacation' sieve extension (rfc5230)"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_VACATION_ALLOW_RESPONSE_ALWAYS": {
+        "name": {
+          "string": "Allow vacation message everytime"
+        },
+        "description": {
+          "string": "Allow user to set a vacation message that will be send everytime without grace period"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FORWARD_ENABLED": {
+        "name": {
+          "string": "Allow auto forward"
+        },
+        "description": {
+          "string": "Allow user to set automatic forward. Use the 'redirect' sieve command"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FORWARD_ALLOW_USER_DOMAIN": {
+        "name": {
+          "string": "Allow auto formard to user domain"
+        },
+        "description": {
+          "string": "Allow user to set automatic forward to addresses within the same domain"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FORWARD_ALLOW_SOGO_DOMAIN": {
+        "name": {
+          "string": "Allow auto formard to sogo domain"
+        },
+        "description": {
+          "string": "Allow user to set automatic forward to addresses known by sogo"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FORWARD_ALLOW_EXT_DOMAIN": {
+        "name": {
+          "string": "Allow auto formard to external domain"
+        },
+        "description": {
+          "string": "Allow user to set automatic forward to external addresses"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FORWARD_WHITELIST": {
+        "name": {
+          "string": "Auto forward whitelist domains"
+        },
+        "description": {
+          "string": "Set specific domains where user can forward"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_FORWARD_BLACKLIST": {
+        "name": {
+          "string": "Auto forward blacklist domains"
+        },
+        "description": {
+          "string": "Set specific domains where user are forbid to forward"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_NOTIFY_ENABLED": {
+        "name": {
+          "string": "Allow notification"
+        },
+        "description": {
+          "string": "Allow user to set notification. Use the 'notify' sieve extension (rfc5435)"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_NOTIFY_ALLOW_USER_DOMAIN": {
+        "name": {
+          "string": "Allow notification to user domain"
+        },
+        "description": {
+          "string": "Allow user to set notification to addresses within the same domain"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_NOTIFY_ALLOW_SOGO_DOMAIN": {
+        "name": {
+          "string": "Allow notification to sogo domain"
+        },
+        "description": {
+          "string": "Allow user to set notification to addresses known by sogo"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_NOTIFY_ALLOW_EXT_DOMAIN": {
+        "name": {
+          "string": "Allow notification to external domain"
+        },
+        "description": {
+          "string": "Allow user to set notification to external addresses"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_NOTIFY_WHITELIST": {
+        "name": {
+          "string": "Notification whitelisted domains"
+        },
+        "description": {
+          "string": "Set specific domains where user can notify"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_NOTIFY_BLACKLIST": {
+        "name": {
+          "string": "Notification blacklisted domains"
+        },
+        "description": {
+          "string": "Set specific domains where user are forbid to notify"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_OUTGOING_TYPE": {
+        "name": {
+          "string": "Outgoing Mail server type"
+        },
+        "description": {
+          "string": "Set the kind of outgoing mail server"
+        },
+        "developer_comment": "" 
+      },
+      "SOGO_D_SMTP_SERVER": {
+        "name": {
+          "string": "SMTP server"
+        },
+        "description": {
+          "string": "Hostname of the SMTP server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_PORT": {
+        "name": {
+          "string": "SMTP port"
+        },
+        "description": {
+          "string": "Port of the smtp server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_ENCRYPTION": {
+        "name": {
+          "string": "SMTP encryption"
+        },
+        "description": {
+          "string": "Encryption mechanism fo the SMTP server"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_AUTH_MECH": {
+        "name": {
+          "string": "SMTP auth mech"
+        },
+        "description": {
+          "string": "SMTP's authentication mechanism. Do not use 'None' without precaution"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_MASTER_ENABLED": {
+        "name": {
+          "string": "SMTP master account"
+        },
+        "description": {
+          "string": "Use a master account for all system messages (event, notifications...)"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_MASTER_FROM": {
+        "name": {
+          "string": "Master account from"
+        },
+        "description": {
+          "string": "SMTP master account from"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_MASTER_LOGIN": {
+        "name": {
+          "string": "Master account login"
+        },
+        "description": {
+          "string": "SMTP master account mail"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_SMTP_MASTER_PWD": {
+        "name": {
+          "string": "Master account password"
+        },
+        "description": {
+          "string": "SMTP master account password"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_MAX_SUBMISSION": {
+        "name": {
+          "string": "Max mail sent"
+        },
+        "description": {
+          "string": "Maximum mail a user can send during a time"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_MAX_SUBMISSION_INTERVAL": {
+        "name": {
+          "string": "Max mail sent time"
+        },
+        "description": {
+          "string": "Timespan in second where 'Max mail sent' i"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_MAX_SUBMISSION_BLOCK_INTERVAl": {
+        "name": {
+          "string": "Mas mail sent block time"
+        },
+        "description": {
+          "string": "Time where a user is forbidden to send mail after triggering 'Max mail sent'"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_MAX_RECIPIENT": {
+        "name": {
+          "string": "Max recipients in mail"
+        },
+        "description": {
+          "string": "Master account password"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_MAIL_CHECK_FROM": {
+        "name": {
+          "string": "Check 'From'"
+        },
+        "description": {
+          "string": "Check if the from is one of the user's mail (default, aliases, identities...) before requesting the outgoing mail server"
+        },
+        "developer_comment": ""
       }
+
+      
     }
   }
 }
