@@ -42,6 +42,10 @@ jest.mock('../app-sidebar-content', () => {
   }
 })
 
+jest.mock('../app-sidebar-mobile-effects', () => ({
+  AppSidebarMobileEffects: () => null,
+}))
+
 describe('AppSidebar Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()

@@ -6,6 +6,8 @@ import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListSort from '@/features/mails/components/list/list-sort'
+import MailDetailNavigation from '@/features/mails/components/mail/mail-detail-navigation'
+import { useMailDetailNavigation } from '@/features/mails/hooks/use-mail-detail-navigation'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import {
   clearSelectedMails,
@@ -29,6 +31,8 @@ const ListToolbar: React.FC = () => {
   const t = useTranslations('MAILS_LIST')
   const tCommons = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
+  const { isOnMailDetailPath } = useMailDetailNavigation()
+  const showMailDetailToolbar = isMobile && isOnMailDetailPath
   const dispatch = useAppDispatch()
   const { folder, account } = useParams()
   const folderPath = folderPathFromParams(
@@ -132,6 +136,16 @@ const ListToolbar: React.FC = () => {
       dispatch,
     ]
   )
+
+  if (showMailDetailToolbar) {
+    return (
+      <div className="bg-background border-border flex w-full min-w-0 shrink-0 flex-col gap-1 overflow-x-hidden border-b px-3 py-2">
+        <div className="flex min-w-0 flex-row items-center justify-end">
+          <MailDetailNavigation showPosition />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-background border-border flex w-full min-w-0 shrink-0 flex-col gap-1 overflow-x-hidden border-b px-3 py-2">

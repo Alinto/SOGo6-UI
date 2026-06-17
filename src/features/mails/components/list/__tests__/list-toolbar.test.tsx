@@ -101,6 +101,22 @@ jest.mock('../list-pagination', () => ({
   default: () => <div data-testid="list-pagination" />,
 }))
 
+jest.mock('@/features/mails/components/mail/mail-detail-navigation', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mail-detail-navigation" />,
+}))
+
+jest.mock('@/features/mails/hooks/use-mail-detail-navigation', () => ({
+  useMailDetailNavigation: jest.fn(() => ({
+    isOnMailDetailPath: false,
+    isActive: false,
+    canGoPrev: false,
+    canGoNext: false,
+    goPrev: jest.fn(),
+    goNext: jest.fn(),
+  })),
+}))
+
 const mockUseAppSelector = jest.fn((fn: (s: any) => any) =>
   fn({ mailLayout: { selectedMailIds: [] }, mailNavigation: { skipFolderFetch: false } })
 )
@@ -177,6 +193,32 @@ describe('ListToolbar', () => {
       const { container } = render(<ListToolbar />)
       const root = container.firstChild as HTMLElement
       expect(root).toHaveClass('border-b', 'flex')
+    })
+  })
+
+  describe('mobile mail detail view', () => {
+    it('shows mail navigation instead of list controls on mobile', () => {
+      const { useIsMobile } = require('@/hooks/use-mobile')
+      const {
+        useMailDetailNavigation,
+      } = require('@/features/mails/hooks/use-mail-detail-navigation')
+
+      useIsMobile.mockReturnValue(true)
+      useMailDetailNavigation.mockReturnValue({
+        isOnMailDetailPath: true,
+        isActive: true,
+        canGoPrev: true,
+        canGoNext: true,
+        goPrev: jest.fn(),
+        goNext: jest.fn(),
+      })
+
+      render(<ListToolbar />)
+
+      expect(screen.getByTestId('mail-detail-navigation')).toBeInTheDocument()
+      expect(screen.queryByTestId('list-pagination')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('list-filter-dropdown')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('checkbox')).not.toBeInTheDocument()
     })
   })
 })
