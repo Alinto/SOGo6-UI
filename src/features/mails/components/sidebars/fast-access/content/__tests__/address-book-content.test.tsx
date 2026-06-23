@@ -135,25 +135,30 @@ describe('AddressBookContent', () => {
       isError: false,
     })
     mockUseGetAddressBookVCardsQuery.mockReturnValue({
-      data: [
-        {
-          id: 'list-1',
-          kind: 'group',
-          firstName: 'Sales Team',
-          lastName: '',
-          members: [
-            { email: 'sales@example.com' },
-            { email: 'team@example.com' },
-          ],
-        },
-        {
-          id: 'contact-1',
-          firstName: 'Jane',
-          lastName: 'Doe',
-          organization: 'Acme',
-          emails: ['jane@example.com'],
-        },
-      ],
+      data: {
+        items: [
+          {
+            id: 'list-1',
+            kind: 'group',
+            firstName: 'Sales Team',
+            lastName: '',
+            members: [
+              { email: 'sales@example.com' },
+              { email: 'team@example.com' },
+            ],
+          },
+          {
+            id: 'contact-1',
+            firstName: 'Jane',
+            lastName: 'Doe',
+            organization: 'Acme',
+            emails: ['jane@example.com'],
+          },
+        ],
+        total: 2,
+        page: 1,
+        totalPages: 1,
+      },
       isLoading: false,
     })
   })

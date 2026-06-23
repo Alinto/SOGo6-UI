@@ -142,6 +142,16 @@
         "attachment_upload": {
             "string": "Uploading attachment...",
             "context": "Message shown while an attachment is being uploaded"
+        },
+        "recipient_search": {
+            "loading": {
+                "string": "Searching recipients…",
+                "context": "Loading state while searching contacts and users"
+            },
+            "add_direct": {
+                "string": "Add \"{email}\"",
+                "context": "Add a typed email address directly as recipient"
+            }
         }
     }
 }

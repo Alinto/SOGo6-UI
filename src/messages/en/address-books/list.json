@@ -70,6 +70,10 @@
       "string": "Search contacts…",
       "context": "Placeholder for the contacts search input in the header"
     },
+    "search_min_length": {
+      "string": "Enter at least 2 characters to search.",
+      "context": "Hint when the search query is too short for server-side search"
+    },
     "delete_selected": {
       "string": "Delete selected contacts",
       "context": "Aria label for bulk delete button"
@@ -85,6 +89,20 @@
     "list_member_count": {
       "string": "{number, plural, one {# member} other {# members}}",
       "context": "Member count shown under a distribution list in the contact list"
+    },
+    "pagination": {
+      "previous": {
+        "string": "Previous page",
+        "context": "Pagination previous page button"
+      },
+      "next": {
+        "string": "Next page",
+        "context": "Pagination next page button"
+      },
+      "page": {
+        "string": "Page {page} of {total}",
+        "context": "Current pagination page indicator"
+      }
     }
   }
 }

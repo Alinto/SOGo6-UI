@@ -97,7 +97,7 @@ describe('AddressBooks Sidebar', () => {
   })
 
   describe('integration', () => {
-    it('wraps personal books in droppable zones', () => {
+    it('renders personal books without drag-and-drop wrappers', () => {
       mockUseGetAddressBooksQuery.mockReturnValue({
         data: {
           personals: [{ id: 'p1', name: 'Personal', default: true }],
@@ -108,7 +108,8 @@ describe('AddressBooks Sidebar', () => {
       })
 
       render(<Sidebar />)
-      expect(screen.getByTestId('droppable-p1')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-p1')).toBeInTheDocument()
+      expect(screen.queryByTestId('droppable-p1')).not.toBeInTheDocument()
     })
   })
 })

@@ -55,8 +55,16 @@ function sortByName(items: VCard[], sortOrder: ContactSortOrder): VCard[] {
 export function partitionAddressBookEntries(
   items: VCard[],
   searchQuery: string,
-  sortOrder: ContactSortOrder
+  sortOrder: ContactSortOrder,
+  options?: { serverSide?: boolean }
 ): { distributionLists: VCard[]; contacts: VCard[] } {
+  if (options?.serverSide) {
+    return {
+      distributionLists: items.filter(isDistributionList),
+      contacts: items.filter((item) => !isDistributionList(item)),
+    }
+  }
+
   const query = searchQuery.trim().toLowerCase()
   const filtered = query
     ? items.filter((item) => matchesSearchQuery(item, query))

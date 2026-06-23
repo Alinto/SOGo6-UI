@@ -7,15 +7,15 @@ describe('address-books-api', () => {
     expect(typeof AddressBooksApi.useGetAddressBooksQuery).toBe('function')
     expect(typeof AddressBooksApi.useGetAddressBookVCardsQuery).toBe('function')
     expect(typeof AddressBooksApi.useGetVCardQuery).toBe('function')
+    expect(typeof AddressBooksApi.useSearchContactsAutocompleteQuery).toBe(
+      'function'
+    )
   })
 
   it('exports address book mutations', () => {
     expect(typeof AddressBooksApi.useAddVCardToAddressBookMutation).toBe('function')
     expect(typeof AddressBooksApi.useUpdateVCardMutation).toBe('function')
     expect(typeof AddressBooksApi.useDeleteVCardFromAddressBookMutation).toBe(
-      'function'
-    )
-    expect(typeof AddressBooksApi.useMoveVCardToAddressBookMutation).toBe(
       'function'
     )
     expect(typeof AddressBooksApi.useAddAddressBookMutation).toBe('function')
@@ -25,7 +25,11 @@ describe('address-books-api', () => {
 
   it('exports addressBooksApiEndpoints', () => {
     expect(AddressBooksApi.addressBooksApiEndpoints).toBeDefined()
-    expect(AddressBooksApi.addressBooksApiEndpoints.endpoints.addVCardToAddressBook).toBeDefined()
-    expect(AddressBooksApi.addressBooksApiEndpoints.endpoints.moveVCardToAddressBook).toBeDefined()
+    expect(
+      AddressBooksApi.addressBooksApiEndpoints.endpoints.addVCardToAddressBook
+    ).toBeDefined()
+    expect(
+      AddressBooksApi.addressBooksApiEndpoints.endpoints.searchContactsAutocomplete
+    ).toBeDefined()
   })
 })

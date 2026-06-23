@@ -19,6 +19,7 @@ import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { Mail, Search, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { skipToken } from '@reduxjs/toolkit/query'
 import Link from 'next/link'
 import React, { memo, useCallback, useMemo, useState } from 'react'
 
@@ -198,14 +199,21 @@ const AddressBookContent: React.FC = () => {
     return personals.find((book) => book.id === defaultId) ?? null
   }, [addressBooks?.personals])
 
-  const { data: entries = [], isLoading: contactsLoading } =
-    useGetAddressBookVCardsQuery(defaultBook?.id ?? '', {
-      skip: !defaultBook?.id,
-    })
+  const { data: bookEntries, isLoading: contactsLoading } =
+    useGetAddressBookVCardsQuery(
+      defaultBook?.id
+        ? { bookId: defaultBook.id, params: { page_size: 100 } }
+        : skipToken
+    )
 
   const { distributionLists, contacts } = useMemo(
-    () => partitionAddressBookEntries(entries, searchQuery, 'asc'),
-    [entries, searchQuery]
+    () =>
+      partitionAddressBookEntries(
+        bookEntries?.items ?? [],
+        searchQuery,
+        'asc'
+      ),
+    [bookEntries?.items, searchQuery]
   )
 
   const isSearching = searchQuery.trim().length > 0

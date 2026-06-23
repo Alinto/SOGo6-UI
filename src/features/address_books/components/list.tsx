@@ -31,11 +31,16 @@ import {
   membersFromContacts,
 } from '../utils/distribution-list'
 import ListSection from './list-section'
+import AddressBookListPagination from './list-pagination'
 import AddressBookListSkeleton from './skeletons/skeleton'
 
 interface AddressBookListProps {
   items: VCard[]
   isLoading: boolean
+  serverSide?: boolean
+  totalPages?: number
+  currentPage?: number
+  searchTooShort?: boolean
 }
 
 function EntriesSummary({
@@ -61,6 +66,10 @@ function EntriesSummary({
 const AddressBookList: React.FC<AddressBookListProps> = ({
   items,
   isLoading,
+  serverSide = false,
+  totalPages = 1,
+  currentPage = 1,
+  searchTooShort = false,
 }) => {
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const tForm = useTranslations('CONTACT_FORM')
@@ -76,13 +85,16 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
 
   const { distributionLists, contacts } = useMemo(
-    () => partitionAddressBookEntries(items, searchQuery, sortOrder),
-    [items, searchQuery, sortOrder]
+    () =>
+      partitionAddressBookEntries(items, searchQuery, sortOrder, {
+        serverSide,
+      }),
+    [items, searchQuery, sortOrder, serverSide]
   )
 
   const totalDisplayed = distributionLists.length + contacts.length
   const isSearchActive = searchQuery.trim().length > 0
-  const isBookEmpty = items.length === 0
+  const isBookEmpty = items.length === 0 && !isSearchActive && !searchTooShort
 
   const handleCheckboxClick = (e: React.MouseEvent, item: VCard) => {
     e.stopPropagation()
@@ -104,7 +116,11 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   const handleConfirmBulkDelete = async () => {
     await Promise.all(
       selectedItems.map((item) =>
-        deleteContact({ id: book_id, vCardId: item.id }).unwrap()
+        deleteContact({
+          id: book_id,
+          vCardId: item.id,
+          kind: item.kind,
+        }).unwrap()
       )
     )
     setSelectedItems([])
@@ -197,7 +213,13 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
         </div>
 
         <div className="mt-4 space-y-5">
-          {totalDisplayed === 0 && isSearchActive && (
+          {searchTooShort && (
+            <p className="text-muted-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center text-sm">
+              {t('search_min_length.string')}
+            </p>
+          )}
+
+          {totalDisplayed === 0 && isSearchActive && !searchTooShort && (
             <AddressBookEmptyState
               variant="search"
               onClearSearch={() => dispatch(setSearchQuery(''))}
@@ -237,6 +259,11 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             className={distributionLists.length > 0 ? 'border-t pt-4' : undefined}
           />
         </div>
+
+        <AddressBookListPagination
+          totalPages={totalPages}
+          currentPage={currentPage}
+        />
       </div>
 
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>

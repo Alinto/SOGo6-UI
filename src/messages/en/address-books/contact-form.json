@@ -16,6 +16,10 @@
       "string": "URLs",
       "context": "Label for the URLs section in the contact form."
     },
+    "birthday": {
+      "string": "Birthday",
+      "context": "Label for the birthday field in the contact visualization."
+    },
     "notes": {
       "string": "Notes",
       "context": "Label for the notes section in the contact form."

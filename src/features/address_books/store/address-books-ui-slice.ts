@@ -1,7 +1,10 @@
+import type { ContactSortField } from '../address-books-api-types'
 import type { ContactMember, VCard } from '../address-books-types'
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 
 export type ContactSortOrder = 'asc' | 'desc'
+
+export const DEFAULT_BOOK_PAGE_SIZE = 50
 
 export interface AddressBooksUiState {
   isFormOpen: boolean
@@ -13,6 +16,9 @@ export interface AddressBooksUiState {
   prefillListMembers: ContactMember[] | null
   searchQuery: string
   sortOrder: ContactSortOrder
+  sortBy: ContactSortField
+  page: number
+  pageSize: number
 }
 
 const initialState: AddressBooksUiState = {
@@ -25,6 +31,9 @@ const initialState: AddressBooksUiState = {
   prefillListMembers: null,
   searchQuery: '',
   sortOrder: 'asc',
+  sortBy: 'display_name',
+  page: 1,
+  pageSize: DEFAULT_BOOK_PAGE_SIZE,
 }
 
 const addressBooksUiSlice = createSlice({
@@ -33,9 +42,22 @@ const addressBooksUiSlice = createSlice({
   reducers: {
     setSearchQuery: (state, action: PayloadAction<string>) => {
       state.searchQuery = action.payload
+      state.page = 1
     },
     toggleSortOrder: (state) => {
       state.sortOrder = state.sortOrder === 'asc' ? 'desc' : 'asc'
+      state.page = 1
+    },
+    setSortBy: (state, action: PayloadAction<ContactSortField>) => {
+      state.sortBy = action.payload
+      state.page = 1
+    },
+    setPage: (state, action: PayloadAction<number>) => {
+      state.page = Math.max(1, action.payload)
+    },
+    setPageSize: (state, action: PayloadAction<number>) => {
+      state.pageSize = action.payload
+      state.page = 1
     },
     openCreateForm: (
       state,
@@ -98,6 +120,9 @@ const addressBooksUiSlice = createSlice({
 export const {
   setSearchQuery,
   toggleSortOrder,
+  setSortBy,
+  setPage,
+  setPageSize,
   openCreateForm,
   openEditForm,
   closeForm,

@@ -4,7 +4,6 @@ import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { memo, useCallback } from 'react'
-import type { ContactMember, VCard } from '../address-books-types'
 import {
   useAddressBookEditState,
   useAddressBookState,
@@ -15,43 +14,10 @@ import {
   useUpdateVCardMutation,
 } from '../store/address-books-api'
 import { closeListForm } from '../store/address-books-ui-slice'
-import { getContactDisplayName } from '../utils/contact-list'
+import { selectBookEntriesItems } from '../hooks/use-address-book-entries'
 import DistributionListForm, {
   type DistributionListFormValues,
 } from './distribution-list-form'
-
-function buildMembersFromForm(
-  values: DistributionListFormValues,
-  bookContacts: VCard[]
-): ContactMember[] {
-  const members: ContactMember[] = []
-  const seen = new Set<string>()
-
-  for (const contactId of values.memberContactIds) {
-    const contact = bookContacts.find((item) => item.id === contactId)
-    if (!contact) continue
-    const email = contact.emails?.[0]?.trim() ?? ''
-    const key = email ? email.toLowerCase() : `contact:${contactId}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    members.push({
-      contactId,
-      email,
-      displayName: getContactDisplayName(contact),
-    })
-  }
-
-  for (const entry of values.manualEmails) {
-    const email = entry.value.trim()
-    if (!email) continue
-    const key = email.toLowerCase()
-    if (seen.has(key)) continue
-    seen.add(key)
-    members.push({ email })
-  }
-
-  return members
-}
 
 function DistributionListFormHost() {
   const dispatch = useAppDispatch()
@@ -61,13 +27,18 @@ function DistributionListFormHost() {
   const [addEntry, { isLoading: isCreating }] = useAddVCardToAddressBookMutation()
   const [updateEntry, { isLoading: isUpdating }] = useUpdateVCardMutation()
 
-  const { data: bookContacts = [] } = useGetAddressBookVCardsQuery(
-    activeBookId ?? skipToken
+  const { data: bookEntries } = useGetAddressBookVCardsQuery(
+    activeBookId
+      ? { bookId: activeBookId, params: { page_size: 200 } }
+      : skipToken
+  )
+  const bookContacts = selectBookEntriesItems(bookEntries).filter(
+    (entry) => entry.kind !== 'group'
   )
 
   const editingListId = ui.editingListId
   const { editingEntity: editingList, isEditLoading, isEditLoadError } =
-    useAddressBookEditState(editingListId, activeBookId, ui.isListFormOpen)
+    useAddressBookEditState(editingListId, activeBookId, ui.isListFormOpen, 'group')
 
   const handleClose = useCallback(() => {
     dispatch(closeListForm())
@@ -77,42 +48,41 @@ function DistributionListFormHost() {
     async (values: DistributionListFormValues, listId?: string) => {
       if (!activeBookId) return
 
-      const members = buildMembersFromForm(values, bookContacts)
-      const payload: Omit<VCard, 'id'> = {
-        version: '4.0',
-        kind: 'group',
-        firstName: values.name.trim(),
-        lastName: '',
-        note: values.note?.trim() || undefined,
-        members,
-        categories: [],
-        urls: [],
-        photos: [],
-        emails: [],
-        phoneNumbers: [],
-        addresses: [],
-        impp: [],
-      }
-
       if (listId) {
         await updateEntry({
           book_id: activeBookId,
           id: listId,
-          ...payload,
+          kind: 'group',
+          firstName: values.name.trim(),
+          note: values.note?.trim() || undefined,
+          members: values.memberContactIds.map((contactId) => ({
+            contactId,
+            email: '',
+          })),
         }).unwrap()
         return
       }
 
       const created = await addEntry({
         id: activeBookId,
-        vCard: payload as VCard,
+        vCard: {
+          version: '4.0',
+          kind: 'group',
+          firstName: values.name.trim(),
+          lastName: '',
+          note: values.note?.trim() || undefined,
+          members: values.memberContactIds.map((contactId) => ({
+            contactId,
+            email: '',
+          })),
+        },
       }).unwrap()
 
       if (created?.id) {
         push(`/address_books/${activeBookId}/${created.id}`)
       }
     },
-    [activeBookId, addEntry, bookContacts, push, updateEntry]
+    [activeBookId, addEntry, push, updateEntry]
   )
 
   if (!activeBookId && ui.isListFormOpen) {

@@ -13,8 +13,8 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react'
+import { useRecipientSuggestions } from '@/features/address_books/hooks/use-recipient-suggestions'
 import type { AttendeeInputItem } from '../../calendars-types'
-import { useSearchUsersQuery } from '../../store/calendars-api'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const isValidEmail = (email: string) => EMAIL_RE.test(email)
@@ -60,17 +60,20 @@ export default function AttendeeInput({
     return () => clearTimeout(timer)
   }, [inputValue])
 
-  const { data: suggestions = [], isFetching } = useSearchUsersQuery(
-    { q: debouncedQ },
-    { skip: debouncedQ.length < 2 }
-  )
+  const { suggestions = [], isFetching } = useRecipientSuggestions(debouncedQ)
 
   const filteredSuggestions = useMemo(
     () =>
-      suggestions.filter(
-        (s) =>
-          !value.some((a) => a.email.toLowerCase() === s.email.toLowerCase())
-      ),
+      suggestions
+        .filter(
+          (s) =>
+            !value.some((a) => a.email.toLowerCase() === s.email.toLowerCase())
+        )
+        .map((suggestion, index) => ({
+          uid: `${suggestion.email}-${index}`,
+          email: suggestion.email,
+          name: suggestion.name ?? suggestion.email,
+        })),
     [suggestions, value]
   )
 
