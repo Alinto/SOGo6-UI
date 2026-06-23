@@ -34,11 +34,22 @@ describe('AddressBookListPagination', () => {
   })
 
   describe('basic rendering', () => {
-    it('returns null when only one page', () => {
+    it('returns null when only one page and page size hidden', () => {
       const { container } = render(
-        <AddressBookListPagination totalPages={1} currentPage={1} />
+        <AddressBookListPagination
+          totalPages={1}
+          currentPage={1}
+          showPageSize={false}
+        />
       )
       expect(container).toBeEmptyDOMElement()
+    })
+
+    it('renders page size selector when enabled', () => {
+      render(
+        <AddressBookListPagination totalPages={1} currentPage={1} showPageSize />
+      )
+      expect(screen.getByText('pagination.page_size.string')).toBeInTheDocument()
     })
 
     it('renders pagination controls when multiple pages', () => {

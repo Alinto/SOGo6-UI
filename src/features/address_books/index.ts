@@ -13,6 +13,7 @@ export {
   useDeleteAddressBookMutation,
   useDeleteVCardFromAddressBookMutation,
   useGetAddressBookVCardsQuery,
+  useGetAddressBookContactPickerQuery,
   useGetAddressBooksQuery,
   useGetVCardQuery,
   useUpdateAddressBookMutation,
@@ -68,6 +69,8 @@ export {
   useAddressBookEntries,
   selectBookEntriesItems,
 } from './hooks/use-address-book-entries'
+
+export { useAddressBookContactPicker } from './hooks/use-address-book-contact-picker'
 
 export { useRecipientSuggestions } from './hooks/use-recipient-suggestions'
 

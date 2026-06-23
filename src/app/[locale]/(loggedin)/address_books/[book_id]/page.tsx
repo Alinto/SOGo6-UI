@@ -16,6 +16,8 @@ const AddressBooksPage: React.FC = () => {
     isError,
     totalPages,
     page,
+    contactTotal,
+    listTotal,
     searchTooShort,
   } = useAddressBookEntries(typeof book_id === 'string' ? book_id : null)
 
@@ -38,6 +40,8 @@ const AddressBooksPage: React.FC = () => {
           serverSide
           totalPages={totalPages}
           currentPage={page}
+          contactTotal={contactTotal}
+          listTotal={listTotal}
           searchTooShort={searchTooShort}
         />
       )}

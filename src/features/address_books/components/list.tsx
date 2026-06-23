@@ -11,17 +11,26 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { ArrowDownAZ, ArrowUpAZ, ListFilter, Trash2, Users, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useMemo, useState } from 'react'
+import type { ContactSortField } from '../address-books-api-types'
 import { VCard } from '../address-books-types'
 import { useDeleteVCardFromAddressBookMutation } from '../store/address-books-api'
 import {
   openCreateListForm,
   selectAddressBooksUi,
   setSearchQuery,
+  setSortBy,
   toggleSortOrder,
 } from '../store/address-books-ui-slice'
 import AddressBookEmptyState from './address-book-empty-state'
@@ -40,8 +49,19 @@ interface AddressBookListProps {
   serverSide?: boolean
   totalPages?: number
   currentPage?: number
+  contactTotal?: number
+  listTotal?: number
   searchTooShort?: boolean
 }
+
+const SORT_FIELDS: ContactSortField[] = [
+  'display_name',
+  'last_name',
+  'first_name',
+  'organization',
+  'created_at',
+  'updated_at',
+]
 
 function EntriesSummary({
   listCount,
@@ -69,6 +89,8 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   serverSide = false,
   totalPages = 1,
   currentPage = 1,
+  contactTotal,
+  listTotal,
   searchTooShort = false,
 }) => {
   const t = useTranslations('ADDRESS_BOOKS_LIST')
@@ -78,7 +100,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   const contact_id = params?.contact_id as string | undefined
   const book_id = params?.book_id as string
 
-  const { searchQuery, sortOrder } = useAppSelector(selectAddressBooksUi)
+  const { searchQuery, sortOrder, sortBy } = useAppSelector(selectAddressBooksUi)
   const [deleteContact] = useDeleteVCardFromAddressBookMutation()
 
   const [selectedItems, setSelectedItems] = React.useState<VCard[]>([])
@@ -95,6 +117,12 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   const totalDisplayed = distributionLists.length + contacts.length
   const isSearchActive = searchQuery.trim().length > 0
   const isBookEmpty = items.length === 0 && !isSearchActive && !searchTooShort
+  const summaryListCount = serverSide
+    ? (listTotal ?? distributionLists.length)
+    : distributionLists.length
+  const summaryContactCount = serverSide
+    ? (contactTotal ?? contacts.length)
+    : contacts.length
 
   const handleCheckboxClick = (e: React.MouseEvent, item: VCard) => {
     e.stopPropagation()
@@ -111,6 +139,10 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
 
   const handleToggleSort = () => {
     dispatch(toggleSortOrder())
+  }
+
+  const handleSortByChange = (value: string) => {
+    dispatch(setSortBy(value as ContactSortField))
   }
 
   const handleConfirmBulkDelete = async () => {
@@ -190,26 +222,48 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
               </>
             ) : (
               <EntriesSummary
-                listCount={distributionLists.length}
-                contactCount={contacts.length}
+                listCount={summaryListCount}
+                contactCount={summaryContactCount}
               />
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-muted-foreground h-7 gap-1 px-2 text-xs"
-            onClick={handleToggleSort}
-            aria-label={t('filters.name.string')}
-          >
-            <ListFilter className="h-4 w-4" />
-            <span>{t('filters.name.string')}</span>
-            {sortOrder === 'asc' ? (
-              <ArrowDownAZ className="h-3.5 w-3.5" />
-            ) : (
-              <ArrowUpAZ className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-1">
+            {serverSide && (
+              <Select value={sortBy} onValueChange={handleSortByChange}>
+                <SelectTrigger
+                  className="text-muted-foreground h-7 w-auto gap-1 border-0 px-2 text-xs shadow-none"
+                  aria-label={t('filters.sort_by.string')}
+                >
+                  <ListFilter className="h-4 w-4" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  {SORT_FIELDS.map((field) => (
+                    <SelectItem key={field} value={field}>
+                      {t(`filters.sort_options.${field}.string`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             )}
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground h-7 gap-1 px-2 text-xs"
+              onClick={handleToggleSort}
+              aria-label={
+                sortOrder === 'asc'
+                  ? t('filters.sort_order_asc.string')
+                  : t('filters.sort_order_desc.string')
+              }
+            >
+              {sortOrder === 'asc' ? (
+                <ArrowDownAZ className="h-3.5 w-3.5" />
+              ) : (
+                <ArrowUpAZ className="h-3.5 w-3.5" />
+              )}
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4 space-y-5">
@@ -263,6 +317,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
         <AddressBookListPagination
           totalPages={totalPages}
           currentPage={currentPage}
+          showPageSize={serverSide}
         />
       </div>
 

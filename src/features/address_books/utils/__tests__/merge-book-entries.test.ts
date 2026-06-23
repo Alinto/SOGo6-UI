@@ -40,6 +40,8 @@ describe('buildBookEntriesResponse', () => {
     expect(result).toEqual({
       items: [],
       total: 42,
+      contactTotal: 42,
+      listTotal: 0,
       page: 2,
       totalPages: 3,
     })
@@ -69,11 +71,14 @@ describe('parseContactsAndListsFromBackend', () => {
         error_code: 'S000000',
       },
       { total: 1, totalPages: 1, page: 1 },
+      undefined,
       { total: 1, totalPages: 1, page: 1 }
     )
 
     expect(result.items).toHaveLength(2)
-    expect(result.total).toBe(2)
+    expect(result.total).toBe(1)
+    expect(result.contactTotal).toBe(1)
+    expect(result.listTotal).toBe(1)
     expect(result.items[0].kind).toBe('group')
     expect(result.items[1].firstName).toBe('Alice')
   })

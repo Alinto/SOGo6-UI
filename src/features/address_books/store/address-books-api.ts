@@ -26,7 +26,12 @@ import {
   legacyAddressBookEntriesPath,
   legacyVCardPath,
   isLegacyAddressBooksApi,
+  mapContactSortToListSort,
 } from '../utils/api-routes'
+import {
+  FULL_LISTS_PAGE_SIZE,
+  fetchContactLookupMap,
+} from '../utils/fetch-contact-lookup-map'
 import {
   listTagId,
   normalizeSingleEntry,
@@ -153,12 +158,16 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           return { data: parseFakeBookEntries(result.data) }
         }
 
-        const listParams = {
-          ...queryParams,
-          sort_by: queryParams?.sort_by === 'display_name' ? 'name' : queryParams?.sort_by,
+        const listParams: Record<string, string | number> = {
+          ...(queryParams ?? {}),
+          sort_by: mapContactSortToListSort(
+            queryParams?.sort_by as Parameters<typeof mapContactSortToListSort>[0]
+          ),
+          page_size: FULL_LISTS_PAGE_SIZE,
         }
+        delete listParams.page
 
-        const [contactsResult, listsResult] = await Promise.all([
+        const [contactsResult, listsResult, contactsByKey] = await Promise.all([
           baseQuery({
             url: addressBookContactsPath(bookId),
             params: queryParams,
@@ -167,6 +176,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             url: addressBookListsPath(bookId),
             params: listParams,
           }),
+          fetchContactLookupMap(bookId, baseQuery),
         ])
 
         if (contactsResult.error) return { error: contactsResult.error }
@@ -184,6 +194,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             contactsResult.data,
             listsResult.data,
             contactsPagination,
+            contactsByKey,
             listsPagination
           ),
         }
@@ -240,9 +251,14 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
     updateVCard: builder.mutation<
       VCard,
-      Partial<VCard> & { book_id: string; id: string; kind?: ContactKind }
+      Partial<VCard> & {
+        book_id: string
+        id: string
+        kind?: ContactKind
+        patchBody?: import('../address-books-api-types').ContactPatchBody
+      }
     >({
-      async queryFn({ book_id, id, kind, ...patch }, _api, _extraOptions, baseQuery) {
+      async queryFn({ book_id, id, kind, patchBody, ...patch }, _api, _extraOptions, baseQuery) {
         if (isLegacyAddressBooksApi()) {
           const result = await baseQuery({
             url: legacyVCardPath(book_id, id),
@@ -273,7 +289,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         const result = await baseQuery({
           url: addressBookContactPath(book_id, id),
           method: 'PATCH',
-          body: serializeContactPatch(patch),
+          body: patchBody ?? serializeContactPatch(patch),
         })
         if (result.error) return { error: result.error }
         return { data: normalizeContact(unwrapApiData(result.data)) }
@@ -290,9 +306,13 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
     addVCardToAddressBook: builder.mutation<
       VCard,
-      { id: string; vCard: Partial<VCard> & { kind?: ContactKind } }
+      {
+        id: string
+        vCard: Partial<VCard> & { kind?: ContactKind }
+        createBody?: import('../address-books-api-types').ContactCreateBody
+      }
     >({
-      async queryFn({ id: bookId, vCard }, _api, _extraOptions, baseQuery) {
+      async queryFn({ id: bookId, vCard, createBody }, _api, _extraOptions, baseQuery) {
         if (isLegacyAddressBooksApi()) {
           const result = await baseQuery({
             url: legacyAddressBookEntriesPath(bookId),
@@ -324,7 +344,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         const result = await baseQuery({
           url: addressBookContactsPath(bookId),
           method: 'POST',
-          body: serializeContactCreate(vCard),
+          body: createBody ?? serializeContactCreate(vCard),
         })
         if (result.error) return { error: result.error }
         return { data: normalizeContact(unwrapApiData(result.data)) }
@@ -429,6 +449,31 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       keepUnusedDataFor: 30,
       providesTags: [CONTACTS_AUTOCOMPLETE_SLICE],
     }),
+
+    getAddressBookContactPicker: builder.query<VCard[], string>({
+      async queryFn(bookId, _api, _extraOptions, baseQuery) {
+        if (isLegacyAddressBooksApi()) {
+          const result = await baseQuery({
+            url: legacyAddressBookEntriesPath(bookId),
+          })
+          if (result.error) return { error: result.error }
+          const entries = parseFakeBookEntries(result.data).items
+          return {
+            data: entries.filter((entry) => entry.kind !== 'group'),
+          }
+        }
+
+        const contactsByKey = await fetchContactLookupMap(bookId, baseQuery)
+        return {
+          data: Array.from(contactsByKey.values()).filter(
+            (entry, index, all) =>
+              entry.kind !== 'group' &&
+              all.findIndex((item) => item.id === entry.id) === index
+          ),
+        }
+      },
+      providesTags: (result, error, bookId) => [vcardBookTag(bookId)],
+    }),
   }),
   overrideExisting: false,
 })
@@ -445,6 +490,7 @@ export const {
   useDeleteAddressBookMutation,
   useSearchContactsAutocompleteQuery,
   useLazySearchContactsAutocompleteQuery,
+  useGetAddressBookContactPickerQuery,
 } = injectedEndpoints
 
 export const addressBooksApiEndpoints = injectedEndpoints

@@ -9,10 +9,18 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
 }))
 
+jest.mock('@/lib/i18n/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}))
+
 jest.mock('@/features/address_books', () => ({
   useGetAddressBooksQuery: () => ({
     data: { personals: [{ id: 'work', default: true }] },
   }),
+  useLazySearchContactsAutocompleteQuery: () => [
+    jest.fn(),
+    { data: undefined },
+  ],
   openCreateForm: jest.fn((payload) => ({
     type: 'addressBooksUi/openCreateForm',
     payload,
@@ -51,6 +59,11 @@ jest.mock('lucide-react', () => ({
   UserPlus2: ({ size, className }: { size: number; className?: string }) => (
     <span data-testid="user-plus-icon" data-size={size} className={className}>
       👤+
+    </span>
+  ),
+  UserRound: ({ size, className }: { size: number; className?: string }) => (
+    <span data-testid="user-round-icon" data-size={size} className={className}>
+      👤
     </span>
   ),
 }))

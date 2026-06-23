@@ -1,6 +1,3 @@
-'use client'
-
-import Draggable from '@/components/dnd/draggable'
 import { cn } from '@/lib/utils'
 import { Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -23,7 +20,7 @@ type ListSectionProps = {
 function ListSection({
   title,
   items,
-  bookId,
+  bookId: _bookId,
   contactId,
   selectedItems,
   showCheckboxes,
@@ -56,17 +53,15 @@ function ListSection({
       <ul>
         {items.map((item) => (
           <li key={item.id}>
-            <Draggable id={item.id} data={{ bookId }}>
-              <ListItem
-                data={item}
-                onHandleCheckboxClick={onHandleCheckboxClick}
-                isSelected={selectedItems.some(
-                  (selected) => selected.id === item.id
-                )}
-                isActive={contactId === item.id}
-                showCheckbox={showCheckboxes}
-              />
-            </Draggable>
+            <ListItem
+              data={item}
+              onHandleCheckboxClick={onHandleCheckboxClick}
+              isSelected={selectedItems.some(
+                (selected) => selected.id === item.id
+              )}
+              isActive={contactId === item.id}
+              showCheckbox={showCheckboxes}
+            />
           </li>
         ))}
       </ul>

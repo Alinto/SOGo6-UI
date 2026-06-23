@@ -1,0 +1,40 @@
+{
+  "ADDRESS_BOOKS_ERRORS": {
+    "list_member_invalid": {
+      "string": "One or more selected members are not contacts in this address book.",
+      "context": "Inline error when a distribution list member is invalid."
+    },
+    "addressbook_duplicate": {
+      "string": "An address book with this name already exists.",
+      "context": "Toast when address book creation conflicts."
+    },
+    "contact_duplicate": {
+      "string": "A contact with this identifier already exists.",
+      "context": "Toast when contact creation conflicts."
+    },
+    "list_duplicate": {
+      "string": "A distribution list with this name already exists.",
+      "context": "Toast when list creation conflicts."
+    },
+    "access_denied": {
+      "string": "You do not have permission to modify this address book.",
+      "context": "Toast when write access is denied."
+    },
+    "read_only": {
+      "string": "This address book is read-only.",
+      "context": "Toast when mutating a read-only address book."
+    },
+    "file_too_large": {
+      "string": "The photo exceeds the maximum allowed size (2 MB).",
+      "context": "Inline error when contact photo upload is too large."
+    },
+    "file_type_not_allowed": {
+      "string": "This file type is not allowed for contact photos.",
+      "context": "Inline error when contact photo type is not allowed."
+    },
+    "generic": {
+      "string": "The operation could not be completed. Please try again.",
+      "context": "Fallback error message for contact API errors."
+    }
+  }
+}

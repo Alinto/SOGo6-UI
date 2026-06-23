@@ -2,7 +2,8 @@
 
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
-import { memo, useCallback } from 'react'
+import { useTranslations } from 'next-intl'
+import { memo, useCallback, useState } from 'react'
 import type { VCard } from '../address-books-types'
 import {
   useAddressBookEditState,
@@ -13,6 +14,10 @@ import {
   useUpdateVCardMutation,
 } from '../store/address-books-api'
 import { closeForm } from '../store/address-books-ui-slice'
+import {
+  getContactApiErrorMessageKey,
+} from '../utils/map-contact-api-error'
+import { serializeContactFromForm } from '../utils/serialize-contact'
 import ContactForm, {
   fromFieldArray,
   type ContactFormValues,
@@ -21,7 +26,9 @@ import ContactForm, {
 function ContactFormHost() {
   const dispatch = useAppDispatch()
   const { push } = useRouter()
+  const tErrors = useTranslations('ADDRESS_BOOKS_ERRORS')
   const { activeBookId, ui } = useAddressBookState()
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const [addContact, { isLoading: isCreating }] =
     useAddVCardToAddressBookMutation()
@@ -32,6 +39,7 @@ function ContactFormHost() {
     useAddressBookEditState(editingContactId, activeBookId, ui.isFormOpen)
 
   const handleClose = useCallback(() => {
+    setSubmitError(null)
     dispatch(closeForm())
   }, [dispatch])
 
@@ -45,6 +53,10 @@ function ContactFormHost() {
       jobTitle: values.jobTitle?.trim() || undefined,
       emails: fromFieldArray(values.emails),
       phoneNumbers: fromFieldArray(values.phoneNumbers),
+      urls: fromFieldArray(values.urls),
+      categories: values.categories.length ? values.categories : undefined,
+      birthday: values.birthday?.trim() || undefined,
+      photos: values.photoDataUri ? [values.photoDataUri] : undefined,
       note: values.note?.trim() || undefined,
     }),
     []
@@ -54,28 +66,45 @@ function ContactFormHost() {
     async (values: ContactFormValues, contactId?: string) => {
       if (!activeBookId) return
 
+      setSubmitError(null)
       const payload = buildVCardPayload(values)
+      const serializedBody = serializeContactFromForm(values)
 
-      if (contactId) {
-        await updateContact({
-          book_id: activeBookId,
-          id: contactId,
-          kind: 'individual',
-          ...payload,
+      try {
+        if (contactId) {
+          await updateContact({
+            book_id: activeBookId,
+            id: contactId,
+            kind: 'individual',
+            ...payload,
+            patchBody: serializedBody,
+          }).unwrap()
+          return
+        }
+
+        const created = await addContact({
+          id: activeBookId,
+          vCard: payload as VCard,
+          createBody: serializedBody,
         }).unwrap()
-        return
-      }
 
-      const created = await addContact({
-        id: activeBookId,
-        vCard: payload as VCard,
-      }).unwrap()
-
-      if (created?.id) {
-        push(`/address_books/${activeBookId}/${created.id}`)
+        if (created?.id) {
+          push(`/address_books/${activeBookId}/${created.id}`)
+        }
+      } catch (error) {
+        setSubmitError(
+          tErrors(getContactApiErrorMessageKey(error, 'contact_form'))
+        )
       }
     },
-    [activeBookId, addContact, buildVCardPayload, push, updateContact]
+    [
+      activeBookId,
+      addContact,
+      buildVCardPayload,
+      push,
+      tErrors,
+      updateContact,
+    ]
   )
 
   if (!activeBookId && ui.isFormOpen) {
@@ -91,6 +120,7 @@ function ContactFormHost() {
       isSubmitting={isCreating || isUpdating}
       contact={editingContactId ? (editingContact ?? null) : null}
       prefill={ui.prefillContact}
+      submitError={submitError}
       onClose={handleClose}
       onSubmit={handleSubmit}
     />

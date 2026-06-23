@@ -137,6 +137,62 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
           </section>
         )}
 
+        {data.anniversary && (
+          <section aria-labelledby="anniversary-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="anniversary-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('anniversary.string')}
+            </h2>
+            <ContactFieldRow value={data.anniversary} type="text" />
+          </section>
+        )}
+
+        {data.categories && data.categories.length > 0 && (
+          <section aria-labelledby="categories-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="categories-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('categories.string')}
+            </h2>
+            <ContactFieldRow value={data.categories.join(', ')} type="text" />
+          </section>
+        )}
+
+        {data.impp && data.impp.length > 0 && (
+          <section aria-labelledby="impp-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="impp-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('impp.string')}
+            </h2>
+            <div className="space-y-1">
+              {data.impp.map((uri, index) => (
+                <ContactFieldRow key={index} value={uri} type="text" />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {data.geo && (
+          <section aria-labelledby="geo-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="geo-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('geo.string')}
+            </h2>
+            <ContactFieldRow value={data.geo} type="text" />
+          </section>
+        )}
+
         <section aria-labelledby="notes-heading" className="space-y-3">
           <Separator />
           <h2
