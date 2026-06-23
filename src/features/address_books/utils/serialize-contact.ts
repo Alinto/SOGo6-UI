@@ -1,23 +1,48 @@
-import type { ContactCreateBody, ContactPatchBody } from '../address-books-api-types'
+import type {
+  ApiContactAddress,
+  ContactCreateBody,
+  ContactPatchBody,
+} from '../address-books-api-types'
 import type { VCard } from '../address-books-types'
 import type { ContactFormValues } from '../components/contact-form'
 
-function toEmailObjects(values?: string[]) {
+export const CONTACT_PHOTO_MAX_BYTES = 2048 * 1024
+
+function toEmailObjects(values?: string[] | { value: string }[]) {
   if (!values?.length) return undefined
   const emails = values
-    .map((value) => value.trim())
+    .map((value) => (typeof value === 'string' ? value : value.value).trim())
     .filter(Boolean)
     .map((value) => ({ value }))
   return emails.length ? emails : undefined
 }
 
-function toPhoneObjects(values?: string[]) {
+function toPhoneObjects(values?: string[] | { value: string }[]) {
   if (!values?.length) return undefined
   const phones = values
-    .map((number) => number.trim())
+    .map((value) => (typeof value === 'string' ? value : value.value).trim())
     .filter(Boolean)
     .map((number) => ({ number }))
   return phones.length ? phones : undefined
+}
+
+function toAddressObjects(
+  rows: ContactFormValues['addresses']
+): ApiContactAddress[] | undefined {
+  if (!rows?.length) return undefined
+
+  const addresses = rows
+    .map((row) => ({
+      street: row.street?.trim() || null,
+      locality: row.city?.trim() || null,
+      postal_code: row.postalCode?.trim() || null,
+      country: row.country?.trim() || null,
+    }))
+    .filter(
+      (row) => row.street || row.locality || row.postal_code || row.country
+    )
+
+  return addresses.length ? addresses : undefined
 }
 
 export function serializeContactFromForm(
@@ -27,17 +52,33 @@ export function serializeContactFromForm(
   const lastName = values.lastName.trim()
   const displayName = `${firstName} ${lastName}`.trim()
 
-  return {
+  const body: ContactCreateBody = {
     display_name: displayName || undefined,
     first_name: firstName || undefined,
     last_name: lastName || undefined,
     organization: values.organization?.trim() || undefined,
     job_title: values.jobTitle?.trim() || undefined,
-    emails: toEmailObjects(values.emails.map((entry) => entry.value)),
-    phones: toPhoneObjects(values.phoneNumbers.map((entry) => entry.value)),
+    emails: toEmailObjects(values.emails),
+    phones: toPhoneObjects(values.phoneNumbers),
+    addresses: toAddressObjects(values.addresses),
+    urls: values.urls
+      ?.map((entry) => entry.value.trim())
+      .filter(Boolean)
+      .map((value) => ({ value })),
+    categories:
+      values.categories && values.categories.length > 0
+        ? values.categories
+        : undefined,
+    birthday: values.birthday?.trim() || undefined,
     note: values.note?.trim() || undefined,
     kind: 'individual',
   }
+
+  if (values.photoDataUri) {
+    body.photos = [values.photoDataUri]
+  }
+
+  return body
 }
 
 export function serializeContactPatch(

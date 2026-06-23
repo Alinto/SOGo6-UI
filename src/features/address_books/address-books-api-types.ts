@@ -158,7 +158,10 @@ export interface BookEntriesQueryParams {
 
 export interface BookEntriesResponse {
   items: import('./address-books-types').VCard[]
+  /** Total contacts (pagination is contact-scoped). */
   total: number
+  contactTotal: number
+  listTotal: number
   page: number
   totalPages: number
 }

@@ -112,6 +112,46 @@
       "string": "Remove field",
       "context": "Aria label for removing a dynamic form field"
     },
+    "add_address": {
+      "string": "Add address",
+      "context": "Button to add another address field"
+    },
+    "add_url": {
+      "string": "Add URL",
+      "context": "Button to add another URL field"
+    },
+    "categories": {
+      "string": "Categories",
+      "context": "Label for contact categories field"
+    },
+    "photo": {
+      "string": "Photo",
+      "context": "Label for contact photo upload"
+    },
+    "photo_change": {
+      "string": "Change photo",
+      "context": "Button to change contact photo"
+    },
+    "photo_remove": {
+      "string": "Remove photo",
+      "context": "Button to remove contact photo"
+    },
+    "anniversary": {
+      "string": "Anniversary",
+      "context": "Label for anniversary field in contact visualization"
+    },
+    "impp": {
+      "string": "Instant messaging",
+      "context": "Label for instant messaging addresses"
+    },
+    "geo": {
+      "string": "Location",
+      "context": "Label for geographic location"
+    },
+    "submit_error": {
+      "string": "Could not save. Please check the form and try again.",
+      "context": "Generic submit error shown in contact form"
+    },
     "fields": {
       "first_name": {
         "string": "First name"
@@ -124,6 +164,21 @@
       },
       "job_title": {
         "string": "Job title"
+      },
+      "street": {
+        "string": "Street"
+      },
+      "city": {
+        "string": "City"
+      },
+      "postal_code": {
+        "string": "Postal code"
+      },
+      "country": {
+        "string": "Country"
+      },
+      "url": {
+        "string": "URL"
       }
     },
     "delete_dialog": {

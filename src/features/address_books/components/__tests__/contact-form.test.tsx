@@ -6,6 +6,10 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('@/features/user-settings/store/user-preferences-api', () => ({
+  useGetUserPreferencesQuery: () => ({ data: undefined }),
+}))
+
 jest.mock('@/components/ui/dialog', () => ({
   Dialog: ({ children, open }: { children: React.ReactNode; open?: boolean }) =>
     open ? <div data-testid="contact-form-dialog">{children}</div> : null,

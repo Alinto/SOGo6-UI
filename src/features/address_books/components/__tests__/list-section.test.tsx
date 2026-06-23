@@ -13,17 +13,6 @@ jest.mock('next-intl', () => ({
   },
 }))
 
-jest.mock('@/components/dnd/draggable', () => ({
-  __esModule: true,
-  default: ({
-    children,
-    id,
-  }: {
-    children: React.ReactNode
-    id: string
-  }) => <div data-testid={`draggable-${id}`}>{children}</div>,
-}))
-
 jest.mock('../list-item', () => ({
   __esModule: true,
   default: ({
@@ -127,7 +116,6 @@ describe('ListSection', () => {
 
       expect(screen.getByTestId('list-item-c1')).toHaveAttribute('data-active', 'true')
       expect(screen.getByTestId('list-item-c1')).toHaveAttribute('data-selected', 'true')
-      expect(screen.getByTestId('draggable-c1')).toBeInTheDocument()
     })
   })
 

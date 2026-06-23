@@ -37,6 +37,35 @@
     "filters": {
       "name": {
         "string": "Name"
+      },
+      "sort_by": {
+        "string": "Sort by"
+      },
+      "sort_options": {
+        "display_name": {
+          "string": "Display name"
+        },
+        "last_name": {
+          "string": "Last name"
+        },
+        "first_name": {
+          "string": "First name"
+        },
+        "organization": {
+          "string": "Organization"
+        },
+        "created_at": {
+          "string": "Date created"
+        },
+        "updated_at": {
+          "string": "Date updated"
+        }
+      },
+      "sort_order_asc": {
+        "string": "Sort ascending"
+      },
+      "sort_order_desc": {
+        "string": "Sort descending"
       }
     },
     "no_items": {
@@ -101,7 +130,14 @@
       },
       "page": {
         "string": "Page {page} of {total}",
-        "context": "Current pagination page indicator"
+        "context": "Current pagination page indicator (contacts only)"
+      },
+      "page_size": {
+        "string": "Per page"
+      },
+      "contacts_page_hint": {
+        "string": "Pagination applies to contacts; all lists are shown.",
+        "context": "Hint that list pagination is contact-scoped"
       }
     }
   }

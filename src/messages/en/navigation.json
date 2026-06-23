@@ -47,7 +47,8 @@
         "error": "Could not load contacts",
         "empty": "No address book available",
         "no_entries": "No contacts or lists yet",
-        "no_results": "No matches"
+        "no_results": "No matches",
+        "search_min_length": "Enter at least 2 characters to search."
       },
       "coming_soon": {
         "title": "Feature incoming",

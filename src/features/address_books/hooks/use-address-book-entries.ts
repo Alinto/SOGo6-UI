@@ -35,13 +35,16 @@ export function useAddressBookEntries(bookId: string | null | undefined) {
     useGetAddressBookVCardsQuery(queryArg)
 
   const entries = data?.items ?? []
-  const total = data?.total ?? 0
+  const contactTotal = data?.contactTotal ?? data?.total ?? 0
+  const listTotal = data?.listTotal ?? 0
   const totalPages = data?.totalPages ?? 1
   const currentPage = data?.page ?? page
 
   return {
     items: entries,
-    total,
+    total: contactTotal,
+    contactTotal,
+    listTotal,
     page: currentPage,
     totalPages,
     isLoading,

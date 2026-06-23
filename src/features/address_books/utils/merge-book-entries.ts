@@ -5,6 +5,7 @@ import type {
   BookEntriesResponse,
 } from '../address-books-api-types'
 import type { VCard } from '../address-books-types'
+import { isDistributionList } from './distribution-list'
 import { normalizeContact, normalizeContactsList } from './normalize-contact'
 import {
   normalizeDistributionList,
@@ -23,24 +24,30 @@ export function mergeBookEntries(
 export function buildBookEntriesResponse(
   contacts: VCard[],
   lists: VCard[],
-  pagination?: ParsedPagination | null,
-  fallbackCount?: number
+  contactsPagination?: ParsedPagination | null,
+  options?: { listTotal?: number }
 ): BookEntriesResponse {
   const items = mergeBookEntries(contacts, lists)
-  const total =
-    pagination?.total ??
-    fallbackCount ??
-    contacts.length + lists.length
-  const page = pagination?.page ?? 1
-  const totalPages = pagination?.totalPages ?? 1
+  const contactTotal = contactsPagination?.total ?? contacts.length
+  const listTotal = options?.listTotal ?? lists.length
+  const page = contactsPagination?.page ?? 1
+  const totalPages = contactsPagination?.totalPages ?? 1
 
-  return { items, total, page, totalPages }
+  return {
+    items,
+    total: contactTotal,
+    contactTotal,
+    listTotal,
+    page,
+    totalPages,
+  }
 }
 
 export function parseContactsAndListsFromBackend(
   contactsPayload: unknown,
   listsPayload: unknown,
   contactsPagination?: ParsedPagination | null,
+  contactsByKey?: Map<string, VCard>,
   listsPagination?: ParsedPagination | null
 ): BookEntriesResponse {
   const contactsData = unwrapApiData(contactsPayload as ApiContactsListData)
@@ -54,33 +61,32 @@ export function parseContactsAndListsFromBackend(
     : ((listsData as ApiListsCollectionData).lists ?? [])
 
   const contacts = normalizeContactsList(rawContacts as ApiContactsListData['contacts'])
+  const lookupMap =
+    contactsByKey instanceof Map
+      ? contactsByKey
+      : new Map(contacts.flatMap((contact) => [[contact.id, contact] as const]))
   const lists = normalizeListsCollection(
     rawLists as ApiDistributionList[],
-    contacts
+    Array.from(new Map(lookupMap).values())
   )
 
-  const contactTotal = contactsPagination?.total ?? contacts.length
   const listTotal = listsPagination?.total ?? rawLists.length
-  const total = contactTotal + listTotal
-  const page = contactsPagination?.page ?? listsPagination?.page ?? 1
-  const totalPages = Math.max(
-    contactsPagination?.totalPages ?? 1,
-    listsPagination?.totalPages ?? 1
-  )
 
-  return {
-    items: mergeBookEntries(contacts, lists),
-    total,
-    page,
-    totalPages,
-  }
+  return buildBookEntriesResponse(contacts, lists, contactsPagination, {
+    listTotal,
+  })
 }
 
 export function parseFakeBookEntries(payload: unknown): BookEntriesResponse {
   const items = normalizeContactsList(payload as VCard[])
+  const lists = items.filter(isDistributionList)
+  const contacts = items.filter((item) => !isDistributionList(item))
+
   return {
     items,
-    total: items.length,
+    total: contacts.length,
+    contactTotal: contacts.length,
+    listTotal: lists.length,
     page: 1,
     totalPages: 1,
   }
@@ -100,7 +106,13 @@ export function parseListTagId(tagId: string): string | null {
 
 export function normalizeSingleEntry(raw: unknown): VCard {
   const value = unwrapApiData(raw)
-  if (value && typeof value === 'object' && 'members' in value && 'name' in value && !('first_name' in value)) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    'members' in value &&
+    'name' in value &&
+    !('first_name' in value)
+  ) {
     return normalizeDistributionList(value as ApiDistributionList)
   }
   return normalizeContact(value as Parameters<typeof normalizeContact>[0])

@@ -16,6 +16,18 @@ describe('serializeContactFromForm', () => {
         jobTitle: 'Engineer',
         emails: [{ value: 'alice@example.com' }],
         phoneNumbers: [{ value: '+33123456789' }],
+        addresses: [
+          {
+            street: '1 Main St',
+            city: 'Paris',
+            postalCode: '75001',
+            country: 'France',
+          },
+        ],
+        urls: [{ value: 'https://example.com' }],
+        birthday: '1990-01-01',
+        categories: ['VIP'],
+        photoDataUri: 'data:image/png;base64,abc',
         note: 'VIP',
       })
     ).toEqual({
@@ -26,6 +38,18 @@ describe('serializeContactFromForm', () => {
       job_title: 'Engineer',
       emails: [{ value: 'alice@example.com' }],
       phones: [{ number: '+33123456789' }],
+      addresses: [
+        {
+          street: '1 Main St',
+          locality: 'Paris',
+          postal_code: '75001',
+          country: 'France',
+        },
+      ],
+      urls: [{ value: 'https://example.com' }],
+      birthday: '1990-01-01',
+      categories: ['VIP'],
+      photos: ['data:image/png;base64,abc'],
       note: 'VIP',
       kind: 'individual',
     })

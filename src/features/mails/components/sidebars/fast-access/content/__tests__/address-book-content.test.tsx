@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import AddressBookContent from '../address-book-content'
@@ -23,8 +23,17 @@ jest.mock('@/features/address_books', () => ({
     contact.members?.length ?? 0,
   partitionAddressBookEntries: (
     items: Array<{ id: string; kind?: string; firstName: string; lastName: string }>,
-    searchQuery: string
+    searchQuery: string,
+    _sortOrder?: string,
+    options?: { serverSide?: boolean }
   ) => {
+    if (options?.serverSide) {
+      return {
+        distributionLists: items.filter((item) => item.kind === 'group'),
+        contacts: items.filter((item) => item.kind !== 'group'),
+      }
+    }
+
     const query = searchQuery.trim().toLowerCase()
     const filtered = query
       ? items.filter((item) =>
@@ -38,7 +47,10 @@ jest.mock('@/features/address_books', () => ({
     }
   },
   useGetAddressBooksQuery: () => mockUseGetAddressBooksQuery(),
-  useGetAddressBookVCardsQuery: () => mockUseGetAddressBookVCardsQuery(),
+  useGetAddressBookVCardsQuery: (arg?: {
+    bookId?: string
+    params?: { search?: string }
+  }) => mockUseGetAddressBookVCardsQuery(arg),
 }))
 
 jest.mock('@/features/mails/store', () => ({
@@ -123,6 +135,26 @@ jest.mock('next-intl', () => ({
 }))
 
 describe('AddressBookContent', () => {
+  const fullItems = [
+    {
+      id: 'list-1',
+      kind: 'group' as const,
+      firstName: 'Sales Team',
+      lastName: '',
+      members: [
+        { email: 'sales@example.com' },
+        { email: 'team@example.com' },
+      ],
+    },
+    {
+      id: 'contact-1',
+      firstName: 'Jane',
+      lastName: 'Doe',
+      organization: 'Acme',
+      emails: ['jane@example.com'],
+    },
+  ]
+
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseGetAddressBooksQuery.mockReturnValue({
@@ -134,32 +166,24 @@ describe('AddressBookContent', () => {
       isLoading: false,
       isError: false,
     })
-    mockUseGetAddressBookVCardsQuery.mockReturnValue({
-      data: {
-        items: [
-          {
-            id: 'list-1',
-            kind: 'group',
-            firstName: 'Sales Team',
-            lastName: '',
-            members: [
-              { email: 'sales@example.com' },
-              { email: 'team@example.com' },
-            ],
-          },
-          {
-            id: 'contact-1',
-            firstName: 'Jane',
-            lastName: 'Doe',
-            organization: 'Acme',
-            emails: ['jane@example.com'],
-          },
-        ],
-        total: 2,
-        page: 1,
-        totalPages: 1,
-      },
-      isLoading: false,
+    mockUseGetAddressBookVCardsQuery.mockImplementation((arg) => {
+      const search = arg?.params?.search
+      const items =
+        search === 'Jane'
+          ? [fullItems[1]]
+          : fullItems
+
+      return {
+        data: {
+          items,
+          listTotal: search === 'Jane' ? 0 : 1,
+          contactTotal: search === 'Jane' ? 1 : 1,
+          total: search === 'Jane' ? 1 : 1,
+          page: 1,
+          totalPages: 1,
+        },
+        isLoading: false,
+      }
     })
   })
 
@@ -189,13 +213,19 @@ describe('AddressBookContent', () => {
   })
 
   it('filters entries with the search field', async () => {
-    const user = userEvent.setup()
+    jest.useFakeTimers()
+    const user = userEvent.setup({ advanceTimers: jest.advanceTimersByTime })
     render(<AddressBookContent />)
 
     await user.type(screen.getByTestId('fast-access-contacts-search'), 'Jane')
+    jest.advanceTimersByTime(300)
 
-    expect(screen.queryByText('Sales Team')).not.toBeInTheDocument()
-    expect(screen.getByText('Jane Doe')).toBeInTheDocument()
+    await waitFor(() => {
+      expect(screen.queryByText('Sales Team')).not.toBeInTheDocument()
+      expect(screen.getByText('Jane Doe')).toBeInTheDocument()
+    })
+
+    jest.useRealTimers()
   })
 
   it('dispatches compose draft for a contact with email', async () => {

@@ -21,10 +21,11 @@ import { Mail, Search, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { skipToken } from '@reduxjs/toolkit/query'
 import Link from 'next/link'
-import React, { memo, useCallback, useMemo, useState } from 'react'
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
 
 const LIST_SECTION_LIMIT = 4
 const CONTACT_SECTION_LIMIT = 6
+const SEARCH_DEBOUNCE_MS = 300
 
 function SectionHeader({ title, count }: { title: string; count: number }) {
   return (
@@ -188,6 +189,15 @@ const AddressBookContent: React.FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.address_book')
   const dispatch = useAppDispatch()
   const [searchQuery, setSearchQuery] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setDebouncedSearch(searchQuery),
+      SEARCH_DEBOUNCE_MS
+    )
+    return () => window.clearTimeout(timer)
+  }, [searchQuery])
 
   const { data: addressBooks, isLoading: booksLoading, isError } =
     useGetAddressBooksQuery()
@@ -199,34 +209,44 @@ const AddressBookContent: React.FC = () => {
     return personals.find((book) => book.id === defaultId) ?? null
   }, [addressBooks?.personals])
 
+  const trimmedSearch = debouncedSearch.trim()
+  const isServerSearch = trimmedSearch.length >= 2
+
   const { data: bookEntries, isLoading: contactsLoading } =
     useGetAddressBookVCardsQuery(
       defaultBook?.id
-        ? { bookId: defaultBook.id, params: { page_size: 100 } }
+        ? {
+            bookId: defaultBook.id,
+            params: isServerSearch
+              ? { search: trimmedSearch, page_size: 20 }
+              : { page_size: 100 },
+          }
         : skipToken
     )
 
   const { distributionLists, contacts } = useMemo(
     () =>
-      partitionAddressBookEntries(
-        bookEntries?.items ?? [],
-        searchQuery,
-        'asc'
-      ),
-    [bookEntries?.items, searchQuery]
+      partitionAddressBookEntries(bookEntries?.items ?? [], '', 'asc', {
+        serverSide: true,
+      }),
+    [bookEntries?.items]
   )
 
+  const listTotal = bookEntries?.listTotal ?? distributionLists.length
+  const contactTotal = bookEntries?.contactTotal ?? contacts.length
   const isSearching = searchQuery.trim().length > 0
+  const searchTooShort = isSearching && !isServerSearch
+
   const visibleLists = distributionLists.slice(
     0,
-    isSearching ? distributionLists.length : LIST_SECTION_LIMIT
+    isServerSearch ? distributionLists.length : LIST_SECTION_LIMIT
   )
   const visibleContacts = contacts.slice(
     0,
-    isSearching ? contacts.length : CONTACT_SECTION_LIMIT
+    isServerSearch ? contacts.length : CONTACT_SECTION_LIMIT
   )
 
-  const hasAnyEntry = distributionLists.length > 0 || contacts.length > 0
+  const hasAnyEntry = listTotal > 0 || contactTotal > 0
   const hasVisibleEntry = visibleLists.length > 0 || visibleContacts.length > 0
 
   const isLoading = booksLoading || contactsLoading
@@ -335,21 +355,32 @@ const AddressBookContent: React.FC = () => {
           <p className="text-muted-foreground px-2 py-3 text-xs">{t('empty')}</p>
         )}
 
-        {!isLoading && !isError && defaultBook && !hasAnyEntry && (
+        {!isLoading && !isError && defaultBook && searchTooShort && (
+          <p className="text-muted-foreground px-2 py-3 text-xs">
+            {t('search_min_length')}
+          </p>
+        )}
+
+        {!isLoading && !isError && defaultBook && !hasAnyEntry && !searchTooShort && (
           <p className="text-muted-foreground px-2 py-3 text-xs">{t('no_entries')}</p>
         )}
 
-        {!isLoading && !isError && defaultBook && hasAnyEntry && !hasVisibleEntry && (
+        {!isLoading &&
+          !isError &&
+          defaultBook &&
+          hasAnyEntry &&
+          !hasVisibleEntry &&
+          !searchTooShort && (
           <p className="text-muted-foreground px-2 py-3 text-xs">{t('no_results')}</p>
         )}
 
-        {!isLoading && !isError && defaultBook && hasVisibleEntry && (
+        {!isLoading && !isError && defaultBook && hasVisibleEntry && !searchTooShort && (
           <>
             <AddressBookSection
               sectionId="lists"
               title={t('distribution_lists')}
               items={visibleLists}
-              totalCount={distributionLists.length}
+              totalCount={listTotal}
               bookId={defaultBook.id}
               composeLabel={t('compose')}
               onComposeContact={handleComposeContact}
@@ -361,7 +392,7 @@ const AddressBookContent: React.FC = () => {
               sectionId="contacts"
               title={t('contacts')}
               items={visibleContacts}
-              totalCount={contacts.length}
+              totalCount={contactTotal}
               bookId={defaultBook.id}
               composeLabel={t('compose')}
               onComposeContact={handleComposeContact}

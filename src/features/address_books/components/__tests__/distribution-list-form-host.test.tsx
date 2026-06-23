@@ -9,12 +9,16 @@ jest.mock('../../hooks/use-address-book-state', () => ({
   useAddressBookEditState: () => mockUseAddressBookEditState(),
 }))
 
+jest.mock('../../hooks/use-address-book-contact-picker', () => ({
+  useAddressBookContactPicker: () => ({
+    contacts: [],
+    isLoading: false,
+  }),
+}))
+
 jest.mock('../../store/address-books-api', () => ({
   useAddVCardToAddressBookMutation: () => [jest.fn(), { isLoading: false }],
   useUpdateVCardMutation: () => [jest.fn(), { isLoading: false }],
-  useGetAddressBookVCardsQuery: () => ({
-    data: { items: [], total: 0, page: 1, totalPages: 1 },
-  }),
 }))
 
 jest.mock('../distribution-list-form', () => ({
@@ -33,6 +37,10 @@ jest.mock('@/lib/redux/hooks', () => ({
 
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
+}))
+
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
 }))
 
 import DistributionListFormHost from '../distribution-list-form-host'

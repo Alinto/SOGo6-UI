@@ -9,10 +9,18 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
 }))
 
+jest.mock('@/lib/i18n/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}))
+
 jest.mock('@/features/address_books', () => ({
   useGetAddressBooksQuery: () => ({
     data: { personals: [{ id: 'work', default: true }] },
   }),
+  useLazySearchContactsAutocompleteQuery: () => [
+    jest.fn(),
+    { data: undefined },
+  ],
   openCreateForm: jest.fn((payload) => ({
     type: 'addressBooksUi/openCreateForm',
     payload,

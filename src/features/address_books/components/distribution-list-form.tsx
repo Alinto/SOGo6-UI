@@ -51,6 +51,7 @@ type DistributionListFormProps = {
   list?: VCard | null
   prefillMembers?: ContactMember[] | null
   bookContacts: VCard[]
+  submitError?: string | null
   onClose: () => void
   onSubmit: (values: DistributionListFormValues, listId?: string) => Promise<void>
 }
@@ -64,6 +65,7 @@ function DistributionListForm({
   list,
   prefillMembers,
   bookContacts,
+  submitError,
   onClose,
   onSubmit,
 }: DistributionListFormProps) {
@@ -129,7 +131,6 @@ function DistributionListForm({
 
   const handleSubmit = form.handleSubmit(async (values) => {
     await onSubmit(values, list?.id)
-    onClose()
   })
 
   return (
@@ -164,6 +165,14 @@ function DistributionListForm({
         {!isLoading && !loadError && (
         <Form {...form}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            {submitError && (
+              <p
+                className="text-destructive text-sm"
+                data-testid="list-form-submit-error"
+              >
+                {submitError}
+              </p>
+            )}
             <FormField
               control={form.control}
               name="name"

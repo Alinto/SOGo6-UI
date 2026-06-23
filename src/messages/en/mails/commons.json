@@ -189,6 +189,10 @@
                     }
                 },
                 "contacts-badge": {
+                    "popover-view-contact": {
+                        "string": "View contact",
+                        "description": "Open the matching contact in the address book"
+                    },
                     "popover-add-to-addressbook": {
                         "string": "Add to address book",
                         "description": "Add the contact to the address book"

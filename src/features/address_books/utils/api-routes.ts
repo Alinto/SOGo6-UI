@@ -30,6 +30,15 @@ export const legacyAddressBookEntriesPath = (bookId: string) =>
 export const legacyVCardPath = (bookId: string, entryId: string) =>
   `address_books/${encodeURIComponent(bookId)}/${encodeURIComponent(entryId)}`
 
+import type { ContactSortField, ListSortField } from '../address-books-api-types'
+
+export function mapContactSortToListSort(
+  sortBy?: ContactSortField | string
+): ListSortField {
+  if (sortBy === 'created_at' || sortBy === 'updated_at') return sortBy
+  return 'name'
+}
+
 export function buildListQueryParams(
   params?: {
     search?: string
