@@ -18,8 +18,10 @@ describe('address books feature index', () => {
       expect(typeof AddressBooks.useGetVCardQuery).toBe('function')
     })
 
-    it('exports useMoveVCardToAddressBookMutation', () => {
-      expect(typeof AddressBooks.useMoveVCardToAddressBookMutation).toBe('function')
+    it('exports useSearchContactsAutocompleteQuery', () => {
+      expect(typeof AddressBooks.useSearchContactsAutocompleteQuery).toBe(
+        'function'
+      )
     })
   })
 
@@ -37,6 +39,10 @@ describe('address books feature index', () => {
     it('exports useAddressBookState and useAddressBookEditState', () => {
       expect(typeof AddressBooks.useAddressBookState).toBe('function')
       expect(typeof AddressBooks.useAddressBookEditState).toBe('function')
+    })
+
+    it('exports useAddressBookEntries', () => {
+      expect(typeof AddressBooks.useAddressBookEntries).toBe('function')
     })
 
     it('exports contact list utilities', () => {

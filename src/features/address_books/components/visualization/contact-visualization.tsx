@@ -124,6 +124,19 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
           </section>
         )}
 
+        {data.birthday && (
+          <section aria-labelledby="birthday-heading" className="space-y-3">
+            <Separator />
+            <h2
+              id="birthday-heading"
+              className="text-foreground text-base font-semibold sm:text-lg"
+            >
+              {t('birthday.string')}
+            </h2>
+            <ContactFieldRow value={data.birthday} type="text" />
+          </section>
+        )}
+
         <section aria-labelledby="notes-heading" className="space-y-3">
           <Separator />
           <h2

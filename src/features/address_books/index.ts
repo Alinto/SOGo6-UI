@@ -15,9 +15,10 @@ export {
   useGetAddressBookVCardsQuery,
   useGetAddressBooksQuery,
   useGetVCardQuery,
-  useMoveVCardToAddressBookMutation,
   useUpdateAddressBookMutation,
   useUpdateVCardMutation,
+  useSearchContactsAutocompleteQuery,
+  useLazySearchContactsAutocompleteQuery,
   addressBooksApiEndpoints,
 } from './store/address-books-api'
 
@@ -30,7 +31,10 @@ export {
   openEditListForm,
   selectAddressBooksUi,
   setFormBookId,
+  setPage,
+  setPageSize,
   setSearchQuery,
+  setSortBy,
   toggleSortOrder,
 } from './store/address-books-ui-slice'
 
@@ -59,6 +63,13 @@ export {
   useAddressBookEditState,
   useAddressBookState,
 } from './hooks/use-address-book-state'
+
+export {
+  useAddressBookEntries,
+  selectBookEntriesItems,
+} from './hooks/use-address-book-entries'
+
+export { useRecipientSuggestions } from './hooks/use-recipient-suggestions'
 
 export {
   getDistributionListEmails,

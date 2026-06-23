@@ -40,6 +40,7 @@ export const AUTH_MODE_SLICE = 'auth/mode'
 export const MAILBOXES_SLICE = 'mailboxes'
 export const FOLDER_SHARE_SLICE = 'folder/share'
 export const USER_SEARCH_SLICE = 'user_search'
+export const CONTACTS_AUTOCOMPLETE_SLICE = 'contacts_autocomplete'
 
 // ---------------------------------------------------------------------------
 // Tag types array
@@ -80,6 +81,7 @@ const tagTypes = [
   MAILBOXES_SLICE,
   FOLDER_SHARE_SLICE,
   USER_SEARCH_SLICE,
+  CONTACTS_AUTOCOMPLETE_SLICE,
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call

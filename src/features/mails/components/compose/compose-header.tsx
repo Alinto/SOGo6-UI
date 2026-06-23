@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
-import InputWithTags from '@/components/ui/inputs/input-with-tags'
 import {
   Select,
   SelectContent,
@@ -18,9 +17,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import ComposeRecipientField from './compose-recipient-field'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { PenLine } from 'lucide-react'
+import { Check, PenLine } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useCallback, useRef } from 'react'
 import {
@@ -224,7 +224,9 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
               onSelect={() => handleSignatureSelect(null)}
               className={selectedSignatureKey === null ? 'font-medium' : ''}
             >
-              {selectedSignatureKey === null && <span className="mr-2">✓</span>}
+              {selectedSignatureKey === null && (
+                <Check className="mr-2 h-3.5 w-3.5" aria-hidden />
+              )}
               {t('no_signature.string')}
             </DropdownMenuItem>
 
@@ -237,7 +239,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
                 className={selectedSignatureKey === key ? 'font-medium' : ''}
               >
                 {selectedSignatureKey === key && (
-                  <span className="mr-2">✓</span>
+                  <Check className="mr-2 h-3.5 w-3.5" aria-hidden />
                 )}
                 {key}
               </DropdownMenuItem>
@@ -293,7 +295,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
 
       <div className="mt-2 flex w-full items-stretch">
         <div className="flex-1 min-w-0">
-          <InputWithTags
+          <ComposeRecipientField
             tags={toTags}
             remove={toHandlers.remove}
             handleAdd={toHandlers.handleAdd}
@@ -333,7 +335,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
 
       {showCc && (
         <div className="mt-2">
-          <InputWithTags
+          <ComposeRecipientField
             tags={ccTags}
             remove={ccHandlers.remove}
             handleAdd={ccHandlers.handleAdd}
@@ -346,7 +348,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
 
       {showBcc && (
         <div className="mt-2">
-          <InputWithTags
+          <ComposeRecipientField
             tags={bccTags}
             remove={bccHandlers.remove}
             handleAdd={bccHandlers.handleAdd}

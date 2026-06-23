@@ -6,7 +6,10 @@ import reducer, {
   openCreateListForm,
   openEditForm,
   openEditListForm,
+  setPage,
+  setPageSize,
   setSearchQuery,
+  setSortBy,
   toggleSortOrder,
 } from '../address-books-ui-slice'
 
@@ -17,6 +20,36 @@ describe('addressBooksUiSlice', () => {
       expect(state.isFormOpen).toBe(false)
       expect(state.searchQuery).toBe('')
       expect(state.sortOrder).toBe('asc')
+      expect(state.sortBy).toBe('display_name')
+      expect(state.page).toBe(1)
+      expect(state.pageSize).toBe(50)
+    })
+  })
+
+  describe('pagination and sorting', () => {
+    it('resets page when search query changes', () => {
+      let state = reducer(undefined, setPage(3))
+      state = reducer(state, setSearchQuery('alice'))
+      expect(state.searchQuery).toBe('alice')
+      expect(state.page).toBe(1)
+    })
+
+    it('updates page, page size, and sort field', () => {
+      let state = reducer(undefined, setPage(2))
+      expect(state.page).toBe(2)
+      state = reducer(state, setPageSize(25))
+      expect(state.pageSize).toBe(25)
+      expect(state.page).toBe(1)
+      state = reducer(state, setSortBy('last_name'))
+      expect(state.sortBy).toBe('last_name')
+      expect(state.page).toBe(1)
+    })
+
+    it('resets page when sort order toggles', () => {
+      let state = reducer(undefined, setPage(4))
+      state = reducer(state, toggleSortOrder())
+      expect(state.sortOrder).toBe('desc')
+      expect(state.page).toBe(1)
     })
   })
 

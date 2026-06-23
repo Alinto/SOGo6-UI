@@ -3,13 +3,13 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import AttendeeInput from '../attendee-input'
 
-const mockUseSearchUsersQuery = jest.fn(() => ({
-  data: [] as { uid: string; email: string; name: string; department?: string }[],
+const mockUseRecipientSuggestions = jest.fn(() => ({
+  suggestions: [] as { email: string; name?: string; source: 'user' | 'contact' | 'list' }[],
   isFetching: false,
 }))
 
-jest.mock('@/features/calendars/store/calendars-api', () => ({
-  useSearchUsersQuery: (...args: unknown[]) => mockUseSearchUsersQuery(...args),
+jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
+  useRecipientSuggestions: (...args: unknown[]) => mockUseRecipientSuggestions(...args),
 }))
 
 jest.mock('next-intl', () => {
@@ -31,8 +31,8 @@ jest.mock('next-intl', () => {
 describe('AttendeeInput', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUseSearchUsersQuery.mockReturnValue({
-      data: [],
+    mockUseRecipientSuggestions.mockReturnValue({
+      suggestions: [],
       isFetching: false,
     })
   })
@@ -98,13 +98,12 @@ describe('AttendeeInput', () => {
     })
 
     it('shows suggestion rows when API returns matches', async () => {
-      mockUseSearchUsersQuery.mockReturnValue({
-        data: [
+      mockUseRecipientSuggestions.mockReturnValue({
+        suggestions: [
           {
-            uid: 'u1',
             email: 'suggest@example.com',
             name: 'Suggest User',
-            department: 'Eng',
+            source: 'user' as const,
           },
         ],
         isFetching: false,

@@ -24,27 +24,19 @@ import type { ContactMember, VCard } from '@/features/address_books/address-book
 import { getContactDisplayName } from '@/features/address_books/utils/contact-list'
 import { isIndividualContact } from '@/features/address_books/utils/distribution-list'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo } from 'react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import * as z from 'zod'
 
-const distributionListFormSchema = z
-  .object({
-    name: z.string().min(1).max(200),
-    note: z.string().max(5000).optional(),
-    memberContactIds: z.array(z.string()),
-    manualEmails: z.array(
-      z.object({ value: z.string().email().or(z.literal('')) })
-    ),
-  })
-  .refine(
-    (data) =>
-      data.memberContactIds.length > 0 ||
-      data.manualEmails.some((entry) => entry.value.trim()),
-    { path: ['memberContactIds'], message: 'required' }
-  )
+const distributionListFormSchema = z.object({
+  name: z.string().min(1).max(200),
+  note: z.string().max(5000).optional(),
+  memberContactIds: z
+    .array(z.string())
+    .min(1, { message: 'required' }),
+})
 
 export type DistributionListFormValues = z.infer<
   typeof distributionListFormSchema
@@ -90,13 +82,7 @@ function DistributionListForm({
       name: '',
       note: '',
       memberContactIds: [],
-      manualEmails: [{ value: '' }],
     },
-  })
-
-  const manualEmailFields = useFieldArray({
-    control: form.control,
-    name: 'manualEmails',
   })
 
   const selectedMemberIds = useWatch({
@@ -111,15 +97,10 @@ function DistributionListForm({
       const memberContactIds = (list.members ?? [])
         .map((member) => member.contactId)
         .filter((id): id is string => Boolean(id))
-      const manualEmails = (list.members ?? [])
-        .filter((member) => !member.contactId && member.email)
-        .map((member) => ({ value: member.email }))
-
       form.reset({
         name: list.firstName,
         note: list.note ?? '',
         memberContactIds,
-        manualEmails: manualEmails.length ? manualEmails : [{ value: '' }],
       })
       return
     }
@@ -132,7 +113,6 @@ function DistributionListForm({
       name: '',
       note: '',
       memberContactIds: prefillIds,
-      manualEmails: [{ value: '' }],
     })
   }, [open, list, prefillMembers, form, isLoading, loadError])
 
@@ -255,47 +235,6 @@ function DistributionListForm({
                   {t('members_required.string')}
                 </p>
               )}
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t('manual_emails.string')}</FormLabel>
-              {manualEmailFields.fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`manualEmails.${index}.value`}
-                    render={({ field: emailField }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input {...emailField} type="email" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {manualEmailFields.fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="mt-0.5 shrink-0"
-                      onClick={() => manualEmailFields.remove(index)}
-                      aria-label={t('remove_email.string')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => manualEmailFields.append({ value: '' })}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                {t('add_email.string')}
-              </Button>
             </div>
 
             <DialogFooter>

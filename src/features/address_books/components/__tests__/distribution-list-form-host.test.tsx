@@ -12,7 +12,9 @@ jest.mock('../../hooks/use-address-book-state', () => ({
 jest.mock('../../store/address-books-api', () => ({
   useAddVCardToAddressBookMutation: () => [jest.fn(), { isLoading: false }],
   useUpdateVCardMutation: () => [jest.fn(), { isLoading: false }],
-  useGetAddressBookVCardsQuery: () => ({ data: [] }),
+  useGetAddressBookVCardsQuery: () => ({
+    data: { items: [], total: 0, page: 1, totalPages: 1 },
+  }),
 }))
 
 jest.mock('../distribution-list-form', () => ({

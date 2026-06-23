@@ -60,7 +60,7 @@ function DistributionListActions({ list, bookId }: DistributionListActionsProps)
   }
 
   const handleConfirmDelete = async () => {
-    await deleteList({ id: bookId, vCardId: list.id }).unwrap()
+    await deleteList({ id: bookId, vCardId: list.id, kind: 'group' }).unwrap()
     setDeleteOpen(false)
     push(`/address_books/${bookId}`)
   }

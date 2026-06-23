@@ -47,14 +47,40 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
   ),
 }))
 
+jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
+  useRecipientSuggestions: jest.fn(() => ({
+    suggestions: [],
+    isFetching: false,
+  })),
+}))
+
+jest.mock('@/features/mails/store/mail-compose-selectors', () => ({
+  selectDraftData: jest.fn(() => () => ({
+    toRecipients: [],
+    ccRecipients: [],
+    bccRecipients: [],
+  })),
+}))
+
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
-  useAppSelector: jest.fn(() => null),
+  useAppSelector: jest.fn((selector) =>
+    selector({
+      mailCompose: {
+        drafts: {
+          'draft-1': { subject: '' },
+        },
+      },
+    })
+  ),
 }))
 
 jest.mock('@/features/mails/store/mail-compose-slice', () => ({
   setPendingInsert: jest.fn(),
   updateRecipients: jest.fn(),
+  updateSubject: jest.fn(),
+  updateIdentity: jest.fn(),
+  updateSelectedSignatureKey: jest.fn(),
 }))
 
 jest.mock('@/features/user-profile', () => ({
@@ -86,6 +112,8 @@ const mockProfile = (overrides = {}) => {
 
 // --- Tests ---
 
+const renderHeader = () => render(<ComposeHeader draftId="draft-1" />)
+
 describe('ComposeHeader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -94,31 +122,31 @@ describe('ComposeHeader', () => {
   describe('Render de base', () => {
     it('should render without crashing', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
     })
 
     it('should render To field', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       expect(screen.getByPlaceholderText('to.string')).toBeInTheDocument()
     })
 
     it('should render Subject field', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       expect(screen.getByPlaceholderText('subject.string')).toBeInTheDocument()
     })
 
     it('should render CC and BCC buttons', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       expect(screen.getByText('cc.string')).toBeInTheDocument()
       expect(screen.getByText('bcc.string')).toBeInTheDocument()
     })
 
     it('should not render close button when onClose is not provided', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       expect(screen.queryByText('close.string')).not.toBeInTheDocument()
     })
   })
@@ -126,7 +154,7 @@ describe('ComposeHeader', () => {
   describe('Champ From', () => {
     it('should render readonly input when identitiesEnabled is false', () => {
       mockProfile({ identitiesEnabled: false })
-      render(<ComposeHeader />)
+      renderHeader()
       const input = screen.getByDisplayValue('jdoe@sogo.nu')
       expect(input).toBeInTheDocument()
       expect(input).toHaveAttribute('readonly')
@@ -143,7 +171,7 @@ describe('ComposeHeader', () => {
           ],
         },
       })
-      render(<ComposeHeader />)
+      renderHeader()
       const select = screen.getByTestId('select')
       expect(select).toHaveAttribute('data-disabled', 'true')
     })
@@ -159,7 +187,7 @@ describe('ComposeHeader', () => {
           ],
         },
       })
-      render(<ComposeHeader />)
+      renderHeader()
       const select = screen.getByTestId('select')
       expect(select).not.toHaveAttribute('data-disabled')
     })
@@ -169,7 +197,7 @@ describe('ComposeHeader', () => {
         defaultIdentity: null,
         user: { email: 'fallback@sogo.nu' },
       })
-      render(<ComposeHeader />)
+      renderHeader()
       expect(screen.getByDisplayValue('fallback@sogo.nu')).toBeInTheDocument()
     })
   })
@@ -177,21 +205,21 @@ describe('ComposeHeader', () => {
   describe('Toggle CC / BCC', () => {
     it('should not show CC input by default', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       // 2 inputs visibles : To + Subject
       expect(screen.getAllByRole('textbox')).toHaveLength(3) // from + to + subject
     })
 
     it('should show CC input when CC button is clicked', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       fireEvent.click(screen.getByText('cc.string'))
       expect(screen.getAllByRole('textbox').length).toBeGreaterThan(3)
     })
 
     it('should hide CC input when CC button is clicked again', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       fireEvent.click(screen.getByText('cc.string'))
       fireEvent.click(screen.getByText('cc.string'))
       expect(screen.getAllByRole('textbox')).toHaveLength(3)
@@ -199,14 +227,14 @@ describe('ComposeHeader', () => {
 
     it('should show BCC input when BCC button is clicked', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       fireEvent.click(screen.getByText('bcc.string'))
       expect(screen.getAllByRole('textbox').length).toBeGreaterThan(3)
     })
 
     it('should show both CC and BCC inputs simultaneously', () => {
       mockProfile()
-      render(<ComposeHeader />)
+      renderHeader()
       fireEvent.click(screen.getByText('cc.string'))
       fireEvent.click(screen.getByText('bcc.string'))
       expect(screen.getAllByRole('textbox').length).toBeGreaterThan(4)

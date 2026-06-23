@@ -51,7 +51,8 @@ export function useAddressBookState() {
 export function useAddressBookEditState(
   editingId: string | null,
   activeBookId: string | null,
-  isFormOpen: boolean
+  isFormOpen: boolean,
+  kind?: 'individual' | 'group'
 ) {
   const {
     currentData: editingEntity,
@@ -59,7 +60,7 @@ export function useAddressBookEditState(
     isError,
   } = useGetVCardQuery(
     editingId && activeBookId
-      ? { id: editingId, book_id: activeBookId }
+      ? { id: editingId, book_id: activeBookId, kind }
       : skipToken
   )
 

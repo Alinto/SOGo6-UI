@@ -37,6 +37,13 @@ jest.mock('@/features/calendars/store/calendars-api', () => ({
   })),
 }))
 
+jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
+  useRecipientSuggestions: jest.fn(() => ({
+    suggestions: [],
+    isFetching: false,
+  })),
+}))
+
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => key),
   useLocale: jest.fn(() => 'en'),

@@ -2,7 +2,7 @@ import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import Page from '../page'
 
-const mockUseGetAddressBookVCardsQuery = jest.fn()
+const mockUseAddressBookEntries = jest.fn()
 
 jest.mock('next/navigation', () => ({
   useParams: () => ({ book_id: 'work' }),
@@ -12,8 +12,8 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
-jest.mock('@/features/address_books/store/address-books-api', () => ({
-  useGetAddressBookVCardsQuery: () => mockUseGetAddressBookVCardsQuery(),
+jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
+  useAddressBookEntries: () => mockUseAddressBookEntries(),
 }))
 
 jest.mock('@/features/address_books/components/list', () => ({
@@ -35,10 +35,13 @@ describe('AddressBook [book_id] Page', () => {
 
   describe('basic rendering', () => {
     it('renders list skeleton while fetching', () => {
-      mockUseGetAddressBookVCardsQuery.mockReturnValue({
-        data: undefined,
+      mockUseAddressBookEntries.mockReturnValue({
+        items: [],
         isFetching: true,
         isError: false,
+        totalPages: 1,
+        page: 1,
+        searchTooShort: false,
       })
 
       render(<Page />)
@@ -46,10 +49,13 @@ describe('AddressBook [book_id] Page', () => {
     })
 
     it('renders contact list when data is loaded', () => {
-      mockUseGetAddressBookVCardsQuery.mockReturnValue({
-        data: [{ id: 'c1' }, { id: 'c2' }],
+      mockUseAddressBookEntries.mockReturnValue({
+        items: [{ id: 'c1' }, { id: 'c2' }],
         isFetching: false,
         isError: false,
+        totalPages: 1,
+        page: 1,
+        searchTooShort: false,
       })
 
       render(<Page />)
@@ -59,10 +65,13 @@ describe('AddressBook [book_id] Page', () => {
 
   describe('configuration', () => {
     it('shows error message when query fails', () => {
-      mockUseGetAddressBookVCardsQuery.mockReturnValue({
-        data: undefined,
+      mockUseAddressBookEntries.mockReturnValue({
+        items: [],
         isFetching: false,
         isError: true,
+        totalPages: 1,
+        page: 1,
+        searchTooShort: false,
       })
 
       render(<Page />)

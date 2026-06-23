@@ -38,6 +38,7 @@ function ContactFormHost() {
   const buildVCardPayload = useCallback(
     (values: ContactFormValues): Omit<VCard, 'id'> => ({
       version: '4.0',
+      kind: 'individual',
       firstName: values.firstName.trim(),
       lastName: values.lastName.trim(),
       organization: values.organization?.trim() || undefined,
@@ -59,6 +60,7 @@ function ContactFormHost() {
         await updateContact({
           book_id: activeBookId,
           id: contactId,
+          kind: 'individual',
           ...payload,
         }).unwrap()
         return
