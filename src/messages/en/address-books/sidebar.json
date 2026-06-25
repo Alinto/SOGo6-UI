@@ -69,6 +69,87 @@
             "ios_download": {
                 "string": "Download iOS - MacOS configuration profile"
             }
+        },
+        "all_contacts": {
+            "string": "All contacts",
+            "context": "Sidebar entry for cross-address-book contact listing"
+        },
+        "import": {
+            "description": {
+                "string": "Upload a contacts or distribution list file to import."
+            },
+            "title_book": {
+                "string": "Import into {name}"
+            },
+            "scope": {
+                "string": "Import target"
+            },
+            "scope_contacts": {
+                "string": "Contacts into this address book"
+            },
+            "scope_lists": {
+                "string": "Distribution lists into this address book"
+            },
+            "scope_new_book": {
+                "string": "Create a new address book"
+            },
+            "format": {
+                "string": "File format"
+            },
+            "format_json": {
+                "string": "JSON"
+            },
+            "format_vcard3": {
+                "string": "vCard 3.0"
+            },
+            "format_vcard4": {
+                "string": "vCard 4.0"
+            },
+            "format_ldif": {
+                "string": "LDIF"
+            },
+            "file": {
+                "string": "File"
+            },
+            "submit": {
+                "string": "Start import"
+            },
+            "processing": {
+                "string": "Import in progress..."
+            },
+            "cancel": {
+                "string": "Cancel import"
+            },
+            "success": {
+                "string": "Import completed successfully."
+            },
+            "success_with_counts": {
+                "string": "Import completed. Created: {counts}."
+            },
+            "close": {
+                "string": "Close"
+            }
+        },
+        "export": {
+            "description": {
+                "string": "Export this address book to a file."
+            },
+            "title_book": {
+                "string": "Export {name}"
+            },
+            "format": {
+                "string": "Export format"
+            },
+            "submit": {
+                "string": "Start export"
+            },
+            "processing": {
+                "string": "Export in progress..."
+            },
+            "success": {
+                "string": "Export completed. Your download should start shortly."
+            },
+            "close": {
+                "string": "Close"
+            }
         }
-    }
-}

@@ -13,6 +13,8 @@ import { useParams } from 'next/navigation'
 import React, { useState } from 'react'
 import { VCard } from '../address-books-types'
 import { getContactDisplayName } from '../utils/contact-list'
+import { useGetAddressBooksQuery } from '../store/address-books-api'
+import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import {
   getDistributionListMemberCount,
   isDistributionList,
@@ -23,6 +25,7 @@ interface ListItemProps {
   isSelected: boolean
   isActive?: boolean
   showCheckbox?: boolean
+  allContactsView?: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: VCard) => void
 }
 
@@ -31,15 +34,28 @@ const ListItem: React.FC<ListItemProps> = ({
   isSelected,
   isActive = false,
   showCheckbox = false,
+  allContactsView = false,
   onHandleCheckboxClick,
 }) => {
   const { push } = useRouter()
   const { book_id } = useParams()
+  const { data: addressBooks } = useGetAddressBooksQuery(undefined, {
+    skip: !allContactsView,
+  })
   const { firstName, lastName, id } = data
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const [isHovered, setIsHovered] = useState(false)
   const isList = isDistributionList(data)
   const displayName = getContactDisplayName(data)
+  const sourceBookName = React.useMemo(() => {
+    if (!allContactsView || !data.addressBookKey || !addressBooks) return null
+    const books = [
+      ...addressBooks.personals,
+      ...addressBooks.subscriptions,
+      ...addressBooks.globals,
+    ]
+    return books.find((book) => book.id === data.addressBookKey)?.name ?? null
+  }, [addressBooks, allContactsView, data.addressBookKey])
 
   const shouldShowCheckbox = showCheckbox || isHovered || isSelected
 
@@ -60,7 +76,11 @@ const ListItem: React.FC<ListItemProps> = ({
   }
 
   const handleItemClick = () => {
-    push(`/address_books/${book_id}/${id}`)
+    const targetBookId =
+      book_id === ALL_CONTACTS_BOOK_ID
+        ? data.addressBookKey ?? book_id
+        : book_id
+    push(`/address_books/${targetBookId}/${id}`)
   }
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
@@ -115,6 +135,11 @@ const ListItem: React.FC<ListItemProps> = ({
       )}
       <div className="flex min-w-0 flex-1 flex-col truncate">
         <span className="truncate text-sm">{displayName}</span>
+        {sourceBookName && (
+          <span className="text-muted-foreground truncate text-xs">
+            {t('source_address_book.string', { name: sourceBookName })}
+          </span>
+        )}
         {isList && (
           <span className="text-muted-foreground truncate text-xs">
             {t('list_member_count.string', {

@@ -1,4 +1,4 @@
-import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
+import { createContactApiNotificationHandler } from '../utils/contact-api-notification-handler'
 import {
   ADDRESS_BOOKS_SLICE,
   apiSlice,
@@ -15,12 +15,19 @@ import type {
 } from '../address-books-api-types'
 import type { AddressBook, AddressBooks, ContactKind, VCard } from '../address-books-types'
 import {
+  addressBookContactExportPath,
   addressBookContactPath,
+  addressBookContactsImportPath,
   addressBookContactsPath,
+  addressBookExportPath,
+  addressBookImportPath,
+  addressBookListExportPath,
   addressBookListPath,
+  addressBookListsImportPath,
   addressBookListsPath,
   addressBookPath,
   addressBooksCollectionPath,
+  allContactsPath,
   buildListQueryParams,
   contactsAutocompletePath,
   legacyAddressBookEntriesPath,
@@ -30,6 +37,8 @@ import {
 } from '../utils/api-routes'
 import {
   FULL_LISTS_PAGE_SIZE,
+} from '../address-books-constants'
+import {
   fetchContactLookupMap,
 } from '../utils/fetch-contact-lookup-map'
 import {
@@ -43,7 +52,7 @@ import {
   normalizeAddressBooksResponse,
   normalizeSingleAddressBookResponse,
 } from '../utils/normalize-address-book'
-import { normalizeContact } from '../utils/normalize-contact'
+import { normalizeContact, normalizeContactsList } from '../utils/normalize-contact'
 import { parseXPaginationFromMeta } from '../utils/parse-x-pagination'
 import {
   serializeAddressBookCreate,
@@ -56,6 +65,12 @@ import {
   serializeListPatch,
 } from '../utils/serialize-list'
 import { unwrapApiData } from '../utils/unwrap-api-data'
+import { unwrapJobId } from '@/features/jobs/utils/unwrap-job-data'
+import type { ContactJobEnqueueResponse } from '@/features/jobs/jobs-api-types'
+import {
+  CONTACT_EXPORT_ACCEPT,
+  type ContactTransferFormat,
+} from '../utils/contact-transfer-formats'
 
 const vcardBookTag = (bookId: string) => ({
   type: VCARD_SLICE,
@@ -71,11 +86,9 @@ const notifyMutation =
   }) =>
   async (
     dispatch: AppDispatch,
-    { queryFulfilled }: { queryFulfilled: Promise<unknown> }
+    api: { queryFulfilled: Promise<unknown> }
   ) => {
-    await createApiNotificationHandler(dispatch, options)(undefined, {
-      queryFulfilled,
-    })
+    await createContactApiNotificationHandler(dispatch, options)(undefined, api)
   }
 
 const notifyEntryCreate = notifyMutation({
@@ -474,6 +487,170 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
       providesTags: (result, error, bookId) => [vcardBookTag(bookId)],
     }),
+
+    searchAllContacts: builder.query<
+      BookEntriesResponse,
+      { params?: BookEntriesQueryParams; minSearchLength?: number }
+    >({
+      async queryFn({ params, minSearchLength = 2 }, _api, _extraOptions, baseQuery) {
+        if (isLegacyAddressBooksApi()) {
+          const result = await baseQuery({
+            url: legacyAddressBookEntriesPath('all'),
+            params: buildListQueryParams(params),
+          })
+          if (result.error) return { error: result.error }
+          const parsed = parseFakeBookEntries(result.data)
+          return {
+            data: {
+              ...parsed,
+              contactTotal: parsed.total,
+              listTotal: 0,
+            },
+          }
+        }
+
+        const queryParams = buildListQueryParams(params, {
+          omitShortSearch: true,
+          minSearchLength,
+        })
+        const result = await baseQuery({
+          url: allContactsPath(),
+          params: queryParams,
+        })
+        if (result.error) return { error: result.error }
+
+        const pagination = parseXPaginationFromMeta(
+          result.meta as { response?: Response }
+        )
+        const contacts = normalizeContactsList(unwrapApiData(result.data))
+
+        return {
+          data: {
+            items: contacts,
+            total: pagination?.total ?? contacts.length,
+            contactTotal: pagination?.total ?? contacts.length,
+            listTotal: 0,
+            page: pagination?.page ?? params?.page ?? 1,
+            pageSize: pagination?.page_size ?? params?.page_size ?? 20,
+            totalPages: pagination?.total_pages ?? 1,
+          },
+        }
+      },
+      providesTags: [{ type: ADDRESS_BOOKS_SLICE, id: 'ALL_CONTACTS' }],
+    }),
+
+    importAddressBookDocument: builder.mutation<
+      { job_id: string },
+      { file: File; format: ContactTransferFormat }
+    >({
+      query: ({ file, format }) => {
+        const body = new FormData()
+        body.append('file', file)
+        return {
+          url: addressBookImportPath(),
+          method: 'POST',
+          params: { format },
+          body,
+        }
+      },
+      transformResponse: (response: ContactJobEnqueueResponse) => ({
+        job_id: unwrapJobId(response),
+      }),
+      invalidatesTags: [ADDRESS_BOOKS_SLICE],
+    }),
+
+    importContactsDocument: builder.mutation<
+      { job_id: string },
+      { bookId: string; file: File; format: ContactTransferFormat }
+    >({
+      query: ({ bookId, file, format }) => {
+        const body = new FormData()
+        body.append('file', file)
+        return {
+          url: addressBookContactsImportPath(bookId),
+          method: 'POST',
+          params: { format },
+          body,
+        }
+      },
+      transformResponse: (response: ContactJobEnqueueResponse) => ({
+        job_id: unwrapJobId(response),
+      }),
+      invalidatesTags: (result, error, { bookId }) => [
+        { type: ADDRESS_BOOKS_SLICE, id: bookId },
+        { type: ADDRESS_BOOKS_SLICE, id: 'ALL_CONTACTS' },
+      ],
+    }),
+
+    importListsDocument: builder.mutation<
+      { job_id: string },
+      { bookId: string; file: File; format: ContactTransferFormat }
+    >({
+      query: ({ bookId, file, format }) => {
+        const body = new FormData()
+        body.append('file', file)
+        return {
+          url: addressBookListsImportPath(bookId),
+          method: 'POST',
+          params: { format },
+          body,
+        }
+      },
+      transformResponse: (response: ContactJobEnqueueResponse) => ({
+        job_id: unwrapJobId(response),
+      }),
+      invalidatesTags: (result, error, { bookId }) => [
+        { type: ADDRESS_BOOKS_SLICE, id: bookId },
+      ],
+    }),
+
+    exportAddressBookDocument: builder.mutation<
+      { job_id: string },
+      { bookId: string; format: ContactTransferFormat }
+    >({
+      query: ({ bookId, format }) => ({
+        url: addressBookExportPath(bookId),
+        method: 'GET',
+        headers: {
+          Accept: CONTACT_EXPORT_ACCEPT[format],
+        },
+      }),
+      transformResponse: (response: ContactJobEnqueueResponse) => ({
+        job_id: unwrapJobId(response),
+      }),
+    }),
+
+    exportContactDocument: builder.mutation<
+      { job_id: string },
+      { bookId: string; contactId: string; format: ContactTransferFormat }
+    >({
+      query: ({ bookId, contactId, format }) => ({
+        url: addressBookContactExportPath(bookId, contactId),
+        method: 'GET',
+        headers: {
+          Accept: CONTACT_EXPORT_ACCEPT[format],
+        },
+      }),
+      transformResponse: (response: ContactJobEnqueueResponse) => ({
+        job_id: unwrapJobId(response),
+      }),
+    }),
+
+    exportListDocument: builder.mutation<
+      { job_id: string },
+      { bookId: string; listId: string; format: ContactTransferFormat }
+    >({
+      query: ({ bookId, listId, format }) => ({
+        url: addressBookListExportPath(bookId, listId),
+        method: 'GET',
+        headers: {
+          Accept: CONTACT_EXPORT_ACCEPT[format],
+        },
+      }),
+      transformResponse: (response: ContactJobEnqueueResponse) => ({
+        job_id: unwrapJobId(response),
+      }),
+    }),
   }),
   overrideExisting: false,
 })
@@ -491,6 +668,13 @@ export const {
   useSearchContactsAutocompleteQuery,
   useLazySearchContactsAutocompleteQuery,
   useGetAddressBookContactPickerQuery,
+  useSearchAllContactsQuery,
+  useImportAddressBookDocumentMutation,
+  useImportContactsDocumentMutation,
+  useImportListsDocumentMutation,
+  useExportAddressBookDocumentMutation,
+  useExportContactDocumentMutation,
+  useExportListDocumentMutation,
 } = injectedEndpoints
 
 export const addressBooksApiEndpoints = injectedEndpoints

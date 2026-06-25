@@ -64,6 +64,10 @@
       "string": "Edit",
       "context": "Button label to edit a field."
     },
+    "export": {
+      "string": "Export",
+      "context": "Button label to export a contact."
+    },
     "save": {
       "string": "Save",
       "context": "Button label to save changes."
@@ -120,6 +124,10 @@
       "string": "Add URL",
       "context": "Button to add another URL field"
     },
+    "add_impp": {
+      "string": "Add instant messaging",
+      "context": "Button to add another instant messaging field"
+    },
     "categories": {
       "string": "Categories",
       "context": "Label for contact categories field"
@@ -159,11 +167,38 @@
       "last_name": {
         "string": "Last name"
       },
+      "middle_name": {
+        "string": "Middle name"
+      },
+      "prefix": {
+        "string": "Prefix"
+      },
+      "suffix": {
+        "string": "Suffix"
+      },
+      "nickname": {
+        "string": "Nickname"
+      },
       "organization": {
         "string": "Organization"
       },
+      "department": {
+        "string": "Department"
+      },
       "job_title": {
         "string": "Job title"
+      },
+      "role": {
+        "string": "Role"
+      },
+      "impp": {
+        "string": "Instant messaging"
+      },
+      "anniversary": {
+        "string": "Anniversary"
+      },
+      "birthday_unknown_year": {
+        "string": "Year unknown (month and day only)"
       },
       "street": {
         "string": "Street"
@@ -176,6 +211,57 @@
       },
       "country": {
         "string": "Country"
+      },
+      "region": {
+        "string": "Region / State"
+      },
+      "po_box": {
+        "string": "PO box"
+      },
+      "extended": {
+        "string": "Extended address"
+      },
+      "contact_kind": {
+        "string": "Contact type"
+      },
+      "contact_kind_individual": {
+        "string": "Person"
+      },
+      "contact_kind_org": {
+        "string": "Organization"
+      },
+      "organization_required": {
+        "string": "Organization name"
+      },
+      "type": {
+        "string": "Type"
+      },
+      "type_default": {
+        "string": "Default"
+      },
+      "pref": {
+        "string": "Preferred"
+      },
+      "email_type_work": {
+        "string": "Work"
+      },
+      "email_type_home": {
+        "string": "Home"
+      },
+      "email_type_other": {
+        "string": "Other"
+      },
+      "phone_type_work": {
+        "string": "Work"
+      },
+      "phone_type_home": {
+        "string": "Home"
+      },
+      "phone_type_mobile": {
+        "string": "Mobile"
+      },
+      "phone_type_other": {
+        "string": "Other"
       },
       "url": {
         "string": "URL"

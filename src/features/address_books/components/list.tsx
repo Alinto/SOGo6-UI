@@ -33,13 +33,14 @@ import {
   setSortBy,
   toggleSortOrder,
 } from '../store/address-books-ui-slice'
-import AddressBookEmptyState from './address-book-empty-state'
+import { useActiveAddressBookWritable } from '../hooks/use-active-address-book'
 import { partitionAddressBookEntries } from '../utils/contact-list'
 import {
   isIndividualContact,
   membersFromContacts,
 } from '../utils/distribution-list'
 import ListSection from './list-section'
+import AddressBookEmptyState from './address-book-empty-state'
 import AddressBookListPagination from './list-pagination'
 import AddressBookListSkeleton from './skeletons/skeleton'
 
@@ -52,6 +53,7 @@ interface AddressBookListProps {
   contactTotal?: number
   listTotal?: number
   searchTooShort?: boolean
+  allContactsView?: boolean
 }
 
 const SORT_FIELDS: ContactSortField[] = [
@@ -92,9 +94,11 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   contactTotal,
   listTotal,
   searchTooShort = false,
+  allContactsView = false,
 }) => {
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const tForm = useTranslations('CONTACT_FORM')
+  const { writable } = useActiveAddressBookWritable()
   const params = useParams()
   const dispatch = useAppDispatch()
   const contact_id = params?.contact_id as string | undefined
@@ -160,8 +164,8 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   }
 
   const selectedIndividuals = selectedItems.filter(isIndividualContact)
-  const canCreateList = selectedIndividuals.length >= 2
-  const hasSelections = selectedItems.length > 0
+  const canCreateList = writable && !allContactsView && selectedIndividuals.length >= 2
+  const hasSelections = writable && !allContactsView && selectedItems.length > 0
   const showCheckboxes = hasSelections
 
   const handleCreateListFromSelection = () => {
@@ -293,7 +297,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
           <ListSection
             variant="lists"
             title={t('sections.distribution_lists.string')}
-            items={distributionLists}
+            items={allContactsView ? [] : distributionLists}
             bookId={book_id}
             contactId={contact_id}
             selectedItems={selectedItems}
@@ -310,6 +314,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             selectedItems={selectedItems}
             showCheckboxes={showCheckboxes}
             onHandleCheckboxClick={handleCheckboxClick}
+            allContactsView={allContactsView}
             className={distributionLists.length > 0 ? 'border-t pt-4' : undefined}
           />
         </div>

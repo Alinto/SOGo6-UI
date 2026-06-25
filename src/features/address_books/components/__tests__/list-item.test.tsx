@@ -52,6 +52,10 @@ jest.mock('@/components/ui/tooltip', () => ({
   TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }))
 
+jest.mock('../../store/address-books-api', () => ({
+  useGetAddressBooksQuery: () => ({ data: undefined }),
+}))
+
 import type { VCard } from '../../address-books-types'
 import ListItem from '../list-item'
 

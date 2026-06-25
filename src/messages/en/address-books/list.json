@@ -103,6 +103,10 @@
       "string": "Enter at least 2 characters to search.",
       "context": "Hint when the search query is too short for server-side search"
     },
+    "source_address_book": {
+      "string": "In {name}",
+      "context": "Shows which address book a contact belongs to in the all-contacts view."
+    },
     "delete_selected": {
       "string": "Delete selected contacts",
       "context": "Aria label for bulk delete button"
@@ -118,6 +122,10 @@
     "list_member_count": {
       "string": "{number, plural, one {# member} other {# members}}",
       "context": "Member count shown under a distribution list in the contact list"
+    },
+    "read_only_banner": {
+      "string": "{name} is read-only. You cannot edit contacts or lists.",
+      "context": "Banner shown when viewing a non-writable address book."
     },
     "pagination": {
       "previous": {

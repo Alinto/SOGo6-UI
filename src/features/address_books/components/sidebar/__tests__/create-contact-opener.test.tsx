@@ -42,6 +42,10 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('../../../hooks/use-active-address-book', () => ({
+  useActiveAddressBookWritable: () => ({ writable: true }),
+}))
+
 import { useSidebar } from '@/components/ui/sidebar'
 import CreateContactOpener from '../create-contact-opener'
 import { openCreateForm } from '../../../store/address-books-ui-slice'

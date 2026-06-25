@@ -8,21 +8,52 @@ import type { ContactFormValues } from '../components/contact-form'
 
 export const CONTACT_PHOTO_MAX_BYTES = 2048 * 1024
 
-function toEmailObjects(values?: string[] | { value: string }[]) {
+type TypedEmailEntry = { value: string; type?: string; pref?: boolean }
+type TypedPhoneEntry = { value: string; type?: string; pref?: boolean }
+
+function toEmailObjects(
+  values?: TypedEmailEntry[] | string[] | { value: string }[]
+) {
   if (!values?.length) return undefined
   const emails = values
-    .map((value) => (typeof value === 'string' ? value : value.value).trim())
+    .map((entry) => {
+      if (typeof entry === 'string') {
+        const value = entry.trim()
+        return value ? { value } : null
+      }
+      const value = entry.value.trim()
+      if (!value) return null
+      const type = entry.type?.trim()
+      return {
+        value,
+        types: type && type !== '_none' ? [type] : undefined,
+        pref: entry.pref ? 1 : undefined,
+      }
+    })
     .filter(Boolean)
-    .map((value) => ({ value }))
   return emails.length ? emails : undefined
 }
 
-function toPhoneObjects(values?: string[] | { value: string }[]) {
+function toPhoneObjects(
+  values?: TypedPhoneEntry[] | string[] | { value: string }[]
+) {
   if (!values?.length) return undefined
   const phones = values
-    .map((value) => (typeof value === 'string' ? value : value.value).trim())
+    .map((entry) => {
+      if (typeof entry === 'string') {
+        const number = entry.trim()
+        return number ? { number } : null
+      }
+      const number = entry.value.trim()
+      if (!number) return null
+      const type = entry.type?.trim()
+      return {
+        number,
+        types: type && type !== '_none' ? [type] : undefined,
+        pref: entry.pref ? 1 : undefined,
+      }
+    })
     .filter(Boolean)
-    .map((number) => ({ number }))
   return phones.length ? phones : undefined
 }
 
@@ -35,14 +66,37 @@ function toAddressObjects(
     .map((row) => ({
       street: row.street?.trim() || null,
       locality: row.city?.trim() || null,
+      region: row.region?.trim() || null,
+      po_box: row.poBox?.trim() || null,
+      extended: row.extended?.trim() || null,
       postal_code: row.postalCode?.trim() || null,
       country: row.country?.trim() || null,
     }))
     .filter(
-      (row) => row.street || row.locality || row.postal_code || row.country
+      (row) =>
+        row.street ||
+        row.locality ||
+        row.region ||
+        row.po_box ||
+        row.extended ||
+        row.postal_code ||
+        row.country
     )
 
   return addresses.length ? addresses : undefined
+}
+
+function formatBirthdayValue(
+  birthday?: string,
+  birthdayUnknownYear?: boolean
+): string | undefined {
+  const value = birthday?.trim()
+  if (!value) return undefined
+  if (birthdayUnknownYear) {
+    const monthDay = value.length >= 5 ? value.slice(5) : value
+    return `--${monthDay}`
+  }
+  return value
 }
 
 export function serializeContactFromForm(
@@ -50,13 +104,17 @@ export function serializeContactFromForm(
 ): ContactCreateBody {
   const firstName = values.firstName.trim()
   const lastName = values.lastName.trim()
-  const displayName = `${firstName} ${lastName}`.trim()
+  const organization = values.organization?.trim()
+  const isOrg = values.contactKind === 'org'
+  const displayName = isOrg
+    ? organization || `${firstName} ${lastName}`.trim()
+    : `${firstName} ${lastName}`.trim()
 
   const body: ContactCreateBody = {
     display_name: displayName || undefined,
     first_name: firstName || undefined,
     last_name: lastName || undefined,
-    organization: values.organization?.trim() || undefined,
+    organization: organization || undefined,
     job_title: values.jobTitle?.trim() || undefined,
     emails: toEmailObjects(values.emails),
     phones: toPhoneObjects(values.phoneNumbers),
@@ -69,12 +127,34 @@ export function serializeContactFromForm(
       values.categories && values.categories.length > 0
         ? values.categories
         : undefined,
-    birthday: values.birthday?.trim() || undefined,
+    birthday: formatBirthdayValue(values.birthday, values.birthdayUnknownYear),
     note: values.note?.trim() || undefined,
-    kind: 'individual',
+    kind: isOrg ? 'org' : 'individual',
   }
 
-  if (values.photoDataUri) {
+  const middleName = values.middleName?.trim()
+  if (middleName) body.middle_name = middleName
+  const prefix = values.prefix?.trim()
+  if (prefix) body.prefix = prefix
+  const suffix = values.suffix?.trim()
+  if (suffix) body.suffix = suffix
+  const nickname = values.nickname?.trim()
+  if (nickname) body.nickname = nickname
+  const department = values.department?.trim()
+  if (department) body.department = department
+  const role = values.title?.trim()
+  if (role) body.role = role
+  const impp = values.impp
+    ?.map((entry) => entry.value.trim())
+    .filter(Boolean)
+    .map((uri) => ({ uri }))
+  if (impp?.length) body.impp = impp
+  const anniversary = values.anniversary?.trim()
+  if (anniversary) body.anniversary = anniversary
+
+  if (values.clearPhoto) {
+    body.photos = []
+  } else if (values.photoDataUri) {
     body.photos = [values.photoDataUri]
   }
 

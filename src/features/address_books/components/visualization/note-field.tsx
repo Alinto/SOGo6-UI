@@ -3,20 +3,30 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { useUpdateVCardMutation } from '../../store/address-books-api'
+import { getContactApiErrorMessageKey } from '../../utils/map-contact-api-error'
 
 interface NoteFieldProps {
   note?: string
   contactId: string
   bookId: string
+  readOnly?: boolean
 }
 
-export function NoteField({ note = '', contactId, bookId }: NoteFieldProps) {
+export function NoteField({
+  note = '',
+  contactId,
+  bookId,
+  readOnly = false,
+}: NoteFieldProps) {
   const [isEditing, setIsEditing] = useState(!note)
   const [editedNote, setEditedNote] = useState(note)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [updateVCard, { isLoading }] = useUpdateVCardMutation()
   const t = useTranslations('CONTACT_FORM')
+  const tErrors = useTranslations('ADDRESS_BOOKS_ERRORS')
 
   const handleSave = async () => {
+    setSubmitError(null)
     try {
       const result = await updateVCard({
         id: contactId,
@@ -26,7 +36,7 @@ export function NoteField({ note = '', contactId, bookId }: NoteFieldProps) {
       setIsEditing(false)
       setEditedNote(result.note || '')
     } catch (error) {
-      console.error('Failed to update note:', error)
+      setSubmitError(tErrors(getContactApiErrorMessageKey(error, 'contact_form')))
     }
   }
 
@@ -43,6 +53,9 @@ export function NoteField({ note = '', contactId, bookId }: NoteFieldProps) {
   if (isEditing) {
     return (
       <div className="bg-muted/50 space-y-3 rounded-md p-4">
+        {submitError && (
+          <p className="text-destructive text-sm">{submitError}</p>
+        )}
         <Textarea
           value={editedNote}
           onChange={(e) => setEditedNote(e.target.value)}
@@ -88,6 +101,7 @@ export function NoteField({ note = '', contactId, bookId }: NoteFieldProps) {
         size="sm"
         className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
         onClick={handleEdit}
+        disabled={readOnly}
         aria-label={t('edit_note.string')}
       >
         {note ? t('edit.string') : t('add_note.string')}

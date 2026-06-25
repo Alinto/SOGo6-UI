@@ -15,6 +15,7 @@ type ListSectionProps = {
   onHandleCheckboxClick: (e: MouseEvent, item: VCard) => void
   className?: string
   variant?: 'lists' | 'contacts'
+  allContactsView?: boolean
 }
 
 function ListSection({
@@ -27,6 +28,7 @@ function ListSection({
   onHandleCheckboxClick,
   className,
   variant = 'contacts',
+  allContactsView = false,
 }: ListSectionProps) {
   const t = useTranslations('ADDRESS_BOOKS_LIST')
 
@@ -61,6 +63,7 @@ function ListSection({
               )}
               isActive={contactId === item.id}
               showCheckbox={showCheckboxes}
+              allContactsView={allContactsView}
             />
           </li>
         ))}

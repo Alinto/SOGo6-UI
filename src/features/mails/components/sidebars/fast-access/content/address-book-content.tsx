@@ -12,6 +12,7 @@ import {
   useGetAddressBooksQuery,
   useGetAddressBookVCardsQuery,
 } from '@/features/address_books'
+import { useContactSearchMinLength } from '@/features/address_books/hooks/use-contact-search-min-length'
 import { resolveDefaultBookId } from '@/features/address_books/utils/resolve-default-book'
 import type { VCard } from '@/features/address_books/address-books-types'
 import { createDraft } from '@/features/mails/store'
@@ -188,6 +189,7 @@ function AddressBookSection({
 const AddressBookContent: React.FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.address_book')
   const dispatch = useAppDispatch()
+  const minSearchLength = useContactSearchMinLength()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
@@ -210,7 +212,7 @@ const AddressBookContent: React.FC = () => {
   }, [addressBooks?.personals])
 
   const trimmedSearch = debouncedSearch.trim()
-  const isServerSearch = trimmedSearch.length >= 2
+  const isServerSearch = trimmedSearch.length >= minSearchLength
 
   const { data: bookEntries, isLoading: contactsLoading } =
     useGetAddressBookVCardsQuery(

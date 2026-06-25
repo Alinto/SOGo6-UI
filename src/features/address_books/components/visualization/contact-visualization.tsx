@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
+import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
 import { VCard } from '../../address-books-types'
 import ContactActions from './contact-actions'
 import { ContactFieldRow } from './contact-field-row'
@@ -29,6 +30,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
   } = data
 
   const { book_id, contact_id } = useParams()
+  const { writable } = useActiveAddressBookWritable()
   const t = useTranslations('CONTACT_FORM')
 
   return (
@@ -205,6 +207,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
             note={note}
             contactId={contact_id as string}
             bookId={book_id as string}
+            readOnly={!writable}
           />
         </section>
       </CardContent>

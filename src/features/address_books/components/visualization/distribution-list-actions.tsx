@@ -18,9 +18,11 @@ import { Mail, Pencil, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useState } from 'react'
 import type { VCard } from '../../address-books-types'
+import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
 import { useDeleteVCardFromAddressBookMutation } from '../../store/address-books-api'
 import { openEditListForm } from '../../store/address-books-ui-slice'
-import { getDistributionListEmails } from '../../utils/distribution-list'
+import { getDistributionListEmails, getDistributionListName } from '../../utils/distribution-list'
+import ExportEntryDialog from '../sidebar/actions/export-entry-dialog'
 
 type DistributionListActionsProps = {
   list: VCard
@@ -33,7 +35,11 @@ function DistributionListActions({ list, bookId }: DistributionListActionsProps)
   const dispatch = useAppDispatch()
   const { push } = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
+  const { writable } = useActiveAddressBookWritable()
   const [deleteList] = useDeleteVCardFromAddressBookMutation()
+
+  const listName = getDistributionListName(list)
 
   const handleEdit = () => {
     dispatch(openEditListForm({ listId: list.id, bookId }))
@@ -81,23 +87,44 @@ function DistributionListActions({ list, bookId }: DistributionListActionsProps)
         <Button
           variant="outline"
           size="sm"
-          onClick={handleEdit}
-          data-testid="edit-list-button"
+          onClick={() => setExportOpen(true)}
+          data-testid="export-list-button"
         >
-          <Pencil className="mr-1 h-4 w-4" />
-          {tContact('edit.string')}
+          {tContact('export.string')}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-destructive hover:text-destructive"
-          onClick={() => setDeleteOpen(true)}
-          data-testid="delete-list-button"
-        >
-          <Trash2 className="mr-1 h-4 w-4" />
-          {tContact('delete.string')}
-        </Button>
+        {writable && (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              data-testid="edit-list-button"
+            >
+              <Pencil className="mr-1 h-4 w-4" />
+              {tContact('edit.string')}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="text-destructive hover:text-destructive"
+              onClick={() => setDeleteOpen(true)}
+              data-testid="delete-list-button"
+            >
+              <Trash2 className="mr-1 h-4 w-4" />
+              {tContact('delete.string')}
+            </Button>
+          </>
+        )}
       </div>
+
+      <ExportEntryDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        bookId={bookId}
+        entryId={list.id}
+        entryLabel={listName}
+        kind="group"
+      />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

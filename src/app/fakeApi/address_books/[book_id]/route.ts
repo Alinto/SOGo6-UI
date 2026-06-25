@@ -32,9 +32,23 @@ export async function GET(
   { params }: { params: Promise<{ book_id: string }> }
 ) {
   const { book_id } = await params
-
-  // Read the VCards from the cookie
   const userVCards = getDemoData(req, 'demo_vcards', DEFAULT_VCARDS)
+
+  if (book_id === 'all') {
+    const allContacts = Object.entries(userVCards).flatMap(([sourceBookId, contacts]) =>
+      contacts
+        .filter((contact) => contact.kind !== 'group')
+        .map((contact) => ({
+          ...contact,
+          addressBookKey: sourceBookId,
+        }))
+    )
+    const response = NextResponse.json(allContacts)
+    if (!req.cookies.get('demo_vcards')) {
+      setDemoData(response, 'demo_vcards', userVCards, req)
+    }
+    return response
+  }
 
   // Return the VCards for the specified book_id
   const contacts = userVCards[book_id] || []

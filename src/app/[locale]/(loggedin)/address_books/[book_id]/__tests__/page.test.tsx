@@ -16,6 +16,15 @@ jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
   useAddressBookEntries: () => mockUseAddressBookEntries(),
 }))
 
+jest.mock('@/features/address_books/hooks/use-all-contacts-entries', () => ({
+  useAllContactsEntries: () => mockUseAddressBookEntries(),
+}))
+
+jest.mock('@/features/address_books/components/read-only-banner', () => ({
+  __esModule: true,
+  default: () => null,
+}))
+
 jest.mock('@/features/address_books/components/list', () => ({
   __esModule: true,
   default: ({ items }: { items: unknown[] }) => (
@@ -26,6 +35,11 @@ jest.mock('@/features/address_books/components/list', () => ({
 jest.mock('@/features/address_books/components/skeletons/list-skeleton', () => ({
   __esModule: true,
   default: () => <div data-testid="list-skeleton" />,
+}))
+
+jest.mock('@/features/address_books/components/read-only-banner', () => ({
+  __esModule: true,
+  default: () => null,
 }))
 
 describe('AddressBook [book_id] Page', () => {

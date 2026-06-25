@@ -8,11 +8,12 @@ import { useCreateContactAction } from '../../hooks/use-create-contact-action'
 
 function CreateContactOpener() {
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
-  const { onClick, icon: Icon } = useCreateContactAction()
+  const { onClick, icon: Icon, disabled } = useCreateContactAction()
 
   return (
     <SidebarMenuButton
       onClick={onClick}
+      disabled={disabled}
       className={cn(
         'h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none'
       )}

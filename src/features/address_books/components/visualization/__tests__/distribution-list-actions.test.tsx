@@ -23,6 +23,15 @@ jest.mock('../../../store/address-books-api', () => ({
   ],
 }))
 
+jest.mock('../../../hooks/use-active-address-book', () => ({
+  useActiveAddressBookWritable: () => ({ writable: true }),
+}))
+
+jest.mock('../../sidebar/actions/export-entry-dialog', () => ({
+  __esModule: true,
+  default: () => null,
+}))
+
 import DistributionListActions from '../distribution-list-actions'
 import { openEditListForm } from '../../../store/address-books-ui-slice'
 

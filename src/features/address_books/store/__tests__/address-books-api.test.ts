@@ -21,6 +21,12 @@ describe('address-books-api', () => {
     expect(typeof AddressBooksApi.useAddAddressBookMutation).toBe('function')
     expect(typeof AddressBooksApi.useUpdateAddressBookMutation).toBe('function')
     expect(typeof AddressBooksApi.useDeleteAddressBookMutation).toBe('function')
+    expect(typeof AddressBooksApi.useImportAddressBookDocumentMutation).toBe('function')
+    expect(typeof AddressBooksApi.useImportContactsDocumentMutation).toBe('function')
+    expect(typeof AddressBooksApi.useImportListsDocumentMutation).toBe('function')
+    expect(typeof AddressBooksApi.useExportAddressBookDocumentMutation).toBe('function')
+    expect(typeof AddressBooksApi.useExportContactDocumentMutation).toBe('function')
+    expect(typeof AddressBooksApi.useExportListDocumentMutation).toBe('function')
   })
 
   it('exports addressBooksApiEndpoints', () => {

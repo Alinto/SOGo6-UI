@@ -5,9 +5,13 @@ import {
   SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
+import { useRouter } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
+import { Contact2 } from 'lucide-react'
 import React from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import AddAddressBook from './forms/add'
@@ -18,6 +22,7 @@ import SidebarSkeleton from './skeleton'
 const Sidebar: React.FC = () => {
   const { data, isFetching } = useGetAddressBooksQuery()
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const { push } = useRouter()
   if (isFetching) {
     return <SidebarSkeleton />
   }
@@ -36,6 +41,16 @@ const Sidebar: React.FC = () => {
         <AddAddressBook type={'personals'} />
         <SidebarGroupContent>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                className="h-10"
+                onClick={() => push(`/address_books/${ALL_CONTACTS_BOOK_ID}`)}
+                tooltip={t('all_contacts.string')}
+              >
+                <Contact2 />
+                <span className="truncate">{t('all_contacts.string')}</span>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
             {personals.map((book) => (
               <SidebarItem
                 key={book.id}
@@ -58,6 +73,8 @@ const Sidebar: React.FC = () => {
               icon="contact-2"
               isDefault={book.default}
               importAction={false}
+              writable={false}
+              editAction={false}
               id={book.id}
               name={book.name}
               onClick={() => {}}

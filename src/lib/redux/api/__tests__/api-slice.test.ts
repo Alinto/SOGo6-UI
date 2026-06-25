@@ -118,6 +118,7 @@ describe('API Slice', () => {
         'user_search',
         'contacts_autocomplete',
         'tasks',
+        'jobs',
       ]
 
       expectedTagTypes.forEach((tagType) => {
@@ -132,7 +133,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(36)
+      expect(tagTypes).toHaveLength(37)
     })
 
     it('should use readonly tag types array', async () => {
