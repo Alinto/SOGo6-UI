@@ -36,7 +36,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
   return (
     <Card className="flex h-full w-full flex-col">
       <CardHeader className="pb-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <ContactHeader
             firstName={firstName}
             lastName={lastName}

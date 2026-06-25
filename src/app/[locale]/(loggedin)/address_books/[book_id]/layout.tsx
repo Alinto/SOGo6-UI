@@ -1,8 +1,12 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
+import { useAllContactsEntries } from '@/features/address_books/hooks/use-all-contacts-entries'
+import { useAddressBookEntries } from '@/features/address_books/hooks/use-address-book-entries'
 import { setSearchQuery } from '@/features/address_books/store/address-books-ui-slice'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { cn } from '@/lib/utils'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -22,13 +26,24 @@ export default function Layout({
   const { book_id } = useParams()
   const t = useTranslations('CONTACT_FORM')
 
+  const resolvedBookId = typeof book_id === 'string' ? book_id : null
+  const isAllContactsView = resolvedBookId === ALL_CONTACTS_BOOK_ID
+  const bookEntries = useAddressBookEntries(
+    isAllContactsView ? null : resolvedBookId
+  )
+  const allContactsEntries = useAllContactsEntries(isAllContactsView)
+  const { contactTotal, listTotal, isFetching } = isAllContactsView
+    ? allContactsEntries
+    : bookEntries
+  const isBookEmpty =
+    !isFetching && contactTotal === 0 && listTotal === 0
+
   useEffect(() => {
     if (typeof book_id === 'string') {
       dispatch(setSearchQuery(''))
     }
   }, [book_id, dispatch])
 
-  // Check if a contact is selected (pathname contains a contact ID after book_id)
   const basePath = `/address_books/${book_id}`
   const isContactSelected =
     pathname !== basePath && pathname.startsWith(`${basePath}/`)
@@ -37,23 +52,28 @@ export default function Layout({
     push(basePath)
   }
 
+  const showVisualizationPanel = !isBookEmpty
+
   return (
     <div className="flex min-h-full">
-      {/* List Column - hidden on mobile when contact is selected */}
       <div
-        className={`w-full md:w-1/2 md:rounded lg:w-2/5 ${
+        className={cn(
+          'w-full md:rounded',
+          showVisualizationPanel
+            ? 'md:w-1/2 lg:w-2/5'
+            : 'md:w-full lg:w-full',
           isContactSelected ? 'hidden md:block' : 'block'
-        }`}
+        )}
       >
         {children}
       </div>
 
-      {/* Desktop Visualization - side panel */}
-      <div className="hidden md:flex md:w-1/2 md:rounded lg:w-3/5">
-        {visualization}
-      </div>
+      {showVisualizationPanel && (
+        <div className="hidden md:flex md:w-1/2 md:rounded lg:w-3/5">
+          {visualization}
+        </div>
+      )}
 
-      {/* Mobile Visualization - full screen when contact is selected */}
       {isContactSelected && (
         <div className="bg-background fixed inset-0 z-50 flex flex-col md:hidden">
           <div className="flex items-center gap-2 border-b p-4">

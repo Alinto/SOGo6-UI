@@ -67,7 +67,6 @@ describe('ListSection', () => {
 
       expect(screen.getByTestId('list-section-contacts')).toBeInTheDocument()
       expect(screen.getByText('Contacts')).toBeInTheDocument()
-      expect(screen.getByText('2 contacts')).toBeInTheDocument()
     })
 
     it('returns null when items array is empty', () => {

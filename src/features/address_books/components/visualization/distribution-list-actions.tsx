@@ -11,10 +11,17 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { createDraft } from '@/features/mails/store'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
-import { Mail, Pencil, Trash2 } from 'lucide-react'
+import { Download, Mail, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useState } from 'react'
 import type { VCard } from '../../address-books-types'
@@ -73,48 +80,61 @@ function DistributionListActions({ list, bookId }: DistributionListActionsProps)
 
   return (
     <>
-      <div className="flex shrink-0 flex-wrap items-center gap-1">
+      <div className="flex min-w-0 shrink items-center gap-1">
         <Button
           variant="outline"
           size="sm"
+          className="max-w-full"
           onClick={handleWriteMessage}
           disabled={getDistributionListEmails(list).length === 0}
           data-testid="write-to-list-button"
         >
-          <Mail className="mr-1 h-4 w-4" />
-          {t('write_message.string')}
+          <Mail className="h-4 w-4 shrink-0 sm:mr-1" />
+          <span className="hidden sm:inline">{t('write_message.string')}</span>
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setExportOpen(true)}
-          data-testid="export-list-button"
-        >
-          {tContact('export.string')}
-        </Button>
-        {writable && (
-          <>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
             <Button
               variant="outline"
-              size="sm"
-              onClick={handleEdit}
-              data-testid="edit-list-button"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              aria-label={tContact('actions_menu.string')}
+              data-testid="list-actions-menu"
             >
-              <Pencil className="mr-1 h-4 w-4" />
-              {tContact('edit.string')}
+              <MoreHorizontal className="h-4 w-4" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-destructive hover:text-destructive"
-              onClick={() => setDeleteOpen(true)}
-              data-testid="delete-list-button"
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="min-w-[10rem]">
+            <DropdownMenuItem
+              onClick={() => setExportOpen(true)}
+              data-testid="export-list-button"
             >
-              <Trash2 className="mr-1 h-4 w-4" />
-              {tContact('delete.string')}
-            </Button>
-          </>
-        )}
+              <Download className="mr-2 h-4 w-4" />
+              {tContact('export.string')}
+            </DropdownMenuItem>
+            {writable && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={handleEdit}
+                  data-testid="edit-list-button"
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {tContact('edit.string')}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="text-destructive focus:text-destructive"
+                  onClick={() => setDeleteOpen(true)}
+                  data-testid="delete-list-button"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {tContact('delete.string')}
+                </DropdownMenuItem>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <ExportEntryDialog

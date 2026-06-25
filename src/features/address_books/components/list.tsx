@@ -19,7 +19,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { ArrowDownAZ, ArrowUpAZ, ListFilter, Trash2, Users, X } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { ArrowDownAZ, ArrowUpAZ, Trash2, Users, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useMemo, useState } from 'react'
@@ -127,6 +128,8 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   const summaryContactCount = serverSide
     ? (contactTotal ?? contacts.length)
     : contacts.length
+  const hasSummaryCounts = summaryListCount + summaryContactCount > 0
+  const showPagination = totalDisplayed > 0
 
   const handleCheckboxClick = (e: React.MouseEvent, item: VCard) => {
     e.stopPropagation()
@@ -185,8 +188,9 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   return (
     <>
       <div className="flex w-full flex-col rounded p-4">
-        <div className="text-muted-foreground flex flex-row items-center justify-between">
-          <div className="flex items-center gap-2">
+        {(hasSummaryCounts || hasSelections) && (
+        <div className="text-muted-foreground flex min-w-0 flex-row items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             {hasSelections ? (
               <>
                 <span className="text-sm font-medium">
@@ -224,21 +228,20 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </>
-            ) : (
+            ) : hasSummaryCounts ? (
               <EntriesSummary
                 listCount={summaryListCount}
                 contactCount={summaryContactCount}
               />
-            )}
+            ) : null}
           </div>
-          <div className="flex items-center gap-1">
+          <div className="bg-muted/50 flex shrink-0 items-center rounded-md border border-transparent">
             {serverSide && (
               <Select value={sortBy} onValueChange={handleSortByChange}>
                 <SelectTrigger
-                  className="text-muted-foreground h-7 w-auto gap-1 border-0 px-2 text-xs shadow-none"
+                  className="text-muted-foreground h-7 w-auto max-w-[9rem] gap-1 border-0 bg-transparent px-2 text-xs shadow-none"
                   aria-label={t('filters.sort_by.string')}
                 >
-                  <ListFilter className="h-4 w-4" />
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent align="end">
@@ -253,7 +256,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground h-7 gap-1 px-2 text-xs"
+              className="text-muted-foreground h-7 gap-1 rounded-l-none px-2 text-xs"
               onClick={handleToggleSort}
               aria-label={
                 sortOrder === 'asc'
@@ -269,8 +272,9 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             </Button>
           </div>
         </div>
+        )}
 
-        <div className="mt-4 space-y-5">
+        <div className={cn('flex min-h-0 flex-1 flex-col space-y-5', (hasSummaryCounts || hasSelections) && 'mt-4')}>
           {searchTooShort && (
             <p className="text-muted-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center text-sm">
               {t('search_min_length.string')}
@@ -319,11 +323,13 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
           />
         </div>
 
-        <AddressBookListPagination
-          totalPages={totalPages}
-          currentPage={currentPage}
-          showPageSize={serverSide}
-        />
+        {showPagination && (
+          <AddressBookListPagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            showPageSize={serverSide}
+          />
+        )}
       </div>
 
       <AlertDialog open={bulkDeleteOpen} onOpenChange={setBulkDeleteOpen}>

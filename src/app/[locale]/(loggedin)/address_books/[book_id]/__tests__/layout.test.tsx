@@ -1,6 +1,15 @@
 import { render, screen } from '@testing-library/react'
 import Layout from '../layout'
 
+const mockUseAddressBookEntries = jest.fn()
+const mockUseAllContactsEntries = jest.fn()
+
+const defaultEntries = {
+  contactTotal: 5,
+  listTotal: 0,
+  isFetching: false,
+}
+
 // Mock Next.js navigation hooks
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({
@@ -10,7 +19,6 @@ jest.mock('next/navigation', () => ({
 
 // Mock i18n navigation hooks
 const mockPush = jest.fn()
-const mockUsePathname = jest.fn(() => '/en/address_books/test-book-id')
 jest.mock('@/lib/i18n/navigation', () => ({
   usePathname: jest.fn(),
   useRouter: jest.fn(() => ({
@@ -27,6 +35,14 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
 }))
 
+jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
+  useAddressBookEntries: (...args: unknown[]) => mockUseAddressBookEntries(...args),
+}))
+
+jest.mock('@/features/address_books/hooks/use-all-contacts-entries', () => ({
+  useAllContactsEntries: (...args: unknown[]) => mockUseAllContactsEntries(...args),
+}))
+
 describe('AddressBook Layout', () => {
   const mockChildren = (
     <div data-testid="children-content">Children Content</div>
@@ -40,6 +56,8 @@ describe('AddressBook Layout', () => {
     ;(usePathname as jest.Mock).mockReturnValue(
       '/en/address_books/test-book-id'
     )
+    mockUseAddressBookEntries.mockReturnValue(defaultEntries)
+    mockUseAllContactsEntries.mockReturnValue(defaultEntries)
   })
 
   it('should render the layout component', () => {
@@ -103,9 +121,35 @@ describe('AddressBook Layout', () => {
     const { container } = render(
       <Layout visualization={mockVisualization}>{mockChildren}</Layout>
     )
-    
-    // When no contact is selected, the mobile panel should not be visible
+
     const fixedPanel = container.querySelector('.fixed.inset-0')
     expect(fixedPanel).not.toBeInTheDocument()
+  })
+
+  it('should hide visualization panel when address book is empty', () => {
+    mockUseAddressBookEntries.mockReturnValue({
+      contactTotal: 0,
+      listTotal: 0,
+      isFetching: false,
+    })
+
+    render(<Layout visualization={mockVisualization}>{mockChildren}</Layout>)
+
+    expect(screen.queryByTestId('visualization-content')).not.toBeInTheDocument()
+  })
+
+  it('should expand children panel to full width when address book is empty', () => {
+    mockUseAddressBookEntries.mockReturnValue({
+      contactTotal: 0,
+      listTotal: 0,
+      isFetching: false,
+    })
+
+    const { container } = render(
+      <Layout visualization={mockVisualization}>{mockChildren}</Layout>
+    )
+
+    const childrenPanel = container.querySelector('.w-full')
+    expect(childrenPanel).toHaveClass('md:w-full', 'lg:w-full')
   })
 })
