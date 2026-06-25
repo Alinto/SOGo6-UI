@@ -11,6 +11,10 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('@/lib/i18n/navigation', () => ({
+  useRouter: () => ({ push: jest.fn() }),
+}))
+
 jest.mock('@/components/ui/sidebar', () => ({
   SidebarGroup: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sidebar-group">{children}</div>
@@ -23,6 +27,17 @@ jest.mock('@/components/ui/sidebar', () => ({
   ),
   SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
   SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
+  SidebarMenuButton: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
+  ),
 }))
 
 jest.mock('@/components/dnd/droppable', () => ({

@@ -28,6 +28,17 @@ jest.mock('../skeletons/skeleton', () => ({
   default: jest.fn(() => <div data-testid="skeleton">Loading...</div>),
 }))
 
+jest.mock('../address-book-empty-state', () => ({
+  __esModule: true,
+  default: ({ variant }: { variant: string }) => (
+    <div
+      data-testid={
+        variant === 'search' ? 'address-book-search-empty' : 'address-book-empty-state'
+      }
+    />
+  ),
+}))
+
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key, params) => {
     if (key === 'contacts_number.string')
@@ -52,6 +63,11 @@ jest.mock('@/lib/redux/hooks', () => ({
 
 jest.mock('../../store/address-books-api', () => ({
   useDeleteVCardFromAddressBookMutation: () => [jest.fn().mockReturnValue({ unwrap: jest.fn() })],
+  useGetAddressBooksQuery: () => ({ data: undefined }),
+}))
+
+jest.mock('../../hooks/use-active-address-book', () => ({
+  useActiveAddressBookWritable: () => ({ writable: true, bookId: 'work' }),
 }))
 
 import { VCard } from '../../address-books-types'

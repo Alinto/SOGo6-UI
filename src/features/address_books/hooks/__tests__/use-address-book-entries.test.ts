@@ -21,6 +21,10 @@ jest.mock('../../store/address-books-api', () => ({
     mockUseGetAddressBookVCardsQuery(arg),
 }))
 
+jest.mock('../use-contact-search-min-length', () => ({
+  useContactSearchMinLength: () => 2,
+}))
+
 import {
   selectBookEntriesItems,
   useAddressBookEntries,

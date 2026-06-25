@@ -1,5 +1,6 @@
 'use client'
 
+import { useContactSearchMinLength } from '../hooks/use-contact-search-min-length'
 import type { BookEntriesQueryParams, BookEntriesResponse } from '../address-books-api-types'
 import { useGetAddressBookVCardsQuery } from '../store/address-books-api'
 import { selectAddressBooksUi } from '../store/address-books-ui-slice'
@@ -8,13 +9,14 @@ import { skipToken } from '@reduxjs/toolkit/query'
 import { useMemo } from 'react'
 
 export function useAddressBookEntries(bookId: string | null | undefined) {
+  const minSearchLength = useContactSearchMinLength()
   const { searchQuery, sortOrder, sortBy, page, pageSize } = useAppSelector(
     selectAddressBooksUi
   )
 
   const trimmedSearch = searchQuery.trim()
   const shouldSkipSearch =
-    trimmedSearch.length > 0 && trimmedSearch.length < 2
+    trimmedSearch.length > 0 && trimmedSearch.length < minSearchLength
 
   const params = useMemo<BookEntriesQueryParams>(
     () => ({
@@ -52,6 +54,7 @@ export function useAddressBookEntries(bookId: string | null | undefined) {
     isError,
     refetch,
     searchTooShort: shouldSkipSearch && trimmedSearch.length > 0,
+    minSearchLength,
   }
 }
 

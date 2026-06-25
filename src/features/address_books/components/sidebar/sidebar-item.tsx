@@ -20,6 +20,8 @@ import React from 'react'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
 import EditForm from './forms/edit'
+import ImportDialog from './actions/import-dialog'
+import ExportDialog from './actions/export-dialog'
 import WorkInProgress from '@/components/work-in-progress'
 
 interface SidebarItemProps {
@@ -33,6 +35,7 @@ interface SidebarItemProps {
   linkAction?: boolean
   exportAction?: boolean
   downloadAction?: boolean
+  writable?: boolean
   icon?: IconName
   onClick: () => void
 }
@@ -49,6 +52,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   linkAction = true,
   exportAction = true,
   downloadAction = true,
+  writable = true,
 }) => {
   const [type, setType] = React.useState('')
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
@@ -115,14 +119,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DialogTrigger>
               )}
               <DropdownMenuSeparator />
-              {importAction && (
+              {importAction && writable && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('import')}>
                     <span>{t('options.import.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
-              {exportAction && (
+              {exportAction && writable && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('export')}>
                     <span>{t('options.export.string')}</span>
@@ -148,10 +152,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               <WorkInProgress title={t('options.sharing.string')} />
             )}
             {type === 'import' && (
-              <WorkInProgress title={t('options.import.string')} />
+              <ImportDialog
+                bookId={id}
+                bookName={name}
+                onSuccess={() => setType('')}
+              />
             )}
             {type === 'export' && (
-              <WorkInProgress title={t('options.export.string')} />
+              <ExportDialog
+                bookId={id}
+                bookName={name}
+                onSuccess={() => setType('')}
+              />
             )}
             {type === 'download' && (
               <WorkInProgress title={t('options.ios_download.string')} />

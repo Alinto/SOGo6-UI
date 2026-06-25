@@ -1,0 +1,9 @@
+export const DEFAULT_CONTACT_SEARCH_MIN_LENGTH = 2
+
+export const FULL_LISTS_PAGE_SIZE = 500
+
+export const CONTACT_LOOKUP_PAGE_SIZE = 200
+
+export const CONTACT_LOOKUP_MAX = 5000
+
+export const ALL_CONTACTS_BOOK_ID = 'all'

@@ -8,6 +8,10 @@ const mockUseGetAddressBooksQuery = jest.fn()
 const mockUseGetAddressBookVCardsQuery = jest.fn()
 const mockDispatch = jest.fn()
 
+jest.mock('@/features/address_books/hooks/use-contact-search-min-length', () => ({
+  useContactSearchMinLength: () => 2,
+}))
+
 jest.mock('@/features/address_books', () => ({
   getContactDisplayName: (contact: {
     firstName: string

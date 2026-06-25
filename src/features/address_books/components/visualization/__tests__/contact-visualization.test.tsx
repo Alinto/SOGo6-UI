@@ -37,6 +37,10 @@ jest.mock('../note-field', () => ({
   NoteField: () => <div data-testid="note-field" />,
 }))
 
+jest.mock('../../../hooks/use-active-address-book', () => ({
+  useActiveAddressBookWritable: () => ({ writable: true }),
+}))
+
 import ContactVisualization from '../contact-visualization'
 
 const contact: VCard = {

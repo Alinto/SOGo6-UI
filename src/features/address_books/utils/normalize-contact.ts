@@ -17,7 +17,8 @@ function formatAddressLine(
 
 function normalizeKind(kind?: ApiContact['kind']): ContactKind | undefined {
   if (kind === 'group') return 'group'
-  if (kind === 'individual' || kind === 'org' || !kind) return 'individual'
+  if (kind === 'org') return 'org'
+  if (kind === 'individual' || !kind) return 'individual'
   return 'individual'
 }
 
@@ -41,6 +42,7 @@ export function normalizeContact(raw: ApiContact | Partial<VCard>): VCard {
   return {
     id,
     key: id,
+    addressBookKey: api.addressbook_key ?? undefined,
     uid: api.uid ?? undefined,
     version: api.version ?? '4.0',
     kind: normalizeKind(api.kind),
@@ -60,8 +62,13 @@ export function normalizeContact(raw: ApiContact | Partial<VCard>): VCard {
     photos: api.photos ?? undefined,
     photo: api.photos?.[0],
     emails: emails.length ? emails : undefined,
+    structuredEmails:
+      api.emails && api.emails.length > 0 ? api.emails : undefined,
     phoneNumbers: phoneNumbers.length ? phoneNumbers : undefined,
+    structuredPhones: api.phones && api.phones.length > 0 ? api.phones : undefined,
     addresses: addresses.length ? addresses : undefined,
+    structuredAddresses:
+      api.addresses && api.addresses.length > 0 ? api.addresses : undefined,
     impp: impp.length ? impp : undefined,
     geo: api.geo ?? undefined,
     birthday: api.birthday ?? undefined,

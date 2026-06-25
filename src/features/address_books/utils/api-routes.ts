@@ -24,6 +24,27 @@ export const addressBookListPath = (bookKey: string, listKey: string) =>
 
 export const contactsAutocompletePath = () => 'contacts/autocomplete'
 
+export const allContactsPath = () => 'contacts'
+
+export const addressBookImportPath = () => `${addressBooksCollectionPath()}/import`
+
+export const addressBookExportPath = (key: string) =>
+  `${addressBookPath(key)}/export`
+
+export const addressBookContactsImportPath = (key: string) =>
+  `${addressBookContactsPath(key)}/import`
+
+export const addressBookListsImportPath = (key: string) =>
+  `${addressBookListsPath(key)}/import`
+
+export const addressBookContactExportPath = (
+  bookKey: string,
+  contactKey: string
+) => `${addressBookContactPath(bookKey, contactKey)}/export`
+
+export const addressBookListExportPath = (bookKey: string, listKey: string) =>
+  `${addressBookListPath(bookKey, listKey)}/export`
+
 export const legacyAddressBookEntriesPath = (bookId: string) =>
   `address_books/${encodeURIComponent(bookId)}`
 
@@ -47,14 +68,18 @@ export function buildListQueryParams(
     sort_by?: string
     sort_order?: 'asc' | 'desc'
   },
-  options?: { omitShortSearch?: boolean }
+  options?: { omitShortSearch?: boolean; minSearchLength?: number }
 ): Record<string, string | number> | undefined {
   if (!params) return undefined
 
   const query: Record<string, string | number> = {}
   const search = params.search?.trim()
+  const minSearchLength = options?.minSearchLength ?? 2
 
-  if (search && (!options?.omitShortSearch || search.length >= 2)) {
+  if (
+    search &&
+    (!options?.omitShortSearch || search.length >= minSearchLength)
+  ) {
     query.search = search
   }
   if (params.page !== undefined) query.page = params.page

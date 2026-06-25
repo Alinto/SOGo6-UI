@@ -24,6 +24,10 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('../use-active-address-book', () => ({
+  useActiveAddressBookWritable: () => ({ writable: true }),
+}))
+
 import { useCreateContactAction } from '../use-create-contact-action'
 
 describe('useCreateContactAction', () => {

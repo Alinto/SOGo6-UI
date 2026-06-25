@@ -542,6 +542,86 @@
                 }
             }
         },
+        "contact_api_errors": {
+            "addressbook_not_found.string": {
+                "string": "The address book could not be found."
+            },
+            "addressbook_duplicate.string": {
+                "string": "An address book with this name already exists."
+            },
+            "contact_not_found.string": {
+                "string": "The contact could not be found."
+            },
+            "contact_duplicate.string": {
+                "string": "A contact with this identifier already exists."
+            },
+            "contact_persist_failed.string": {
+                "string": "The contact could not be saved."
+            },
+            "contact_update_failed.string": {
+                "string": "The contact could not be updated."
+            },
+            "operation_not_supported.string": {
+                "string": "This operation is not supported for this address book."
+            },
+            "list_not_found.string": {
+                "string": "The distribution list could not be found."
+            },
+            "list_duplicate.string": {
+                "string": "A distribution list with this name already exists."
+            },
+            "list_persist_failed.string": {
+                "string": "The distribution list could not be saved."
+            },
+            "list_update_failed.string": {
+                "string": "The distribution list could not be updated."
+            },
+            "list_member_invalid.string": {
+                "string": "One or more selected members are not contacts in this address book."
+            },
+            "access_denied.string": {
+                "string": "You do not have permission to modify this address book."
+            },
+            "read_only.string": {
+                "string": "This address book is read-only."
+            },
+            "export_format_unsupported.string": {
+                "string": "The selected export format is not supported."
+            },
+            "import_no_file.string": {
+                "string": "No file was provided for import."
+            },
+            "import_too_large.string": {
+                "string": "The import file exceeds the maximum allowed size (10 MB)."
+            },
+            "import_parse_failed.string": {
+                "string": "The import file could not be parsed."
+            },
+            "job_not_found.string": {
+                "string": "The background job could not be found."
+            },
+            "job_forbidden.string": {
+                "string": "You do not have access to this background job."
+            },
+            "job_not_ready.string": {
+                "string": "The export is not ready yet. Please wait and try again."
+            },
+            "job_no_result.string": {
+                "string": "This job has no downloadable result."
+            },
+            "job_concurrent_limit.string": {
+                "string": "Too many background jobs are running. Please try again later."
+            },
+            "file_too_large.string": {
+                "string": "The photo exceeds the maximum allowed size (2 MB)."
+            },
+            "file_type_not_allowed.string": {
+                "string": "This file type is not allowed for contact photos."
+            },
+            "generic.string": {
+                "string": "The operation could not be completed. Please try again."
+            }
+        },
         "calendar_event_attendance": {
             "success": {
                 "accepted": {

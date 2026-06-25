@@ -17,7 +17,9 @@ import { useAppDispatch } from '@/lib/redux/hooks'
 import { Mail, Pencil, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useState } from 'react'
+import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
 import { useDeleteVCardFromAddressBookMutation } from '../../store/address-books-api'
+import ExportEntryDialog from '../sidebar/actions/export-entry-dialog'
 import { openEditForm } from '../../store/address-books-ui-slice'
 
 type ContactActionsProps = {
@@ -37,6 +39,8 @@ function ContactActions({
   const dispatch = useAppDispatch()
   const { push } = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [exportOpen, setExportOpen] = useState(false)
+  const { writable } = useActiveAddressBookWritable()
   const [deleteContact] = useDeleteVCardFromAddressBookMutation()
 
   const validEmails = emails.filter(Boolean)
@@ -83,6 +87,16 @@ function ContactActions({
         <Button
           variant="outline"
           size="sm"
+          onClick={() => setExportOpen(true)}
+          data-testid="export-contact-button"
+        >
+          {t('export.string')}
+        </Button>
+        {writable && (
+          <>
+        <Button
+          variant="outline"
+          size="sm"
           onClick={handleEdit}
           data-testid="edit-contact-button"
         >
@@ -99,7 +113,18 @@ function ContactActions({
           <Trash2 className="mr-1 h-4 w-4" />
           {t('delete.string')}
         </Button>
+          </>
+        )}
       </div>
+
+      <ExportEntryDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        bookId={bookId}
+        entryId={contactId}
+        entryLabel={displayName || contactId}
+        kind="contact"
+      />
 
       <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>

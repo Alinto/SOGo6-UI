@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { InputWithLabel } from '@/components/ui/input'
 import { useUpdateAddressBookMutation } from '@/features/address_books/store/address-books-api'
+import { getContactApiErrorMessageKey } from '@/features/address_books/utils/map-contact-api-error'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
 
@@ -22,13 +23,16 @@ interface EditFormProps {
 const EditForm: React.FC<EditFormProps> = ({ name, id, onSuccess }) => {
   const formT = useTranslations('FORM_COMMONS')
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const tErrors = useTranslations('ADDRESS_BOOKS_ERRORS')
   const [editedName, setEditedName] = useState(name)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [updateAddressBook, { isLoading }] = useUpdateAddressBookMutation()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editedName.trim() || editedName.trim() === name) return
 
+    setSubmitError(null)
     try {
       await updateAddressBook({
         id,
@@ -36,7 +40,7 @@ const EditForm: React.FC<EditFormProps> = ({ name, id, onSuccess }) => {
       }).unwrap()
       onSuccess?.()
     } catch (error: unknown) {
-      console.error('Failed to update address book:', error)
+      setSubmitError(tErrors(getContactApiErrorMessageKey(error, 'book_form')))
     }
   }
 
@@ -50,7 +54,10 @@ const EditForm: React.FC<EditFormProps> = ({ name, id, onSuccess }) => {
         </DialogTitle>
       </DialogHeader>
       <DialogDescription>
-        <div className="py-4">
+        <div className="space-y-4 py-4">
+          {submitError && (
+            <p className="text-destructive text-sm">{submitError}</p>
+          )}
           <InputWithLabel
             type="text"
             label={t('options.edit.labels.name.string')}

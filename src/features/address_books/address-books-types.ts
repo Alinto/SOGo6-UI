@@ -1,3 +1,9 @@
+import type {
+  ApiContactAddress,
+  ApiContactEmail,
+  ApiContactPhone,
+} from '../address-books-api-types'
+
 export type AddressBookType = 'global' | 'personal' | 'shared'
 
 export interface AddressBook {
@@ -16,7 +22,7 @@ export interface AddressBooks {
   subscriptions: AddressBook[]
 }
 
-export type ContactKind = 'individual' | 'group'
+export type ContactKind = 'individual' | 'group' | 'org'
 
 export interface ContactMember {
   contactId?: string
@@ -45,8 +51,11 @@ export interface VCard {
   urls?: string[]
   photos?: string[]
   emails?: string[]
+  structuredEmails?: ApiContactEmail[]
   phoneNumbers?: string[]
+  structuredPhones?: ApiContactPhone[]
   addresses?: string[]
+  structuredAddresses?: ApiContactAddress[]
   impp?: string[]
   geo?: string
   birthday?: string
@@ -54,6 +63,7 @@ export interface VCard {
   sound?: string
   uid?: string
   key?: string
+  addressBookKey?: string
   created_at?: string
   updated_at?: string
 }
