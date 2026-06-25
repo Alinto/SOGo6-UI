@@ -136,6 +136,10 @@
       "string": "Photo",
       "context": "Label for contact photo upload"
     },
+    "photo_upload": {
+      "string": "Upload a photo",
+      "context": "Button to select a contact photo file"
+    },
     "photo_change": {
       "string": "Change photo",
       "context": "Button to change contact photo"
@@ -281,6 +285,10 @@
     "write_message": {
       "string": "Write message",
       "context": "Button to compose an email to this contact."
+    },
+    "actions_menu": {
+      "string": "More actions",
+      "context": "Aria label for the contact actions dropdown menu."
     },
     "compose_email": {
       "string": "Compose",

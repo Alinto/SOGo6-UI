@@ -29,13 +29,17 @@ function AddressBookEmptyState({
     return (
       <div
         data-testid="address-book-search-empty"
-        className="flex flex-col items-center justify-center gap-3 py-12 text-center"
+        className="flex flex-1 flex-col items-center justify-center gap-3 py-10 text-center"
       >
-        <SearchX className="text-muted-foreground h-10 w-10 opacity-40" />
-        <p className="text-sm font-medium">{t('search_empty_title.string')}</p>
-        <p className="text-muted-foreground max-w-xs text-xs">
-          {t('search_empty_description.string')}
-        </p>
+        <div className="bg-muted/50 flex h-12 w-12 items-center justify-center rounded-full">
+          <SearchX className="text-muted-foreground h-5 w-5" />
+        </div>
+        <div className="space-y-1">
+          <p className="text-sm font-medium">{t('search_empty_title.string')}</p>
+          <p className="text-muted-foreground max-w-xs text-xs">
+            {t('search_empty_description.string')}
+          </p>
+        </div>
         {onClearSearch && (
           <Button type="button" variant="outline" size="sm" onClick={onClearSearch}>
             {t('clear_search.string')}
@@ -48,16 +52,18 @@ function AddressBookEmptyState({
   return (
     <div
       data-testid="address-book-empty-state"
-      className="flex flex-col items-center justify-center gap-4 py-16 text-center"
+      className="flex flex-1 flex-col items-center justify-center gap-4 py-10 text-center"
     >
-      <BookUser className="text-muted-foreground h-12 w-12 opacity-40" />
+      <div className="bg-muted/50 flex h-14 w-14 items-center justify-center rounded-full">
+        <BookUser className="text-muted-foreground h-6 w-6" />
+      </div>
       <div className="space-y-1">
         <p className="text-sm font-medium">{t('empty_title.string')}</p>
-        <p className="text-muted-foreground max-w-sm text-xs">
+        <p className="text-muted-foreground max-w-xs text-xs">
           {t('empty_description.string')}
         </p>
       </div>
-      <Button type="button" onClick={handleCreateContact}>
+      <Button type="button" size="sm" onClick={handleCreateContact}>
         {t('empty_create_contact.string')}
       </Button>
     </div>

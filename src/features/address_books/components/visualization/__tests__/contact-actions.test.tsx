@@ -52,6 +52,7 @@ describe('ContactActions', () => {
       />
     )
 
+    await user.click(screen.getByTestId('contact-actions-menu'))
     await user.click(screen.getByTestId('edit-contact-button'))
 
     expect(mockDispatch).toHaveBeenCalledWith(

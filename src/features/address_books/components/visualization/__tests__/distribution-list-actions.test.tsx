@@ -53,6 +53,7 @@ describe('DistributionListActions', () => {
     const user = userEvent.setup()
     render(<DistributionListActions list={list} bookId="work" />)
 
+    await user.click(screen.getByTestId('list-actions-menu'))
     await user.click(screen.getByTestId('edit-list-button'))
 
     expect(mockDispatch).toHaveBeenCalledWith(

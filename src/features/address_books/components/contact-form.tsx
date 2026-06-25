@@ -37,7 +37,7 @@ import {
   formDialogTitleClassName,
 } from '@/lib/utils/form-dialog-layout'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, Plus, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Trash2, UserRound } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo, type ChangeEvent } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
@@ -1069,36 +1069,45 @@ function ContactForm({
 
             <div className="space-y-2">
               <FormLabel>{t('photo.string')}</FormLabel>
-              {photoPreview && (
-                <div
-                  role="img"
-                  aria-label={t('photo.string')}
-                  className="h-20 w-20 rounded-full bg-cover bg-center"
-                  style={{ backgroundImage: `url(${photoPreview})` }}
-                />
-              )}
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" size="sm" asChild>
-                  <label>
-                    {photoPreview ? t('photo_change.string') : t('photo.string')}
-                    <input
-                      type="file"
-                      accept="image/jpeg,image/png,image/gif,image/webp"
-                      className="sr-only"
-                      onChange={handlePhotoChange}
-                    />
-                  </label>
-                </Button>
-                {photoPreview && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRemovePhoto}
+              <div className="flex flex-wrap items-center gap-4">
+                {photoPreview ? (
+                  <div
+                    role="img"
+                    aria-label={t('photo.string')}
+                    className="h-20 w-20 rounded-full bg-cover bg-center ring-2 ring-border"
+                    style={{ backgroundImage: `url(${photoPreview})` }}
+                  />
+                ) : (
+                  <div
+                    className="bg-muted/50 flex h-20 w-20 items-center justify-center rounded-full border border-dashed"
+                    aria-hidden
                   >
-                    {t('photo_remove.string')}
-                  </Button>
+                    <UserRound className="text-muted-foreground h-8 w-8" />
+                  </div>
                 )}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button type="button" variant="outline" size="sm" asChild>
+                    <label className="cursor-pointer">
+                      {photoPreview ? t('photo_change.string') : t('photo_upload.string')}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        className="sr-only"
+                        onChange={handlePhotoChange}
+                      />
+                    </label>
+                  </Button>
+                  {photoPreview && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleRemovePhoto}
+                    >
+                      {t('photo_remove.string')}
+                    </Button>
+                  )}
+                </div>
               </div>
               <FormField
                 control={form.control}

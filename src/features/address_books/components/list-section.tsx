@@ -1,6 +1,5 @@
 import { cn } from '@/lib/utils'
 import { Users } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import type { MouseEvent } from 'react'
 import type { VCard } from '../address-books-types'
 import ListItem from './list-item'
@@ -30,14 +29,7 @@ function ListSection({
   variant = 'contacts',
   allContactsView = false,
 }: ListSectionProps) {
-  const t = useTranslations('ADDRESS_BOOKS_LIST')
-
   if (items.length === 0) return null
-
-  const itemCountLabel =
-    variant === 'lists'
-      ? t('lists_count.string', { number: items.length })
-      : t('contacts_number.string', { number: items.length })
 
   return (
     <section className={cn('space-y-2', className)} data-testid={`list-section-${variant}`}>
@@ -48,9 +40,6 @@ function ListSection({
         <h2 className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
           {title}
         </h2>
-        <span className="text-muted-foreground text-xs tabular-nums">
-          {itemCountLabel}
-        </span>
       </div>
       <ul>
         {items.map((item) => (

@@ -167,6 +167,6 @@ describe('AddressBookList Component', () => {
 
   it('renders the correct number of contacts', () => {
     render(<AddressBookList items={mockItems} isLoading={false} />)
-    expect(screen.getAllByText('2 contacts')).toHaveLength(2)
+    expect(screen.getByText('2 contacts')).toBeInTheDocument()
   })
 })
