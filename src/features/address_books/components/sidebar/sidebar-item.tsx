@@ -16,6 +16,7 @@ import { useRouter } from '@/lib/i18n/navigation'
 import { MoreVertical } from 'lucide-react'
 import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
+import { useParams } from 'next/navigation'
 import React from 'react'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
@@ -58,12 +59,17 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   const formT = useTranslations('FORM_COMMONS')
   const { push } = useRouter()
+  const params = useParams()
+  const activeBookId =
+    typeof params?.book_id === 'string' ? params.book_id : null
+  const isActive = activeBookId === id
   const isMobile = useIsMobile()
   
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
+        isActive={isActive}
         onClick={() => push(`/address_books/${id}`)}
         tooltip={name}
       >

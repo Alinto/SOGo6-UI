@@ -15,6 +15,10 @@ jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }))
 
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(() => ({})),
+}))
+
 jest.mock('@/components/ui/sidebar', () => ({
   SidebarGroup: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sidebar-group">{children}</div>
@@ -30,11 +34,13 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuButton: ({
     children,
     onClick,
+    isActive,
   }: {
     children: React.ReactNode
     onClick?: () => void
+    isActive?: boolean
   }) => (
-    <button type="button" onClick={onClick}>
+    <button type="button" data-active={isActive} onClick={onClick}>
       {children}
     </button>
   ),
@@ -71,6 +77,7 @@ jest.mock('../skeleton', () => ({
   default: () => <div data-testid="sidebar-skeleton" />,
 }))
 
+import { useParams } from 'next/navigation'
 import Sidebar from '../sidebar'
 
 describe('AddressBooks Sidebar', () => {
@@ -108,6 +115,24 @@ describe('AddressBooks Sidebar', () => {
       expect(screen.getByTestId('sidebar-item-p1')).toHaveTextContent('Personal')
       expect(screen.getByTestId('sidebar-item-s1')).toHaveTextContent('Shared')
       expect(screen.getByTestId('sidebar-item-g1')).toHaveTextContent('Global')
+    })
+
+    it('highlights all contacts when that route is active', () => {
+      jest.mocked(useParams).mockReturnValue({ book_id: 'all' })
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: {
+          personals: [],
+          subscriptions: [],
+          globals: [],
+        },
+        isFetching: false,
+      })
+
+      render(<Sidebar />)
+
+      expect(
+        screen.getByText('all_contacts.string').closest('button')
+      ).toHaveAttribute('data-active', 'true')
     })
 
     it('renders error state when query fails', () => {
