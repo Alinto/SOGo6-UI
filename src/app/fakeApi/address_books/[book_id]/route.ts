@@ -3,15 +3,21 @@ import {
   DEFAULT_VCARDS,
 } from '@/app/fakeApi/utils/default-data'
 import { getDemoData, setDemoData } from '@/app/fakeApi/utils/demo-storage'
+import {
+  applyBookEntriesQueryFromSearchParams,
+  buildBookEntriesPaginationHeaders,
+  hasBookEntriesListQuery,
+} from '@/features/address_books/utils/legacy-book-entries-response'
+import { normalizeContactsList } from '@/features/address_books/utils/normalize-contact'
 import { NextRequest, NextResponse } from 'next/server'
 import {
   buildVCardFromBody,
   normalizeGroupMembers,
 } from '../vcard-utils'
 
-/**
- * Find an address book by ID in all categories
- */
+function getRequestSearchParams(req: NextRequest): URLSearchParams {
+  return req.nextUrl?.searchParams ?? new URL(req.url).searchParams
+}
 function findAddressBook(
   userAddressBooks: typeof DEFAULT_ADDRESS_BOOKS,
   book_id: string
@@ -23,9 +29,23 @@ function findAddressBook(
   )
 }
 
+function jsonWithListQueryHeaders(
+  items: ReturnType<typeof normalizeContactsList>,
+  searchParams: URLSearchParams
+) {
+  const result = applyBookEntriesQueryFromSearchParams(items, searchParams)
+  const response = NextResponse.json(result.items)
+  const headers = buildBookEntriesPaginationHeaders(result)
+  for (const [key, value] of Object.entries(headers)) {
+    response.headers.set(key, value)
+  }
+  return response
+}
+
 /**
  * GET /fakeApi/address_books/[book_id]
- * Returns all contacts (VCards) for a specific address book
+ * Returns contacts (VCards) for a specific address book.
+ * Supports search, sort and pagination query params (mirrors the real backend).
  */
 export async function GET(
   req: NextRequest,
@@ -33,28 +53,37 @@ export async function GET(
 ) {
   const { book_id } = await params
   const userVCards = getDemoData(req, 'demo_vcards', DEFAULT_VCARDS)
+  const searchParams = getRequestSearchParams(req)
+  const applyQuery = hasBookEntriesListQuery(searchParams)
 
   if (book_id === 'all') {
-    const allContacts = Object.entries(userVCards).flatMap(([sourceBookId, contacts]) =>
-      contacts
-        .filter((contact) => contact.kind !== 'group')
-        .map((contact) => ({
-          ...contact,
-          addressBookKey: sourceBookId,
-        }))
+    const allContacts = normalizeContactsList(
+      Object.entries(userVCards).flatMap(([sourceBookId, contacts]) =>
+        contacts
+          .filter((contact) => contact.kind !== 'group')
+          .map((contact) => ({
+            ...contact,
+            addressBookKey: sourceBookId,
+          }))
+      )
     )
-    const response = NextResponse.json(allContacts)
+
+    const response = applyQuery
+      ? jsonWithListQueryHeaders(allContacts, searchParams)
+      : NextResponse.json(allContacts)
+
     if (!req.cookies.get('demo_vcards')) {
       setDemoData(response, 'demo_vcards', userVCards, req)
     }
     return response
   }
 
-  // Return the VCards for the specified book_id
-  const contacts = userVCards[book_id] || []
+  const contacts = normalizeContactsList(userVCards[book_id] || [])
 
-  const response = NextResponse.json(contacts)
-  // Only if the cookie does not exist yet (first visit)
+  const response = applyQuery
+    ? jsonWithListQueryHeaders(contacts, searchParams)
+    : NextResponse.json(contacts)
+
   if (!req.cookies.get('demo_vcards')) {
     setDemoData(response, 'demo_vcards', userVCards, req)
   }
@@ -72,15 +101,12 @@ export async function POST(
   const { book_id } = await params
   const body = await req.json()
 
-  // Read the VCards from the cookie
   const userVCards = getDemoData(req, 'demo_vcards', DEFAULT_VCARDS)
 
-  // Check that the book_id exists (initialize if necessary)
   if (!userVCards[book_id]) {
     userVCards[book_id] = []
   }
 
-  // Generate a unique ID for the contact
   let contactId = body.id
   if (!contactId) {
     const existingIds = userVCards[book_id].map((c) => c.id)
@@ -88,7 +114,6 @@ export async function POST(
       contactId = `${book_id}-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`
     } while (existingIds.includes(contactId))
   } else {
-    // If the ID is provided, check that it does not already exist
     if (userVCards[book_id].some((c) => c.id === contactId)) {
       return NextResponse.json(
         { error: 'Contact with this ID already exists' },
@@ -106,15 +131,12 @@ export async function POST(
         : body.members,
   })
 
-  // Add the contact
   userVCards[book_id].push(newContact)
 
-  // Limit to 200 contacts max per address book (keep the last 200)
   if (userVCards[book_id].length > 200) {
     userVCards[book_id] = userVCards[book_id].slice(-200)
   }
 
-  // Save in the cookie
   const response = NextResponse.json(newContact, { status: 201 })
   setDemoData(response, 'demo_vcards', userVCards, req)
   return response
@@ -132,14 +154,12 @@ export async function PATCH(
   const body = await req.json()
   const { name, description } = body
 
-  // Read the data from the cookie
   const userAddressBooks = getDemoData(
     req,
     'demo_address_books',
     DEFAULT_ADDRESS_BOOKS
   )
 
-  // Find the address book
   const addressBook = findAddressBook(userAddressBooks, book_id)
 
   if (!addressBook) {
@@ -149,12 +169,10 @@ export async function PATCH(
     )
   }
 
-  // Modify the address book (business logic preserved)
   if (name) addressBook.name = name
   if (description !== undefined) addressBook.description = description
-  addressBook.updated_at = new Date().toISOString() // ✅ FIX 3
+  addressBook.updated_at = new Date().toISOString()
 
-  // Save in the cookie
   const response = NextResponse.json(addressBook)
   setDemoData(response, 'demo_address_books', userAddressBooks, req)
   return response
@@ -170,21 +188,18 @@ export async function DELETE(
 ) {
   const { book_id } = await params
 
-  // Read the data from the cookie
   const userAddressBooks = getDemoData(
     req,
     'demo_address_books',
     DEFAULT_ADDRESS_BOOKS
   )
 
-  // Find and delete in all arrays (business logic preserved)
   const personalIndex = userAddressBooks.personals.findIndex(
     (book) => book.id === book_id
   )
   if (personalIndex !== -1) {
     userAddressBooks.personals.splice(personalIndex, 1)
 
-    // Also delete the associated contacts
     const userVCards = getDemoData(req, 'demo_vcards', DEFAULT_VCARDS)
     delete userVCards[book_id]
 
@@ -200,7 +215,6 @@ export async function DELETE(
   if (subscriptionIndex !== -1) {
     userAddressBooks.subscriptions.splice(subscriptionIndex, 1)
 
-    // Also delete the associated contacts
     const userVCards = getDemoData(req, 'demo_vcards', DEFAULT_VCARDS)
     delete userVCards[book_id]
 
@@ -216,7 +230,6 @@ export async function DELETE(
   if (globalIndex !== -1) {
     userAddressBooks.globals.splice(globalIndex, 1)
 
-    // Also delete the associated contacts
     const userVCards = getDemoData(req, 'demo_vcards', DEFAULT_VCARDS)
     delete userVCards[book_id]
 

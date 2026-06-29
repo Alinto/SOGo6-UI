@@ -1,5 +1,6 @@
 import type { ContactSortOrder } from '../store/address-books-ui-slice'
 import type { VCard } from '../address-books-types'
+import { textMatchesSearch } from '@/lib/utils/strip-accents'
 import {
   getDistributionListMemberCount,
   getDistributionListName,
@@ -20,27 +21,19 @@ export function getListItemSortName(contact: VCard): string {
   return `${contact.lastName} ${contact.firstName}`.toLowerCase()
 }
 
-function matchesSearchQuery(item: VCard, query: string): boolean {
+export function matchesSearchQuery(item: VCard, query: string): boolean {
   if (!query) return true
 
-  const name = getContactDisplayName(item).toLowerCase()
-  const emails = (item.emails ?? []).join(' ').toLowerCase()
-  const memberEmails = (item.members ?? [])
-    .map((member) => member.email)
-    .join(' ')
-    .toLowerCase()
-  const phones = (item.phoneNumbers ?? []).join(' ').toLowerCase()
-  const organization = (item.organization ?? '').toLowerCase()
-  const memberCount = String(getDistributionListMemberCount(item))
+  const fields = [
+    getContactDisplayName(item),
+    (item.emails ?? []).join(' '),
+    (item.members ?? []).map((member) => member.email).join(' '),
+    (item.phoneNumbers ?? []).join(' '),
+    item.organization ?? '',
+    String(getDistributionListMemberCount(item)),
+  ]
 
-  return (
-    name.includes(query) ||
-    emails.includes(query) ||
-    memberEmails.includes(query) ||
-    phones.includes(query) ||
-    organization.includes(query) ||
-    memberCount.includes(query)
-  )
+  return fields.some((field) => textMatchesSearch(field, query))
 }
 
 function sortByName(items: VCard[], sortOrder: ContactSortOrder): VCard[] {

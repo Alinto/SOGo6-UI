@@ -4,7 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
   matcher: [
-    '/((?!_next|fakeApi|env|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$).*)',
+    // Exclude api (proxied to SOGo back), fakeApi, env, and static assets
+    '/((?!_next|api|fakeApi|env|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$).*)',
   ],
 }
 

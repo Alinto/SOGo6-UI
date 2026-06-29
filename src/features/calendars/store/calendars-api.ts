@@ -642,52 +642,54 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     >({
       queryFn: async (
         { calendarIds, startDate, endDate },
-        _api,
+        api,
         _options,
         baseQuery
       ) => {
+        const { signal } = api
         const allEvents: CalendarEvent[] = []
-        await Promise.all(
-          calendarIds.map(async (calendarId) => {
-            try {
-              const result = await baseQuery({
-                url: calendarEventsUrl(calendarId),
-                method: 'GET',
-                params: {
-                  start_date_time: startDate,
-                  end_date_time: endDate,
-                },
-              })
+        for (const calendarId of calendarIds) {
+          if (signal.aborted) break
 
-              if (result.error) {
-                console.warn(
-                  `[Calendar] Failed to fetch events for ${calendarId}:`,
-                  result.error
-                )
-                return
-              }
+          try {
+            const result = await baseQuery({
+              url: calendarEventsUrl(calendarId),
+              method: 'GET',
+              params: {
+                start_date_time: startDate,
+                end_date_time: endDate,
+              },
+              signal,
+            })
 
-              const { events } = normalizeCalendarEventsResponse(
-                result.data as
-                  | ApiCalendarEventsResponse
-                  | CalendarEventsResponse
-                  | CalendarEvent[]
-              )
-
-              allEvents.push(
-                ...events.map((event) => ({
-                  ...event,
-                  calendar_id: event.calendar_id ?? calendarId,
-                }))
-              )
-            } catch (e) {
+            if (result.error) {
               console.warn(
-                `[Calendar] Exception fetching events for ${calendarId}:`,
-                e
+                `[Calendar] Failed to fetch events for ${calendarId}:`,
+                result.error
               )
+              continue
             }
-          })
-        )
+
+            const { events } = normalizeCalendarEventsResponse(
+              result.data as
+                | ApiCalendarEventsResponse
+                | CalendarEventsResponse
+                | CalendarEvent[]
+            )
+
+            allEvents.push(
+              ...events.map((event) => ({
+                ...event,
+                calendar_id: event.calendar_id ?? calendarId,
+              }))
+            )
+          } catch (e) {
+            console.warn(
+              `[Calendar] Exception fetching events for ${calendarId}:`,
+              e
+            )
+          }
+        }
 
         return { data: allEvents }
       },
@@ -702,7 +704,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     >({
       queryFn: async (
         { calendarIds, search },
-        _api,
+        api,
         _options,
         baseQuery
       ) => {
@@ -710,45 +712,47 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           return { data: [] }
         }
 
+        const { signal } = api
         const allEvents: CalendarEvent[] = []
-        await Promise.all(
-          calendarIds.map(async (calendarId) => {
-            try {
-              const result = await baseQuery({
-                url: calendarEventsUrl(calendarId),
-                method: 'GET',
-                params: { search },
-              })
+        for (const calendarId of calendarIds) {
+          if (signal.aborted) break
 
-              if (result.error) {
-                console.warn(
-                  `[Calendar] Failed to search events for ${calendarId}:`,
-                  result.error
-                )
-                return
-              }
+          try {
+            const result = await baseQuery({
+              url: calendarEventsUrl(calendarId),
+              method: 'GET',
+              params: { search },
+              signal,
+            })
 
-              const { events } = normalizeCalendarEventsResponse(
-                result.data as
-                  | ApiCalendarEventsResponse
-                  | CalendarEventsResponse
-                  | CalendarEvent[]
-              )
-
-              allEvents.push(
-                ...events.map((event) => ({
-                  ...event,
-                  calendar_id: event.calendar_id ?? calendarId,
-                }))
-              )
-            } catch (e) {
+            if (result.error) {
               console.warn(
-                `[Calendar] Exception searching events for ${calendarId}:`,
-                e
+                `[Calendar] Failed to search events for ${calendarId}:`,
+                result.error
               )
+              continue
             }
-          })
-        )
+
+            const { events } = normalizeCalendarEventsResponse(
+              result.data as
+                | ApiCalendarEventsResponse
+                | CalendarEventsResponse
+                | CalendarEvent[]
+            )
+
+            allEvents.push(
+              ...events.map((event) => ({
+                ...event,
+                calendar_id: event.calendar_id ?? calendarId,
+              }))
+            )
+          } catch (e) {
+            console.warn(
+              `[Calendar] Exception searching events for ${calendarId}:`,
+              e
+            )
+          }
+        }
 
         return { data: allEvents }
       },

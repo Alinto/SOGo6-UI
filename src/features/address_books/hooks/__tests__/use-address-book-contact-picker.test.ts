@@ -72,6 +72,16 @@ describe('useAddressBookContactPicker', () => {
         skipToken
       )
     })
+
+    it('uses skipToken when enabled is false', () => {
+      renderHook(() =>
+        useAddressBookContactPicker('work', { enabled: false })
+      )
+
+      expect(mockUseGetAddressBookContactPickerQuery).toHaveBeenCalledWith(
+        skipToken
+      )
+    })
   })
 
   describe('integration', () => {

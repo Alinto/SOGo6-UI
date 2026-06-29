@@ -1,13 +1,16 @@
 import { VCard } from '@/features/address_books/address-books-types'
 import { NextRequest } from 'next/server'
-
-// Mock Next.js server modules
 jest.mock('next/server', () => ({
   NextResponse: {
     json: (data: unknown, init?: { status?: number }) => {
+      const headers = new Map<string, string>()
       return {
         json: async () => data,
         status: init?.status ?? 200,
+        headers: {
+          set: (key: string, value: string) => headers.set(key, value),
+          get: (key: string) => headers.get(key) ?? null,
+        },
         cookies: {
           set: jest.fn(),
         },
@@ -95,6 +98,26 @@ describe('Address Books API Route', () => {
       if (data1.length > 0) {
         expect(data1[0]?.id).toBe(data2[0]?.id)
       }
+    })
+
+    it('filters contacts when search query param is provided', async () => {
+      const unfilteredResponse = await GET(mockRequest, { params: mockParams })
+      const unfiltered = (await unfilteredResponse.json()) as VCard[]
+
+      const request = new NextRequest(
+        'http://localhost:3000/fakeApi/address_books/work?search=joh'
+      )
+
+      const response = await GET(request, { params: mockParams })
+      const data = (await response.json()) as VCard[]
+
+      expect(response.status).toBe(200)
+      expect(data.length).toBeGreaterThan(0)
+      expect(data.length).toBeLessThan(unfiltered.length)
+      expect(
+        data.some((item) => item.firstName === 'John' && item.lastName === 'Doe')
+      ).toBe(true)
+      expect(response.headers.get('X-Pagination')).toBeTruthy()
     })
   })
 

@@ -23,20 +23,35 @@ const checkApiHealth = async (apiUrl: string): Promise<boolean> => {
   }
 
   const healthUrl = `${apiUrl.replace(/\/$/, '')}/system`
+  const isSameOrigin = apiUrl.startsWith('/')
 
   try {
-    // Try to reach the API with a short timeout
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 3000) // 3 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 3000)
+
+    if (isSameOrigin) {
+      const response = await fetch(healthUrl, {
+        method: 'GET',
+        signal: controller.signal,
+        headers: { Accept: 'application/json' },
+      })
+      clearTimeout(timeoutId)
+      if (!response.ok) {
+        console.info(
+          `%cAPI health check failed for ${healthUrl} (HTTP ${response.status})`,
+          'color: #94a3b8'
+        )
+      }
+      return response.ok
+    }
 
     await fetch(healthUrl, {
       method: 'HEAD',
       signal: controller.signal,
-      mode: 'no-cors', // Allow cross-origin requests without CORS
+      mode: 'no-cors',
     })
 
     clearTimeout(timeoutId)
-    // With no-cors mode, we won't get response status, so if fetch completes without error, assume it's reachable
     return true
   } catch (error) {
     const errorName = (error as Error).name

@@ -43,9 +43,16 @@ interface SidebarItemProps {
   onClick: () => void
 }
 
-function useExternalSyncVisuals(calendarKey: string, isMutationLoading: boolean) {
+function useExternalSyncVisuals(
+  calendarKey: string,
+  sourceType: string | undefined,
+  isMutationLoading: boolean
+) {
+  const isSubscription = sourceType
+    ? isSubscriptionCalendar({ source_type: sourceType })
+    : false
   const { data: syncStatus } = useGetSyncStatusQuery(calendarKey, {
-    skip: !calendarKey,
+    skip: !calendarKey || !isSubscription,
   })
   const isRunning =
     isMutationLoading || syncStatus?.sync_status === 'running'
@@ -68,10 +75,20 @@ function useExternalSyncVisuals(calendarKey: string, isMutationLoading: boolean)
   return { syncStatus, isRunning, statusIcon }
 }
 
-const SyncNowItem = ({ calendarKey }: { calendarKey: string }) => {
+const SyncNowItem = ({
+  calendarKey,
+  sourceType,
+}: {
+  calendarKey: string
+  sourceType?: string
+}) => {
   const t = useTranslations('CALENDARS')
   const [triggerSync, { isLoading }] = useTriggerSyncMutation()
-  const { isRunning, statusIcon } = useExternalSyncVisuals(calendarKey, isLoading)
+  const { isRunning, statusIcon } = useExternalSyncVisuals(
+    calendarKey,
+    sourceType,
+    isLoading
+  )
 
   return (
     <DropdownMenuItem
@@ -87,8 +104,14 @@ const SyncNowItem = ({ calendarKey }: { calendarKey: string }) => {
   )
 }
 
-const InlineSyncStatusIcon = ({ calendarKey }: { calendarKey: string }) => {
-  const { statusIcon } = useExternalSyncVisuals(calendarKey, false)
+const InlineSyncStatusIcon = ({
+  calendarKey,
+  sourceType,
+}: {
+  calendarKey: string
+  sourceType?: string
+}) => {
+  const { statusIcon } = useExternalSyncVisuals(calendarKey, sourceType, false)
   return (
     <span className="shrink-0" aria-hidden>
       {statusIcon()}
@@ -155,7 +178,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             />
           )}
           {isIcs && (
-            <InlineSyncStatusIcon calendarKey={resolvedCalendarKey} />
+            <InlineSyncStatusIcon
+              calendarKey={resolvedCalendarKey}
+              sourceType={sourceType}
+            />
           )}
         </div>
       </div>
@@ -173,7 +199,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             >
               {isIcs && (
                 <>
-                  <SyncNowItem calendarKey={resolvedCalendarKey} />
+                  <SyncNowItem
+                    calendarKey={resolvedCalendarKey}
+                    sourceType={sourceType}
+                  />
                   <DropdownMenuSeparator />
                 </>
               )}

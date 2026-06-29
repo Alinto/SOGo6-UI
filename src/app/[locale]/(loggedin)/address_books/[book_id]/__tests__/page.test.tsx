@@ -12,12 +12,12 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
-jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
-  useAddressBookEntries: () => mockUseAddressBookEntries(),
+jest.mock('@/features/address_books/hooks/address-book-entries-context', () => ({
+  useAddressBookEntriesContext: () => mockUseAddressBookEntries(),
 }))
 
-jest.mock('@/features/address_books/hooks/use-all-contacts-entries', () => ({
-  useAllContactsEntries: () => mockUseAddressBookEntries(),
+jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
+  useAddressBookEntries: () => mockUseAddressBookEntries(),
 }))
 
 jest.mock('@/features/address_books/components/read-only-banner', () => ({
