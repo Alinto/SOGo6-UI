@@ -10,12 +10,14 @@ import { memo } from 'react'
 type AddressBookEmptyStateProps = {
   variant: 'empty' | 'search'
   bookId?: string
+  showCreateAction?: boolean
   onClearSearch?: () => void
 }
 
 function AddressBookEmptyState({
   variant,
   bookId,
+  showCreateAction = true,
   onClearSearch,
 }: AddressBookEmptyStateProps) {
   const t = useTranslations('ADDRESS_BOOKS_LIST')
@@ -63,9 +65,11 @@ function AddressBookEmptyState({
           {t('empty_description.string')}
         </p>
       </div>
-      <Button type="button" size="sm" onClick={handleCreateContact}>
-        {t('empty_create_contact.string')}
-      </Button>
+      {showCreateAction && (
+        <Button type="button" size="sm" onClick={handleCreateContact}>
+          {t('empty_create_contact.string')}
+        </Button>
+      )}
     </div>
   )
 }

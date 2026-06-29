@@ -10,10 +10,9 @@ import { useRouter } from '@/lib/i18n/navigation'
 import { Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React, { useState } from 'react'
+import React, { memo, useState } from 'react'
 import { VCard } from '../address-books-types'
 import { getContactDisplayName } from '../utils/contact-list'
-import { useGetAddressBooksQuery } from '../store/address-books-api'
 import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import {
   getDistributionListMemberCount,
@@ -26,36 +25,26 @@ interface ListItemProps {
   isActive?: boolean
   showCheckbox?: boolean
   allContactsView?: boolean
+  sourceBookName?: string | null
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: VCard) => void
 }
 
-const ListItem: React.FC<ListItemProps> = ({
+function ListItem({
   data,
   isSelected,
   isActive = false,
   showCheckbox = false,
   allContactsView = false,
+  sourceBookName = null,
   onHandleCheckboxClick,
-}) => {
+}: ListItemProps) {
   const { push } = useRouter()
   const { book_id } = useParams()
-  const { data: addressBooks } = useGetAddressBooksQuery(undefined, {
-    skip: !allContactsView,
-  })
   const { firstName, lastName, id } = data
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const [isHovered, setIsHovered] = useState(false)
   const isList = isDistributionList(data)
   const displayName = getContactDisplayName(data)
-  const sourceBookName = React.useMemo(() => {
-    if (!allContactsView || !data.addressBookKey || !addressBooks) return null
-    const books = [
-      ...addressBooks.personals,
-      ...addressBooks.subscriptions,
-      ...addressBooks.globals,
-    ]
-    return books.find((book) => book.id === data.addressBookKey)?.name ?? null
-  }, [addressBooks, allContactsView, data.addressBookKey])
 
   const shouldShowCheckbox = showCheckbox || isHovered || isSelected
 
@@ -80,7 +69,15 @@ const ListItem: React.FC<ListItemProps> = ({
       book_id === ALL_CONTACTS_BOOK_ID
         ? data.addressBookKey ?? book_id
         : book_id
-    push(`/address_books/${targetBookId}/${id}`)
+    const kindQuery = isList ? '?kind=group' : ''
+    push(`/address_books/${targetBookId}/${id}${kindQuery}`)
+  }
+
+  const handleItemKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleItemClick()
+    }
   }
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
@@ -90,10 +87,15 @@ const ListItem: React.FC<ListItemProps> = ({
 
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={getItemStyles()}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onClick={handleItemClick}
+      onKeyDown={handleItemKeyDown}
+      aria-label={displayName}
+      aria-current={isActive ? 'true' : undefined}
     >
       {shouldShowCheckbox && (
         <TooltipProvider>
@@ -135,7 +137,7 @@ const ListItem: React.FC<ListItemProps> = ({
       )}
       <div className="flex min-w-0 flex-1 flex-col truncate">
         <span className="truncate text-sm">{displayName}</span>
-        {sourceBookName && (
+        {allContactsView && sourceBookName && (
           <span className="text-muted-foreground truncate text-xs">
             {t('source_address_book.string', { name: sourceBookName })}
           </span>
@@ -152,4 +154,4 @@ const ListItem: React.FC<ListItemProps> = ({
   )
 }
 
-export default ListItem
+export default memo(ListItem)

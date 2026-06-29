@@ -12,20 +12,31 @@ import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-con
 import { useRouter } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import { Contact2 } from 'lucide-react'
-import React from 'react'
+import React, { memo } from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import AddAddressBook from './forms/add'
 import CreateContactOpener from './create-contact-opener'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
-const Sidebar: React.FC = () => {
-  const { data, isFetching } = useGetAddressBooksQuery()
+function Sidebar() {
+  const { data, isFetching, isError } = useGetAddressBooksQuery()
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const tForm = useTranslations('CONTACT_FORM')
   const { push } = useRouter()
+
   if (isFetching) {
     return <SidebarSkeleton />
   }
+
+  if (isError) {
+    return (
+      <div className="text-destructive p-4 text-sm">
+        {tForm('load_error.list.string')}
+      </div>
+    )
+  }
+
   const { globals = [], personals = [], subscriptions = [] } = data || {}
   return (
     <>
@@ -101,4 +112,4 @@ const Sidebar: React.FC = () => {
   )
 }
 
-export default Sidebar
+export default memo(Sidebar)

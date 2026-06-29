@@ -109,6 +109,17 @@ describe('AddressBooks Sidebar', () => {
       expect(screen.getByTestId('sidebar-item-s1')).toHaveTextContent('Shared')
       expect(screen.getByTestId('sidebar-item-g1')).toHaveTextContent('Global')
     })
+
+    it('renders error state when query fails', () => {
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: undefined,
+        isFetching: false,
+        isError: true,
+      })
+
+      render(<Sidebar />)
+      expect(screen.getByText('load_error.list.string')).toBeInTheDocument()
+    })
   })
 
   describe('integration', () => {

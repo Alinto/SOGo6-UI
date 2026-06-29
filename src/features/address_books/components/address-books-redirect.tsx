@@ -30,7 +30,7 @@ function AddressBooksRedirect() {
 
   if (isError || !data || !resolveDefaultAddressBookId(data)) {
     return (
-      <div className="text-muted-foreground flex min-h-full items-center justify-center p-8 text-sm">
+      <div className="text-destructive flex min-h-full items-center justify-center p-8 text-sm">
         {t('load_error.list.string')}
       </div>
     )

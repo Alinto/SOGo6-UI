@@ -48,10 +48,10 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   id,
   editAction = true,
   importAction = true,
-  sharingAction = true,
+  sharingAction = false,
   linkAction = true,
   exportAction = true,
-  downloadAction = true,
+  downloadAction = false,
   writable = true,
 }) => {
   const [type, setType] = React.useState('')

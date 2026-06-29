@@ -48,9 +48,10 @@ describe('AddressBook [book_id] Page', () => {
   })
 
   describe('basic rendering', () => {
-    it('renders list skeleton while fetching', () => {
+    it('renders list skeleton on initial load', () => {
       mockUseAddressBookEntries.mockReturnValue({
         items: [],
+        isLoading: true,
         isFetching: true,
         isError: false,
         totalPages: 1,
@@ -62,9 +63,26 @@ describe('AddressBook [book_id] Page', () => {
       expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
     })
 
+    it('keeps list visible during background refetch', () => {
+      mockUseAddressBookEntries.mockReturnValue({
+        items: [{ id: 'c1' }],
+        isLoading: false,
+        isFetching: true,
+        isError: false,
+        totalPages: 1,
+        page: 1,
+        searchTooShort: false,
+      })
+
+      render(<Page />)
+      expect(screen.queryByTestId('list-skeleton')).not.toBeInTheDocument()
+      expect(screen.getByTestId('address-book-list')).toBeInTheDocument()
+    })
+
     it('renders contact list when data is loaded', () => {
       mockUseAddressBookEntries.mockReturnValue({
         items: [{ id: 'c1' }, { id: 'c2' }],
+        isLoading: false,
         isFetching: false,
         isError: false,
         totalPages: 1,

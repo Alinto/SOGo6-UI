@@ -57,12 +57,15 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => jest.fn(),
   useAppSelector: (selector: (state: unknown) => unknown) =>
     selector({
-      addressBooksUi: { searchQuery: '', sortOrder: 'asc' },
+      addressBooksUi: { searchQuery: '', sortOrder: 'asc', sortBy: 'display_name' },
     }),
 }))
 
 jest.mock('../../store/address-books-api', () => ({
-  useDeleteVCardFromAddressBookMutation: () => [jest.fn().mockReturnValue({ unwrap: jest.fn() })],
+  useDeleteVCardFromAddressBookMutation: () => [
+    jest.fn().mockReturnValue({ unwrap: jest.fn() }),
+    { isLoading: false },
+  ],
   useGetAddressBooksQuery: () => ({ data: undefined }),
 }))
 
@@ -132,18 +135,13 @@ describe('AddressBookList Component', () => {
     },
   ]
 
-  it('renders the skeleton when isLoading is true', () => {
-    render(<AddressBookList items={[]} isLoading={true} />)
-    expect(screen.getByTestId('skeleton')).toBeInTheDocument()
-  })
-
   it('renders empty state when items array is empty', () => {
-    render(<AddressBookList items={[]} isLoading={false} />)
+    render(<AddressBookList items={[]} />)
     expect(screen.getByTestId('address-book-empty-state')).toBeInTheDocument()
   })
 
   it('renders the list of items when items are provided', () => {
-    render(<AddressBookList items={mockItems} isLoading={false} />)
+    render(<AddressBookList items={mockItems} />)
     const listItems = screen.getAllByTestId('list-item')
     expect(listItems).toHaveLength(mockItems.length)
     expect(listItems[0]).toHaveTextContent('John Doe')
@@ -152,7 +150,7 @@ describe('AddressBookList Component', () => {
 
   it('updates selectedItems state when a checkbox is clicked', () => {
     const { getAllByTestId } = render(
-      <AddressBookList items={mockItems} isLoading={false} />
+      <AddressBookList items={mockItems} />
     )
     const listItems = getAllByTestId('list-item')
 
@@ -166,7 +164,7 @@ describe('AddressBookList Component', () => {
   })
 
   it('renders the correct number of contacts', () => {
-    render(<AddressBookList items={mockItems} isLoading={false} />)
+    render(<AddressBookList items={mockItems} />)
     expect(screen.getByText('2 contacts')).toBeInTheDocument()
   })
 })

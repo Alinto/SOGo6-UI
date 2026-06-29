@@ -25,13 +25,16 @@ export function buildBookEntriesResponse(
   contacts: VCard[],
   lists: VCard[],
   contactsPagination?: ParsedPagination | null,
-  options?: { listTotal?: number }
+  options?: { listTotal?: number; listsPagination?: ParsedPagination | null }
 ): BookEntriesResponse {
   const items = mergeBookEntries(contacts, lists)
   const contactTotal = contactsPagination?.total ?? contacts.length
   const listTotal = options?.listTotal ?? lists.length
-  const page = contactsPagination?.page ?? 1
-  const totalPages = contactsPagination?.totalPages ?? 1
+  const page =
+    contactsPagination?.page ?? options?.listsPagination?.page ?? 1
+  const contactsPages = contactsPagination?.totalPages ?? 1
+  const listsPages = options?.listsPagination?.totalPages ?? 1
+  const totalPages = Math.max(contactsPages, listsPages)
 
   return {
     items,
@@ -74,6 +77,7 @@ export function parseContactsAndListsFromBackend(
 
   return buildBookEntriesResponse(contacts, lists, contactsPagination, {
     listTotal,
+    listsPagination,
   })
 }
 
