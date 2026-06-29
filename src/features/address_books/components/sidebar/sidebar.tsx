@@ -12,6 +12,7 @@ import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-con
 import { useRouter } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import { Contact2 } from 'lucide-react'
+import { useParams } from 'next/navigation'
 import React, { memo } from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import AddAddressBook from './forms/add'
@@ -24,6 +25,9 @@ function Sidebar() {
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   const tForm = useTranslations('CONTACT_FORM')
   const { push } = useRouter()
+  const params = useParams()
+  const activeBookId =
+    typeof params?.book_id === 'string' ? params.book_id : null
 
   if (isFetching) {
     return <SidebarSkeleton />
@@ -55,6 +59,7 @@ function Sidebar() {
             <SidebarMenuItem>
               <SidebarMenuButton
                 className="h-10"
+                isActive={activeBookId === ALL_CONTACTS_BOOK_ID}
                 onClick={() => push(`/address_books/${ALL_CONTACTS_BOOK_ID}`)}
                 tooltip={t('all_contacts.string')}
               >

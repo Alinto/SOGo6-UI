@@ -2,6 +2,7 @@ import '@testing-library/jest-dom'
 import { render } from '@testing-library/react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
+import { useParams } from 'next/navigation'
 import SidebarItem from '../sidebar-item'
 
 // Mock next-intl
@@ -17,6 +18,10 @@ jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(() => ({
     push: mockPush,
   })),
+}))
+
+jest.mock('next/navigation', () => ({
+  useParams: jest.fn(() => ({})),
 }))
 
 jest.mock('lucide-react/dynamic', () => ({
@@ -74,8 +79,12 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuItem: ({ children }: any) => (
     <div data-testid="sidebar-menu-item">{children}</div>
   ),
-  SidebarMenuButton: ({ children, ...props }: any) => (
-    <button data-testid="sidebar-menu-button" {...props}>
+  SidebarMenuButton: ({ children, isActive, ...props }: any) => (
+    <button
+      data-testid="sidebar-menu-button"
+      data-active={isActive}
+      {...props}
+    >
       {children}
     </button>
   ),
@@ -137,6 +146,14 @@ describe('SidebarItem', () => {
     getByTestId('sidebar-menu-button').click()
 
     expect(mockPush).toHaveBeenCalledWith('/address_books/test-book-id')
+  })
+
+  it('marks the item active when it matches the current book route', () => {
+    jest.mocked(useParams).mockReturnValue({ book_id: 'test-book-id' })
+
+    const { getByTestId } = render(<SidebarItem {...defaultProps} />)
+
+    expect(getByTestId('sidebar-menu-button')).toHaveAttribute('data-active', 'true')
   })
 
   it('renders the dynamic icon when icon prop is passed', () => {
