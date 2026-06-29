@@ -543,82 +543,82 @@
             }
         },
         "contact_api_errors": {
-            "addressbook_not_found.string": {
+            "addressbook_not_found": {
                 "string": "The address book could not be found."
             },
-            "addressbook_duplicate.string": {
+            "addressbook_duplicate": {
                 "string": "An address book with this name already exists."
             },
-            "contact_not_found.string": {
+            "contact_not_found": {
                 "string": "The contact could not be found."
             },
-            "contact_duplicate.string": {
+            "contact_duplicate": {
                 "string": "A contact with this identifier already exists."
             },
-            "contact_persist_failed.string": {
+            "contact_persist_failed": {
                 "string": "The contact could not be saved."
             },
-            "contact_update_failed.string": {
+            "contact_update_failed": {
                 "string": "The contact could not be updated."
             },
-            "operation_not_supported.string": {
+            "operation_not_supported": {
                 "string": "This operation is not supported for this address book."
             },
-            "list_not_found.string": {
+            "list_not_found": {
                 "string": "The distribution list could not be found."
             },
-            "list_duplicate.string": {
+            "list_duplicate": {
                 "string": "A distribution list with this name already exists."
             },
-            "list_persist_failed.string": {
+            "list_persist_failed": {
                 "string": "The distribution list could not be saved."
             },
-            "list_update_failed.string": {
+            "list_update_failed": {
                 "string": "The distribution list could not be updated."
             },
-            "list_member_invalid.string": {
+            "list_member_invalid": {
                 "string": "One or more selected members are not contacts in this address book."
             },
-            "access_denied.string": {
+            "access_denied": {
                 "string": "You do not have permission to modify this address book."
             },
-            "read_only.string": {
+            "read_only": {
                 "string": "This address book is read-only."
             },
-            "export_format_unsupported.string": {
+            "export_format_unsupported": {
                 "string": "The selected export format is not supported."
             },
-            "import_no_file.string": {
+            "import_no_file": {
                 "string": "No file was provided for import."
             },
-            "import_too_large.string": {
+            "import_too_large": {
                 "string": "The import file exceeds the maximum allowed size (10 MB)."
             },
-            "import_parse_failed.string": {
+            "import_parse_failed": {
                 "string": "The import file could not be parsed."
             },
-            "job_not_found.string": {
+            "job_not_found": {
                 "string": "The background job could not be found."
             },
-            "job_forbidden.string": {
+            "job_forbidden": {
                 "string": "You do not have access to this background job."
             },
-            "job_not_ready.string": {
+            "job_not_ready": {
                 "string": "The export is not ready yet. Please wait and try again."
             },
-            "job_no_result.string": {
+            "job_no_result": {
                 "string": "This job has no downloadable result."
             },
-            "job_concurrent_limit.string": {
+            "job_concurrent_limit": {
                 "string": "Too many background jobs are running. Please try again later."
             },
-            "file_too_large.string": {
+            "file_too_large": {
                 "string": "The photo exceeds the maximum allowed size (2 MB)."
             },
-            "file_type_not_allowed.string": {
+            "file_type_not_allowed": {
                 "string": "This file type is not allowed for contact photos."
             },
-            "generic.string": {
+            "generic": {
                 "string": "The operation could not be completed. Please try again."
             }
         },

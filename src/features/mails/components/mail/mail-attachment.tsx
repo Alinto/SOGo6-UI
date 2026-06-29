@@ -12,17 +12,14 @@ import {
 } from './types'
 import { formatSize, getFileExtension } from './utils'
 
-// Retrieve the base URL once at module load
-const API_BASE_URL = (() => {
-  if (typeof window !== 'undefined') {
-    const envVars = getCachedEnvVars()
-    const fromEnv = envVars?.REACT_APP_API_BASE_URL
-
-    // Fallback to localhost:5000 if not defined or if it's /fakeApi
-    return fromEnv && fromEnv !== '/fakeApi' ? fromEnv : 'http://localhost:5000'
+// Resolve API base URL at call time (env may load after module init)
+function getApiBaseUrl(): string {
+  const fromEnv = getCachedEnvVars()?.REACT_APP_API_BASE_URL
+  if (fromEnv && fromEnv !== '/fakeApi') {
+    return fromEnv
   }
-  return 'http://localhost:5000'
-})()
+  return '/api/user/v1'
+}
 
 /**
  * Builds the complete URL for an attachment
@@ -49,9 +46,8 @@ function buildAttachmentUrl(uri: string): string {
   }
   
   // Normalize the base URL (remove trailing slash)
-  const normalizedBase = API_BASE_URL.endsWith('/') 
-    ? API_BASE_URL.slice(0, -1) 
-    : API_BASE_URL
+  const base = getApiBaseUrl()
+  const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base
   
   // Normalize the URI (remove leading slash)
   const normalizedUri = uri.startsWith('/') 

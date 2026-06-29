@@ -24,7 +24,6 @@ const FloatingComposeContainer = () => {
 
   React.useEffect(() => {
     if (!mainAccount?.id || hasInitialized.current || isMobile) return
-    hasInitialized.current = true
 
     const accountId = String(mainAccount.id)
 
@@ -55,8 +54,13 @@ const FloatingComposeContainer = () => {
       }
     }
 
-    void initDrafts()
-  }, [mainAccount?.id])
+    const timer = window.setTimeout(() => {
+      hasInitialized.current = true
+      void initDrafts()
+    }, 2000)
+
+    return () => window.clearTimeout(timer)
+  }, [dispatch, isMobile, mainAccount?.id, triggerGetCurrentDrafts, triggerGetMail])
 
   if (openDraftIds.length === 0) {
     return null

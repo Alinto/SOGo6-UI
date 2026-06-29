@@ -2,8 +2,10 @@
 
 import { Button } from '@/components/ui/button'
 import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
-import { useAllContactsEntries } from '@/features/address_books/hooks/use-all-contacts-entries'
-import { useAddressBookEntries } from '@/features/address_books/hooks/use-address-book-entries'
+import {
+  AddressBookEntriesProvider,
+  useAddressBookEntriesContext,
+} from '@/features/address_books/hooks/address-book-entries-context'
 import { setSearchQuery } from '@/features/address_books/store/address-books-ui-slice'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
@@ -13,7 +15,7 @@ import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 
-export default function Layout({
+function AddressBookLayoutShell({
   children,
   visualization,
 }: {
@@ -22,28 +24,14 @@ export default function Layout({
 }) {
   const pathname = usePathname()
   const { push } = useRouter()
-  const dispatch = useAppDispatch()
   const { book_id } = useParams()
   const t = useTranslations('CONTACT_FORM')
 
-  const resolvedBookId = typeof book_id === 'string' ? book_id : null
-  const isAllContactsView = resolvedBookId === ALL_CONTACTS_BOOK_ID
-  const bookEntries = useAddressBookEntries(
-    isAllContactsView ? null : resolvedBookId
-  )
-  const allContactsEntries = useAllContactsEntries(isAllContactsView)
-  const { contactTotal, listTotal, isFetching } = isAllContactsView
-    ? allContactsEntries
-    : bookEntries
+  const { contactTotal, listTotal, isFetching } = useAddressBookEntriesContext()
   const isBookEmpty =
     !isFetching && contactTotal === 0 && listTotal === 0
 
-  useEffect(() => {
-    if (typeof book_id === 'string') {
-      dispatch(setSearchQuery(''))
-    }
-  }, [book_id, dispatch])
-
+  const resolvedBookId = typeof book_id === 'string' ? book_id : null
   const basePath = `/address_books/${book_id}`
   const isContactSelected =
     pathname !== basePath && pathname.startsWith(`${basePath}/`)
@@ -93,5 +81,31 @@ export default function Layout({
         </div>
       )}
     </div>
+  )
+}
+
+export default function Layout({
+  children,
+  visualization,
+}: {
+  children: React.ReactNode
+  visualization: React.ReactNode
+}) {
+  const dispatch = useAppDispatch()
+  const { book_id } = useParams()
+  const resolvedBookId = typeof book_id === 'string' ? book_id : null
+
+  useEffect(() => {
+    if (typeof book_id === 'string') {
+      dispatch(setSearchQuery(''))
+    }
+  }, [book_id, dispatch])
+
+  return (
+    <AddressBookEntriesProvider bookId={resolvedBookId}>
+      <AddressBookLayoutShell visualization={visualization}>
+        {children}
+      </AddressBookLayoutShell>
+    </AddressBookEntriesProvider>
   )
 }

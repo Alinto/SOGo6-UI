@@ -30,7 +30,9 @@ function DistributionListFormHost() {
   const [updateEntry, { isLoading: isUpdating }] = useUpdateVCardMutation()
 
   const { contacts: bookContacts, isLoading: isPickerLoading } =
-    useAddressBookContactPicker(activeBookId)
+    useAddressBookContactPicker(activeBookId, {
+      enabled: ui.isListFormOpen && Boolean(activeBookId),
+    })
 
   const editingListId = ui.editingListId
   const { editingEntity: editingList, isEditLoading, isEditLoadError } =

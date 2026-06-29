@@ -35,6 +35,12 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
 }))
 
+jest.mock('@/features/address_books/hooks/address-book-entries-context', () => ({
+  AddressBookEntriesProvider: ({ children }: { children: React.ReactNode }) =>
+    children,
+  useAddressBookEntriesContext: () => mockUseAddressBookEntries(),
+}))
+
 jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
   useAddressBookEntries: (...args: unknown[]) => mockUseAddressBookEntries(...args),
 }))

@@ -35,9 +35,7 @@ import {
   isLegacyAddressBooksApi,
   mapContactSortToListSort,
 } from '../utils/api-routes'
-import {
-  FULL_LISTS_PAGE_SIZE,
-} from '../address-books-constants'
+import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import {
   fetchContactLookupMap,
 } from '../utils/fetch-contact-lookup-map'
@@ -45,15 +43,17 @@ import {
   listTagId,
   normalizeSingleEntry,
   parseContactsAndListsFromBackend,
-  parseFakeBookEntries,
 } from '../utils/merge-book-entries'
+import { parseLegacyBookEntriesListResponse } from '../utils/legacy-book-entries-response'
 import { normalizeAutocompleteResponse } from '../utils/normalize-autocomplete'
 import {
   normalizeAddressBooksResponse,
   normalizeSingleAddressBookResponse,
 } from '../utils/normalize-address-book'
 import { normalizeContact, normalizeContactsList } from '../utils/normalize-contact'
-import { parseXPaginationFromMeta } from '../utils/parse-x-pagination'
+import {
+  parseXPaginationFromMeta,
+} from '../utils/parse-x-pagination'
 import {
   serializeAddressBookCreate,
   serializeAddressBookPatch,
@@ -67,6 +67,13 @@ import {
 import { unwrapApiData } from '../utils/unwrap-api-data'
 import { unwrapJobId } from '@/features/jobs/utils/unwrap-job-data'
 import type { ContactJobEnqueueResponse } from '@/features/jobs/jobs-api-types'
+import {
+  patchAllBookEntryCaches,
+  patchVCardDetailCache,
+  removeEntryFromBookCaches,
+  undoEntryCachePatches,
+  upsertEntryInBookCaches,
+} from '../utils/address-books-cache-updates'
 import {
   CONTACT_EXPORT_ACCEPT,
   type ContactTransferFormat,
@@ -142,6 +149,23 @@ function isListKind(kind?: ContactKind): boolean {
   return kind === 'group'
 }
 
+function buildListsPageParams(
+  queryParams?: Record<string, string | number>
+): Record<string, string | number> {
+  const params: Record<string, string | number> = {
+    page: queryParams?.page ?? 1,
+    page_size: queryParams?.page_size ?? 50,
+    sort_by: mapContactSortToListSort(
+      queryParams?.sort_by as Parameters<typeof mapContactSortToListSort>[0]
+    ),
+    sort_order: queryParams?.sort_order ?? 'asc',
+  }
+  if (queryParams?.search) {
+    params.search = queryParams.search
+  }
+  return params
+}
+
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
     getAddressBooks: builder.query<AddressBooks, void>({
@@ -155,41 +179,53 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       BookEntriesResponse,
       GetAddressBookVCardsArg | string
     >({
-      async queryFn(arg, _api, _extraOptions, baseQuery) {
+      async queryFn(arg, api, _extraOptions, baseQuery) {
         const bookId = typeof arg === 'string' ? arg : arg.bookId
         const params = typeof arg === 'string' ? undefined : arg.params
         const queryParams = buildListQueryParams(params, {
           omitShortSearch: !isLegacyAddressBooksApi(),
         })
+        const { signal } = api
 
         if (isLegacyAddressBooksApi()) {
           const result = await baseQuery({
             url: legacyAddressBookEntriesPath(bookId),
             params: queryParams,
+            signal,
           })
           if (result.error) return { error: result.error }
-          return { data: parseFakeBookEntries(result.data) }
+          return {
+            data: parseLegacyBookEntriesListResponse(
+              result.data,
+              result.meta as { response?: Response },
+              params
+            ),
+          }
         }
 
-        const listParams: Record<string, string | number> = {
-          ...(queryParams ?? {}),
-          sort_by: mapContactSortToListSort(
-            queryParams?.sort_by as Parameters<typeof mapContactSortToListSort>[0]
-          ),
-          page_size: FULL_LISTS_PAGE_SIZE,
-        }
-        delete listParams.page
+        const contactsUrl =
+          bookId === ALL_CONTACTS_BOOK_ID
+            ? allContactsPath()
+            : addressBookContactsPath(bookId)
 
-        const [contactsResult, listsResult, contactsByKey] = await Promise.all([
+        const listsPageParams = buildListsPageParams(queryParams)
+
+        const [contactsResult, listsResult] = await Promise.all([
           baseQuery({
-            url: addressBookContactsPath(bookId),
+            url: contactsUrl,
             params: queryParams,
+            signal,
           }),
-          baseQuery({
-            url: addressBookListsPath(bookId),
-            params: listParams,
-          }),
-          fetchContactLookupMap(bookId, baseQuery),
+          bookId === ALL_CONTACTS_BOOK_ID
+            ? Promise.resolve({
+                data: { data: { lists: [] } },
+                meta: undefined,
+              })
+            : baseQuery({
+                url: addressBookListsPath(bookId),
+                params: listsPageParams,
+                signal,
+              }),
         ])
 
         if (contactsResult.error) return { error: contactsResult.error }
@@ -207,7 +243,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             contactsResult.data,
             listsResult.data,
             contactsPagination,
-            contactsByKey,
+            undefined,
             listsPagination
           ),
         }
@@ -307,12 +343,43 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         if (result.error) return { error: result.error }
         return { data: normalizeContact(unwrapApiData(result.data)) }
       },
-      invalidatesTags: (result, error, { id, book_id, kind }) => [
+      invalidatesTags: (result, error, { id, kind }) => [
         { type: VCARD_SLICE, id: isListKind(kind ?? result?.kind) ? listTagId(id) : id },
         { type: VCARD_SLICE, id },
-        { type: ADDRESS_BOOKS_SLICE, id: book_id },
       ],
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
+        const patches = patchAllBookEntryCaches(
+          dispatch,
+          getState,
+          arg.book_id,
+          (draft) => {
+            const item = draft.items.find((entry) => entry.id === arg.id)
+            if (item) {
+              Object.assign(item, arg)
+            }
+          }
+        )
+        const detailPatch = patchVCardDetailCache(
+          dispatch,
+          { book_id: arg.book_id, id: arg.id, kind: arg.kind },
+          (draft) => {
+            Object.assign(draft, arg)
+          }
+        )
+        try {
+          const { data } = await queryFulfilled
+          upsertEntryInBookCaches(dispatch, getState, arg.book_id, data)
+          patchVCardDetailCache(
+            dispatch,
+            { book_id: arg.book_id, id: arg.id, kind: data.kind },
+            (draft) => {
+              Object.assign(draft, data)
+            }
+          )
+        } catch {
+          undoEntryCachePatches(patches)
+          detailPatch?.undo()
+        }
         await notifyEntryUpdate(dispatch, { queryFulfilled })
       },
     }),
@@ -362,11 +429,14 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         if (result.error) return { error: result.error }
         return { data: normalizeContact(unwrapApiData(result.data)) }
       },
-      invalidatesTags: (result, error, { id }) => [
-        { type: ADDRESS_BOOKS_SLICE, id },
-        { type: ADDRESS_BOOKS_SLICE, id: 'LIST' },
-      ],
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      invalidatesTags: [CONTACTS_AUTOCOMPLETE_SLICE],
+      async onQueryStarted({ id: bookId }, { dispatch, getState, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          upsertEntryInBookCaches(dispatch, getState, bookId, data)
+        } catch {
+          // notification handler surfaces the error
+        }
         await notifyEntryCreate(dispatch, { queryFulfilled })
       },
     }),
@@ -392,14 +462,26 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         if (result.error) return { error: result.error }
         return { data: undefined }
       },
-      invalidatesTags: (result, error, { id: bookId, vCardId, kind }) => [
-        { type: ADDRESS_BOOKS_SLICE, id: bookId },
-        { type: ADDRESS_BOOKS_SLICE, id: 'LIST' },
+      invalidatesTags: (result, error, { vCardId, kind }) => [
         { type: VCARD_SLICE, id: isListKind(kind) ? listTagId(vCardId) : vCardId },
         { type: VCARD_SLICE, id: vCardId },
-        vcardBookTag(bookId),
       ],
-      async onQueryStarted(_, { dispatch, queryFulfilled }) {
+      async onQueryStarted(
+        { id: bookId, vCardId, kind },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        const patches = removeEntryFromBookCaches(
+          dispatch,
+          getState,
+          bookId,
+          vCardId,
+          kind
+        )
+        try {
+          await queryFulfilled
+        } catch {
+          undoEntryCachePatches(patches)
+        }
         await notifyEntryDelete(dispatch, { queryFulfilled })
       },
     }),
@@ -464,19 +546,24 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
 
     getAddressBookContactPicker: builder.query<VCard[], string>({
-      async queryFn(bookId, _api, _extraOptions, baseQuery) {
+      async queryFn(bookId, api, _extraOptions, baseQuery) {
+        const { signal } = api
+
         if (isLegacyAddressBooksApi()) {
           const result = await baseQuery({
             url: legacyAddressBookEntriesPath(bookId),
+            signal,
           })
           if (result.error) return { error: result.error }
-          const entries = parseFakeBookEntries(result.data).items
+          const entries = normalizeContactsList(result.data as VCard[])
           return {
             data: entries.filter((entry) => entry.kind !== 'group'),
           }
         }
 
-        const contactsByKey = await fetchContactLookupMap(bookId, baseQuery)
+        const contactsByKey = await fetchContactLookupMap(bookId, baseQuery, {
+          signal,
+        })
         return {
           data: Array.from(contactsByKey.values()).filter(
             (entry, index, all) =>
@@ -499,11 +586,14 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             params: buildListQueryParams(params),
           })
           if (result.error) return { error: result.error }
-          const parsed = parseFakeBookEntries(result.data)
+          const applied = parseLegacyBookEntriesListResponse(
+            result.data,
+            result.meta as { response?: Response },
+            params
+          )
           return {
             data: {
-              ...parsed,
-              contactTotal: parsed.total,
+              ...applied,
               listTotal: 0,
             },
           }

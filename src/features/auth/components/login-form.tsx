@@ -33,6 +33,8 @@ const localeLabels: Record<string, string> = {
 // Languages available in the demo
 const availableLocales = ['en']
 
+const SYSTEM_LOAD_TIMEOUT_MS = 15_000
+
 const createLoginSchema = (t: (key: string) => string) =>
   z.object({
     email: z
@@ -54,8 +56,14 @@ export function LoginForm({
   const locales = getLocales()
   const [isLoading, setIsLoading] = React.useState(false)
   const [serverError, setServerError] = React.useState<string | null>(null)
+  const [systemTimedOut, setSystemTimedOut] = React.useState(false)
 
-  const { data: systemData, isLoading: systemLoading } = useGetSystemQuery()
+  const {
+    data: systemData,
+    isLoading: systemLoading,
+    isError: systemError,
+    refetch: refetchSystem,
+  } = useGetSystemQuery()
   const [getAuthMode] = useLazyGetAuthModeQuery()
   const { envVars } = useEnvVars()
 
@@ -79,6 +87,19 @@ export function LoginForm({
       setValue('email', pre)
     }
   }, [envVars, setValue])
+
+  React.useEffect(() => {
+    if (!systemLoading) {
+      setSystemTimedOut(false)
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setSystemTimedOut(true)
+    }, SYSTEM_LOAD_TIMEOUT_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [systemLoading])
 
   // If SOGO_S_DIRECT_LOGIN → skip email step, go directly to password
   React.useEffect(() => {
@@ -120,11 +141,32 @@ export function LoginForm({
     }
   }
 
-  // Wait for the system response before displaying the form
-  if (systemLoading) {
+  const handleRetrySystem = () => {
+    setSystemTimedOut(false)
+    void refetchSystem()
+  }
+
+  const isSystemBlocked =
+    systemLoading && !systemTimedOut && !systemError
+
+  if (isSystemBlocked) {
     return (
       <div className="flex items-center justify-center py-8">
         <Loader2 className="text-primary-foreground h-6 w-6 animate-spin" />
+      </div>
+    )
+  }
+
+  if (systemTimedOut || systemError) {
+    return (
+      <div className="mx-auto flex w-full max-w-xs flex-col gap-4 py-4">
+        <div className="border-destructive/50 bg-destructive/10 text-destructive flex items-start gap-2 rounded-lg border p-3 text-sm">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>{t('error.system_timeout.string')}</p>
+        </div>
+        <Button type="button" variant="outline" onClick={handleRetrySystem}>
+          {t('system_retry.string')}
+        </Button>
       </div>
     )
   }

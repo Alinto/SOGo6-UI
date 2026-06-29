@@ -78,6 +78,7 @@ describe('API Slice', () => {
       expect(mockFetchBaseQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           baseUrl: '/fakeApi',
+          timeout: 20_000,
         })
       )
     })
@@ -165,6 +166,7 @@ describe('API Slice', () => {
       expect(mockFetchBaseQuery).toHaveBeenCalledWith(
         expect.objectContaining({
           baseUrl: '/fakeApi',
+          timeout: 20_000,
         })
       )
     })

@@ -2,6 +2,7 @@ import { clearEnvCache, fetchEnvVars } from '@/lib/env-service'
 import type { RootState } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { withApiFetchSemaphore } from './fetch-semaphore'
 
 export const ADDRESS_BOOKS_SETTINGS_SLICE = 'address_books_settings'
 export const GENERAL_SETTINGS_SLICE = 'general_settings'
@@ -91,6 +92,16 @@ let cachedBaseUrl: string | undefined
 
 const ENV_RESOLVE_MS = 8000
 
+/** Release semaphore slots when the back never responds (dev mono-worker / IMAP hang). */
+export const API_FETCH_TIMEOUT_MS = 20_000
+
+/** RTK endpoint names that must not send Authorization (pre-login / public). */
+const PUBLIC_AUTH_ENDPOINTS = new Set([
+  'getSystem',
+  'getAuthMode',
+  'login',
+])
+
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
   if (!cachedBaseUrl) {
     try {
@@ -120,11 +131,12 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
 
   const baseQuery = fetchBaseQuery({
     baseUrl: cachedBaseUrl,
-    prepareHeaders: (headers, { getState }) => {
+    timeout: API_FETCH_TIMEOUT_MS,
+    prepareHeaders: (headers, { getState, endpoint }) => {
       const state = getState() as RootState
       const token = state.auth?.token
 
-      if (token) {
+      if (token && !PUBLIC_AUTH_ENDPOINTS.has(endpoint)) {
         headers.set('Authorization', `Bearer ${token}`)
       }
 
@@ -134,7 +146,7 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
     },
   })
 
-  return baseQuery(args, api, extraOptions)
+  return withApiFetchSemaphore(() => baseQuery(args, api, extraOptions))
 }
 
 export const apiSlice = createApi({

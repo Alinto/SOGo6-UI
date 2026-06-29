@@ -4,8 +4,7 @@ import AddressBookList from '@/features/address_books/components/list'
 import ReadOnlyBanner from '@/features/address_books/components/read-only-banner'
 import ListSkeleton from '@/features/address_books/components/skeletons/list-skeleton'
 import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
-import { useAllContactsEntries } from '@/features/address_books/hooks/use-all-contacts-entries'
-import { useAddressBookEntries } from '@/features/address_books/hooks/use-address-book-entries'
+import { useAddressBookEntriesContext } from '@/features/address_books/hooks/address-book-entries-context'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
@@ -15,10 +14,6 @@ const AddressBooksPage: React.FC = () => {
   const t = useTranslations('CONTACT_FORM')
   const resolvedBookId = typeof book_id === 'string' ? book_id : null
   const isAllContactsView = resolvedBookId === ALL_CONTACTS_BOOK_ID
-  const bookEntries = useAddressBookEntries(
-    isAllContactsView ? null : resolvedBookId
-  )
-  const allContactsEntries = useAllContactsEntries(isAllContactsView)
   const {
     items,
     isFetching,
@@ -28,7 +23,7 @@ const AddressBooksPage: React.FC = () => {
     contactTotal,
     listTotal,
     searchTooShort,
-  } = isAllContactsView ? allContactsEntries : bookEntries
+  } = useAddressBookEntriesContext()
 
   if (isError) {
     return (
