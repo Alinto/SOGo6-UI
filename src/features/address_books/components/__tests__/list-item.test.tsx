@@ -144,8 +144,22 @@ describe('ListItem', () => {
           onHandleCheckboxClick={mockOnHandleCheckboxClick}
         />
       )
-      fireEvent.click(screen.getByText('John Doe').closest('div')!)
+      fireEvent.click(screen.getByRole('button', { name: 'John Doe' }))
       expect(mockPush).toHaveBeenCalledWith('/address_books/test-book-id/1')
+    })
+
+    it('appends kind query for distribution lists', () => {
+      render(
+        <ListItem
+          data={distributionList}
+          isSelected={false}
+          onHandleCheckboxClick={mockOnHandleCheckboxClick}
+        />
+      )
+      fireEvent.click(screen.getByRole('button', { name: 'Team' }))
+      expect(mockPush).toHaveBeenCalledWith(
+        '/address_books/test-book-id/list-1?kind=group'
+      )
     })
   })
 

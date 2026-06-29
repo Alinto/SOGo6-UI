@@ -4,9 +4,11 @@ import type { VCard } from '@/features/address_books/address-books-types'
 import Page from '../page'
 
 const mockUseGetVCardQuery = jest.fn()
+const mockUseSearchParams = jest.fn(() => new URLSearchParams())
 
 jest.mock('next/navigation', () => ({
   useParams: () => ({ book_id: 'work', contact_id: 'c1' }),
+  useSearchParams: () => mockUseSearchParams(),
 }))
 
 jest.mock('next-intl', () => ({
@@ -14,7 +16,7 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('@/features/address_books/store/address-books-api', () => ({
-  useGetVCardQuery: () => mockUseGetVCardQuery(),
+  useGetVCardQuery: (arg: unknown) => mockUseGetVCardQuery(arg),
 }))
 
 jest.mock('@/features/address_books/components/visualization', () => ({
@@ -39,6 +41,12 @@ const contact: VCard = {
 describe('AddressBook contact visualization Page', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseSearchParams.mockReturnValue(new URLSearchParams())
+    mockUseGetVCardQuery.mockReturnValue({
+      data: contact,
+      isLoading: false,
+      isError: false,
+    })
   })
 
   describe('basic rendering', () => {
@@ -54,12 +62,6 @@ describe('AddressBook contact visualization Page', () => {
     })
 
     it('renders visualization when contact is loaded', () => {
-      mockUseGetVCardQuery.mockReturnValue({
-        data: contact,
-        isLoading: false,
-        isError: false,
-      })
-
       render(<Page />)
       expect(screen.getByTestId('visualization')).toHaveTextContent('John')
     })
@@ -67,12 +69,6 @@ describe('AddressBook contact visualization Page', () => {
 
   describe('configuration', () => {
     it('keeps visualization visible during background refetch', () => {
-      mockUseGetVCardQuery.mockReturnValue({
-        data: contact,
-        isLoading: false,
-        isError: false,
-      })
-
       render(<Page />)
       expect(screen.getByTestId('visualization')).toHaveTextContent('John')
     })
@@ -88,15 +84,16 @@ describe('AddressBook contact visualization Page', () => {
       expect(screen.getByText('load_error.title.string')).toBeInTheDocument()
     })
 
-    it('shows error when data is an array', () => {
-      mockUseGetVCardQuery.mockReturnValue({
-        data: [],
-        isLoading: false,
-        isError: false,
-      })
+    it('passes group kind from search params to the query', () => {
+      mockUseSearchParams.mockReturnValue(new URLSearchParams('kind=group'))
 
       render(<Page />)
-      expect(screen.getByText('load_error.title.string')).toBeInTheDocument()
+
+      expect(mockUseGetVCardQuery).toHaveBeenCalledWith({
+        id: 'c1',
+        book_id: 'work',
+        kind: 'group',
+      })
     })
   })
 })

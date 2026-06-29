@@ -46,6 +46,16 @@ describe('buildBookEntriesResponse', () => {
       totalPages: 3,
     })
   })
+
+  it('uses the higher page count when contacts and lists paginate differently', () => {
+    const result = buildBookEntriesResponse([], [], { total: 10, totalPages: 2, page: 1 }, {
+      listTotal: 50,
+      listsPagination: { total: 50, totalPages: 5, page: 1 },
+    })
+
+    expect(result.totalPages).toBe(5)
+    expect(result.listTotal).toBe(50)
+  })
 })
 
 describe('parseContactsAndListsFromBackend', () => {

@@ -16,6 +16,7 @@ const AddressBooksPage: React.FC = () => {
   const isAllContactsView = resolvedBookId === ALL_CONTACTS_BOOK_ID
   const {
     items,
+    isLoading,
     isFetching,
     isError,
     totalPages,
@@ -37,12 +38,12 @@ const AddressBooksPage: React.FC = () => {
     <div className="flex min-h-full flex-col">
       {!isAllContactsView && <ReadOnlyBanner />}
       <div className="flex min-h-full flex-1">
-      {isFetching ? (
+      {isLoading && items.length === 0 ? (
         <ListSkeleton />
       ) : (
         <AddressBookList
           items={items}
-          isLoading={isFetching}
+          isFetching={isFetching}
           serverSide
           totalPages={totalPages}
           currentPage={page}

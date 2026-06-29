@@ -20,13 +20,16 @@ import {
 } from '@/components/ui/select'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
-import { ArrowDownAZ, ArrowUpAZ, Trash2, Users, X } from 'lucide-react'
+import { ArrowDownAZ, ArrowUpAZ, Loader2, Trash2, Users, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React, { useMemo, useState } from 'react'
+import React, { memo, useMemo, useState } from 'react'
 import type { ContactSortField } from '../address-books-api-types'
 import { VCard } from '../address-books-types'
-import { useDeleteVCardFromAddressBookMutation } from '../store/address-books-api'
+import {
+  useDeleteVCardFromAddressBookMutation,
+  useGetAddressBooksQuery,
+} from '../store/address-books-api'
 import {
   openCreateListForm,
   selectAddressBooksUi,
@@ -43,11 +46,10 @@ import {
 import ListSection from './list-section'
 import AddressBookEmptyState from './address-book-empty-state'
 import AddressBookListPagination from './list-pagination'
-import AddressBookListSkeleton from './skeletons/skeleton'
 
 interface AddressBookListProps {
   items: VCard[]
-  isLoading: boolean
+  isFetching?: boolean
   serverSide?: boolean
   totalPages?: number
   currentPage?: number
@@ -86,9 +88,9 @@ function EntriesSummary({
   return <span className="text-sm">{parts.join(' · ')}</span>
 }
 
-const AddressBookList: React.FC<AddressBookListProps> = ({
+function AddressBookList({
   items,
-  isLoading,
+  isFetching = false,
   serverSide = false,
   totalPages = 1,
   currentPage = 1,
@@ -96,7 +98,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   listTotal,
   searchTooShort = false,
   allContactsView = false,
-}) => {
+}: AddressBookListProps) {
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const tForm = useTranslations('CONTACT_FORM')
   const { writable } = useActiveAddressBookWritable()
@@ -106,10 +108,27 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   const book_id = params?.book_id as string
 
   const { searchQuery, sortOrder, sortBy } = useAppSelector(selectAddressBooksUi)
-  const [deleteContact] = useDeleteVCardFromAddressBookMutation()
+  const [deleteContact, { isLoading: isDeleting }] =
+    useDeleteVCardFromAddressBookMutation()
+  const { data: addressBooks } = useGetAddressBooksQuery(undefined, {
+    skip: !allContactsView,
+  })
 
   const [selectedItems, setSelectedItems] = React.useState<VCard[]>([])
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+
+  const sourceBookNamesById = useMemo(() => {
+    if (!addressBooks) return {} as Record<string, string>
+    const map: Record<string, string> = {}
+    for (const book of [
+      ...addressBooks.personals,
+      ...addressBooks.subscriptions,
+      ...addressBooks.globals,
+    ]) {
+      map[book.id] = book.name
+    }
+    return map
+  }, [addressBooks])
 
   const { distributionLists, contacts } = useMemo(
     () =>
@@ -130,6 +149,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
     : contacts.length
   const hasSummaryCounts = summaryListCount + summaryContactCount > 0
   const showPagination = totalDisplayed > 0
+  const canCreateFromEmpty = writable && !allContactsView
 
   const handleCheckboxClick = (e: React.MouseEvent, item: VCard) => {
     e.stopPropagation()
@@ -153,17 +173,21 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   }
 
   const handleConfirmBulkDelete = async () => {
-    await Promise.all(
-      selectedItems.map((item) =>
-        deleteContact({
-          id: book_id,
-          vCardId: item.id,
-          kind: item.kind,
-        }).unwrap()
+    try {
+      await Promise.all(
+        selectedItems.map((item) =>
+          deleteContact({
+            id: book_id,
+            vCardId: item.id,
+            kind: item.kind,
+          }).unwrap()
+        )
       )
-    )
-    setSelectedItems([])
-    setBulkDeleteOpen(false)
+      setSelectedItems([])
+      setBulkDeleteOpen(false)
+    } catch {
+      // RTK mutation handler shows toast; keep dialog open for retry
+    }
   }
 
   const selectedIndividuals = selectedItems.filter(isIndividualContact)
@@ -181,16 +205,18 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
     setSelectedItems([])
   }
 
-  if (isLoading) {
-    return <AddressBookListSkeleton />
-  }
-
   return (
     <>
       <div className="flex w-full flex-col rounded p-4">
-        {(hasSummaryCounts || hasSelections) && (
+        {(hasSummaryCounts || hasSelections || isFetching) && (
         <div className="text-muted-foreground flex min-w-0 flex-row items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
+            {isFetching && (
+              <Loader2
+                className="text-muted-foreground h-4 w-4 shrink-0 animate-spin"
+                aria-hidden
+              />
+            )}
             {hasSelections ? (
               <>
                 <span className="text-sm font-medium">
@@ -223,6 +249,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
                   size="icon"
                   className="text-destructive hover:text-destructive h-6 w-6"
                   onClick={() => setBulkDeleteOpen(true)}
+                  disabled={isDeleting}
                   aria-label={t('delete_selected.string')}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -274,7 +301,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
         </div>
         )}
 
-        <div className={cn('flex min-h-0 flex-1 flex-col space-y-5', (hasSummaryCounts || hasSelections) && 'mt-4')}>
+        <div className={cn('flex min-h-0 flex-1 flex-col space-y-5', (hasSummaryCounts || hasSelections || isFetching) && 'mt-4')}>
           {searchTooShort && (
             <p className="text-muted-foreground mt-3 flex h-14 items-center justify-center rounded-full text-center text-sm">
               {t('search_min_length.string')}
@@ -289,7 +316,11 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
           )}
 
           {totalDisplayed === 0 && !isSearchActive && isBookEmpty && (
-            <AddressBookEmptyState variant="empty" bookId={book_id} />
+            <AddressBookEmptyState
+              variant="empty"
+              bookId={book_id}
+              showCreateAction={canCreateFromEmpty}
+            />
           )}
 
           {totalDisplayed === 0 && !isSearchActive && !isBookEmpty && (
@@ -307,6 +338,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             selectedItems={selectedItems}
             showCheckboxes={showCheckboxes}
             onHandleCheckboxClick={handleCheckboxClick}
+            sourceBookNamesById={sourceBookNamesById}
           />
 
           <ListSection
@@ -319,6 +351,7 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             showCheckboxes={showCheckboxes}
             onHandleCheckboxClick={handleCheckboxClick}
             allContactsView={allContactsView}
+            sourceBookNamesById={sourceBookNamesById}
             className={distributionLists.length > 0 ? 'border-t pt-4' : undefined}
           />
         </div>
@@ -345,8 +378,13 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{tForm('cancel.string')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmBulkDelete}>
+            <AlertDialogCancel disabled={isDeleting}>
+              {tForm('cancel.string')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmBulkDelete}
+              disabled={isDeleting}
+            >
               {tForm('delete_dialog.confirm.string')}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -356,4 +394,4 @@ const AddressBookList: React.FC<AddressBookListProps> = ({
   )
 }
 
-export default AddressBookList
+export default memo(AddressBookList)

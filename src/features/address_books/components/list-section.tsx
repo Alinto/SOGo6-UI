@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils'
 import { Users } from 'lucide-react'
-import type { MouseEvent } from 'react'
+import { memo, type MouseEvent } from 'react'
 import type { VCard } from '../address-books-types'
 import ListItem from './list-item'
 
@@ -15,6 +15,7 @@ type ListSectionProps = {
   className?: string
   variant?: 'lists' | 'contacts'
   allContactsView?: boolean
+  sourceBookNamesById?: Record<string, string>
 }
 
 function ListSection({
@@ -28,6 +29,7 @@ function ListSection({
   className,
   variant = 'contacts',
   allContactsView = false,
+  sourceBookNamesById,
 }: ListSectionProps) {
   if (items.length === 0) return null
 
@@ -53,6 +55,11 @@ function ListSection({
               isActive={contactId === item.id}
               showCheckbox={showCheckboxes}
               allContactsView={allContactsView}
+              sourceBookName={
+                item.addressBookKey
+                  ? sourceBookNamesById?.[item.addressBookKey]
+                  : undefined
+              }
             />
           </li>
         ))}
@@ -61,4 +68,4 @@ function ListSection({
   )
 }
 
-export default ListSection
+export default memo(ListSection)

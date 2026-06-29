@@ -44,6 +44,19 @@ describe('AddressBookEmptyState', () => {
       expect(mockDispatch).toHaveBeenCalledWith(openCreateForm({ bookId: 'work' }))
     })
 
+    it('hides create button when showCreateAction is false', () => {
+      render(
+        <AddressBookEmptyState
+          variant="empty"
+          bookId="work"
+          showCreateAction={false}
+        />
+      )
+      expect(
+        screen.queryByRole('button', { name: 'empty_create_contact.string' })
+      ).not.toBeInTheDocument()
+    })
+
     it('calls onClearSearch when clear button is clicked', async () => {
       const user = userEvent.setup()
       const onClearSearch = jest.fn()

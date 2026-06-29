@@ -20,6 +20,7 @@ jest.mock('next-intl', () => ({
 jest.mock('../../../store/address-books-api', () => ({
   useDeleteVCardFromAddressBookMutation: () => [
     jest.fn().mockReturnValue({ unwrap: () => Promise.resolve() }),
+    { isLoading: false },
   ],
 }))
 

@@ -35,6 +35,7 @@ function ContactsSearch() {
         type="text"
         className="text-foreground caret-foreground placeholder:text-transparent"
         placeholder={t('search_placeholder.string')}
+        aria-label={t('search_placeholder.string')}
         value={searchInput}
         onChange={(e) => setSearchInput(e.target.value)}
         data-testid="contacts-search"

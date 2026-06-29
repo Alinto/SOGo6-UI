@@ -1,33 +1,14 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { createDraft } from '@/features/mails/store'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
-import { Download, Mail, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useState } from 'react'
 import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
 import { useDeleteVCardFromAddressBookMutation } from '../../store/address-books-api'
-import ExportEntryDialog from '../sidebar/actions/export-entry-dialog'
 import { openEditForm } from '../../store/address-books-ui-slice'
+import EntryActionsShell from './entry-actions-shell'
 
 type ContactActionsProps = {
   contactId: string
@@ -48,7 +29,8 @@ function ContactActions({
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
   const { writable } = useActiveAddressBookWritable()
-  const [deleteContact] = useDeleteVCardFromAddressBookMutation()
+  const [deleteContact, { isLoading: isDeleting }] =
+    useDeleteVCardFromAddressBookMutation()
 
   const validEmails = emails.filter(Boolean)
 
@@ -73,96 +55,48 @@ function ContactActions({
   }
 
   const handleConfirmDelete = async () => {
-    await deleteContact({ id: bookId, vCardId: contactId }).unwrap()
-    setDeleteOpen(false)
-    push(`/address_books/${bookId}`)
+    try {
+      await deleteContact({ id: bookId, vCardId: contactId }).unwrap()
+      setDeleteOpen(false)
+      push(`/address_books/${bookId}`)
+    } catch {
+      // RTK mutation handler shows toast; keep dialog open for retry
+    }
   }
 
   return (
-    <>
-      <div className="flex min-w-0 shrink items-center gap-1">
-        <Button
-          variant="outline"
-          size="sm"
-          className="max-w-full"
-          onClick={handleWriteMessage}
-          disabled={validEmails.length === 0}
-          data-testid="write-to-contact-button"
-        >
-          <Mail className="h-4 w-4 shrink-0 sm:mr-1" />
-          <span className="hidden sm:inline">{t('write_message.string')}</span>
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8 shrink-0"
-              aria-label={t('actions_menu.string')}
-              data-testid="contact-actions-menu"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="min-w-[10rem]">
-            <DropdownMenuItem
-              onClick={() => setExportOpen(true)}
-              data-testid="export-contact-button"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {t('export.string')}
-            </DropdownMenuItem>
-            {writable && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleEdit}
-                  data-testid="edit-contact-button"
-                >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {t('edit.string')}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={() => setDeleteOpen(true)}
-                  data-testid="delete-contact-button"
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {t('delete.string')}
-                </DropdownMenuItem>
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <ExportEntryDialog
-        open={exportOpen}
-        onOpenChange={setExportOpen}
-        bookId={bookId}
-        entryId={contactId}
-        entryLabel={displayName || contactId}
-        kind="contact"
-      />
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('delete_dialog.title.string')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('delete_dialog.description.string')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('cancel.string')}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmDelete}>
-              {t('delete_dialog.confirm.string')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    <EntryActionsShell
+      writeMessageLabel={t('write_message.string')}
+      writeMessageDisabled={validEmails.length === 0}
+      onWriteMessage={handleWriteMessage}
+      writeMessageTestId="write-to-contact-button"
+      actionsMenuLabel={t('actions_menu.string')}
+      actionsMenuTestId="contact-actions-menu"
+      exportLabel={t('export.string')}
+      exportTestId="export-contact-button"
+      onExportOpen={() => setExportOpen(true)}
+      writable={writable}
+      editLabel={t('edit.string')}
+      editTestId="edit-contact-button"
+      onEdit={handleEdit}
+      deleteLabel={t('delete.string')}
+      deleteTestId="delete-contact-button"
+      onDeleteOpen={() => setDeleteOpen(true)}
+      exportOpen={exportOpen}
+      onExportOpenChange={setExportOpen}
+      bookId={bookId}
+      entryId={contactId}
+      entryLabel={displayName || contactId}
+      exportKind="individual"
+      deleteOpen={deleteOpen}
+      onDeleteOpenChange={setDeleteOpen}
+      deleteDialogTitle={t('delete_dialog.title.string')}
+      deleteDialogDescription={t('delete_dialog.description.string')}
+      cancelLabel={t('cancel.string')}
+      deleteConfirmLabel={t('delete_dialog.confirm.string')}
+      onConfirmDelete={handleConfirmDelete}
+      isDeleting={isDeleting}
+    />
   )
 }
 
