@@ -3,6 +3,7 @@
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import { createClientId } from '@/lib/utils/create-client-id'
 import React from 'react'
 import { selectOpenDraftIds } from '../../store'
 import { useLazyGetCurrentDraftsQuery } from '../../store/mail-api'
@@ -33,7 +34,7 @@ const FloatingComposeContainer = () => {
         if (!result.data?.data?.length) return
 
         for (const item of result.data.data) {
-          const draftId = crypto.randomUUID()
+          const draftId = createClientId()
           const editResult = await triggerGetMail({
             folder: FOLDERS_NAME.DRAFT,
             mailId: item.mail_server_uid,

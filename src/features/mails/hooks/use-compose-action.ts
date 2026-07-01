@@ -12,12 +12,7 @@ import {
   MAX_OPEN_DRAFTS,
   selectCanOpenNewDraft,
 } from '../store'
-
-function createDraftId(): string {
-  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-    ? crypto.randomUUID()
-    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
-}
+import { createClientId } from '@/lib/utils/create-client-id'
 
 export function useComposeAction(options?: { closeMobileSidebar?: boolean }) {
   const t = useTranslations('COMPOSE')
@@ -37,7 +32,7 @@ export function useComposeAction(options?: { closeMobileSidebar?: boolean }) {
       setOpenMobile(false)
     }
 
-    dispatch(createDraft({ draftId: createDraftId() }))
+    dispatch(createDraft({ draftId: createClientId() }))
   }, [canOpen, closeMobileSidebar, dispatch, isMobile, setOpenMobile, t])
 
   return {

@@ -20,6 +20,7 @@ import {
 import ComposeRecipientField from './compose-recipient-field'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import { createClientId } from '@/lib/utils/create-client-id'
 import { Check, PenLine } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useCallback, useRef } from 'react'
@@ -80,13 +81,22 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       return
     hasInitializedRecipients.current = true
     setToTags(
-      toRecipients?.map((r: MailComposeRecipient) => ({ id: crypto.randomUUID(), value: r.email }))
+      toRecipients?.map((r: MailComposeRecipient) => ({
+        id: createClientId(),
+        value: r.email,
+      }))
     )
     setCcTags(
-      ccRecipients?.map((r: MailComposeRecipient) => ({ id: crypto.randomUUID(), value: r.email }))
+      ccRecipients?.map((r: MailComposeRecipient) => ({
+        id: createClientId(),
+        value: r.email,
+      }))
     )
     setBccTags(
-      bccRecipients?.map((r: MailComposeRecipient) => ({ id: crypto.randomUUID(), value: r.email }))
+      bccRecipients?.map((r: MailComposeRecipient) => ({
+        id: createClientId(),
+        value: r.email,
+      }))
     )
     if (ccRecipients?.length > 0) setShowCc(true)
     if (bccRecipients?.length > 0) setShowBcc(true)
@@ -114,7 +124,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       handleAdd: (value: string) => {
         const trimmed = value.trim()
         if (!trimmed || !isValidEmail(trimmed)) return
-        const newTags = [...tags, { id: crypto.randomUUID(), value: trimmed }]
+        const newTags = [...tags, { id: createClientId(), value: trimmed }]
         setTags(newTags)
         dispatchRecipients(field, newTags)
       },

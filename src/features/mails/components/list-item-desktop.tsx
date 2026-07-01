@@ -14,6 +14,7 @@ import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-pa
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
+import { createClientId } from '@/lib/utils/create-client-id'
 import {
   Archive,
   Flame,
@@ -105,11 +106,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
               mailId: id,
               accountId: accountString,
             })
-            const draftId =
-              typeof crypto !== 'undefined' &&
-              typeof crypto.randomUUID === 'function'
-                ? crypto.randomUUID()
-                : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
+            const draftId = createClientId()
             dispatch(
               createDraft({
                 draftId,

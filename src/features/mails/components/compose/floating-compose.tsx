@@ -31,6 +31,7 @@ import { useInterval } from '@/hooks/use-interval'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
+import { createClientId } from '@/lib/utils/create-client-id'
 import { motion, useDragControls, useMotionValue } from 'framer-motion'
 import {
   Download,
@@ -310,7 +311,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     if (!files || files.length === 0) return
 
     for (const file of Array.from(files)) {
-      const tempId = crypto.randomUUID()
+      const tempId = createClientId()
 
       dispatch(
         addAttachment({

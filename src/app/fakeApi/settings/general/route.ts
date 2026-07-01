@@ -1,3 +1,4 @@
+import { createClientId } from '@/lib/utils/create-client-id'
 import { NextRequest, NextResponse } from 'next/server'
 
 const data = {
@@ -5,7 +6,7 @@ const data = {
   timezone: 'Europe/Paris',
   shortDateStyle: '01-Fév-25',
   longDateStyle: 'Samedi, Février 01, 2025',
-  test: crypto.randomUUID(),
+  test: createClientId(),
   timeStyle: '15:02',
   defaultView: 'Mail',
   enableNotifications: false,

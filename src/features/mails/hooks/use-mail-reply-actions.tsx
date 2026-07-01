@@ -17,13 +17,9 @@ import {
   buildQuotedReplyBody,
 } from '@/features/mails/utils/mail-compose-from-api'
 import { useAppDispatch } from '@/lib/redux/hooks'
+import { createClientId } from '@/lib/utils/create-client-id'
 import { Forward, Reply, ReplyAll } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-
-const generateDraftId = () =>
-  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-    ? crypto.randomUUID()
-    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`
 
 interface UseMailReplyActionsOptions {
   mail?: ImapMessages
@@ -65,7 +61,7 @@ export function useMailReplyActions({
     if (!mail || !mailId || !folder) return
 
     if (action.id === ActionId.FORWARD) {
-      const draftId = generateDraftId()
+      const draftId = createClientId()
 
       void (async () => {
         const result = await triggerGetEditMessage({
@@ -91,7 +87,7 @@ export function useMailReplyActions({
       action.id === ActionId.REPLY ||
       action.id === ActionId.REPLY_ALL
     ) {
-      const draftId = generateDraftId()
+      const draftId = createClientId()
 
       void (async () => {
         const result = await triggerGetReplyMessage({
