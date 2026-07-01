@@ -36,32 +36,36 @@ function DistributionListVisualization({
   }
 
   return (
-    <Card className="flex h-full w-full flex-col">
+    <Card className="flex h-full w-full min-w-0 flex-col overflow-hidden">
       <CardHeader className="pb-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-start gap-4">
-            <Avatar className="h-20 w-20 shrink-0 sm:h-24 sm:w-24">
+        <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+            <Avatar className="h-14 w-14 shrink-0 sm:h-16 sm:w-16 xl:h-20 xl:w-20">
               <AvatarFallback className="bg-primary/10 text-primary">
-                <Users className="h-8 w-8" />
+                <Users className="h-6 w-6 xl:h-8 xl:w-8" />
               </AvatarFallback>
             </Avatar>
-            <div className="min-w-0 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-foreground text-2xl font-semibold sm:text-3xl">
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <h1 className="text-foreground min-w-0 truncate text-xl font-semibold sm:text-2xl xl:text-3xl">
                   {getDistributionListName(data)}
                 </h1>
-                <Badge variant="secondary">{t('list_badge.string')}</Badge>
+                <Badge variant="secondary" className="shrink-0">
+                  {t('list_badge.string')}
+                </Badge>
               </div>
-              <p className="text-muted-foreground text-sm">
+              <p className="text-muted-foreground truncate text-sm">
                 {t('member_count.string', { number: memberCount })}
               </p>
             </div>
           </div>
-          <DistributionListActions list={data} bookId={bookId} />
+          <div className="flex w-full min-w-0 shrink-0 flex-wrap items-center gap-2 xl:w-auto">
+            <DistributionListActions list={data} bookId={bookId} />
+          </div>
         </div>
       </CardHeader>
 
-      <CardContent className="flex flex-1 flex-col gap-6 overflow-y-auto">
+      <CardContent className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto">
         {data.note && (
           <section className="space-y-2">
             <h2 className="text-foreground text-base font-semibold sm:text-lg">

@@ -34,27 +34,31 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
   const t = useTranslations('CONTACT_FORM')
 
   return (
-    <Card className="flex h-full w-full flex-col">
+    <Card className="flex h-full w-full min-w-0 flex-col overflow-hidden">
       <CardHeader className="pb-4">
-        <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <ContactHeader
-            firstName={firstName}
-            lastName={lastName}
-            organization={organization}
-            jobTitle={jobTitle}
-            photo={photo}
-          />
-          {book_id && contact_id && (
-            <ContactActions
-              contactId={contact_id as string}
-              bookId={book_id as string}
-              emails={emails}
-              displayName={[firstName, lastName].filter(Boolean).join(' ')}
+        <div className="flex min-w-0 flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0 flex-1">
+            <ContactHeader
+              firstName={firstName}
+              lastName={lastName}
+              organization={organization}
+              jobTitle={jobTitle}
+              photo={photo}
             />
+          </div>
+          {book_id && contact_id && (
+            <div className="flex w-full min-w-0 shrink-0 flex-wrap items-center gap-2 xl:w-auto">
+              <ContactActions
+                contactId={contact_id as string}
+                bookId={book_id as string}
+                emails={emails}
+                displayName={[firstName, lastName].filter(Boolean).join(' ')}
+              />
+            </div>
           )}
         </div>
       </CardHeader>
-      <CardContent className="flex flex-1 flex-col gap-6 overflow-y-auto">
+      <CardContent className="flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto">
         {emails && emails.length > 0 && (
           <section aria-labelledby="emails-heading" className="space-y-3">
             <h2

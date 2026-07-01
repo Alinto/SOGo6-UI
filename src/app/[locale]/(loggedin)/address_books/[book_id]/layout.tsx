@@ -43,10 +43,10 @@ function AddressBookLayoutShell({
   const showVisualizationPanel = !isBookEmpty
 
   return (
-    <div className="flex min-h-full">
+    <div className="flex min-h-full min-w-0">
       <div
         className={cn(
-          'w-full md:rounded',
+          'w-full min-w-0 md:rounded',
           showVisualizationPanel
             ? 'md:w-1/2 lg:w-2/5'
             : 'md:w-full lg:w-full',
@@ -57,7 +57,7 @@ function AddressBookLayoutShell({
       </div>
 
       {showVisualizationPanel && (
-        <div className="hidden md:flex md:w-1/2 md:rounded lg:w-3/5">
+        <div className="hidden min-w-0 md:flex md:w-1/2 md:rounded lg:w-3/5">
           {visualization}
         </div>
       )}

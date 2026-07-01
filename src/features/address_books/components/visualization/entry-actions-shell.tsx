@@ -92,17 +92,17 @@ function EntryActionsShell({
 }: EntryActionsShellProps) {
   return (
     <>
-      <div className="flex min-w-0 shrink items-center gap-1">
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1">
         <Button
           variant="outline"
           size="sm"
-          className="max-w-full"
+          className="max-w-full min-w-0 shrink"
           onClick={onWriteMessage}
           disabled={writeMessageDisabled}
           data-testid={writeMessageTestId}
         >
-          <Mail className="h-4 w-4 shrink-0 sm:mr-1" />
-          <span className="hidden sm:inline">{writeMessageLabel}</span>
+          <Mail className="mr-1 h-4 w-4 shrink-0" />
+          <span className="truncate">{writeMessageLabel}</span>
         </Button>
 
         <DropdownMenu>
