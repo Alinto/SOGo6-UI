@@ -34,7 +34,7 @@ import React, { useEffect, useMemo } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import type { MailFilter } from '../mail-filters-types'
 import FolderSelectField from './folder-select-field'
-import { createSingleFilterSchema, defaultFilterValues } from './filter-schema'
+import { createSingleFilterSchema, defaultFilterValues } from './filters-schema'
 import type { SingleFilterFormValues } from './filters-schema'
 import {
   actions,
@@ -70,11 +70,13 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
     mode: 'onChange',
   })
 
+  const { reset } = form
+
   useEffect(() => {
     if (open) {
-      form.reset(filter ?? defaultFilterValues)
+      reset(filter ?? defaultFilterValues)
     }
-  }, [open, filter, form])
+  }, [open, filter, reset])
 
   const translatedOperators = useMemo(
     () =>

@@ -40,8 +40,4 @@ export interface ApiFiltersResponse {
   filters: ApiFilterItem[]
 }
 
-export interface BackendResponse<T> {
-  data: T
-  error_code: string
-  error_msg: string
-}
+export type { BackendResponse } from '@/lib/api/backend-response'

@@ -775,6 +775,26 @@
                     }
                 }
             }
+        },
+        "mail_vacation": {
+            "save": {
+                "success": {
+                    "title": {
+                        "string": "Vacation settings saved"
+                    },
+                    "message": {
+                        "string": "Your vacation auto reply has been updated."
+                    }
+                },
+                "error": {
+                    "title": {
+                        "string": "Could not save vacation settings"
+                    },
+                    "message": {
+                        "string": "An error occurred while saving your vacation settings."
+                    }
+                }
+            }
         }
     }
 }

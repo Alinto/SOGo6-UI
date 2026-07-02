@@ -4,7 +4,6 @@ import type {
   ApiFilterRuleGroup,
   ApiFilterRuleLeaf,
   ApiFilterRuleNode,
-  BackendResponse,
 } from './mail-filters-api-types'
 import {
   API_CONDITION_TO_UI,
@@ -29,13 +28,6 @@ export function generateFilterId(): string {
   }
   filterIdCounter += 1
   return `filter-${filterIdCounter}`
-}
-
-export function unwrapBackendResponse<T>(raw: T | BackendResponse<T>): T {
-  if (raw && typeof raw === 'object' && 'data' in raw) {
-    return (raw as BackendResponse<T>).data
-  }
-  return raw as T
 }
 
 function isApiRuleGroup(node: ApiFilterRuleNode): node is ApiFilterRuleGroup {

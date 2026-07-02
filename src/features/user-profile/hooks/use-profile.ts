@@ -67,6 +67,8 @@ export function useProfile() {
     passwordChangeEnabled: profile?.ui?.SOGO_D_PWD_CHANGE_ENABLED ?? false,
     forwardEnabled: profile?.ui?.SOGO_D_FORWARD_ENABLED ?? false,
     vacationEnabled: profile?.ui?.SOGO_D_VACATION_ENABLED ?? false,
+    vacationAllowResponseAlways:
+      profile?.ui?.SOGO_D_VACATION_ALLOW_RESPONSE_ALWAYS ?? false,
     mailFilteringEnabled: profile?.ui?.SOGO_D_MAIL_FILTERING_ENABLED ?? false,
     mailPurgeAllow: profile?.ui?.SOGO_D_MAIL_PURGE_ALLOW ?? false,
     mailMaxRecipient: profile?.ui?.SOGO_D_MAIL_MAX_RECIPIENT ?? 0,

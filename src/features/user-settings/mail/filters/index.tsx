@@ -2,10 +2,7 @@
 
 import { useProfile } from '@/features/user-profile'
 import { useGetFoldersQuery } from '@/features/mails/store/mails-api'
-import {
-  SettingsPageHeader,
-  SettingsPageShell,
-} from '@/features/user-settings/components/settings-page-layout'
+import { SettingsAsyncPage } from '@/features/user-settings/components/settings-async-page'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import MailFiltersSettingsForm from './components/filters-form'
@@ -25,45 +22,25 @@ const MailFiltersSettings: React.FC = () => {
   })
   const [updateData] = useUpdateMailFiltersSettingsMutation()
 
+  // Prefetch folders for the folder picker in filter actions.
   useGetFoldersQuery({ accountId })
 
-  const header = (
-    <SettingsPageHeader
+  return (
+    <SettingsAsyncPage
       title={t('title.string')}
       description={t('page.description.string')}
-    />
-  )
-
-  if (error) {
-    const status = 'status' in error ? error.status : undefined
-    const messageKey =
-      status === 403
-        ? 'errors_api.feature_disabled.string'
-        : 'errors_api.load_failed.string'
-
-    return (
-      <SettingsPageShell>
-        {header}
-        <div className="border-destructive/50 bg-destructive/10 text-destructive rounded-lg border px-4 py-3 text-sm">
-          {t(messageKey)}
-        </div>
-      </SettingsPageShell>
-    )
-  }
-
-  return (
-    <SettingsPageShell>
-      {header}
-      {isLoading ? (
-        <FiltersSettingsSkeleton />
-      ) : (
-        <MailFiltersSettingsForm
-          data={data}
-          accountId={accountId}
-          update={updateData}
-        />
-      )}
-    </SettingsPageShell>
+      error={error}
+      isLoading={isLoading}
+      featureDisabledMessage={t('errors_api.feature_disabled.string')}
+      loadFailedMessage={t('errors_api.load_failed.string')}
+      skeleton={<FiltersSettingsSkeleton />}
+    >
+      <MailFiltersSettingsForm
+        data={data}
+        accountId={accountId}
+        update={updateData}
+      />
+    </SettingsAsyncPage>
   )
 }
 
