@@ -9,15 +9,22 @@ import {
 import React from 'react'
 
 interface SelectFormProps {
-  options: { value: string; label: string; labelRight?: string }[]
+  options: {
+    value: string
+    label: string
+    labelRight?: string
+    disabled?: boolean
+  }[]
   onValueChange: (_value: string) => void
   value: string
+  disabled?: boolean
 }
 
 const SelectForm: React.FC<SelectFormProps> = ({
   options,
   onValueChange,
   value,
+  disabled = false,
 }) => {
   // Ensure value is always defined and matches an option
   const selectedValue = value || options[0]?.value || undefined
@@ -29,7 +36,7 @@ const SelectForm: React.FC<SelectFormProps> = ({
     : options[0]?.value || undefined
 
   return (
-    <Select onValueChange={onValueChange} value={finalValue}>
+    <Select onValueChange={onValueChange} value={finalValue} disabled={disabled}>
       <FormControl>
         <SelectTrigger>
           <SelectValue />
@@ -41,6 +48,7 @@ const SelectForm: React.FC<SelectFormProps> = ({
             key={option.value}
             value={option.value}
             labelRight={option.labelRight}
+            disabled={option.disabled}
           >
             {option.label}
           </SelectItem>

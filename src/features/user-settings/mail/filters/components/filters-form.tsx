@@ -6,10 +6,10 @@ import type { useUpdateMailFiltersSettingsMutation } from '../store/mail-filters
 
 interface Props {
   data: MailFilter[] | undefined
+  accountId: string
   update: ReturnType<typeof useUpdateMailFiltersSettingsMutation>[0]
 }
 
-// Lazy load the filters form component
 const LazyFiltersFormCore = lazy(() => import('./filters-form-core'))
 
 const LazyFiltersForm: React.FC<Props> = (props) => (

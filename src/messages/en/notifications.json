@@ -755,6 +755,26 @@
                     "string": "An error occurred while uploading your attachment. Please try again."
                 }
             }
+        },
+        "mail_filters": {
+            "save": {
+                "success": {
+                    "title": {
+                        "string": "Filters saved"
+                    },
+                    "message": {
+                        "string": "Your mail filters have been updated."
+                    }
+                },
+                "error": {
+                    "title": {
+                        "string": "Could not save filters"
+                    },
+                    "message": {
+                        "string": "An error occurred while saving your mail filters."
+                    }
+                }
+            }
         }
     }
 }

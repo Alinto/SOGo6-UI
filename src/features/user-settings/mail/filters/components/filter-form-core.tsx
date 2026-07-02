@@ -1,5 +1,7 @@
 'use client'
+
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -7,56 +9,72 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Form, FormControl, FormField, FormItem } from '@/components/ui/form'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import SelectForm from '@/components/ui/forms/select-form'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { DialogTrigger } from '@radix-ui/react-dialog'
-import { Edit, Plus, Trash2 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
-import React, { useMemo } from 'react'
 import {
-  FieldArrayWithId,
-  useFieldArray,
-  useForm,
-  useWatch,
-} from 'react-hook-form'
-import { z } from 'zod'
-import { defaultValues, schema } from './filter-schema'
-import { actions, operators, ruleConditions, ruleFields } from './utils'
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import { generateFilterId } from '@/features/user-settings/mail/filters/mail-filters-utils'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Info, Plus, Trash2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import React, { useEffect, useMemo } from 'react'
+import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import type { MailFilter } from '../mail-filters-types'
+import FolderSelectField from './folder-select-field'
+import { createSingleFilterSchema, defaultFilterValues } from './filter-schema'
+import type { SingleFilterFormValues } from './filters-schema'
+import {
+  actions,
+  getActionOption,
+  getConditionsForField,
+  operators,
+  ruleFields,
+} from './utils'
 
-interface FilterEditFormProps {
-  filter?: FieldArrayWithId<{
-    enabled: boolean
-    id: string
-    name: string
-    operator: string
-    rules: FieldArrayWithId<{
-      id: string
-      field: string
-      field_value: string
-      condition: string
-      value: string
-    }>[]
-    actions: FieldArrayWithId<{
-      id: string
-      action: string
-      value: string
-    }>[]
-  }>
+interface FilterEditDialogProps {
+  open: boolean
+  filter?: MailFilter
+  accountId: string
+  onOpenChange: (open: boolean) => void
+  onSave: (filter: MailFilter) => void
 }
 
-const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
+const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
+  open,
+  filter,
+  accountId,
+  onOpenChange,
+  onSave,
+}) => {
   const formT = useTranslations('FORM_COMMONS')
   const t = useTranslations('US_MAIL_FILTERS')
-  const form = useForm<z.infer<typeof schema>>({
+
+  const schema = useMemo(() => createSingleFilterSchema(t), [t])
+
+  const form = useForm<SingleFilterFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: filter || defaultValues,
+    defaultValues: filter ?? defaultFilterValues,
+    mode: 'onChange',
   })
-  function onSubmit(values: z.infer<typeof schema>) {
-    console.log(values)
-  }
+
+  useEffect(() => {
+    if (open) {
+      form.reset(filter ?? defaultFilterValues)
+    }
+  }, [open, filter, form])
 
   const translatedOperators = useMemo(
     () =>
@@ -67,32 +85,26 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
     [t]
   )
 
-  const translatedRuleConditions = useMemo(
-    () =>
-      ruleConditions.map((operator) => ({
-        value: operator.value,
-        label: t(operator.translateKey),
-      })),
-    [t]
-  )
-
   const translatedRuleFields = useMemo(
     () =>
-      ruleFields.map((operator) => ({
-        value: operator.value,
-        label: t(operator.translateKey),
+      ruleFields.map((field) => ({
+        value: field.value,
+        label: t(field.translateKey),
       })),
     [t]
   )
 
   const translatedActions = useMemo(
     () =>
-      actions.map((operator) => ({
-        value: operator.value,
-        label: t(operator.translateKey),
+      actions.map((action) => ({
+        value: action.value,
+        label: t(action.translateKey),
+        disabled: action.disabled,
+        disabledReasonKey: action.disabledReasonKey,
       })),
     [t]
   )
+
   const {
     fields: rulesFields,
     remove: removeRule,
@@ -100,6 +112,7 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
   } = useFieldArray({
     control: form.control,
     name: 'rules',
+    keyName: 'fieldKey',
   })
 
   const {
@@ -109,33 +122,53 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
   } = useFieldArray({
     control: form.control,
     name: 'actions',
+    keyName: 'fieldKey',
   })
 
-  const name = useWatch({ control: form.control, name: 'name' })
+  const operator = useWatch({ control: form.control, name: 'operator' })
+  const filterName = useWatch({ control: form.control, name: 'name' })
+  const isReadOnly = Boolean(filter?.readOnly || filter?.advancedStructure)
+
+  function onSubmit(values: SingleFilterFormValues) {
+    onSave(values as MailFilter)
+    onOpenChange(false)
+  }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button type="button" size={'icon'} variant="outline">
-          {filter ? (
-            <Edit className="text-primary" />
-          ) : (
-            <Plus className="text-primary" />
-          )}
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-screen max-w-full overflow-y-auto lg:max-w-7xl">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[90vh] max-w-4xl overflow-y-auto">
         <Form {...form}>
-          <form className="p-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <DialogHeader>
-              {filter ? (
-                <DialogTitle>{t('form.edit.string', { name })}</DialogTitle>
-              ) : (
-                <DialogTitle>{t('form.create.string')}</DialogTitle>
-              )}
+              <DialogTitle>
+                {filter?.name
+                  ? t('form.edit.string', { name: filterName || filter.name })
+                  : t('form.create.string')}
+              </DialogTitle>
             </DialogHeader>
-            <div className="flex flex-col">
-              {t('operators.title.string')}
+
+            {isReadOnly && (
+              <p className="bg-muted text-muted-foreground rounded-md p-3 text-sm">
+                {t('advanced_structure_readonly.string')}
+              </p>
+            )}
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('labels.filter_name.string')}</FormLabel>
+                  <FormControl>
+                    <Input {...field} disabled={isReadOnly} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-2">
+              <FormLabel>{t('operators.title.string')}</FormLabel>
               <FormField
                 control={form.control}
                 name="operator"
@@ -145,152 +178,279 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
                       onValueChange={field.onChange}
                       value={field.value}
                       options={translatedOperators}
+                      disabled={isReadOnly}
                     />
                   </FormItem>
                 )}
               />
             </div>
-            <DialogHeader className="py-3">
-              <div className="flex">
-                <DialogTitle className="my-auto">
-                  {t('conditions.title.string')}
-                </DialogTitle>
-                <Button
-                  onClick={() =>
-                    insertRule(ruleFields.length, {
-                      id: `${ruleFields.length}`,
-                      condition: '',
-                      field: '',
-                      field_value: '',
-                      value: '',
-                    })
-                  }
-                  className="ml-3 rounded-full"
-                  type="button"
-                  size={'icon'}
-                  variant="outline"
-                >
-                  <Plus className="text-primary" />
-                </Button>
-              </div>
-            </DialogHeader>
-            {rulesFields.map((rule, i) => (
-              <div key={rule.id}>
-                <div className="grid grid-cols-3 gap-4 py-3">
-                  <FormField
-                    control={form.control}
-                    name={`rules.${i}.field`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <SelectForm
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          options={translatedRuleFields}
-                        />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`rules.${i}.condition`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <SelectForm
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          options={translatedRuleConditions}
-                        />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex items-center gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`rules.${i}.value`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <FormControl>
-                            <Input {...field} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <Button type="button" size={'icon'} variant="outline">
-                      <Trash2
-                        className="text-primary"
-                        onClick={() => removeRule(i)}
-                      />
+
+            {operator !== 'ALL' && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <FormLabel>{t('conditions.title.string')}</FormLabel>
+                  {!isReadOnly && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="outline"
+                      onClick={() =>
+                        insertRule(rulesFields.length, {
+                          id: generateFilterId(),
+                          field: 'from',
+                          condition: 'CONTAINS',
+                          value: '',
+                        })
+                      }
+                    >
+                      <Plus className="text-primary h-4 w-4" />
                     </Button>
-                  </div>
+                  )}
                 </div>
-                {i + 1 !== rulesFields.length && <Separator />}
-              </div>
-            ))}
-            <DialogHeader className="py-3">
-              <div className="flex">
-                <DialogTitle className="my-auto">
-                  {t('actions.title.string')}
-                </DialogTitle>
-                <Button
-                  onClick={() =>
-                    insertAction(actionsFields.length, {
-                      id: `${actionsFields.length}`,
-                      action: '',
-                      value: '',
-                    })
-                  }
-                  className="ml-3 rounded-full"
-                  type="button"
-                  size={'icon'}
-                  variant="outline"
-                >
-                  <Plus className="text-primary" />
-                </Button>
-              </div>
-            </DialogHeader>
-            {actionsFields.map((rule, i) => (
-              <div key={rule.id}>
-                <div className="grid grid-cols-2 gap-4 py-3">
-                  <FormField
-                    control={form.control}
-                    name={`actions.${i}.action`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <SelectForm
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          options={translatedActions}
+                {rulesFields.map((rule, index) => {
+                  const watchedField = form.watch(`rules.${index}.field`)
+                  const conditionOptions = getConditionsForField(
+                    watchedField
+                  ).map((condition) => ({
+                    value: condition.value,
+                    label: t(condition.translateKey),
+                  }))
+
+                  return (
+                    <div key={rule.fieldKey} className="space-y-3">
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <FormField
+                          control={form.control}
+                          name={`rules.${index}.field`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <SelectForm
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                options={translatedRuleFields}
+                                disabled={isReadOnly}
+                              />
+                            </FormItem>
+                          )}
                         />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="flex items-center gap-4">
-                    <FormField
-                      control={form.control}
-                      name={`actions.${i}.value`}
-                      render={({ field }) => (
-                        <FormItem className="flex-1">
-                          <SelectForm
-                            onValueChange={field.onChange}
-                            value={field.value}
-                            options={[]}
+                        <FormField
+                          control={form.control}
+                          name={`rules.${index}.condition`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <SelectForm
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                options={conditionOptions}
+                                disabled={isReadOnly}
+                              />
+                            </FormItem>
+                          )}
+                        />
+                        <div className="flex items-start gap-2">
+                          <FormField
+                            control={form.control}
+                            name={`rules.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input {...field} disabled={isReadOnly} />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
                           />
-                        </FormItem>
+                          {!isReadOnly && rulesFields.length > 1 && (
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              onClick={() => removeRule(index)}
+                            >
+                              <Trash2 className="text-primary h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                      {watchedField === 'header' && (
+                        <FormField
+                          control={form.control}
+                          name={`rules.${index}.field_value`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t('labels.custom_header.string')}
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...field} disabled={isReadOnly} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
                       )}
-                    />
-                    <Button type="button" size={'icon'} variant="outline">
-                      <Trash2
-                        className="text-primary"
-                        onClick={() => removeAction(i)}
-                      />
-                    </Button>
-                  </div>
-                </div>
-                {i + 1 !== actionsFields.length && <Separator />}
+                      {index + 1 !== rulesFields.length && <Separator />}
+                    </div>
+                  )
+                })}
               </div>
-            ))}
+            )}
+
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <FormLabel>{t('actions.title.string')}</FormLabel>
+                {!isReadOnly && (
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="outline"
+                    onClick={() =>
+                      insertAction(actionsFields.length, {
+                        id: generateFilterId(),
+                        action: 'keep',
+                        value: '',
+                      })
+                    }
+                  >
+                    <Plus className="text-primary h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              {actionsFields.map((actionField, index) => {
+                const watchedAction = form.watch(`actions.${index}.action`)
+                const actionOption = getActionOption(watchedAction)
+
+                return (
+                  <div key={actionField.fieldKey} className="space-y-3">
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name={`actions.${index}.action`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-center gap-2">
+                              <SelectForm
+                                onValueChange={field.onChange}
+                                value={field.value}
+                                options={translatedActions.map((action) => ({
+                                  value: action.value,
+                                  label: action.label,
+                                  disabled: action.disabled,
+                                }))}
+                                disabled={isReadOnly}
+                              />
+                              {actionOption?.disabled &&
+                                actionOption.disabledReasonKey && (
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <Info className="text-muted-foreground h-4 w-4" />
+                                      </TooltipTrigger>
+                                      <TooltipContent>
+                                        <p>
+                                          {t(actionOption.disabledReasonKey)}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                )}
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                      <div className="flex items-start gap-2">
+                        {watchedAction === 'move' && (
+                          <FormField
+                            control={form.control}
+                            name={`actions.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1 space-y-2">
+                                <FormControl>
+                                  <FolderSelectField
+                                    value={field.value}
+                                    onChange={field.onChange}
+                                    disabled={isReadOnly}
+                                    accountId={accountId}
+                                  />
+                                </FormControl>
+                                <FormField
+                                  control={form.control}
+                                  name={`actions.${index}.createIfNotExist`}
+                                  render={({ field: checkboxField }) => (
+                                    <FormItem className="flex items-center gap-2 space-y-0">
+                                      <FormControl>
+                                        <Checkbox
+                                          checked={
+                                            checkboxField.value ?? true
+                                          }
+                                          onCheckedChange={
+                                            checkboxField.onChange
+                                          }
+                                          disabled={isReadOnly}
+                                        />
+                                      </FormControl>
+                                      <FormLabel className="text-sm font-normal">
+                                        {t(
+                                          'folder_select.create_if_missing.string'
+                                        )}
+                                      </FormLabel>
+                                    </FormItem>
+                                  )}
+                                />
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        {watchedAction === 'forward' && (
+                          <FormField
+                            control={form.control}
+                            name={`actions.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    type="email"
+                                    inputMode="email"
+                                    autoComplete="email"
+                                    disabled={isReadOnly}
+                                    placeholder={t(
+                                      'placeholders.forward_email.string'
+                                    )}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        {!isReadOnly && actionsFields.length > 1 && (
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="outline"
+                            onClick={() => removeAction(index)}
+                          >
+                            <Trash2 className="text-primary h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                    {index + 1 !== actionsFields.length && <Separator />}
+                  </div>
+                )
+              })}
+            </div>
+
             <DialogFooter>
-              <Button>{formT('cancel.default.string')}</Button>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                {formT('cancel.default.string')}
+              </Button>
               <Button type="submit">{formT('save.default.string')}</Button>
             </DialogFooter>
           </form>
@@ -300,4 +460,4 @@ const FilterForm: React.FC<FilterEditFormProps> = ({ filter }) => {
   )
 }
 
-export default FilterForm
+export default FilterEditDialog

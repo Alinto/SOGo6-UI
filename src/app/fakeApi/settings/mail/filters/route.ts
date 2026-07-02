@@ -1,113 +1,50 @@
-import { MailFilter } from '@/features/user-settings/mail/filters/mail-filters-types'
+import type { ApiFilterItem } from '@/features/user-settings/mail/filters/mail-filters-api-types'
 import { NextRequest, NextResponse } from 'next/server'
 
-const data: MailFilter[] = [
+const data: ApiFilterItem[] = [
   {
-    id: '1',
     name: 'Filter 1',
-    operator: 'AND',
-    enabled: true,
-    rules: [
-      {
-        id: '1',
-        field: 'from',
-        condition: 'contains',
-        value: 'alinto.eu',
-      },
-    ],
+    enabled: 1,
+    rules: {
+      op: 'and',
+      rules: [{ field: 'from', operator: 'contains', value: 'alinto.eu' }],
+    },
     actions: [
       {
-        id: '1',
-        action: 'move',
-        value: 'inbox',
-      },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Filter 2',
-    operator: 'AND',
-    enabled: true,
-    rules: [
-      {
-        id: '1',
-        field: 'header',
-        field_value: 'X-Alinto-User',
-        condition: 'contains',
-        value: 'alinto.eu',
-      },
-    ],
-    actions: [
-      {
-        id: '1',
-        action: 'move',
-        value: 'inbox',
-      },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Filter 3',
-    operator: 'AND',
-    enabled: false,
-    rules: [
-      {
-        id: '1',
-        field: 'from',
-        condition: 'contains',
-        value: 'example.com',
-      },
-    ],
-    actions: [
-      {
-        id: '1',
-        action: 'move',
-        value: 'inbox',
-      },
-    ],
-  },
-  {
-    id: '4',
-    name: 'Filter 4',
-    operator: 'AND',
-    enabled: true,
-    rules: [
-      {
-        id: '1',
-        field: 'from',
-        condition: 'contains',
-        value: 'example.com',
-      },
-    ],
-    actions: [
-      {
-        id: '1',
-        action: 'move',
-        value: 'inbox',
+        method: 'fileinto',
+        arguments: { folder: 'INBOX', create_if_no_exist: true },
       },
     ],
   },
 ]
 
+function apiResponse(filters: ApiFilterItem[]) {
+  return {
+    error_code: 'S000000',
+    error_msg: 'No Error',
+    data: { filters },
+  }
+}
+
 export async function GET() {
-  await new Promise((resolve) => setTimeout(resolve, 1000))
-  return NextResponse.json(data)
+  await new Promise((resolve) => setTimeout(resolve, 300))
+  return NextResponse.json(apiResponse(data))
 }
 
 export async function POST(req: NextRequest) {
   const body = await req.json()
-  const newAddressBook = { id: String(data.length + 1), ...body }
-  data.push(newAddressBook)
-  return NextResponse.json(newAddressBook, { status: 201 })
+  const incoming = body.filters as ApiFilterItem[] | undefined
+  if (Array.isArray(incoming)) {
+    data.length = 0
+    data.push(...incoming)
+  }
+  return NextResponse.json(apiResponse(data))
 }
 
 export async function PATCH(req: NextRequest) {
-  const body = await req.json()
-  const newAddressBook = { id: String(data.length + 1), ...body }
-  data.push(newAddressBook)
-  return NextResponse.json(newAddressBook, { status: 201 })
+  return POST(req)
 }
 
 export async function OPTIONS() {
-  return NextResponse.json({ allow: ['GET', 'POST'] }, { status: 200 })
+  return NextResponse.json({ allow: ['GET', 'POST', 'PATCH'] }, { status: 200 })
 }

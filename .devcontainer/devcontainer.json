@@ -22,8 +22,8 @@
   "runArgs": [
     "--network=host",
     "--add-host=host.docker.internal:host-gateway",
-    "--memory=5g",
-    "--memory-swap=10g",
+    "--memory=4g",
+    "--memory-swap=6g",
     "--cpus=4"
   ],
 
@@ -49,7 +49,7 @@
           "**/.next/**"
         ],
 
-        "typescript.tsserver.maxTsServerMemory": 2048,
+        "typescript.tsserver.maxTsServerMemory": 1536,
 
         "files.watcherExclude": {
           "**/node_modules/**": true,
