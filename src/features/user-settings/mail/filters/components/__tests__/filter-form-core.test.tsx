@@ -12,7 +12,7 @@ jest.mock('../folder-select-field', () => ({
   default: () => <div data-testid="folder-select" />,
 }))
 
-jest.mock('../filter-schema', () => ({
+jest.mock('../filters-schema', () => ({
   createSingleFilterSchema: jest.fn(() => ({})),
   defaultFilterValues: {
     id: 'default',

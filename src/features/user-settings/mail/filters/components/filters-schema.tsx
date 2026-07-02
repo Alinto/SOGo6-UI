@@ -1,11 +1,12 @@
-'use client'
-
-import { useTranslations } from 'next-intl'
 import { z } from 'zod'
 import { FILTER_NAME_MAX_LENGTH } from '../mail-filters-constants'
 import type { MailFilter } from '../mail-filters-types'
+import { createEmptyFilter } from '../mail-filters-utils'
 
-type FiltersTranslator = ReturnType<typeof useTranslations<'US_MAIL_FILTERS'>>
+type FiltersTranslator = (
+  key: string,
+  values?: Record<string, string>
+) => string
 
 const emailSchema = z.string().email()
 
@@ -105,6 +106,8 @@ export const createFiltersSchema = (t: FiltersTranslator) =>
 
 export const createSingleFilterSchema = (t: FiltersTranslator) =>
   createFilterItemSchema(t)
+
+export const defaultFilterValues = createEmptyFilter()
 
 export type FiltersFormValues = z.infer<
   ReturnType<typeof createFiltersSchema>

@@ -7,7 +7,6 @@ import {
   mapFlatRulesToApiTree,
   mapUiFilterToApi,
   mapUiFiltersToApi,
-  unwrapBackendResponse,
 } from '../mail-filters-utils'
 
 describe('mail-filters-utils', () => {
@@ -33,22 +32,6 @@ describe('mail-filters-utils', () => {
       ],
     },
   }
-
-  describe('unwrapBackendResponse', () => {
-    it('unwraps BackendResponse wrapper', () => {
-      const wrapped = {
-        data: { filters: [sampleApiFilter] },
-        error_code: 'S000000',
-        error_msg: 'No Error',
-      }
-      expect(unwrapBackendResponse(wrapped)).toEqual({ filters: [sampleApiFilter] })
-    })
-
-    it('returns raw payload when not wrapped', () => {
-      const raw = { filters: [sampleApiFilter] }
-      expect(unwrapBackendResponse(raw)).toEqual(raw)
-    })
-  })
 
   describe('mapApiRuleTreeToFlatRules', () => {
     it('maps OR group with leaf rules', () => {

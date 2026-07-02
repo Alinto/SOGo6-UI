@@ -6,10 +6,10 @@ import {
 import type { UnknownAction } from '@reduxjs/toolkit'
 import type { Dispatch } from 'redux'
 import type { MailFilter } from '../mail-filters-types'
+import { unwrapBackendResponse } from '@/lib/api/backend-response'
 import {
   mapApiFiltersToUi,
   mapUiFiltersToApi,
-  unwrapBackendResponse,
 } from '../mail-filters-utils'
 
 const mailFiltersOnQueryStarted = async (

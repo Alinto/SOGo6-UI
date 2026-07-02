@@ -29,11 +29,20 @@ const SelectForm: React.FC<SelectFormProps> = ({
   // Ensure value is always defined and matches an option
   const selectedValue = value || options[0]?.value || undefined
 
-  // If value doesn't match any option, use the first option
   const isValidValue = options.some((opt) => opt.value === selectedValue)
   const finalValue = isValidValue
     ? selectedValue
     : options[0]?.value || undefined
+
+  if (
+    process.env.NODE_ENV === 'development' &&
+    value &&
+    !options.some((opt) => opt.value === value)
+  ) {
+    console.warn(
+      `[SelectForm] Value "${value}" does not match any option. Falling back to "${finalValue ?? 'undefined'}".`
+    )
+  }
 
   return (
     <Select onValueChange={onValueChange} value={finalValue} disabled={disabled}>
