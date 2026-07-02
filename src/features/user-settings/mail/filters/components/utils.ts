@@ -1,155 +1,91 @@
-const operators = [
-  {
-    id: '1',
-    value: 'OR',
-    translateKey: 'operators.or.string',
-  },
-  {
-    id: '1',
-    value: 'AND',
-    translateKey: 'operators.and.string',
-  },
-  {
-    id: '1',
-    value: 'ALL',
-    translateKey: 'operators.all.string',
-  },
+import {
+  V1_FILTER_CONDITIONS,
+  V1_FILTER_FIELDS,
+} from '../mail-filters-constants'
+import type { FilterActionType } from '../mail-filters-types'
+
+export interface FilterOption {
+  id: string
+  value: string
+  translateKey: string
+  disabled?: boolean
+  disabledReasonKey?: string
+  useOnlyWith?: string[]
+}
+
+const operators: FilterOption[] = [
+  { id: 'op-or', value: 'OR', translateKey: 'operators.or.string' },
+  { id: 'op-and', value: 'AND', translateKey: 'operators.and.string' },
+  { id: 'op-all', value: 'ALL', translateKey: 'operators.all.string' },
 ]
 
-const ruleFields = [
-  {
-    id: '1',
-    value: 'from',
-    translateKey: 'rules.from.string',
-  },
-  {
-    id: '2',
-    value: 'to',
-    translateKey: 'rules.to.string',
-  },
-  {
-    id: '3',
-    value: 'subject',
-    translateKey: 'rules.subject.string',
-  },
-  {
-    id: '4',
-    value: 'body',
-    translateKey: 'rules.body.string',
-  },
-  {
-    id: '5',
-    value: 'cc',
-    translateKey: 'rules.cc.string',
-  },
-  {
-    id: '6',
-    value: 'to_cc',
-    translateKey: 'rules.to_or_cc.string',
-  },
-  {
-    id: '7',
-    value: 'header',
-    translateKey: 'rules.header.string',
-  },
-  {
-    id: '8',
-    value: 'size',
-    translateKey: 'rules.size.string',
-  },
-]
+const ruleFields: FilterOption[] = V1_FILTER_FIELDS.map((field, index) => ({
+  id: `field-${index}`,
+  value: field,
+  translateKey: `rules.${field === 'header' ? 'header' : field}.string`,
+}))
 
-const ruleConditions = [
-  {
-    id: '1',
-    value: 'IS',
-    translateKey: 'conditions.is.string',
-  },
-  {
-    id: '2',
-    value: 'IS_NOT',
-    translateKey: 'conditions.is_not.string',
-  },
-  {
-    id: '3',
-    value: 'CONTAINS',
-    translateKey: 'conditions.contains.string',
-  },
-  {
-    id: '4',
-    value: 'NOT_CONTAIN',
-    translateKey: 'conditions.not_contain.string',
-  },
-  {
-    id: '5',
-    value: 'MATCH',
-    translateKey: 'conditions.match.string',
-  },
-  {
-    id: '6',
-    value: 'NOT_MATCH',
-    translateKey: 'conditions.not_match.string',
-  },
-  {
-    id: '7',
-    value: 'MATCH_REGEX',
-    translateKey: 'conditions.match_regex.string',
-  },
-  {
-    id: '8',
-    value: 'NOT_MATCH_REGEX',
-    translateKey: 'conditions.not_match_regex.string',
-  },
-  {
-    id: '9',
-    value: 'IS_UNDER',
-    translateKey: 'conditions.is_under.string',
-    useOnlyWith: ['size'],
-  },
-  {
-    id: '10',
-    value: 'IS_OVER',
-    translateKey: 'conditions.is_over.string',
-    useOnlyWith: ['size'],
-  },
-]
+const ruleConditions: FilterOption[] = V1_FILTER_CONDITIONS.map(
+  (condition, index) => {
+    const key = condition.toLowerCase().replace(/_/g, '_')
+    const translateMap: Record<string, string> = {
+      IS: 'conditions.is.string',
+      CONTAINS: 'conditions.contains.string',
+      NOT_CONTAIN: 'conditions.not_contain.string',
+      MATCH: 'conditions.match.string',
+      MATCH_REGEX: 'conditions.match_regex.string',
+    }
+    return {
+      id: `cond-${index}`,
+      value: condition,
+      translateKey: translateMap[condition] ?? `conditions.${key}.string`,
+    }
+  }
+)
 
-const actions = [
+const actions: FilterOption[] = [
+  { id: 'act-move', value: 'move', translateKey: 'actions.move.string' },
+  { id: 'act-stop', value: 'stop', translateKey: 'actions.stop.string' },
   {
-    id: '1',
-    value: 'move',
-    translateKey: 'actions.move.string',
-  },
-  {
-    id: '2',
-    value: 'stop',
-    translateKey: 'actions.stop.string',
-  },
-  {
-    id: '3',
+    id: 'act-flag',
     value: 'flag',
     translateKey: 'actions.flag.string',
+    disabled: true,
+    disabledReasonKey: 'actions.flag.disabled_tooltip.string',
   },
+  { id: 'act-keep', value: 'keep', translateKey: 'actions.keep.string' },
   {
-    id: '4',
-    value: 'keep',
-    translateKey: 'actions.keep.string',
-  },
-  {
-    id: '5',
+    id: 'act-discard',
     value: 'discard',
     translateKey: 'actions.discard.string',
   },
   {
-    id: '6',
+    id: 'act-forward',
     value: 'forward',
     translateKey: 'actions.forward.string',
   },
   {
-    id: '7',
+    id: 'act-reject',
     value: 'reject',
     translateKey: 'actions.reject.string',
+    disabled: true,
+    disabledReasonKey: 'actions.reject.disabled_tooltip.string',
   },
 ]
+
+export function getConditionsForField(field: string): FilterOption[] {
+  return ruleConditions.filter(
+    (condition) =>
+      !condition.useOnlyWith || condition.useOnlyWith.includes(field)
+  )
+}
+
+export function isActionDisabled(action: string): boolean {
+  return actions.some((item) => item.value === action && item.disabled)
+}
+
+export function getActionOption(action: FilterActionType | string) {
+  return actions.find((item) => item.value === action)
+}
 
 export { actions, operators, ruleConditions, ruleFields }

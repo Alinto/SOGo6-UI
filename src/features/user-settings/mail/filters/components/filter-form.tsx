@@ -1,36 +1,22 @@
 import { FormLoader, LazyWrapper } from '@/components/lazy-components'
 import type React from 'react'
 import { lazy } from 'react'
-import type { FieldArrayWithId } from 'react-hook-form'
+import type { MailFilter } from '../mail-filters-types'
 
-interface FilterEditFormProps {
-  filter?: FieldArrayWithId<{
-    enabled: boolean
-    id: string
-    name: string
-    operator: string
-    rules: FieldArrayWithId<{
-      id: string
-      field: string
-      field_value: string
-      condition: string
-      value: string
-    }>[]
-    actions: FieldArrayWithId<{
-      id: string
-      action: string
-      value: string
-    }>[]
-  }>
+interface FilterEditDialogProps {
+  open: boolean
+  filter?: MailFilter
+  accountId: string
+  onOpenChange: (open: boolean) => void
+  onSave: (filter: MailFilter) => void
 }
 
-// Lazy load the filter form component
-const LazyFilterFormCore = lazy(() => import('./filter-form-core'))
+const LazyFilterEditDialog = lazy(() => import('./filter-form-core'))
 
-const LazyFilterForm: React.FC<FilterEditFormProps> = (props) => (
+const FilterEditDialog: React.FC<FilterEditDialogProps> = (props) => (
   <LazyWrapper fallback={<FormLoader />}>
-    <LazyFilterFormCore {...props} />
+    <LazyFilterEditDialog {...props} />
   </LazyWrapper>
 )
 
-export default LazyFilterForm
+export default FilterEditDialog

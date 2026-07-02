@@ -1,49 +1,12 @@
-'use client'
-import { z } from 'zod'
+import { createEmptyFilter } from '../mail-filters-utils'
 
-const schema = z.object({
-  enabled: z.boolean(),
-  id: z.string(),
-  name: z.string(),
-  operator: z.string(),
-  rules: z.array(
-    z
-      .object({
-        id: z.string(),
-        field: z.string(),
-        field_value: z.string(),
-        condition: z.string(),
-        value: z.string(),
-      })
-      .optional()
-  ),
-  actions: z.array(
-    z.object({
-      id: z.string(),
-      action: z.string(),
-      value: z.string(),
-    })
-  ),
-})
+export {
+  createFiltersSchema,
+  createSingleFilterSchema,
+} from './filters-schema'
+export type {
+  FiltersFormValues,
+  SingleFilterFormValues,
+} from './filters-schema'
 
-const defaultValues = {
-  name: '',
-  operator: 'AND',
-  enabled: true,
-  rules: [
-    {
-      field: '',
-      condition: '',
-      value: '',
-    },
-  ],
-  actions: [
-    {
-      id: '',
-      action: '',
-      value: '',
-    },
-  ],
-}
-
-export { defaultValues, schema }
+export const defaultFilterValues = createEmptyFilter()
