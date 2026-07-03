@@ -47,6 +47,7 @@ describe('API Slice', () => {
           'mail_general_settings',
           'mail_notifications_settings',
           'mail_vacation_settings',
+          'mail_forward_settings',
           'address_books',
           'vcard',
           'mail/folders',
@@ -106,6 +107,7 @@ describe('API Slice', () => {
         'mail_general_settings',
         'mail_notifications_settings',
         'mail_vacation_settings',
+        'mail_forward_settings',
         'address_books',
         'vcard',
         'mail/folders',
@@ -263,6 +265,7 @@ describe('API Slice', () => {
         'mail_general_settings',
         'mail_notifications_settings',
         'mail_vacation_settings',
+        'mail_forward_settings',
       ]
 
       settingsTagTypes.forEach((tagType) => {

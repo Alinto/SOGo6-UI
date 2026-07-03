@@ -795,6 +795,26 @@
                     }
                 }
             }
+        },
+        "mail_forward": {
+            "save": {
+                "success": {
+                    "title": {
+                        "string": "Forwarding settings saved"
+                    },
+                    "message": {
+                        "string": "Your mail forwarding settings have been updated."
+                    }
+                },
+                "error": {
+                    "title": {
+                        "string": "Could not save forwarding settings"
+                    },
+                    "message": {
+                        "string": "An error occurred while saving your mail forwarding settings."
+                    }
+                }
+            }
         }
     }
 }

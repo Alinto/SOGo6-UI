@@ -17,38 +17,58 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import SettingsFormActionBar from '@/features/user-settings/components/settings-form-action-bar'
+import { MAX_FORWARD_ADDRESSES } from '@/features/user-settings/mail/forward/mail-forward-constants'
+import {
+  createEmptyForward,
+  mapFormValuesToMailForward,
+  mapMailForwardToFormValues,
+} from '@/features/user-settings/mail/forward/mail-forward-utils'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Info } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useEffect, useMemo } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
-import { z } from 'zod'
-import { MailForward } from '../mail-forward-types'
-import { useUpdateMailForwardSettingsMutation } from '../store/mail-forward-settings-api'
+import type { MailForward } from '../mail-forward-types'
+import type { useUpdateMailForwardSettingsMutation } from '../store/mail-forward-settings-api'
 import ForwardEmailInput from './forward-email-input'
-import { schema } from './forward-schema'
+import {
+  createForwardSchema,
+  type ForwardFormValues,
+} from './forward-schema'
 
 interface Props {
   data: MailForward | undefined
+  accountId: string
   update: ReturnType<typeof useUpdateMailForwardSettingsMutation>[0]
 }
 
-function MailForwardSettingsForm({ data, update }: Props) {
+function MailForwardSettingsForm({ data, accountId, update }: Props) {
   const t = useTranslations('US_MAIL_FORWARD')
   const formT = useTranslations('FORM_COMMONS')
+  const settingsT = useTranslations('US_USER_SETTINGS')
+  const schema = useMemo(() => createForwardSchema(t), [t])
 
-  const form = useForm<z.infer<typeof schema>>({
+  const form = useForm<ForwardFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: data,
+    defaultValues: mapMailForwardToFormValues(data ?? createEmptyForward()),
     mode: 'onChange',
   })
+
+  const { reset } = form
+
+  useEffect(() => {
+    if (data) {
+      reset(mapMailForwardToFormValues(data))
+    }
+  }, [data, reset])
 
   const enabled = useWatch({ control: form.control, name: 'enabled' })
   const { fields, remove, insert } = useFieldArray({
@@ -56,23 +76,22 @@ function MailForwardSettingsForm({ data, update }: Props) {
     name: 'emails',
   })
   const { isDirty, isSubmitting, errors } = form.formState
-  const MAX_EMAILS = 10
 
-  async function onSubmit(values: z.infer<typeof schema>) {
+  async function onSubmit(values: ForwardFormValues) {
     try {
-      await update(values).unwrap()
-
-      // Reset form with new values (important: sets isDirty to false)
-      form.reset(values)
+      const saved = await update({
+        accountId,
+        forward: mapFormValuesToMailForward(values),
+      }).unwrap()
+      reset(mapMailForwardToFormValues(saved))
     } catch (error) {
-      // Error handling is done by the centralized notification system
-      console.error('Failed to save:', error)
+      console.error('Failed to save mail forward settings:', error)
     }
   }
 
   function handleAdd(value: string) {
     if (errors.email || errors.emails) return
-    if (fields.length >= MAX_EMAILS) return
+    if (fields.length >= MAX_FORWARD_ADDRESSES) return
 
     form.setValue('email', '')
     insert(fields.length, { value })
@@ -146,7 +165,7 @@ function MailForwardSettingsForm({ data, update }: Props) {
                       placeholder={t('placeholders.email.string')}
                       errors={errors}
                       disabled={!enabled}
-                      maxTags={MAX_EMAILS}
+                      maxTags={MAX_FORWARD_ADDRESSES}
                     />
                   </FormControl>
                 </FormItem>
@@ -156,7 +175,7 @@ function MailForwardSettingsForm({ data, update }: Props) {
             <div className="space-y-3">
               <FormField
                 control={form.control}
-                name="alwaysForward"
+                name="alwaysSend"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center space-y-0 space-x-3">
                     <FormControl>
@@ -219,11 +238,15 @@ function MailForwardSettingsForm({ data, update }: Props) {
           </CardContent>
         </Card>
 
-        <FixedFormButtonGroup
-          onReset={() => form.reset()}
+        <SettingsFormActionBar
+          onReset={() =>
+            reset(mapMailForwardToFormValues(data ?? createEmptyForward()))
+          }
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}
-          mode="inline"
+          visible={isDirty}
+          isLoading={isSubmitting}
+          hint={settingsT('unsaved_changes.string')}
           resetLabel={formT('reset.default.string')}
           submitLabel={formT('save.default.string')}
         />
