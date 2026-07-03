@@ -3,6 +3,11 @@
     "title": {
       "string": "Mail Forward"
     },
+    "page": {
+      "description": {
+        "string": "Automatically forward incoming messages to one or more email addresses."
+      }
+    },
     "labels": {
       "transfer_incoming": {
         "string": "Transfer incoming messages"
@@ -51,6 +56,11 @@
       },
       "max_reached": {
         "string": "Maximum {max} addresses allowed"
+      },
+      "validation": {
+        "addresses_required": {
+          "string": "At least one email address is required when forwarding is enabled."
+        }
       }
     },
     "hints": {
@@ -66,14 +76,6 @@
         "string": "Keep a copy of forwarded messages in your inbox. Useful if you want to maintain a local archive."
       }
     },
-    "success": {
-      "title": {
-        "string": "Settings Saved"
-      },
-      "saved": {
-        "string": "Forwarding settings saved"
-      }
-    },
     "errors_api": {
       "title": {
         "string": "Error"
@@ -82,7 +84,10 @@
         "string": "Couldn't save your changes, try again"
       },
       "load_failed": {
-        "string": "Error loading settings"
+        "string": "Could not load forwarding settings. Please try again later."
+      },
+      "feature_disabled": {
+        "string": "Mail forwarding has been disabled by your administrator."
       }
     },
     "status": {
@@ -105,26 +110,6 @@
       },
       "toggle_forwarding": {
         "string": "Toggle email forwarding"
-      }
-    }
-  },
-  "NOTIFICATIONS_FORWARD": {
-    "US_MAIL_FORWARD": {
-      "success": {
-        "title": {
-          "string": "Settings Saved"
-        },
-        "saved": {
-          "string": "Forwarding settings saved successfully"
-        }
-      },
-      "errors_api": {
-        "title": {
-          "string": "Error"
-        },
-        "save_failed": {
-          "string": "Couldn't save your changes, try again"
-        }
       }
     }
   }

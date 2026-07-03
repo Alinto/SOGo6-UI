@@ -1,25 +1,34 @@
-'use client'
-import { z, ZodObject, ZodType } from 'zod'
-import { MailForward } from '../mail-forward-types'
+import type { ForwardFormValues } from '../mail-forward-types'
+import { z } from 'zod'
 
-type MailForwardSettingsSchema = ZodObject<{
-  [K in keyof Partial<MailForward>]: K extends keyof MailForward
-    ? ZodType<MailForward[K]>
-    : never
-}>
+export type { ForwardFormValues }
 
-const schema = z.object({
-  enabled: z.boolean(),
-  emails: z.array(z.object({ value: z.string().email() })),
-  email: z
-    .string()
-    .min(0)
-    .email({
-      message: 'FORM_ERRORS.invalid.email.string',
+type ForwardTranslator = (
+  key: string,
+  values?: Record<string, string>
+) => string
+
+const emailSchema = z.string().email()
+
+export const createForwardSchema = (t: ForwardTranslator) =>
+  z
+    .object({
+      enabled: z.boolean(),
+      emails: z.array(z.object({ value: z.string().email() })),
+      email: z
+        .string()
+        .refine((value) => value === '' || emailSchema.safeParse(value).success, {
+          message: t('errors.email.invalid.string'),
+        }),
+      alwaysSend: z.boolean(),
+      keepCopy: z.boolean(),
     })
-    .or(z.literal('')),
-  alwaysForward: z.boolean(),
-  keepCopy: z.boolean(),
-}) satisfies MailForwardSettingsSchema
-
-export { schema }
+    .superRefine((values, ctx) => {
+      if (values.enabled && values.emails.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('errors.validation.addresses_required.string'),
+          path: ['emails'],
+        })
+      }
+    })
