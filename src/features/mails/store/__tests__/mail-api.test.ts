@@ -100,10 +100,14 @@ describe('mail-api.ts', () => {
       )
     })
 
-    it('should default attachments to empty array', () => {
+    it('should default priority to MAIL_PRIORITY_NORMAL', () => {
       expect(fileContent).toMatch(
-        /attachments:\s*mail\.attachments\s*\?\?\s*\[\]/
+        /priority:\s*mail\.priority\s*\?\?\s*MAIL_PRIORITY_NORMAL/
       )
+    })
+
+    it('should default is_html to true', () => {
+      expect(fileContent).toMatch(/is_html:\s*mail\.is_html\s*\?\?\s*true/)
     })
 
     it('should define onQueryStarted for sendMail', () => {
@@ -179,6 +183,12 @@ describe('mail-api.ts', () => {
     it('should default return_receipt to null', () => {
       expect(fileContent).toMatch(
         /return_receipt:\s*mail\.return_receipt\s*\?\?\s*null/
+      )
+    })
+
+    it('should default priority to MAIL_PRIORITY_NORMAL', () => {
+      expect(fileContent).toMatch(
+        /priority:\s*mail\.priority\s*\?\?\s*MAIL_PRIORITY_NORMAL/
       )
     })
 

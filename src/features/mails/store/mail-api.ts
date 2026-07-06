@@ -4,6 +4,7 @@ import {
   FOLDER_MESSAGES_SLICE,
   MAILS_FOLDERS_SLICE,
 } from '@/lib/redux/api/api-slice'
+import { MAIL_PRIORITY_NORMAL } from '@/features/mails/store/mail-compose-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   BackendResponse,
@@ -30,7 +31,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           cc: mail.cc ?? [],
           bcc: mail.bcc ?? [],
           return_receipt: mail.return_receipt ?? null,
-          attachments: mail.attachments ?? [],
+          priority: mail.priority ?? MAIL_PRIORITY_NORMAL,
+          is_html: mail.is_html ?? true,
+          reply_to: mail.reply_to ?? null,
         },
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -66,6 +69,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             cc: mail.cc ?? [],
             bcc: mail.bcc ?? [],
             return_receipt: mail.return_receipt ?? null,
+            priority: mail.priority ?? MAIL_PRIORITY_NORMAL,
+            is_html: mail.is_html ?? true,
+            reply_to: mail.reply_to ?? null,
           },
         }),
         async onQueryStarted(arg, { dispatch, queryFulfilled }) {

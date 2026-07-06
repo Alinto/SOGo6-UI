@@ -17,6 +17,9 @@ export interface SendMailBody {
   /** null = no receipt requested */
   return_receipt?: boolean | null
   attachments?: SendMailAttachment[]
+  priority?: number
+  is_html?: boolean
+  reply_to?: string | null
 }
 
 export interface SendMailArg {

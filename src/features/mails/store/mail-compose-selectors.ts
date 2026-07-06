@@ -48,6 +48,7 @@ export const selectDraftData = (draftId: string) => (state: RootState) => {
     subject: draft?.subject ?? '',
     selectedPriority: draft?.priority ?? MAIL_PRIORITY_NORMAL,
     requestReadReceipt: draft?.requestReadReceipt ?? false,
+    isPlainText: draft?.isPlainText ?? false,
     selectedIdentity: draft?.selectedIdentity ?? null,
     toRecipients: draft?.to ?? [],
     ccRecipients: draft?.cc ?? [],

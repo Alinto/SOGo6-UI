@@ -168,6 +168,7 @@ export function apiDataToMailComposeDraft(
     attachments: mapAttachments(draftId, data.attachments),
     priority: coercePriority(data.priority),
     requestReadReceipt: data.should_ask_receipt ?? false,
+    isPlainText: false,
     isDirty: false,
     createdAt: now,
     updatedAt: now,

@@ -120,6 +120,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     subject,
     selectedPriority,
     requestReadReceipt,
+    isPlainText,
     selectedIdentity,
     toRecipients,
     ccRecipients,
@@ -235,6 +236,9 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         subject,
         body,
         return_receipt: requestReadReceipt ? true : null,
+        priority: selectedPriority,
+        is_html: !isPlainText,
+        reply_to: selectedIdentity?.replyTo || null,
       },
       close: closeOnSave,
       displayNotificationOnError,
@@ -310,7 +314,9 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         subject,
         body,
         return_receipt: requestReadReceipt ? true : null,
-        attachments: [],
+        priority: selectedPriority,
+        is_html: !isPlainText,
+        reply_to: selectedIdentity?.replyTo || null,
       },
     })
 
@@ -767,7 +773,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
                           <DropdownMenuRadioGroup
-                            value={selectedPriority}
+                            value={selectedPriority.toString()}
                             onValueChange={(value) =>
                               dispatch(
                                 updatePriority({
