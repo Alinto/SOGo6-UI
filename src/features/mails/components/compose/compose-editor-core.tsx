@@ -64,6 +64,7 @@ import { useLocale } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   setPendingInsert,
+  setPlainTextMode,
   updateBody,
   updateSelectedSignatureKey,
 } from '../../store/mail-compose-slice'
@@ -390,6 +391,12 @@ export const ComposeEditorCore = ({
       ) as PlainTextModePlugin
 
       plainTextPlugin.setInitialState(!isHtmlModeRef.current)
+      dispatch(
+        setPlainTextMode({ draftId, isPlainText: !isHtmlModeRef.current })
+      )
+      plainTextPlugin.setOnToggle((isPlainText) => {
+        dispatch(setPlainTextMode({ draftId, isPlainText }))
+      })
 
       // Insert initial signature (if any)
       applySignatureRef.current(editor)
@@ -429,7 +436,7 @@ export const ComposeEditorCore = ({
         editor.model.document.off('change:data', changeHandler)
       })
     },
-    [dispatch]
+    [dispatch, draftId]
   )
 
   const handleChange = useCallback(

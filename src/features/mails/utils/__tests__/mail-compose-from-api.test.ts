@@ -35,6 +35,7 @@ describe('apiDataToMailComposeDraft', () => {
       attachments: [],
       priority: MAIL_PRIORITY_NORMAL,
       requestReadReceipt: false,
+      isPlainText: false,
       isDirty: false,
       createdAt: 123456789,
       updatedAt: 123456789,

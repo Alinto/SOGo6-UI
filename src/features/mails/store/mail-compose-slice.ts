@@ -42,6 +42,7 @@ export interface MailComposeDraft {
     | typeof MAIL_PRIORITY_HIGH
     | typeof MAIL_PRIORITY_HIGHEST
   requestReadReceipt?: boolean
+  isPlainText: boolean
   isDirty: boolean
   lastSaved?: number
   createdAt: number
@@ -106,6 +107,7 @@ const mailComposeSlice = createSlice({
         forwardOf,
         priority: initialData?.priority ?? MAIL_PRIORITY_NORMAL,
         requestReadReceipt: initialData?.requestReadReceipt ?? false,
+        isPlainText: initialData?.isPlainText ?? false,
         isDirty: false,
         createdAt: now,
         updatedAt: now,
@@ -289,6 +291,19 @@ const mailComposeSlice = createSlice({
       }
     },
 
+    setPlainTextMode: (
+      state,
+      action: PayloadAction<{ draftId: string; isPlainText: boolean }>
+    ) => {
+      const { draftId, isPlainText } = action.payload
+      const draft = state.drafts[draftId]
+      if (draft) {
+        draft.isPlainText = isPlainText
+        draft.isDirty = true
+        draft.updatedAt = Date.now()
+      }
+    },
+
     markDraftSaved: (state, action: PayloadAction<{ draftId: string }>) => {
       const { draftId } = action.payload
       const draft = state.drafts[draftId]
@@ -367,6 +382,7 @@ export const {
   renameAttachment,
   updatePriority,
   toggleReadReceipt,
+  setPlainTextMode,
   markDraftSaved,
   deleteDraft,
   setSending,
