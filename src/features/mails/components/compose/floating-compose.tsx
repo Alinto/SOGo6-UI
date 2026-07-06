@@ -163,7 +163,24 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   const [triggerDownloadAttachment] = useLazyDownloadAttachmentQuery()
 
   const [showNoRecipientAlert, setShowNoRecipientAlert] = React.useState(false)
+  const [isDragOver, setIsDragOver] = React.useState(false)
+  const dragCounterRef = React.useRef(0)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
+
+  React.useEffect(() => {
+    const resetDragState = () => {
+      dragCounterRef.current = 0
+      setIsDragOver(false)
+    }
+    // capture phase: fires before CKEditor's stopPropagation on drop
+    document.addEventListener('drop', resetDragState, true)
+    // dragend: fires when an internal drag ends anywhere
+    document.addEventListener('dragend', resetDragState)
+    return () => {
+      document.removeEventListener('drop', resetDragState, true)
+      document.removeEventListener('dragend', resetDragState)
+    }
+  }, [])
 
   React.useEffect(() => {
     if (isMobile) {
@@ -306,10 +323,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     fileInputRef.current?.click()
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files || files.length === 0) return
-
+  const processFiles = async (files: FileList | File[]) => {
     for (const file of Array.from(files)) {
       const tempId = createClientId()
 
@@ -368,8 +382,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
             })
           )
         }
-      } catch (error) {
-        // Handle upload error
+      } catch {
         dispatch(
           updateAttachmentProgress({
             draftId,
@@ -380,8 +393,47 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         )
       }
     }
+  }
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+    await processFiles(files)
     e.target.value = ''
+  }
+
+  const isFileDrag = (e: React.DragEvent) =>
+    e.dataTransfer.types.includes('Files')
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return
+    e.preventDefault()
+    dragCounterRef.current++
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return
+    e.preventDefault()
+    dragCounterRef.current--
+    if (dragCounterRef.current === 0) {
+      setIsDragOver(false)
+    }
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return
+    e.preventDefault()
+  }
+
+  const handleDrop = async (e: React.DragEvent) => {
+    if (!isFileDrag(e)) return
+    e.preventDefault()
+    dragCounterRef.current = 0
+    setIsDragOver(false)
+    const files = e.dataTransfer.files
+    if (!files || files.length === 0) return
+    await processFiles(files)
   }
 
   const handleDeleteAttachment = async (attachment: MailComposeAttachment) => {
@@ -456,12 +508,24 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       onFocusCapture={() => dispatch(setActiveDraft(draftId))}
       onPointerDownCapture={() => dispatch(setActiveDraft(draftId))}
       className={cn(
-        'bg-background pointer-events-auto flex flex-col border transition-all duration-300',
-        !isMobile && !isMaximized && 'relative rounded-t-lg',
+        'bg-background pointer-events-auto relative flex flex-col border transition-all duration-300',
+        !isMobile && !isMaximized && 'rounded-t-lg',
         getContainerClasses,
         isMaximized && !isMobile && 'rounded-lg'
       )}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={(e) => void handleDrop(e)}
     >
+      {isDragOver && !showMinimized && (
+        <div className="border-primary bg-primary/10 pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-lg border-2 border-dashed">
+          <div className="text-primary flex flex-col items-center gap-2">
+            <Paperclip className="h-8 w-8" />
+            <span className="text-sm font-medium">{t('drop_files.string')}</span>
+          </div>
+        </div>
+      )}
       {/* ── Header ─────────────────────────────────────────────────────── */}
       <div
         className={cn(
@@ -787,7 +851,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         open={showNoRecipientAlert}
         onOpenChange={setShowNoRecipientAlert}
       >
-        <AlertDialogContent>
+        <AlertDialogContent className="z-[9999]">
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t('no_recipient_alert.title.string')}
