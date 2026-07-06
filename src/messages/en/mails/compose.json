@@ -139,6 +139,10 @@
             "string": "Attachment upload failed",
             "context": "Error message shown when an attachment fails to upload"
         },
+        "drop_files": {
+            "string": "Drop files here",
+            "context": "Overlay message shown when the user drags files over the compose window"
+        },
         "attachment_upload": {
             "string": "Uploading attachment...",
             "context": "Message shown while an attachment is being uploaded"
