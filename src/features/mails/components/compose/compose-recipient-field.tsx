@@ -83,7 +83,11 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
       <InputWithTags
         tags={tags}
         remove={remove}
-        handleAdd={handleAdd}
+        handleAdd={(value) => {
+          handleAdd(value)
+          setDraft('')
+          setOpen(false)
+        }}
         name={name}
         placeholder={placeholder}
         disabled={disabled}
@@ -93,6 +97,13 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
           setOpen(true)
         }}
         onFocus={() => setOpen(true)}
+        onBlur={() => {
+          if (draft.trim() && EMAIL_RE.test(draft.trim())) {
+            handleAdd(draft.trim())
+            setDraft('')
+          }
+          setOpen(false)
+        }}
       />
 
       {showPanel && (

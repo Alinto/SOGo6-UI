@@ -124,6 +124,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       handleAdd: (value: string) => {
         const trimmed = value.trim()
         if (!trimmed || !isValidEmail(trimmed)) return
+        if (tags.some((tag) => tag.value.toLowerCase() === trimmed.toLowerCase())) return
         const newTags = [...tags, { id: createClientId(), value: trimmed }]
         setTags(newTags)
         dispatchRecipients(field, newTags)
