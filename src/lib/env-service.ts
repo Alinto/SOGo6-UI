@@ -14,44 +14,51 @@ let envCache: EnvVariables | null = null
 let fetchPromise: Promise<EnvVariables> | null = null
 let isApiHealthy: boolean | null = null
 
+const HEALTH_CHECK_MS = 2000
+const ENV_FETCH_MS = 4000
+
 /**
- * Check if the API is reachable with a simple health check
+ * Check if the API is reachable via GET /system (same check for relative and absolute base URLs).
  */
 const checkApiHealth = async (apiUrl: string): Promise<boolean> => {
   if (apiUrl === '/fakeApi') {
-    return true // fakeApi is always available
+    return true
   }
 
   const healthUrl = `${apiUrl.replace(/\/$/, '')}/system`
-  const isSameOrigin = apiUrl.startsWith('/')
 
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 3000)
+    const timeoutId = setTimeout(() => controller.abort(), HEALTH_CHECK_MS)
 
-    if (isSameOrigin) {
-      const response = await fetch(healthUrl, {
-        method: 'GET',
-        signal: controller.signal,
-        headers: { Accept: 'application/json' },
-      })
-      clearTimeout(timeoutId)
-      if (!response.ok) {
-        console.info(
-          `%cAPI health check failed for ${healthUrl} (HTTP ${response.status})`,
-          'color: #94a3b8'
-        )
-      }
-      return response.ok
+    const response = await fetch(healthUrl, {
+      method: 'GET',
+      signal: controller.signal,
+      headers: { Accept: 'application/json' },
+    })
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      console.info(
+        `%cAPI health check failed for ${healthUrl} (HTTP ${response.status})`,
+        'color: #94a3b8'
+      )
+      return false
     }
 
-    await fetch(healthUrl, {
-      method: 'HEAD',
-      signal: controller.signal,
-      mode: 'no-cors',
-    })
+    try {
+      const body = (await response.json()) as { error_code?: string }
+      if (body.error_code && body.error_code !== 'S000000') {
+        console.info(
+          `%cAPI health check failed for ${healthUrl} (error_code ${body.error_code})`,
+          'color: #94a3b8'
+        )
+        return false
+      }
+    } catch {
+      // Non-JSON health body — HTTP 200 is enough
+    }
 
-    clearTimeout(timeoutId)
     return true
   } catch (error) {
     const errorName = (error as Error).name
@@ -88,7 +95,7 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
   fetchPromise = (async () => {
     try {
       const envController = new AbortController()
-      const envTimeout = setTimeout(() => envController.abort(), 5000)
+      const envTimeout = setTimeout(() => envController.abort(), ENV_FETCH_MS)
 
       let response: Response
       try {

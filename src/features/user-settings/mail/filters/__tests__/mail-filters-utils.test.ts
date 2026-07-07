@@ -109,6 +109,147 @@ describe('mail-filters-utils', () => {
       expect(ui.actions[0].value).toBe('a@b.com')
     })
 
+    it('maps copy action to copy', () => {
+      const ui = mapApiFilterToUi({
+        ...sampleApiFilter,
+        actions: [
+          {
+            method: 'copy',
+            arguments: { folder: 'Archive', create_if_no_exist: false },
+          },
+        ],
+      })
+      expect(ui.actions[0].action).toBe('copy')
+      expect(ui.actions[0].value).toBe('Archive')
+      expect(ui.actions[0].createIfNotExist).toBe(false)
+    })
+
+    it('maps removeheader action to removeheader', () => {
+      const ui = mapApiFilterToUi({
+        ...sampleApiFilter,
+        actions: [
+          { method: 'removeheader', arguments: { header_name: 'X-Spam' } },
+        ],
+      })
+      expect(ui.actions[0].action).toBe('removeheader')
+      expect(ui.actions[0].value).toBe('X-Spam')
+    })
+
+    it('maps new operators to UI conditions', () => {
+      const ui = mapApiFilterToUi({
+        ...sampleApiFilter,
+        rules: {
+          op: 'and',
+          rules: [
+            { field: 'subject', operator: 'starts-with', value: 'Hello' },
+            {
+              field: 'header',
+              operator: 'exists',
+              custom_header: 'X-Flag',
+              value: '',
+            },
+            { field: 'size', operator: 'size', value: '1024' },
+          ],
+        },
+      })
+
+      expect(ui.rules.map((rule) => rule.condition)).toEqual([
+        'STARTS_WITH',
+        'EXISTS',
+        'SIZE_OVER',
+      ])
+    })
+
+    it('uses stable ids when mapping from API', () => {
+      const first = mapApiFilterToUi(sampleApiFilter)
+      const second = mapApiFilterToUi(sampleApiFilter)
+      expect(first.id).toBe(second.id)
+      expect(first.rules[0].id).toBe(second.rules[0].id)
+    })
+
+    it('marks filters with unsupported actions as read-only and preserves them on save', () => {
+      const ui = mapApiFilterToUi({
+        ...sampleApiFilter,
+        actions: [{ method: 'imapflags', arguments: { flags: ['\\Flagged'] } }],
+      })
+
+      expect(ui.readOnly).toBe(true)
+      expect(ui.actions[0].unsupportedAction).toBe(true)
+
+      const api = mapUiFilterToApi(ui)
+      expect(api.actions[0]).toEqual({
+        method: 'imapflags',
+        arguments: { flags: ['\\Flagged'] },
+      })
+    })
+
+    it('preserves case_sensitive on rules round-trip', () => {
+      const ui = mapApiFilterToUi({
+        ...sampleApiFilter,
+        rules: {
+          op: 'and',
+          rules: [
+            {
+              field: 'subject',
+              operator: 'contains',
+              value: 'Hello',
+              case_sensitive: false,
+            },
+          ],
+        },
+      })
+
+      const api = mapUiFilterToApi(ui)
+      expect(api.rules).toEqual({
+        op: 'and',
+        rules: [
+          {
+            field: 'subject',
+            operator: 'contains',
+            value: 'Hello',
+            case_sensitive: false,
+          },
+        ],
+      })
+    })
+
+    it('round-trips copy and removeheader actions', () => {
+      const ui: MailFilter = {
+        id: 'ui-copy',
+        name: 'Copy filter',
+        operator: 'AND',
+        enabled: true,
+        rules: [
+          { id: 'r1', field: 'from', condition: 'CONTAINS', value: 'test' },
+        ],
+        actions: [
+          {
+            id: 'a1',
+            action: 'copy',
+            value: 'Archive',
+            createIfNotExist: true,
+          },
+          {
+            id: 'a2',
+            action: 'removeheader',
+            value: 'X-Spam',
+          },
+        ],
+      }
+
+      const api = mapUiFilterToApi(ui)
+      expect(api.actions).toEqual([
+        {
+          method: 'copy',
+          arguments: { folder: 'Archive', create_if_no_exist: true },
+        },
+        {
+          method: 'removeheader',
+          arguments: { header_name: 'X-Spam' },
+        },
+      ])
+    })
+
     it('round-trips AND filter preserving semantic fields', () => {
       const ui: MailFilter = {
         id: 'ui-1',

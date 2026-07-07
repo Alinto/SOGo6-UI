@@ -100,4 +100,52 @@ describe('filters-schema', () => {
       expect(actionError?.message).toBe('Enter a valid email address')
     }
   })
+
+  it('allows EXISTS condition without value', () => {
+    const filter = createEmptyFilter()
+    filter.name = 'Header exists'
+    filter.rules[0].field = 'header'
+    filter.rules[0].field_value = 'X-Flag'
+    filter.rules[0].condition = 'EXISTS'
+    filter.rules[0].value = ''
+    filter.actions[0].action = 'keep'
+
+    const result = filtersSchema.safeParse({ filters: [filter] })
+    expect(result.success).toBe(true)
+  })
+
+  it('requires numeric value for SIZE_OVER condition', () => {
+    const filter = createEmptyFilter()
+    filter.name = 'Size filter'
+    filter.rules[0].field = 'size'
+    filter.rules[0].condition = 'SIZE_OVER'
+    filter.rules[0].value = 'abc'
+    filter.actions[0].action = 'discard'
+
+    const result = filtersSchema.safeParse({ filters: [filter] })
+    expect(result.success).toBe(false)
+  })
+
+  it('requires header name for removeheader action', () => {
+    const filter = createEmptyFilter()
+    filter.name = 'Remove header'
+    filter.rules[0].value = 'test'
+    filter.actions[0].action = 'removeheader'
+    filter.actions[0].value = ''
+
+    const result = filtersSchema.safeParse({ filters: [filter] })
+    expect(result.success).toBe(false)
+  })
+
+  it('requires SIZE_OVER condition for size field', () => {
+    const filter = createEmptyFilter()
+    filter.name = 'Size filter'
+    filter.rules[0].field = 'size'
+    filter.rules[0].condition = 'CONTAINS'
+    filter.rules[0].value = '100'
+    filter.actions[0].action = 'discard'
+
+    const result = filtersSchema.safeParse({ filters: [filter] })
+    expect(result.success).toBe(false)
+  })
 })

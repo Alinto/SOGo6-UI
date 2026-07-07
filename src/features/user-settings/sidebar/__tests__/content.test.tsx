@@ -28,6 +28,7 @@ const mockProfile = (overrides = {}) => {
     forwardEnabled: true,
     vacationEnabled: true,
     mailFilteringEnabled: true,
+    notifyEnabled: true,
     passwordChangeEnabled: true,
     ...overrides,
   })
@@ -308,8 +309,8 @@ describe('useNavItems', () => {
       expect(item?.url).toBe('/user_settings/mail/external_accounts')
     })
 
-    it('always includes Notifications as the last item', () => {
-      mockProfile()
+    it('includes Notifications when notifyEnabled is true', () => {
+      mockProfile({ notifyEnabled: true })
       const { result } = renderHook(() => useNavItems())
       const items = result.current[1].items?.[3].items ?? []
       const last = items[items.length - 1]
@@ -317,26 +318,35 @@ describe('useNavItems', () => {
       expect(last?.url).toBe('/user_settings/mail/notifications')
     })
 
-    it('has 8 items when all conditional flags are enabled', () => {
+    it('excludes Notifications when notifyEnabled is false', () => {
+      mockProfile({ notifyEnabled: false })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.notifications.string'
+      )
+      expect(item).toBeUndefined()
+    })
+
+    it('has 7 items when all conditional flags are enabled', () => {
       mockProfile({
         forwardEnabled: true,
         vacationEnabled: true,
         mailFilteringEnabled: true,
+        notifyEnabled: true,
       })
       const { result } = renderHook(() => useNavItems())
-      // general, categories, imap_accounts, filters, vacation, forward, notifications
       expect(result.current[1].items?.[3].items).toHaveLength(7)
     })
 
-    it('has 5 items when all conditional flags are disabled', () => {
+    it('has 3 items when all conditional flags are disabled', () => {
       mockProfile({
         forwardEnabled: false,
         vacationEnabled: false,
         mailFilteringEnabled: false,
+        notifyEnabled: false,
       })
       const { result } = renderHook(() => useNavItems())
-      // general, categories, imap_accounts, notifications
-      expect(result.current[1].items?.[3].items).toHaveLength(4)
+      expect(result.current[1].items?.[3].items).toHaveLength(3)
     })
   })
 
@@ -455,6 +465,17 @@ describe('useNavItems', () => {
       const first = result.current
 
       mockProfile({ mailFilteringEnabled: false })
+      rerender()
+
+      expect(result.current).not.toBe(first)
+    })
+
+    it('returns a new reference when notifyEnabled changes', () => {
+      mockProfile({ notifyEnabled: true })
+      const { result, rerender } = renderHook(() => useNavItems())
+      const first = result.current
+
+      mockProfile({ notifyEnabled: false })
       rerender()
 
       expect(result.current).not.toBe(first)

@@ -30,6 +30,7 @@ export {
 
 // Configuration
 export {
+  buildSSEConfig,
   getDefaultSSEConfig,
   getDefaultSSEConfigSync,
   getDevelopmentSSEConfig,

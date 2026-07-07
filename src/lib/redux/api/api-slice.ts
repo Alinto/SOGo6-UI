@@ -90,7 +90,7 @@ const tagTypes = [
 // Cache the base URL to avoid fetching env vars on every API call
 let cachedBaseUrl: string | undefined
 
-const ENV_RESOLVE_MS = 8000
+const ENV_RESOLVE_MS = 6000
 
 /** Release semaphore slots when the back never responds (dev mono-worker / IMAP hang). */
 export const API_FETCH_TIMEOUT_MS = 20_000

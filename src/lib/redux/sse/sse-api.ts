@@ -37,7 +37,7 @@ const getSSEService = (config?: SSEConfig): SSEService => {
  * Create a no-op baseQuery since we're using queryFn
  */
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:8888/sse',
+  baseUrl: '/fakeApi/sse',
 })
 
 /**

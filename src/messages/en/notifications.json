@@ -815,6 +815,26 @@
                     }
                 }
             }
+        },
+        "mail_notify": {
+            "save": {
+                "success": {
+                    "title": {
+                        "string": "Notification settings saved"
+                    },
+                    "message": {
+                        "string": "Your mail notification settings have been updated."
+                    }
+                },
+                "error": {
+                    "title": {
+                        "string": "Could not save notification settings"
+                    },
+                    "message": {
+                        "string": "An error occurred while saving your mail notification settings."
+                    }
+                }
+            }
         }
     }
 }

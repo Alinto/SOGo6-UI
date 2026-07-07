@@ -31,7 +31,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Info, Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useEffect, useMemo } from 'react'
-import { useFieldArray, useForm, useWatch } from 'react-hook-form'
+import { useFieldArray, useForm, useWatch, type Control } from 'react-hook-form'
 import type { MailFilter } from '../mail-filters-types'
 import FolderSelectField from './folder-select-field'
 import { createSingleFilterSchema, defaultFilterValues } from './filters-schema'
@@ -43,6 +43,60 @@ import {
   operators,
   ruleFields,
 } from './utils'
+
+interface FolderActionFieldsProps {
+  index: number
+  accountId: string
+  isReadOnly: boolean
+  createIfMissingLabel: string
+  control: Control<SingleFilterFormValues>
+}
+
+function FolderActionFields({
+  index,
+  accountId,
+  isReadOnly,
+  createIfMissingLabel,
+  control,
+}: FolderActionFieldsProps) {
+  return (
+    <FormField
+      control={control}
+      name={`actions.${index}.value`}
+      render={({ field }) => (
+        <FormItem className="flex-1 space-y-2">
+          <FormControl>
+            <FolderSelectField
+              value={field.value}
+              onChange={field.onChange}
+              disabled={isReadOnly}
+              accountId={accountId}
+            />
+          </FormControl>
+          <FormField
+            control={control}
+            name={`actions.${index}.createIfNotExist`}
+            render={({ field: checkboxField }) => (
+              <FormItem className="flex items-center gap-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={checkboxField.value ?? true}
+                    onCheckedChange={checkboxField.onChange}
+                    disabled={isReadOnly}
+                  />
+                </FormControl>
+                <FormLabel className="text-sm font-normal">
+                  {createIfMissingLabel}
+                </FormLabel>
+              </FormItem>
+            )}
+          />
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  )
+}
 
 interface FilterEditDialogProps {
   open: boolean
@@ -211,6 +265,7 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                 </div>
                 {rulesFields.map((rule, index) => {
                   const watchedField = form.watch(`rules.${index}.field`)
+                  const watchedCondition = form.watch(`rules.${index}.condition`)
                   const conditionOptions = getConditionsForField(
                     watchedField
                   ).map((condition) => ({
@@ -227,7 +282,15 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                           render={({ field }) => (
                             <FormItem>
                               <SelectForm
-                                onValueChange={field.onChange}
+                                onValueChange={(value) => {
+                                  field.onChange(value)
+                                  if (value === 'size') {
+                                    form.setValue(
+                                      `rules.${index}.condition`,
+                                      'SIZE_OVER'
+                                    )
+                                  }
+                                }}
                                 value={field.value}
                                 options={translatedRuleFields}
                                 disabled={isReadOnly}
@@ -250,18 +313,38 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                           )}
                         />
                         <div className="flex items-start gap-2">
-                          <FormField
-                            control={form.control}
-                            name={`rules.${index}.value`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1">
-                                <FormControl>
-                                  <Input {...field} disabled={isReadOnly} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
+                          {watchedCondition !== 'EXISTS' && (
+                            <FormField
+                              control={form.control}
+                              name={`rules.${index}.value`}
+                              render={({ field }) => (
+                                <FormItem className="flex-1">
+                                  <FormControl>
+                                    <Input
+                                      {...field}
+                                      type={
+                                        watchedCondition === 'SIZE_OVER'
+                                          ? 'number'
+                                          : 'text'
+                                      }
+                                      min={
+                                        watchedCondition === 'SIZE_OVER'
+                                          ? 0
+                                          : undefined
+                                      }
+                                      disabled={isReadOnly}
+                                      placeholder={
+                                        watchedCondition === 'SIZE_OVER'
+                                          ? t('placeholders.size_value.string')
+                                          : undefined
+                                      }
+                                    />
+                                  </FormControl>
+                                  <FormMessage />
+                                </FormItem>
+                              )}
+                            />
+                          )}
                           {!isReadOnly && rulesFields.length > 1 && (
                             <Button
                               type="button"
@@ -361,46 +444,14 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                         )}
                       />
                       <div className="flex items-start gap-2">
-                        {watchedAction === 'move' && (
-                          <FormField
+                        {(watchedAction === 'move' || watchedAction === 'copy') && (
+                          <FolderActionFields
+                            index={index}
+                            accountId={accountId}
+                            isReadOnly={isReadOnly}
                             control={form.control}
-                            name={`actions.${index}.value`}
-                            render={({ field }) => (
-                              <FormItem className="flex-1 space-y-2">
-                                <FormControl>
-                                  <FolderSelectField
-                                    value={field.value}
-                                    onChange={field.onChange}
-                                    disabled={isReadOnly}
-                                    accountId={accountId}
-                                  />
-                                </FormControl>
-                                <FormField
-                                  control={form.control}
-                                  name={`actions.${index}.createIfNotExist`}
-                                  render={({ field: checkboxField }) => (
-                                    <FormItem className="flex items-center gap-2 space-y-0">
-                                      <FormControl>
-                                        <Checkbox
-                                          checked={
-                                            checkboxField.value ?? true
-                                          }
-                                          onCheckedChange={
-                                            checkboxField.onChange
-                                          }
-                                          disabled={isReadOnly}
-                                        />
-                                      </FormControl>
-                                      <FormLabel className="text-sm font-normal">
-                                        {t(
-                                          'folder_select.create_if_missing.string'
-                                        )}
-                                      </FormLabel>
-                                    </FormItem>
-                                  )}
-                                />
-                                <FormMessage />
-                              </FormItem>
+                            createIfMissingLabel={t(
+                              'folder_select.create_if_missing.string'
                             )}
                           />
                         )}
@@ -419,6 +470,26 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                                     disabled={isReadOnly}
                                     placeholder={t(
                                       'placeholders.forward_email.string'
+                                    )}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        {watchedAction === 'removeheader' && (
+                          <FormField
+                            control={form.control}
+                            name={`actions.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    disabled={isReadOnly}
+                                    placeholder={t(
+                                      'placeholders.header_name.string'
                                     )}
                                   />
                                 </FormControl>

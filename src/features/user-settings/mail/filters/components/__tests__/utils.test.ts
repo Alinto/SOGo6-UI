@@ -1,4 +1,11 @@
-import { actions, getActionOption, operators, ruleConditions, ruleFields } from '../utils'
+import {
+  actions,
+  getActionOption,
+  getConditionsForField,
+  operators,
+  ruleConditions,
+  ruleFields,
+} from '../utils'
 
 describe('Mail Filters Utils', () => {
   describe('operators', () => {
@@ -8,25 +15,54 @@ describe('Mail Filters Utils', () => {
   })
 
   describe('ruleFields v1 scope', () => {
-    it('only exposes from, to, subject and header', () => {
+    it('exposes from, to, subject, header and size', () => {
       expect(ruleFields.map((field) => field.value)).toEqual([
         'from',
         'to',
         'subject',
         'header',
+        'size',
       ])
     })
   })
 
   describe('ruleConditions v1 scope', () => {
-    it('exposes supported conditions only', () => {
+    it('exposes supported conditions', () => {
       expect(ruleConditions.map((condition) => condition.value)).toEqual([
         'IS',
         'CONTAINS',
         'NOT_CONTAIN',
         'MATCH',
         'MATCH_REGEX',
+        'STARTS_WITH',
+        'ENDS_WITH',
+        'EXISTS',
+        'SIZE_OVER',
       ])
+    })
+
+    it('restricts EXISTS to header field', () => {
+      const headerConditions = getConditionsForField('header').map(
+        (condition) => condition.value
+      )
+      const fromConditions = getConditionsForField('from').map(
+        (condition) => condition.value
+      )
+
+      expect(headerConditions).toContain('EXISTS')
+      expect(fromConditions).not.toContain('EXISTS')
+    })
+
+    it('restricts SIZE_OVER to size field', () => {
+      const sizeConditions = getConditionsForField('size').map(
+        (condition) => condition.value
+      )
+      const fromConditions = getConditionsForField('from').map(
+        (condition) => condition.value
+      )
+
+      expect(sizeConditions).toEqual(['SIZE_OVER'])
+      expect(fromConditions).not.toContain('SIZE_OVER')
     })
   })
 
@@ -47,7 +83,15 @@ describe('Mail Filters Utils', () => {
     })
 
     it('keeps supported actions enabled', () => {
-      ;['move', 'stop', 'keep', 'discard', 'forward'].forEach((action) => {
+      ;[
+        'move',
+        'copy',
+        'stop',
+        'keep',
+        'discard',
+        'forward',
+        'removeheader',
+      ].forEach((action) => {
         expect(actions.find((item) => item.value === action)?.disabled).toBe(
           undefined
         )

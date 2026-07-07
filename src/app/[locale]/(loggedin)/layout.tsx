@@ -16,6 +16,7 @@ import {
   NotificationToaster,
 } from '@/features/notifications'
 import { useGetUserProfileQuery } from '@/features/user-profile'
+import { fetchEnvVars } from '@/lib/env-service'
 import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
@@ -71,8 +72,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [connect] = useConnectSSEMutation()
 
   useEffect(() => {
-    const config = getSSEConfigForEnvironment()
-    connect(config)
+    let cancelled = false
+
+    void (async () => {
+      const envVars = await fetchEnvVars()
+      if (cancelled || envVars.SSE_ENABLED === false) {
+        return
+      }
+
+      const config = await getSSEConfigForEnvironment()
+      if (!cancelled) {
+        connect(config)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
   }, [connect])
 
   if (!isHydrated || !token) return null

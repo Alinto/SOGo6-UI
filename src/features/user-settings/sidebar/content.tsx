@@ -30,6 +30,7 @@ export function useNavItems(): NavItem[] {
     forwardEnabled,
     vacationEnabled,
     mailFilteringEnabled,
+    notifyEnabled,
     passwordChangeEnabled,
   } = useProfile()
 
@@ -114,10 +115,10 @@ export function useNavItems(): NavItem[] {
                 title: 'US_SIDEBAR.settings.email.forward.string',
                 url: '/user_settings/mail/forward',
               }),
-              {
+              ...when(notifyEnabled, {
                 title: 'US_SIDEBAR.settings.email.notifications.string',
                 url: '/user_settings/mail/notifications',
-              },
+              }),
             ],
           },
         ],
@@ -127,6 +128,7 @@ export function useNavItems(): NavItem[] {
       forwardEnabled,
       vacationEnabled,
       mailFilteringEnabled,
+      notifyEnabled,
       passwordChangeEnabled,
     ]
   )

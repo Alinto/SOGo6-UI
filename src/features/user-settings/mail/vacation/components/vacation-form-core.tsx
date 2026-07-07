@@ -53,11 +53,13 @@ const MailVacationSettingsForm: React.FC<Props> = ({
     defaultValues: data ?? createEmptyVacation(),
   })
 
+  const { reset } = form
+
   useEffect(() => {
     if (data) {
-      form.reset(data)
+      reset(data)
     }
-  }, [data, form])
+  }, [data, reset])
 
   const enabled = useWatch({ control: form.control, name: 'enabled' })
   const constraints = useWatch({ control: form.control, name: 'constraints' })
