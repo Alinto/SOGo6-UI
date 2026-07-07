@@ -35,6 +35,20 @@ const createFilterActionSchema = (t: FiltersTranslator) =>
           path: ['value'],
         })
       }
+      if (action.action === 'copy' && !action.value.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('errors.validation.folder_required.string'),
+          path: ['value'],
+        })
+      }
+      if (action.action === 'removeheader' && !action.value.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: t('errors.validation.header_name_required.string'),
+          path: ['value'],
+        })
+      }
       if (action.action === 'forward') {
         const result = emailSchema.safeParse(action.value.trim())
         if (!result.success) {
@@ -88,6 +102,26 @@ const createFilterItemSchema = (t: FiltersTranslator) =>
             message: t('errors.validation.header_name_required.string'),
             path: ['rules', index, 'field_value'],
           })
+        }
+        if (rule.field === 'size' && rule.condition !== 'SIZE_OVER') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t('errors.validation.size_condition_required.string'),
+            path: ['rules', index, 'condition'],
+          })
+        }
+        if (rule.condition === 'EXISTS') {
+          return
+        }
+        if (rule.condition === 'SIZE_OVER') {
+          if (!rule.value.trim() || Number.isNaN(Number(rule.value))) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: t('errors.validation.size_value_required.string'),
+              path: ['rules', index, 'value'],
+            })
+          }
+          return
         }
         if (!rule.value.trim()) {
           ctx.addIssue({

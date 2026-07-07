@@ -1,30 +1,42 @@
 'use client'
 
+import { useProfile } from '@/features/user-profile'
+import { SettingsAsyncPage } from '@/features/user-settings/components/settings-async-page'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import MailNotificationsSettingForm from './components/notifications-form'
+import NotificationsSettingsSkeleton from './components/notifications-skeleton'
 import {
-  useGetMailNotificationsSettingsQuery,
-  useUpdateMailNotificationsSettingsMutation,
+  useGetMailNotificationSettingsQuery,
+  useUpdateMailNotificationSettingsMutation,
 } from './store/mail-notifications-settings-api'
-import { PageLoader } from '@/components/lazy-components'
 
 const MailNotificationsSettings: React.FC = () => {
   const t = useTranslations('US_MAIL_NOTIFICATIONS')
-  const { data, error, isFetching } = useGetMailNotificationsSettingsQuery()
-  const [updateData] = useUpdateMailNotificationsSettingsMutation()
-  if (error) {
-    return 'ERROR'
-  }
+  const { mainAccount } = useProfile()
+  const accountId = mainAccount?.id ?? '0'
+
+  const { data, error, isLoading } = useGetMailNotificationSettingsQuery({
+    accountId,
+  })
+  const [updateData] = useUpdateMailNotificationSettingsMutation()
+
   return (
-    <div className="grid grid-cols-1 gap-4">
-      <h2 className="text-2xl">{t('title.string')}</h2>
-      {isFetching ? (
-        <PageLoader />
-      ) : (
-        <MailNotificationsSettingForm data={data} update={updateData} />
-      )}
-    </div>
+    <SettingsAsyncPage
+      title={t('title.string')}
+      description={t('page.description.string')}
+      error={error}
+      isLoading={isLoading}
+      featureDisabledMessage={t('errors_api.feature_disabled.string')}
+      loadFailedMessage={t('errors_api.load_failed.string')}
+      skeleton={<NotificationsSettingsSkeleton />}
+    >
+      <MailNotificationsSettingForm
+        data={data}
+        accountId={accountId}
+        update={updateData}
+      />
+    </SettingsAsyncPage>
   )
 }
 

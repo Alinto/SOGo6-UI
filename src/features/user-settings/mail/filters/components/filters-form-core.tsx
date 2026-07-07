@@ -59,11 +59,13 @@ const MailFiltersSettingsForm: React.FC<Props> = ({
     defaultValues: { filters: data ?? [] },
   })
 
+  const { reset } = form
+
   useEffect(() => {
     if (data) {
-      form.reset({ filters: data })
+      reset({ filters: data })
     }
-  }, [data, form])
+  }, [data, reset])
 
   const { fields, remove, move, insert, update: updateField } = useFieldArray({
     control: form.control,

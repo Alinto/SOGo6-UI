@@ -1,7 +1,7 @@
 import type { ApiFilterItem } from '@/features/user-settings/mail/filters/mail-filters-api-types'
 import { NextRequest, NextResponse } from 'next/server'
 
-const data: ApiFilterItem[] = [
+const defaultFilters: ApiFilterItem[] = [
   {
     name: 'Filter 1',
     enabled: 1,
@@ -74,6 +74,18 @@ const data: ApiFilterItem[] = [
   },
 ]
 
+const store = new Map<string, ApiFilterItem[]>()
+
+function getFilters(accountId: string): ApiFilterItem[] {
+  if (!store.has(accountId)) {
+    store.set(
+      accountId,
+      accountId === '0' ? structuredClone(defaultFilters) : []
+    )
+  }
+  return store.get(accountId) ?? []
+}
+
 function apiResponse(filters: ApiFilterItem[]) {
   return {
     error_code: 'S000000',
@@ -82,19 +94,26 @@ function apiResponse(filters: ApiFilterItem[]) {
   }
 }
 
-export async function GET() {
+export async function GET(
+  _req: NextRequest,
+  { params }: { params: Promise<{ accountId: string }> }
+) {
+  const { accountId } = await params
   await new Promise((resolve) => setTimeout(resolve, 300))
-  return NextResponse.json(apiResponse(data))
+  return NextResponse.json(apiResponse(getFilters(accountId)))
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ accountId: string }> }
+) {
+  const { accountId } = await params
   const body = await req.json()
   const incoming = body.filters as ApiFilterItem[] | undefined
   if (Array.isArray(incoming)) {
-    data.length = 0
-    data.push(...incoming)
+    store.set(accountId, incoming)
   }
-  return NextResponse.json(apiResponse(data))
+  return NextResponse.json(apiResponse(getFilters(accountId)))
 }
 
 export async function OPTIONS() {

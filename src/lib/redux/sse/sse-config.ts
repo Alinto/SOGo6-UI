@@ -2,72 +2,72 @@
  * SSE Connection Configuration
  *
  * Default configuration for SSE connections used by useConnectSSEMutation.
- * This file centralizes SSE configuration for easy management and updates.
+ * Endpoints follow REACT_APP_API_BASE_URL (e.g. /fakeApi/sse or backend /sse).
  */
 
-import { fetchEnvVars } from '@/lib/env-service'
+import { fetchEnvVars, getCachedEnvVars } from '@/lib/env-service'
 import type { SSEConfig } from './types'
+
+const DEFAULT_SSE_OPTIONS = {
+  reconnectInterval: 3000,
+  maxReconnectAttempts: 5,
+  heartbeatTimeout: 30000,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'text/event-stream',
+    Accept: 'text/event-stream',
+  },
+} as const satisfies Partial<SSEConfig>
+
+/** Build SSE URL from the same base URL as RTK Query API calls. */
+export function buildSSEConfig(apiBaseUrl: string): SSEConfig {
+  const normalized = apiBaseUrl.replace(/\/$/, '')
+  const withCredentials = !apiBaseUrl.startsWith('/')
+
+  return {
+    ...DEFAULT_SSE_OPTIONS,
+    url: `${normalized}/sse`,
+    withCredentials,
+    headers: { ...DEFAULT_SSE_OPTIONS.headers },
+  }
+}
 
 /**
  * Get default SSE configuration
  *
  * Dynamically resolves the SSE endpoint based on environment variables.
- * Falls back to mock endpoint for development.
  */
 export async function getDefaultSSEConfig(): Promise<SSEConfig> {
   try {
     const envVars = await fetchEnvVars()
     const baseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
-
-    return {
-      url: `${baseUrl}/sse`,
-      reconnectInterval: 3000, // Reconnect after 3 seconds
-      maxReconnectAttempts: 5, // Maximum 5 reconnection attempts
-      heartbeatTimeout: 30000, // 30 second heartbeat timeout
-      withCredentials: true, // Include credentials for authenticated requests
-      headers: {
-        'Content-Type': 'text/event-stream',
-        Accept: 'text/event-stream',
-      },
-    }
+    return buildSSEConfig(baseUrl)
   } catch (error) {
     console.warn(
       'Failed to load environment variables for SSE config, using defaults',
       error
     )
-    // Fallback to safe defaults
     return getDefaultSSEConfigSync()
   }
 }
 
 /**
- * Synchronous version of default SSE configuration
- * Used as fallback when async loading is not possible
+ * Synchronous fallback when env is already loaded or on the server.
  */
 export function getDefaultSSEConfigSync(): SSEConfig {
-  return {
-    url: 'http://localhost:8888/sse',
-    reconnectInterval: 3000,
-    maxReconnectAttempts: 5,
-    heartbeatTimeout: 30000,
-    withCredentials: true,
-    headers: {
-      'Content-Type': 'text/event-stream',
-      Accept: 'text/event-stream',
-    },
-  }
+  const cached = getCachedEnvVars()?.REACT_APP_API_BASE_URL
+  return buildSSEConfig(cached || '/fakeApi')
 }
 
 /**
- * Production SSE configuration
- * Used when deployed to production environment
+ * Production SSE configuration (reverse-proxy same-origin).
  */
 export function getProductionSSEConfig(): SSEConfig {
   return {
     url: `${window.location.origin}/api/sse`,
-    reconnectInterval: 5000, // Longer reconnect interval for production
-    maxReconnectAttempts: 10, // More reconnection attempts
-    heartbeatTimeout: 60000, // 60 second heartbeat timeout
+    reconnectInterval: 5000,
+    maxReconnectAttempts: 10,
+    heartbeatTimeout: 60000,
     withCredentials: true,
     headers: {
       'Content-Type': 'text/event-stream',
@@ -78,30 +78,18 @@ export function getProductionSSEConfig(): SSEConfig {
 }
 
 /**
- * Development SSE configuration
- * Used during development with mock endpoint
+ * @deprecated Use getDefaultSSEConfig() — resolves from REACT_APP_API_BASE_URL.
  */
 export function getDevelopmentSSEConfig(): SSEConfig {
-  return {
-    url: 'http://localhost:8888/sse',
-    reconnectInterval: 2000, // Fast reconnect for development
-    maxReconnectAttempts: 3,
-    heartbeatTimeout: 15000,
-    withCredentials: false,
-    headers: {
-      'Content-Type': 'text/event-stream',
-      Accept: 'text/event-stream',
-    },
-  }
+  return getDefaultSSEConfigSync()
 }
 
 /**
- * Test SSE configuration
- * Used during testing with mock data
+ * Test SSE configuration (fakeApi, minimal reconnect).
  */
 export function getTestSSEConfig(): SSEConfig {
   return {
-    url: 'http://localhost:8888/sse',
+    url: '/fakeApi/sse',
     reconnectInterval: 1000,
     maxReconnectAttempts: 1,
     heartbeatTimeout: 5000,
@@ -113,26 +101,20 @@ export function getTestSSEConfig(): SSEConfig {
 }
 
 /**
- * Get SSE configuration based on environment
- *
- * @returns SSE configuration for current environment
+ * Resolve SSE configuration for the current runtime environment.
  */
-export function getSSEConfigForEnvironment(): SSEConfig {
+export async function getSSEConfigForEnvironment(): Promise<SSEConfig> {
   if (typeof window === 'undefined') {
-    // Server-side: use default sync config
     return getDefaultSSEConfigSync()
   }
 
-  const isDevelopment = process.env.NODE_ENV === 'development'
-  const isTest = process.env.NODE_ENV === 'test'
-
-  if (isTest) {
+  if (process.env.NODE_ENV === 'test') {
     return getTestSSEConfig()
   }
 
-  if (isDevelopment) {
-    return getDevelopmentSSEConfig()
+  if (process.env.NODE_ENV === 'production') {
+    return getProductionSSEConfig()
   }
 
-  return getProductionSSEConfig()
+  return getDefaultSSEConfig()
 }

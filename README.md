@@ -38,9 +38,9 @@ npm install
 
 ### 2. Environment variables
 
-There is no `.env.example` at the repo root: copy or adapt existing config from the team.
+There is **`.env.example`** at the repo root: copy it to **`.env.development`** or **`.env.local`** and adjust values.
 
-- In a **dev container** / local dev, **`.env.development`** (already present or created from the team template) supplies Next.js defaults.
+- In a **dev container** / local dev, **`GET /env`** serves defaults when vars are unset: API → `http://127.0.0.1:5000/api/user/v1`, SSE off in development unless `SSE_ENABLED=true`.
 - You can add **`.env.local`** (gitignored) to **override** without changing shared files.
 
 After any change to `.env*`, **restart** `npm run dev`.
@@ -61,10 +61,10 @@ Open [http://localhost:3000](http://localhost:3000).
 
 | Variable                    | Notes                                                                                                                                                               |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `REACT_APP_API_BASE_URL`    | User API base URL (e.g. `http://localhost:5000/api/user/v1/`). If missing or backend unreachable in dev, the app may switch to `/fakeApi`.                          |
+| `REACT_APP_API_BASE_URL`    | User API base URL (e.g. `http://127.0.0.1:5000/api/user/v1`). Dev default from `/env` if unset. If unreachable in dev, the app switches to `/fakeApi`. Calls go **directly** to the backend (no Next.js proxy). |
 | `REACT_APP_API_URL`         | Optional secondary URL (see `/env`).                                                                                                                                |
 | `NEXT_PUBLIC_ADMIN_DOMAINS` | Comma-separated admin hostnames. Server default if unset: `admin.localhost`.                                                                                        |
-| `SSE_ENABLED`               | Exposed via `/env`: **`true` when the variable is unset**; only the string **`false`** explicitly disables SSE.                                                     |
+| `SSE_ENABLED`               | In **development**, SSE is **off** unless set to `true`. In production, enabled when unset; set to `false` to disable.                                              |
 | `LOGIN_PREFILL_EMAIL`       | Prefills the email field on **`/auth/login`** (optional). Read at **runtime** by `GET /env` — works with container env (e.g. Rancher) without rebuilding the image. |
 | `LOGIN_PREFILL_PASSWORD`    | Prefills the password on **`/auth/login/pwd`** (same as above).                                                                                                     |
 

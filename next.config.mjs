@@ -107,17 +107,6 @@ const nextConfig = {
             },
         ];
     },
-    // Dev: same-origin API proxy → avoids CORS preflight (OPTIONS) on every request
-    async rewrites() {
-        const proxyTarget =
-            process.env.SOGO_API_PROXY_TARGET || 'http://127.0.0.1:5000';
-        return [
-            {
-                source: '/api/:path*',
-                destination: `${proxyTarget}/api/:path*`,
-            },
-        ];
-    },
 };
 
 const withNextIntl = createNextIntlPlugin('./src/lib/i18n/request.ts');

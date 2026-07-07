@@ -1,23 +1,95 @@
 {
-    "US_MAIL_NOTIFICATIONS": {
-        "title": {
-            "string": "Mail Notifications"
+  "US_MAIL_NOTIFICATIONS": {
+    "title": {
+      "string": "Mail Notifications"
+    },
+    "page": {
+      "description": {
+        "string": "Send email notifications when your mail filters are triggered."
+      }
+    },
+    "labels": {
+      "enabled": {
+        "string": "Enable mail notifications"
+      },
+      "email": {
+        "string": "Email addresses"
+      },
+      "message": {
+        "string": "Notification message"
+      }
+    },
+    "description": {
+      "enabled": {
+        "string": "Notify external addresses when a filter rule matches incoming mail."
+      }
+    },
+    "help": {
+      "email": {
+        "string": "We'll send notifications to these addresses when filters are triggered"
+      }
+    },
+    "hints": {
+      "blur": {
+        "string": "Press Enter to add this address"
+      }
+    },
+    "placeholders": {
+      "email": {
+        "string": "Add email address and press Enter"
+      },
+      "message": {
+        "string": "Enter notification message"
+      }
+    },
+    "errors": {
+      "email": {
+        "invalid": {
+          "string": "Please enter a valid email address"
         },
-        "labels": {
-            "email": {
-                "string": "Email addresses"
-            },
-            "message": {
-                "string": "Message Notifications"
-            }
-        },
-        "placeholders": {
-            "email": {
-                "string": "Enter email addresses"
-            },
-            "message": {
-                "string": "Enter message"
-            }
+        "duplicate": {
+          "string": "This address is already in the list"
         }
+      },
+      "max_reached": {
+        "string": "Maximum {max} addresses allowed"
+      },
+      "validation": {
+        "addresses_required": {
+          "string": "At least one email address is required when notifications are enabled."
+        },
+        "message_required": {
+          "string": "A notification message is required."
+        }
+      }
+    },
+    "errors_api": {
+      "title": {
+        "string": "Error"
+      },
+      "save_failed": {
+        "string": "Couldn't save your changes, try again"
+      },
+      "load_failed": {
+        "string": "Could not load notification settings. Please try again later."
+      },
+      "feature_disabled": {
+        "string": "Mail notifications have been disabled by your administrator."
+      }
+    },
+    "aria": {
+      "toggle_notifications": {
+        "string": "Toggle mail notifications"
+      },
+      "tags_count": {
+        "string": "{count} of {max} email addresses added"
+      },
+      "remove_email": {
+        "string": "Remove {email}"
+      },
+      "email_input_group": {
+        "string": "Email addresses for notifications"
+      }
     }
+  }
 }

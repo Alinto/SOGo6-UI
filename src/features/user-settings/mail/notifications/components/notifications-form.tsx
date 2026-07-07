@@ -1,15 +1,15 @@
 import { FormLoader, LazyWrapper } from '@/components/lazy-components'
 import type React from 'react'
 import { lazy } from 'react'
-import type { MailNotifications } from '../mail-notifications-type'
-import type { useUpdateMailNotificationsSettingsMutation } from '../store/mail-notifications-settings-api'
+import type { MailNotification } from '../mail-notifications-type'
+import type { useUpdateMailNotificationSettingsMutation } from '../store/mail-notifications-settings-api'
 
 interface Props {
-  data: MailNotifications | undefined
-  update: ReturnType<typeof useUpdateMailNotificationsSettingsMutation>[0]
+  data: MailNotification | undefined
+  accountId: string
+  update: ReturnType<typeof useUpdateMailNotificationSettingsMutation>[0]
 }
 
-// Lazy load the notifications form component
 const LazyNotificationsFormCore = lazy(
   () => import('./notifications-form-core')
 )

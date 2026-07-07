@@ -30,6 +30,29 @@ export function generateFilterId(): string {
   return `filter-${filterIdCounter}`
 }
 
+export function stableHashFromString(input: string): string {
+  let hash = 0
+  for (let i = 0; i < input.length; i += 1) {
+    hash = (hash << 5) - hash + input.charCodeAt(i)
+    hash |= 0
+  }
+  return Math.abs(hash).toString(36)
+}
+
+export function stableFilterIdFromApiItem(item: ApiFilterItem): string {
+  const payload = `${item.name}|${JSON.stringify(item.rules)}|${JSON.stringify(item.actions)}`
+  return `filter-${stableHashFromString(payload)}`
+}
+
+function stableRuleIdFromLeaf(leaf: ApiFilterRuleLeaf): string {
+  const payload = `${leaf.field}|${leaf.operator}|${leaf.custom_header ?? ''}|${leaf.value ?? ''}|${leaf.case_sensitive ?? true}`
+  return `rule-${stableHashFromString(payload)}`
+}
+
+function stableActionIdFromApi(action: ApiFilterAction): string {
+  return `action-${stableHashFromString(`${action.method}|${JSON.stringify(action.arguments)}`)}`
+}
+
 function isApiRuleGroup(node: ApiFilterRuleNode): node is ApiFilterRuleGroup {
   return 'op' in node && Array.isArray(node.rules)
 }
@@ -43,11 +66,12 @@ function mapApiLeafToUiRule(leaf: ApiFilterRuleLeaf): MailFilterRule {
     API_CONDITION_TO_UI[leaf.operator.toLowerCase()] ?? leaf.operator
 
   return {
-    id: generateFilterId(),
+    id: stableRuleIdFromLeaf(leaf),
     field: leaf.field,
     field_value: leaf.custom_header,
     condition,
     value: leaf.value ?? '',
+    case_sensitive: leaf.case_sensitive,
   }
 }
 
@@ -105,6 +129,10 @@ function mapUiRuleToApiLeaf(rule: MailFilterRule): ApiFilterRuleLeaf {
     leaf.custom_header = rule.field_value
   }
 
+  if (rule.case_sensitive !== undefined) {
+    leaf.case_sensitive = rule.case_sensitive
+  }
+
   return leaf
 }
 
@@ -124,20 +152,45 @@ export function mapFlatRulesToApiTree(
 }
 
 function mapApiActionToUi(action: ApiFilterAction): MailFilterAction {
-  const uiAction = API_METHOD_TO_UI_ACTION[action.method.toLowerCase()]
+  const method = action.method.toLowerCase()
+
+  if (method === 'copy') {
+    const folder = String(action.arguments.folder ?? '')
+    return {
+      id: stableActionIdFromApi(action),
+      action: 'copy',
+      value: folder,
+      createIfNotExist:
+        action.arguments.create_if_no_exist !== undefined
+          ? Boolean(action.arguments.create_if_no_exist)
+          : DEFAULT_CREATE_IF_NO_EXIST,
+    }
+  }
+
+  if (method === 'removeheader') {
+    return {
+      id: stableActionIdFromApi(action),
+      action: 'removeheader',
+      value: String(action.arguments.header_name ?? ''),
+    }
+  }
+
+  const uiAction = API_METHOD_TO_UI_ACTION[method]
 
   if (!uiAction) {
     return {
-      id: generateFilterId(),
+      id: stableActionIdFromApi(action),
       action: action.method,
       value: '',
+      unsupportedAction: true,
+      rawAction: action,
     }
   }
 
   if (uiAction === 'move') {
     const folder = String(action.arguments.folder ?? '')
     return {
-      id: generateFilterId(),
+      id: stableActionIdFromApi(action),
       action: 'move',
       value: folder,
       createIfNotExist:
@@ -149,20 +202,24 @@ function mapApiActionToUi(action: ApiFilterAction): MailFilterAction {
 
   if (uiAction === 'forward') {
     return {
-      id: generateFilterId(),
+      id: stableActionIdFromApi(action),
       action: 'forward',
       value: String(action.arguments.address ?? ''),
     }
   }
 
   return {
-    id: generateFilterId(),
+    id: stableActionIdFromApi(action),
     action: uiAction,
     value: '',
   }
 }
 
 function mapUiActionToApi(action: MailFilterAction): ApiFilterAction | null {
+  if (action.unsupportedAction && action.rawAction) {
+    return action.rawAction
+  }
+
   if (action.action === 'flag' || action.action === 'reject') {
     return null
   }
@@ -187,10 +244,28 @@ function mapUiActionToApi(action: MailFilterAction): ApiFilterAction | null {
     }
   }
 
+  if (action.action === 'copy') {
+    return {
+      method: 'copy',
+      arguments: {
+        folder: action.value,
+        create_if_no_exist:
+          action.createIfNotExist ?? DEFAULT_CREATE_IF_NO_EXIST,
+      },
+    }
+  }
+
   if (action.action === 'forward') {
     return {
       method: 'redirect',
       arguments: { address: action.value },
+    }
+  }
+
+  if (action.action === 'removeheader') {
+    return {
+      method: 'removeheader',
+      arguments: { header_name: action.value },
     }
   }
 
@@ -201,16 +276,20 @@ export function mapApiFilterToUi(item: ApiFilterItem): MailFilter {
   const { operator, rules, advancedStructure } = mapApiRuleTreeToFlatRules(
     item.rules
   )
+  const actions = item.actions.map(mapApiActionToUi)
+  const hasUnsupportedActions = actions.some(
+    (action) => action.unsupportedAction
+  )
 
   return {
-    id: generateFilterId(),
+    id: stableFilterIdFromApiItem(item),
     name: item.name,
     operator,
     enabled: Boolean(item.enabled),
     rules,
-    actions: item.actions.map(mapApiActionToUi),
+    actions,
     advancedStructure,
-    readOnly: advancedStructure,
+    readOnly: advancedStructure || hasUnsupportedActions,
   }
 }
 

@@ -1,4 +1,4 @@
-export type ApiFilterField = 'from' | 'to' | 'subject' | 'header'
+export type ApiFilterField = 'from' | 'to' | 'subject' | 'header' | 'size'
 
 export interface ApiFilterRuleLeaf {
   field: ApiFilterField | string

@@ -133,6 +133,53 @@ describe('env-service', () => {
     })
   })
 
+  describe('fetchEnvVars health check (development)', () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = 'development'
+    })
+
+    it('uses real API when cross-origin health check returns 200 + S000000', async () => {
+      ;(global.fetch as jest.Mock)
+        .mockResolvedValueOnce(
+          mockResponse({
+            REACT_APP_API_BASE_URL: 'http://127.0.0.1:5000/api/user/v1',
+          })
+        )
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({ error_code: 'S000000' }),
+        } as unknown as Response)
+
+      const vars = await fetchEnvVars()
+
+      expect(vars.REACT_APP_API_BASE_URL).toBe(
+        'http://127.0.0.1:5000/api/user/v1'
+      )
+      expect(getApiHealthStatus()).toBe(true)
+      expect(global.fetch).toHaveBeenCalledTimes(2)
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        'http://127.0.0.1:5000/api/user/v1/system',
+        expect.objectContaining({ method: 'GET' })
+      )
+    })
+
+    it('falls back to /fakeApi when cross-origin health check fails', async () => {
+      ;(global.fetch as jest.Mock)
+        .mockResolvedValueOnce(
+          mockResponse({
+            REACT_APP_API_BASE_URL: 'http://127.0.0.1:5000/api/user/v1',
+          })
+        )
+        .mockRejectedValueOnce(new Error('Failed to fetch'))
+
+      const vars = await fetchEnvVars()
+
+      expect(vars.REACT_APP_API_BASE_URL).toBe('/fakeApi')
+      expect(getApiHealthStatus()).toBe(false)
+    })
+  })
+
   describe('useEnvVars', () => {
     it('loads env on mount when cache is empty', async () => {
       ;(global.fetch as jest.Mock).mockResolvedValueOnce(

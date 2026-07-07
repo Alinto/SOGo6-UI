@@ -59,6 +59,18 @@
             "match_regex": {
                 "string": "Match regex"
             },
+            "starts_with": {
+                "string": "Starts with"
+            },
+            "ends_with": {
+                "string": "Ends with"
+            },
+            "exists": {
+                "string": "Exists"
+            },
+            "size_over": {
+                "string": "Is over (KB)"
+            },
             "not_match_regex": {
                 "string": "Does not match regex"
             },
@@ -102,6 +114,9 @@
             "move": {
                 "string": "File the message in"
             },
+            "copy": {
+                "string": "Copy the message to"
+            },
             "stop": {
                 "string": "Stop processing filter rules"
             },
@@ -116,6 +131,9 @@
             },
             "forward": {
                 "string": "Forward the message to"
+            },
+            "removeheader": {
+                "string": "Remove header"
             },
             "flag": {
                 "string": "Flag the message with",
@@ -208,6 +226,12 @@
         "placeholders": {
             "forward_email": {
                 "string": "name@example.com"
+            },
+            "header_name": {
+                "string": "Header name (e.g. X-Spam-Flag)"
+            },
+            "size_value": {
+                "string": "Size in KB"
             }
         },
         "success": {
@@ -254,6 +278,12 @@
                 },
                 "rule_value_required": {
                     "string": "Condition value is required"
+                },
+                "size_value_required": {
+                    "string": "Enter a valid size in KB"
+                },
+                "size_condition_required": {
+                    "string": "Size rules must use the size operator"
                 },
                 "action_unavailable": {
                     "string": "This action is not available yet"

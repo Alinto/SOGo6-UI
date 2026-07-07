@@ -218,6 +218,11 @@ describe('useProfile hook', () => {
       expect(fileContent).toMatch(/mailFilteringEnabled[\s\S]*?\?\?\s*false/)
     })
 
+    it('should return notifyEnabled with false default', () => {
+      expect(fileContent).toContain('SOGO_D_NOTIFY_ENABLED')
+      expect(fileContent).toMatch(/notifyEnabled[\s\S]*?\?\?\s*false/)
+    })
+
     it('should return mailPurgeAllow with false default', () => {
       expect(fileContent).toContain('SOGO_D_MAIL_PURGE_ALLOW')
       expect(fileContent).toMatch(/mailPurgeAllow[\s\S]*?\?\?\s*false/)

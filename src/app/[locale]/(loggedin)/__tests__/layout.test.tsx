@@ -121,12 +121,19 @@ jest.mock('lucide-react', () => ({
   ),
 }))
 
+jest.mock('@/lib/env-service', () => ({
+  fetchEnvVars: jest.fn().mockResolvedValue({
+    REACT_APP_API_BASE_URL: '/fakeApi',
+    SSE_ENABLED: true,
+  }),
+}))
+
 jest.mock('@/lib/redux/sse', () => ({
   useConnectSSEMutation: () => [jest.fn(), { isLoading: false }],
-  getSSEConfigForEnvironment: jest.fn(() => ({
-    url: 'http://localhost:8080/sse',
+  getSSEConfigForEnvironment: jest.fn().mockResolvedValue({
+    url: '/fakeApi/sse',
     reconnectInterval: 3000,
-  })),
+  }),
 }))
 
 // Mock ReactDOM.createPortal
@@ -275,17 +282,15 @@ describe('Layout Component', () => {
 
     renderWithProvider(<div>Test</div>)
 
-    // The component should render and use the config
     await waitFor(() => {
       expect(
         screen.getByTestId('sidebar-provider-left-global-sidebar')
       ).toBeInTheDocument()
     })
 
-    // Verify the SSE config is available
-    const config = getSSEConfigForEnvironment()
-    expect(config).toHaveProperty('url')
-    expect(config).toHaveProperty('reconnectInterval')
+    await waitFor(() => {
+      expect(getSSEConfigForEnvironment).toHaveBeenCalled()
+    })
   })
 
   describe('Responsive Layout', () => {

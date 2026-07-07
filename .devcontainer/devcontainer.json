@@ -22,9 +22,9 @@
   "runArgs": [
     "--network=host",
     "--add-host=host.docker.internal:host-gateway",
-    "--memory=4g",
-    "--memory-swap=6g",
-    "--cpus=4"
+    "--memory=6g",
+    "--memory-swap=8g",
+    "--cpus=6"
   ],
 
   "customizations": {
@@ -68,7 +68,9 @@
     "TZ": "Europe/Paris",
     "NODE_ENV": "development",
     "SHELL": "/bin/bash",
-    "NEXT_TELEMETRY_DISABLED": "1"
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "REACT_APP_API_BASE_URL": "http://127.0.0.1:5000/api/user/v1",
+    "SSE_ENABLED": "false"
   },
   "postCreateCommand": "npm i",
   "postAttachCommand": "/container-entrypoint"
