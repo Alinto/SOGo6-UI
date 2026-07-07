@@ -10,7 +10,10 @@
 
 import { useEffect } from 'react'
 // This import ensures the mails endpoints are registered
-import type { ImapMessagesList } from '@/features/mails/mails-types'
+import type {
+  ImapMessagesBackendResponse,
+  ImapMessagesList,
+} from '@/features/mails/mails-types'
 import '@/features/mails/store/mails-api'
 import { apiSlice } from '../../api/api-slice'
 import { useAppDispatch } from '../../hooks'
@@ -37,8 +40,6 @@ export function useMailReceivedListener(
   const dispatch = useAppDispatch()
 
   useEffect(() => {
-    console.log('Setting up mail:received listener for folder:', folder)
-
     // Retry interval for waiting on SSE service
     let retryCount = 0
     const maxRetries = 3 // Wait up to 30 seconds (3 * 10s)
@@ -51,17 +52,12 @@ export function useMailReceivedListener(
       if (!sseService) {
         retryCount++
         if (retryCount < maxRetries) {
-          console.log(
-            `SSE service not ready yet, retrying... (${retryCount}/${maxRetries})`
-          )
           timeoutId = setTimeout(setupListener, 10000)
         } else {
           console.warn('SSE service failed to initialize after retries')
         }
         return
       }
-
-      console.log('SSE service ready, subscribing to mail:received')
 
       // Subscribe directly to SSE service
       unsubscribe = sseService.subscribe('mail:received', (message) => {
@@ -122,41 +118,27 @@ function updateMailsCache(
     priority: 3,
     mailType: [],
   }
-  console.log('Creating new mail object:', newMail)
-
   try {
-    console.log(
-      'Attempting to update cache for folder:',
-      folder,
-      'params:',
-      params
-    )
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const updateAction = (apiSlice.util.updateQueryData as any)(
-      'getFolderMessages',
-      { folder, params },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (draft: any) => {
-        console.log('updateQueryData callback triggered!')
-        console.log('Draft object:', draft)
-        if (!draft || !draft.messages) {
-          console.log('No draft or messages, skipping')
-          return
-        }
-
-        console.log('Before unshift - messages count:', draft.messages.length)
-        draft.messages.unshift(newMail)
-        console.log('After unshift - messages count:', draft.messages.length)
-
-        if (typeof draft.total === 'number') {
-          draft.total += 1
-        }
+    const updateAction = (
+      apiSlice.util.updateQueryData as unknown as (
+        name: string,
+        arg: {
+          folder: string
+          params?: Record<string, string | number | boolean>
+        },
+        recipe: (draft: ImapMessagesBackendResponse) => void
+      ) => Parameters<AppDispatch>[0]
+    )('getFolderMessages', { folder, params }, (draft) => {
+      // The folder-messages cache is normalized to `{ mails, total, ... }`.
+      if (!draft?.mails) return
+      if (draft.mails.some((m) => String(m.id) === String(newMail.id))) return
+      draft.mails.unshift(newMail)
+      if (typeof draft.total === 'number') {
+        draft.total += 1
       }
-    )
+    })
 
     dispatch(updateAction)
-    console.log('Action dispatched successfully')
   } catch (error) {
     console.error('Error updating mails cache:', error)
   }

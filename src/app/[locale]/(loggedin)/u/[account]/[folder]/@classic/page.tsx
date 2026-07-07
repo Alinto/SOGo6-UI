@@ -3,6 +3,7 @@
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { RootState } from '@/lib/redux/store'
 import { useParams, useSearchParams } from 'next/navigation'
@@ -24,17 +25,10 @@ const Page: React.FC = () => {
     accountId: accountString,
   })
 
-  const filteredMails = React.useMemo(() => {
-    const mails = data?.mails ?? []
-
-    switch (activeFilter) {
-      case 'unread':      return mails.filter((m) => !m.seen)
-      case 'read':        return mails.filter((m) => m.seen)
-      case 'starred':     return mails.filter((m) => m.flagged)
-      case 'attachments': return mails.filter((m) => m.hasAttachment)
-      default:            return mails
-    }
-  }, [data, activeFilter])
+  const filteredMails = React.useMemo(
+    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
+    [data, activeFilter]
+  )
 
   const listVisibilityClass =
     mailLayoutMode === 'split'

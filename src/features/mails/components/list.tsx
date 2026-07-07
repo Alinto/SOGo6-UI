@@ -20,7 +20,8 @@ import AddressBookListSkeleton from './skeletons/skeleton'
 
 interface MessagesListProps {
   items: ImapMessagesList[]
-  // TODO: implement pagination UI — passed from folder pages, not consumed here yet
+  // Pagination metadata is rendered by ListToolbar (ListPagination), not here.
+  // These props are kept for callers that surface pagination outside the list.
   total?: number
   page?: number
   totalPages?: number
