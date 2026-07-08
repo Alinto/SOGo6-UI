@@ -3,9 +3,10 @@ import { NextRequest, NextResponse } from 'next/server'
 //POST fakeApi/mailboxes/[accountId]/mail/attachments
 export async function POST(
   req: NextRequest,
-  { params }: { params: { accountId: string } }
+  { params }: { params: Promise<{ accountId: string }> }
 ) {
   try {
+    const { accountId } = await params
     const formData = await req.formData()
     const file = formData.get('file') as File | null
 
@@ -21,7 +22,7 @@ export async function POST(
     }
 
     console.log(
-      `[fakeApi] POST /mailboxes/${params.accountId}/mail/attachments`,
+      `[fakeApi] POST /mailboxes/${accountId}/mail/attachments`,
       {
         filename: file.name,
         size: file.size,

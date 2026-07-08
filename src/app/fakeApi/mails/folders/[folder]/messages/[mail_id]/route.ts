@@ -330,7 +330,7 @@ const messagesByFolder: Record<string, ImapMessages[]> = {
 
 export async function GET(
   request: Request,
-  { params }: { params: { folder: string; mail_id: string } }
+  { params }: { params: Promise<{ folder: string; mail_id: string }> }
 ) {
   const { folder, mail_id } = await params
 

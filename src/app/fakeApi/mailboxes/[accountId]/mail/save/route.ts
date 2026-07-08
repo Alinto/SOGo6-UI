@@ -5,10 +5,16 @@ import { NextRequest, NextResponse } from 'next/server'
 //POST fakeApi/mailboxes/[accountId]/mail/save
 export async function POST(
   req: NextRequest,
-  { params }: { params: { accountId: string } }
+  { params }: { params: Promise<{ accountId: string }> }
 ) {
+  const { accountId } = await params
   const body = await req.json()
   const close = new URL(req.url).searchParams.get('close') === 'true'
+
+  console.log(
+    `[fakeApi] POST /mailboxes/${accountId}/mail/save${close ? '?close=true' : ''}`,
+    body
+  )
 
   // Generate a mock key for the new draft
   const mockKey = `${Date.now()}${Math.random().toString(36).substr(2, 9)}`

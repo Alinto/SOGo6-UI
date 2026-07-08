@@ -4,10 +4,10 @@ import { NextRequest, NextResponse } from 'next/server'
 // PUT fakeApi/mailboxes/[accountId]/mail/[key]?close=true
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { accountId: string; key: string } }
+  { params }: { params: Promise<{ accountId: string; key: string }> }
 ) {
+  const { key } = await params
   const body = await req.json()
-  const close = new URL(req.url).searchParams.get('close') === 'true'
 
   // Validate required fields
   if (!body.from || !Array.isArray(body.to) || body.to.length === 0) {
@@ -23,7 +23,7 @@ export async function PUT(
 
   return NextResponse.json(
     {
-      data: { key: params.key },
+      data: { key },
       error_code: 'S000000',
       error_msg: 'No Error',
     },
@@ -33,12 +33,11 @@ export async function PUT(
 
 // DELETE fakeApi/mailboxes/[accountId]/mail/[key]
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { accountId: string; key: string } }
+  _req: NextRequest,
+  { params }: { params: Promise<{ accountId: string; key: string }> }
 ) {
-  console.log(
-    `[fakeApi] DELETE /mailboxes/${params.accountId}/mail/${params.key}`
-  )
+  const { accountId, key } = await params
+  console.log(`[fakeApi] DELETE /mailboxes/${accountId}/mail/${key}`)
 
   return NextResponse.json(
     {

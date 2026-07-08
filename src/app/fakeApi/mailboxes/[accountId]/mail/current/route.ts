@@ -3,10 +3,11 @@ import { NextRequest, NextResponse } from 'next/server'
 // GET fakeApi/mailboxes/[accountId]/mail/current
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { accountId: string } }
+  { params }: { params: Promise<{ accountId: string }> }
 ) {
   try {
-    console.log(`[fakeApi] GET /mailboxes/${params.accountId}/mail/current`)
+    const { accountId } = await params
+    console.log(`[fakeApi] GET /mailboxes/${accountId}/mail/current`)
 
     return NextResponse.json(
       {

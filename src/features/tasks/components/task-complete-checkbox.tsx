@@ -54,30 +54,28 @@ function TaskCompleteCheckbox({
       data-testid="task-complete-checkbox"
       onClick={handleClick}
       className={cn(
-        'mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-2',
+        'group mt-0.5 flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border',
         'transition-[transform,background-color,border-color,box-shadow] duration-200 ease-out',
         'cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none',
         'active:scale-90',
         (disabled || isPending) && 'cursor-not-allowed',
         checked
           ? 'border-primary bg-primary shadow-sm'
-          : 'border-muted-foreground/45 bg-background hover:border-primary/70 hover:bg-muted/40',
+          : 'border-muted-foreground/35 bg-background hover:border-primary/55 hover:bg-primary/5',
         pulse && 'scale-110',
         isPending && 'pointer-events-none'
       )}
     >
-      <span
+      <Check
         className={cn(
-          'flex items-center justify-center transition-transform duration-200 ease-out',
-          checked ? 'scale-100' : 'scale-0'
+          'h-3.5 w-3.5 transition-[color,transform] duration-200 ease-out',
+          checked
+            ? 'text-primary-foreground'
+            : 'text-muted-foreground/35 group-hover:text-primary/55'
         )}
-      >
-        <Check
-          className="text-primary-foreground h-3.5 w-3.5"
-          strokeWidth={3}
-          aria-hidden
-        />
-      </span>
+        strokeWidth={2}
+        aria-hidden
+      />
     </button>
   )
 }

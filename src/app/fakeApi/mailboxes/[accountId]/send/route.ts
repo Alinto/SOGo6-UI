@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 //POST fakeApi/mailboxes/[accountId]/send
 export async function POST(
   req: NextRequest,
-  { params }: { params: { accountId: string } }
+  { params: _params }: { params: Promise<{ accountId: string }> }
 ) {
   const body = await req.json()
 

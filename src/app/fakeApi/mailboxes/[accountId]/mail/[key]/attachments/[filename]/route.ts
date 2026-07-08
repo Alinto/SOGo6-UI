@@ -3,20 +3,23 @@ import { NextRequest, NextResponse } from 'next/server'
 // GET fakeApi/mailboxes/[accountId]/mail/[key]/attachments/[filename]
 // Download the attachment identified by filename from the draft identified by key
 export async function GET(
-  req: NextRequest,
-  { params }: { params: { accountId: string; key: string; filename: string } }
+  _req: NextRequest,
+  {
+    params,
+  }: { params: Promise<{ accountId: string; key: string; filename: string }> }
 ) {
+  const { accountId, key, filename } = await params
   console.log(
-    `[fakeApi] GET /mailboxes/${params.accountId}/mail/${params.key}/attachments/${params.filename}`
+    `[fakeApi] GET /mailboxes/${accountId}/mail/${key}/attachments/${filename}`
   )
 
   // Generate mock file content
   const mockContent = new TextEncoder().encode(
-    `Mock content for attachment: ${params.filename}`
+    `Mock content for attachment: ${filename}`
   )
 
   // Determine content type based on file extension
-  const ext = params.filename.split('.').pop()?.toLowerCase() || 'bin'
+  const ext = filename.split('.').pop()?.toLowerCase() || 'bin'
   const contentTypeMap: Record<string, string> = {
     pdf: 'application/pdf',
     doc: 'application/msword',
@@ -38,7 +41,7 @@ export async function GET(
     status: 200,
     headers: {
       'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename="${params.filename}"`,
+      'Content-Disposition': `attachment; filename="${filename}"`,
       'Content-Length': mockContent.length.toString(),
     },
   })
@@ -46,11 +49,14 @@ export async function GET(
 
 // DELETE fakeApi/mailboxes/[accountId]/mail/[key]/attachments/[filename]
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { accountId: string; key: string; filename: string } }
+  _req: NextRequest,
+  {
+    params,
+  }: { params: Promise<{ accountId: string; key: string; filename: string }> }
 ) {
+  const { accountId, key, filename } = await params
   console.log(
-    `[fakeApi] DELETE /mailboxes/${params.accountId}/mail/${params.key}/attachments/${params.filename}`
+    `[fakeApi] DELETE /mailboxes/${accountId}/mail/${key}/attachments/${filename}`
   )
 
   return NextResponse.json(

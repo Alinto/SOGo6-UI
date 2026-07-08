@@ -708,7 +708,7 @@ const messagesByFolder: Record<string, Partial<ImapMessagesList>[]> = {
 
 export async function GET(
   request: Request,
-  { params }: { params: { folder: string } }
+  { params }: { params: Promise<{ folder: string }> }
 ) {
   const { folder } = await params
   const { searchParams } = new URL(request.url)

@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ accountId: string }> }
 ) {
+  const { accountId } = await params
   const body = await req.json()
 
-  console.log(`[fakeApi] POST /mailboxes/${params.id}/discarddraft`, body)
+  console.log(`[fakeApi] POST /mailboxes/${accountId}/discarddraft`, body)
 
   return NextResponse.json(
     {

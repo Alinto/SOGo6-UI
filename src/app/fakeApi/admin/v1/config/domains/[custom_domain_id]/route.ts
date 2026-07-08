@@ -10,10 +10,10 @@ export async function GET() {
 // PATCH handler for updating a custom domain config
 export async function PATCH(
   request: Request,
-  { params }: { params: { custom_domain_id: string } }
+  { params }: { params: Promise<{ custom_domain_id: string }> }
 ) {
   try {
-    const customDomainId = params.custom_domain_id
+    const { custom_domain_id: customDomainId } = await params
     const body = await request.json()
     console.log(`PATCH /admin/v1/config/domains/${customDomainId} body:`, body)
     console.log(
@@ -40,7 +40,7 @@ export async function PATCH(
       }),
       { status: 200, headers: { 'Content-Type': 'application/json' } }
     )
-  } catch (e: any) {
+  } catch (e: unknown) {
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
@@ -50,10 +50,10 @@ export async function PATCH(
 
 // DELETE
 export async function DELETE(
-  req: Request,
-  { params }: { params: { custom_domain_id: string } }
+  _req: Request,
+  { params }: { params: Promise<{ custom_domain_id: string }> }
 ) {
-  const customDomainId = params.custom_domain_id
+  const { custom_domain_id: customDomainId } = await params
   console.log(`DELETE config for domain ${customDomainId}`)
   return NextResponse.json(
     { success: true, message: `Domain ${customDomainId} deleted (fakeApi)` },
