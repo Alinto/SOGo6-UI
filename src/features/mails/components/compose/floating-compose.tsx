@@ -193,7 +193,13 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   }, [isMobile])
 
   const handleClose = () => {
-    handleSaveDraft(true, true, true)
+    //if no save needed
+    if (!mailKey && !isDirty) {
+      dispatch(closeDraft({ draftId }))
+    } else {
+      //else save then close
+      handleSaveDraft(true, true, true)
+    }
   }
 
   const handleMinimize = () => {
@@ -262,13 +268,6 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       }
     }
   }
-
-  // Save draft immediately when compose is selected
-  React.useEffect(() => {
-    if (isActive && draft) {
-      handleSaveDraft(false, false, false)
-    }
-  }, [isActive, draftId])
 
   useInterval(
     () => {
@@ -528,7 +527,9 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         <div className="border-primary bg-primary/10 pointer-events-none absolute inset-0 z-50 flex items-center justify-center rounded-lg border-2 border-dashed">
           <div className="text-primary flex flex-col items-center gap-2">
             <Paperclip className="h-8 w-8" />
-            <span className="text-sm font-medium">{t('drop_files.string')}</span>
+            <span className="text-sm font-medium">
+              {t('drop_files.string')}
+            </span>
           </div>
         </div>
       )}
