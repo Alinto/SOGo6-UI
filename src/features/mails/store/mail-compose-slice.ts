@@ -299,7 +299,6 @@ const mailComposeSlice = createSlice({
       const draft = state.drafts[draftId]
       if (draft) {
         draft.isPlainText = isPlainText
-        draft.isDirty = true
         draft.updatedAt = Date.now()
       }
     },
