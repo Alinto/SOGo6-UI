@@ -1,4 +1,5 @@
 import * as fs from 'fs'
+import * as path from 'path'
 
 /**
  * Tests for SignatureWidget (signature-widget.ts)
@@ -8,8 +9,7 @@ import * as fs from 'fs'
  * structure by reading the file content.
  */
 describe('SignatureWidget (signature-widget.ts)', () => {
-  const filePath =
-    '/SOGo/src/features/mails/components/compose/signature-widget.tsx'
+  const filePath = path.join(__dirname, '../signature-widget.tsx')
   let fileContent: string
 
   beforeAll(() => {
