@@ -15,32 +15,38 @@ describe('mail-filters-constants', () => {
     expect(V1_FILTER_FIELDS).toEqual([
       'from',
       'to',
+      'cc',
+      'to or cc',
       'subject',
       'header',
+      'body',
       'size',
     ])
     expect(V1_FILTER_CONDITIONS).toContain('CONTAINS')
-    expect(V1_FILTER_CONDITIONS).toContain('STARTS_WITH')
+    expect(V1_FILTER_CONDITIONS).toContain('NOT_CONTAIN')
     expect(V1_FILTER_CONDITIONS).toContain('SIZE_OVER')
+    expect(V1_FILTER_CONDITIONS).toContain('SIZE_UNDER')
   })
 
   it('maps UI conditions to API values and back', () => {
     expect(UI_CONDITION_TO_API.CONTAINS).toBe('contains')
+    expect(UI_CONDITION_TO_API.NOT_CONTAIN).toBe('notcontains')
     expect(API_CONDITION_TO_UI.contains).toBe('CONTAINS')
-    expect(API_CONDITION_TO_UI['not-contains']).toBe('NOT_CONTAIN')
-    expect(UI_CONDITION_TO_API.STARTS_WITH).toBe('starts-with')
-    expect(API_CONDITION_TO_UI.exists).toBe('EXISTS')
-    expect(API_CONDITION_TO_UI.size).toBe('SIZE_OVER')
+    expect(API_CONDITION_TO_UI.notcontains).toBe('NOT_CONTAIN')
+    expect(UI_CONDITION_TO_API.SIZE_OVER).toBe('over')
+    expect(UI_CONDITION_TO_API.SIZE_UNDER).toBe('under')
+    expect(API_CONDITION_TO_UI.over).toBe('SIZE_OVER')
+    expect(API_CONDITION_TO_UI.under).toBe('SIZE_UNDER')
   })
 
   it('maps UI actions to API methods and back', () => {
     expect(UI_ACTION_TO_API_METHOD.move).toBe('fileinto')
-    expect(UI_ACTION_TO_API_METHOD.copy).toBe('copy')
-    expect(UI_ACTION_TO_API_METHOD.removeheader).toBe('removeheader')
+    expect(UI_ACTION_TO_API_METHOD.copy).toBe('fileinto')
     expect(UI_ACTION_TO_API_METHOD.forward).toBe('redirect')
+    expect(UI_ACTION_TO_API_METHOD.flag).toBe('addflag')
+    expect(UI_ACTION_TO_API_METHOD.reject).toBe('reject')
     expect(API_METHOD_TO_UI_ACTION.fileinto).toBe('move')
-    expect(API_METHOD_TO_UI_ACTION.copy).toBe('copy')
-    expect(API_METHOD_TO_UI_ACTION.removeheader).toBe('removeheader')
+    expect(API_METHOD_TO_UI_ACTION.addflag).toBe('flag')
   })
 
   it('exposes supported operators and defaults', () => {

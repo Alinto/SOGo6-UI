@@ -24,8 +24,8 @@ export interface MailVacation {
     startTime: string
     endTime: string
     weekdaysEnabled: boolean
-    days: VacationWeekdays
+    weekdays: VacationWeekdays
+    responseIntervalDays: number | null
   }
   alwaysSend: boolean
-  ignoreLists: boolean
 }

@@ -66,19 +66,19 @@ describe('mail-vacation-settings-api', () => {
       const result = defs.getMailVacationSettings.transformResponse?.({
         data: {
           vacation: {
-            enabled: 1,
-            customSubjectEnabled: true,
-            customSubject: 'Away',
-            autoReplyText: 'I am away.',
-            startDate: null,
-            endDate: null,
+            enabled: true,
+            custom_subject_enabled: true,
+            custom_subject: 'Away',
+            auto_reply_text: 'I am away.',
+            start_date: null,
+            end_date: null,
             timezone: null,
-            alwaysSend: 0,
-            ignoreLists: false,
-            startTime: null,
-            endTime: null,
-            weekdaysEnabled: false,
-            days: [],
+            always_send: false,
+            start_time: null,
+            end_time: null,
+            weekdays_enabled: false,
+            weekday: [],
+            days: null,
           },
         },
         error_code: 'S000000',
@@ -120,8 +120,8 @@ describe('mail-vacation-settings-api', () => {
         method: 'POST',
         body: {
           Vacation: expect.objectContaining({
-            enabled: 1,
-            autoReplyText: 'Away',
+            enabled: true,
+            auto_reply_text: 'Away',
             timezone: 'Europe/Paris',
           }),
         },
@@ -133,19 +133,19 @@ describe('mail-vacation-settings-api', () => {
         data: {
           filters: null,
           vacation: {
-            enabled: 1,
-            customSubjectEnabled: false,
-            customSubject: '',
-            autoReplyText: 'Away',
-            startDate: null,
-            endDate: null,
+            enabled: true,
+            custom_subject_enabled: false,
+            custom_subject: '',
+            auto_reply_text: 'Away',
+            start_date: null,
+            end_date: null,
             timezone: 'Europe/Paris',
-            alwaysSend: 0,
-            ignoreLists: true,
-            startTime: null,
-            endTime: null,
-            weekdaysEnabled: false,
-            days: [],
+            always_send: false,
+            start_time: null,
+            end_time: null,
+            weekdays_enabled: false,
+            weekday: [],
+            days: 2,
           },
           forward: null,
           notification: null,
@@ -155,7 +155,7 @@ describe('mail-vacation-settings-api', () => {
       })
 
       expect(result?.enabled).toBe(true)
-      expect(result?.ignoreLists).toBe(true)
+      expect(result?.constraints.responseIntervalDays).toBe(2)
     })
   })
 

@@ -262,7 +262,7 @@ describe('FilterEditDialog', () => {
     expect(screen.getByTestId('folder-select')).toBeInTheDocument()
   })
 
-  it('exposes disabled flag and reject actions in action select', () => {
+  it('exposes enabled flag and reject actions in action select', () => {
     render(
       <FilterEditDialog
         open
@@ -276,8 +276,8 @@ describe('FilterEditDialog', () => {
     const flagOption = screen.getByRole('option', { name: 'Flag' })
     const rejectOption = screen.getByRole('option', { name: 'Reject' })
 
-    expect(flagOption).toBeDisabled()
-    expect(rejectOption).toBeDisabled()
+    expect(flagOption).not.toBeDisabled()
+    expect(rejectOption).not.toBeDisabled()
   })
 
   it('resets form values when dialog opens', () => {

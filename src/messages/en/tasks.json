@@ -141,6 +141,45 @@
         "string": "Cancel"
       }
     },
+    "selection": {
+      "enter": {
+        "string": "Select tasks"
+      },
+      "cancel": {
+        "string": "Cancel"
+      },
+      "select_all": {
+        "string": "Select all tasks"
+      },
+      "count": {
+        "string": "{count, plural, one {# selected} other {# selected}}"
+      },
+      "actions": {
+        "complete": {
+          "string": "Complete"
+        },
+        "reopen": {
+          "string": "Reopen"
+        },
+        "delete": {
+          "string": "Delete"
+        }
+      },
+      "delete_dialog": {
+        "title": {
+          "string": "Delete selected tasks?"
+        },
+        "description": {
+          "string": "You are about to delete {count, plural, one {# task} other {# tasks}}. This action cannot be undone."
+        },
+        "confirm": {
+          "string": "Delete"
+        },
+        "cancel": {
+          "string": "Cancel"
+        }
+      }
+    },
     "sidebar": {
       "smart_views": {
         "title": {

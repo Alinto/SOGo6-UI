@@ -46,7 +46,10 @@ const MailVacationSettingsForm: React.FC<Props> = ({
   const t = useTranslations('US_MAIL_VACATIONS')
   const formT = useTranslations('FORM_COMMONS')
   const settingsT = useTranslations('US_USER_SETTINGS')
-  const schema = useMemo(() => createVacationSchema(t), [t])
+  const schema = useMemo(
+    () => createVacationSchema(t, vacationAllowResponseAlways),
+    [t, vacationAllowResponseAlways]
+  )
 
   const form = useForm<VacationFormValues>({
     resolver: zodResolver(schema),
@@ -144,20 +147,29 @@ const MailVacationSettingsForm: React.FC<Props> = ({
 
             <FormField
               control={form.control}
-              name="ignoreLists"
+              name="constraints.responseIntervalDays"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-y-0 space-x-3">
+                <FormItem>
+                  <FormLabel>
+                    {t('auto_reply.response.interval_days.label.string')}
+                  </FormLabel>
                   <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                    <Input
+                      type="number"
+                      min={vacationAllowResponseAlways ? 0 : 1}
+                      value={field.value ?? ''}
+                      onChange={(event) => {
+                        const raw = event.target.value
+                        field.onChange(raw === '' ? null : Number(raw))
+                      }}
+                      placeholder={t(
+                        'auto_reply.response.interval_days.placeholder.string'
+                      )}
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      {t('auto_reply.response.to_mailling_list.string')}
-                    </FormLabel>
-                  </div>
+                  <FormDescription>
+                    {t('auto_reply.response.interval_days.description.string')}
+                  </FormDescription>
                 </FormItem>
               )}
             />
@@ -274,7 +286,7 @@ const MailVacationSettingsForm: React.FC<Props> = ({
               {weekdaysEnabled ? (
                 <VacationWeekdayToggle
                   control={form.control}
-                  name="constraints.days"
+                  name="constraints.weekdays"
                 />
               ) : null}
             </div>

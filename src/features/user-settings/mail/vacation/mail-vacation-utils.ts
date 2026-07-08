@@ -1,4 +1,7 @@
-import type { ApiVacation } from './mail-vacation-api-types'
+import type {
+  ApiVacation,
+  ApiVacationLegacy,
+} from './mail-vacation-api-types'
 import {
   DEFAULT_VACATION,
   EMPTY_WEEKDAYS,
@@ -11,12 +14,55 @@ import type {
   VacationDateRange,
   VacationWeekdays,
 } from './mail-vacation-types'
+
+type ApiVacationInput = ApiVacation | ApiVacationLegacy | null
+
+function toBoolean(value: boolean | 0 | 1 | undefined): boolean {
+  return Boolean(value)
+}
+
+function normalizeApiVacation(
+  api: ApiVacationInput
+): ApiVacation | null {
+  if (!api) return null
+
+  const legacy = api as ApiVacationLegacy
+  const snake = api as ApiVacation
+
+  const weekdayRaw = snake.weekday ?? legacy.days
+  const weekday = Array.isArray(weekdayRaw) ? weekdayRaw : []
+
+  const responseDaysRaw = snake.days ?? legacy.days
+  const responseIntervalDays =
+    typeof responseDaysRaw === 'number' ? responseDaysRaw : null
+
+  return {
+    enabled: toBoolean(snake.enabled ?? legacy.enabled),
+    custom_subject_enabled: Boolean(
+      snake.custom_subject_enabled ?? legacy.customSubjectEnabled
+    ),
+    custom_subject: snake.custom_subject ?? legacy.customSubject ?? '',
+    auto_reply_text: snake.auto_reply_text ?? legacy.autoReplyText ?? '',
+    start_date: snake.start_date ?? legacy.startDate ?? null,
+    end_date: snake.end_date ?? legacy.endDate ?? null,
+    timezone: snake.timezone ?? legacy.timezone ?? null,
+    always_send: toBoolean(snake.always_send ?? legacy.alwaysSend),
+    start_time: snake.start_time ?? legacy.startTime ?? null,
+    end_time: snake.end_time ?? legacy.endTime ?? null,
+    weekdays_enabled: Boolean(
+      snake.weekdays_enabled ?? legacy.weekdaysEnabled ?? weekday.length > 0
+    ),
+    weekday,
+    days: responseIntervalDays,
+  }
+}
+
 export function createEmptyVacation(): MailVacation {
   return {
     ...DEFAULT_VACATION,
     constraints: {
       ...DEFAULT_VACATION.constraints,
-      days: { ...EMPTY_WEEKDAYS },
+      weekdays: { ...EMPTY_WEEKDAYS },
     },
   }
 }
@@ -36,9 +82,9 @@ export function parseApiDate(value: string | null | undefined): Date | undefined
   return new Date(year, month - 1, day)
 }
 
-function mapApiDaysToUi(days: number[]): VacationWeekdays {
+function mapApiWeekdayToUi(weekday: number[]): VacationWeekdays {
   const result = { ...EMPTY_WEEKDAYS }
-  for (const day of days) {
+  for (const day of weekday) {
     const key = UI_WEEKDAY_BY_SIEVE_DAY[day]
     if (key) {
       result[key] = true
@@ -47,8 +93,8 @@ function mapApiDaysToUi(days: number[]): VacationWeekdays {
   return result
 }
 
-function mapUiDaysToApi(days: VacationWeekdays): number[] {
-  return UI_WEEKDAY_KEYS.filter((key) => days[key])
+function mapUiWeekdaysToApi(weekdays: VacationWeekdays): number[] {
+  return UI_WEEKDAY_KEYS.filter((key) => weekdays[key])
     .map((key) => SIEVE_WEEKDAY_BY_UI_KEY[key])
     .sort((a, b) => a - b)
 }
@@ -63,30 +109,38 @@ function mapApiDateRange(
   return { from, to }
 }
 
-export function mapApiVacationToUi(api: ApiVacation | null): MailVacation {
-  if (!api) {
+export function mapApiVacationToUi(api: ApiVacationInput): MailVacation {
+  const normalized = normalizeApiVacation(api)
+  if (!normalized) {
     return createEmptyVacation()
   }
 
-  const hasDates = Boolean(api.startDate || api.endDate)
-  const hasHours = Boolean(api.startTime || api.endTime)
-  const hasWeekdays = api.weekdaysEnabled || api.days.length > 0
+  const hasDates = Boolean(normalized.start_date || normalized.end_date)
+  const hasHours = Boolean(normalized.start_time || normalized.end_time)
+  const hasWeekdays =
+    normalized.weekdays_enabled || normalized.weekday.length > 0
+
+  const customSubject =
+    normalized.custom_subject_enabled || normalized.custom_subject.trim().length > 0
+      ? normalized.custom_subject
+      : ''
 
   return {
-    enabled: Boolean(api.enabled),
-    customSubject: api.customSubject ?? '',
-    autoReplyText: api.autoReplyText ?? '',
+    enabled: normalized.enabled,
+    customSubject,
+    autoReplyText: normalized.auto_reply_text ?? '',
     constraints: {
       enableDates: hasDates,
-      dateRange: mapApiDateRange(api.startDate, api.endDate),
+      dateRange: mapApiDateRange(normalized.start_date, normalized.end_date),
       enableHours: hasHours,
-      startTime: api.startTime ?? DEFAULT_VACATION.constraints.startTime,
-      endTime: api.endTime ?? DEFAULT_VACATION.constraints.endTime,
+      startTime:
+        normalized.start_time ?? DEFAULT_VACATION.constraints.startTime,
+      endTime: normalized.end_time ?? DEFAULT_VACATION.constraints.endTime,
       weekdaysEnabled: hasWeekdays,
-      days: mapApiDaysToUi(api.days ?? []),
+      weekdays: mapApiWeekdayToUi(normalized.weekday ?? []),
+      responseIntervalDays: normalized.days,
     },
-    alwaysSend: Boolean(api.alwaysSend),
-    ignoreLists: api.ignoreLists ?? false,
+    alwaysSend: normalized.always_send,
   }
 }
 
@@ -97,26 +151,26 @@ export function mapUiVacationToApi(
   const trimmedSubject = ui.customSubject.trim()
 
   return {
-    enabled: ui.enabled ? 1 : 0,
-    customSubjectEnabled: trimmedSubject.length > 0,
-    customSubject: ui.customSubject,
-    autoReplyText: ui.autoReplyText,
-    startDate:
+    enabled: ui.enabled,
+    custom_subject_enabled: trimmedSubject.length > 0,
+    custom_subject: ui.customSubject,
+    auto_reply_text: ui.autoReplyText,
+    start_date:
       ui.constraints.enableDates && ui.constraints.dateRange?.from
         ? formatDateForApi(ui.constraints.dateRange.from)
         : null,
-    endDate:
+    end_date:
       ui.constraints.enableDates && ui.constraints.dateRange?.to
         ? formatDateForApi(ui.constraints.dateRange.to)
         : null,
     timezone: timezone ?? null,
-    alwaysSend: ui.alwaysSend ? 1 : 0,
-    ignoreLists: ui.ignoreLists,
-    startTime: ui.constraints.enableHours ? ui.constraints.startTime : null,
-    endTime: ui.constraints.enableHours ? ui.constraints.endTime : null,
-    weekdaysEnabled: ui.constraints.weekdaysEnabled,
-    days: ui.constraints.weekdaysEnabled
-      ? mapUiDaysToApi(ui.constraints.days)
+    always_send: ui.alwaysSend,
+    start_time: ui.constraints.enableHours ? ui.constraints.startTime : null,
+    end_time: ui.constraints.enableHours ? ui.constraints.endTime : null,
+    weekdays_enabled: ui.constraints.weekdaysEnabled,
+    weekday: ui.constraints.weekdaysEnabled
+      ? mapUiWeekdaysToApi(ui.constraints.weekdays)
       : [],
+    days: ui.constraints.responseIntervalDays,
   }
 }

@@ -12,11 +12,14 @@ import {
 describe('mail-filters-utils', () => {
   const sampleApiFilter: ApiFilterItem = {
     name: 'test header',
-    enabled: 1,
+    enabled: true,
     actions: [
       {
         method: 'fileinto',
-        arguments: { folder: 'Trash', create_if_no_exist: true },
+        arguments: {
+          folders: ['Trash'],
+          create_if_no_exist: true,
+        },
       },
     ],
     rules: {
@@ -86,7 +89,7 @@ describe('mail-filters-utils', () => {
   })
 
   describe('mapApiFilterToUi / mapUiFilterToApi', () => {
-    it('maps enabled integer to boolean', () => {
+    it('maps enabled to boolean', () => {
       const ui = mapApiFilterToUi(sampleApiFilter)
       expect(ui.enabled).toBe(true)
       expect(ui.name).toBe('test header')
@@ -103,19 +106,25 @@ describe('mail-filters-utils', () => {
     it('maps redirect action to forward', () => {
       const ui = mapApiFilterToUi({
         ...sampleApiFilter,
-        actions: [{ method: 'redirect', arguments: { address: 'a@b.com' } }],
+        actions: [
+          { method: 'redirect', arguments: { addresses: ['a@b.com'] } },
+        ],
       })
       expect(ui.actions[0].action).toBe('forward')
       expect(ui.actions[0].value).toBe('a@b.com')
     })
 
-    it('maps copy action to copy', () => {
+    it('maps fileinto with keep_copy to copy', () => {
       const ui = mapApiFilterToUi({
         ...sampleApiFilter,
         actions: [
           {
-            method: 'copy',
-            arguments: { folder: 'Archive', create_if_no_exist: false },
+            method: 'fileinto',
+            arguments: {
+              folders: ['Archive'],
+              create_if_no_exist: false,
+              keep_copy: true,
+            },
           },
         ],
       })
@@ -124,39 +133,30 @@ describe('mail-filters-utils', () => {
       expect(ui.actions[0].createIfNotExist).toBe(false)
     })
 
-    it('maps removeheader action to removeheader', () => {
+    it('maps addflag action to flag', () => {
       const ui = mapApiFilterToUi({
         ...sampleApiFilter,
-        actions: [
-          { method: 'removeheader', arguments: { header_name: 'X-Spam' } },
-        ],
+        actions: [{ method: 'addflag', arguments: { flags: ['\\Flagged'] } }],
       })
-      expect(ui.actions[0].action).toBe('removeheader')
-      expect(ui.actions[0].value).toBe('X-Spam')
+      expect(ui.actions[0].action).toBe('flag')
+      expect(ui.actions[0].value).toBe('\\Flagged')
     })
 
-    it('maps new operators to UI conditions', () => {
+    it('maps size over/under operators', () => {
       const ui = mapApiFilterToUi({
         ...sampleApiFilter,
         rules: {
           op: 'and',
           rules: [
-            { field: 'subject', operator: 'starts-with', value: 'Hello' },
-            {
-              field: 'header',
-              operator: 'exists',
-              custom_header: 'X-Flag',
-              value: '',
-            },
-            { field: 'size', operator: 'size', value: '1024' },
+            { field: 'size', operator: 'over', value: '5M' },
+            { field: 'size', operator: 'under', value: '10M' },
           ],
         },
       })
 
       expect(ui.rules.map((rule) => rule.condition)).toEqual([
-        'STARTS_WITH',
-        'EXISTS',
         'SIZE_OVER',
+        'SIZE_UNDER',
       ])
     })
 
@@ -170,17 +170,36 @@ describe('mail-filters-utils', () => {
     it('marks filters with unsupported actions as read-only and preserves them on save', () => {
       const ui = mapApiFilterToUi({
         ...sampleApiFilter,
-        actions: [{ method: 'imapflags', arguments: { flags: ['\\Flagged'] } }],
+        actions: [{ method: 'notify', arguments: { method: 'mailto' } }],
       })
 
       expect(ui.readOnly).toBe(true)
       expect(ui.actions[0].unsupportedAction).toBe(true)
 
       const api = mapUiFilterToApi(ui)
-      expect(api.actions[0]).toEqual({
-        method: 'imapflags',
-        arguments: { flags: ['\\Flagged'] },
+      expect(api.actions[0].method).toBe('notify')
+    })
+
+    it('preserves rawRules for advanced structure filters', () => {
+      const nestedRules = {
+        op: 'and' as const,
+        rules: [
+          {
+            op: 'or' as const,
+            rules: [{ field: 'from', operator: 'contains', value: 'a' }],
+          },
+        ],
+      }
+      const ui = mapApiFilterToUi({
+        ...sampleApiFilter,
+        rules: nestedRules,
       })
+
+      expect(ui.readOnly).toBe(true)
+      expect(ui.rawRules).toEqual(nestedRules)
+
+      const api = mapUiFilterToApi(ui)
+      expect(api.rules).toEqual(nestedRules)
     })
 
     it('preserves case_sensitive on rules round-trip', () => {
@@ -213,7 +232,7 @@ describe('mail-filters-utils', () => {
       })
     })
 
-    it('round-trips copy and removeheader actions', () => {
+    it('round-trips copy as fileinto with keep_copy', () => {
       const ui: MailFilter = {
         id: 'ui-copy',
         name: 'Copy filter',
@@ -229,23 +248,18 @@ describe('mail-filters-utils', () => {
             value: 'Archive',
             createIfNotExist: true,
           },
-          {
-            id: 'a2',
-            action: 'removeheader',
-            value: 'X-Spam',
-          },
         ],
       }
 
       const api = mapUiFilterToApi(ui)
       expect(api.actions).toEqual([
         {
-          method: 'copy',
-          arguments: { folder: 'Archive', create_if_no_exist: true },
-        },
-        {
-          method: 'removeheader',
-          arguments: { header_name: 'X-Spam' },
+          method: 'fileinto',
+          arguments: {
+            folders: ['Archive'],
+            create_if_no_exist: true,
+            keep_copy: true,
+          },
         },
       ])
     })
@@ -275,7 +289,7 @@ describe('mail-filters-utils', () => {
       }
 
       const api = mapUiFilterToApi(ui)
-      expect(api.enabled).toBe(1)
+      expect(api.enabled).toBe(true)
       expect(api.name).toBe('Filter 1')
       expect(api.rules).toEqual({
         op: 'and',
@@ -283,11 +297,15 @@ describe('mail-filters-utils', () => {
       })
       expect(api.actions[0]).toEqual({
         method: 'fileinto',
-        arguments: { folder: 'INBOX', create_if_no_exist: true },
+        arguments: {
+          folders: ['INBOX'],
+          create_if_no_exist: true,
+          keep_copy: false,
+        },
       })
     })
 
-    it('skips flag and reject actions when mapping to API', () => {
+    it('maps flag and reject actions when saving', () => {
       const ui: MailFilter = {
         id: 'ui-2',
         name: 'Filter 2',
@@ -297,14 +315,22 @@ describe('mail-filters-utils', () => {
           { id: 'r1', field: 'subject', condition: 'IS', value: 'test' },
         ],
         actions: [
-          { id: 'a1', action: 'flag', value: 'seen' },
-          { id: 'a2', action: 'keep', value: '' },
+          { id: 'a1', action: 'flag', value: '\\Flagged' },
+          { id: 'a2', action: 'reject', value: 'Blocked' },
+          { id: 'a3', action: 'keep', value: '' },
         ],
       }
       const api = mapUiFilterToApi(ui)
-      expect(api.actions).toHaveLength(1)
-      expect(api.actions[0].method).toBe('keep')
-      expect(api.enabled).toBe(0)
+      expect(api.actions).toHaveLength(3)
+      expect(api.actions[0]).toEqual({
+        method: 'addflag',
+        arguments: { flags: ['\\Flagged'] },
+      })
+      expect(api.actions[1]).toEqual({
+        method: 'reject',
+        arguments: { message: 'Blocked' },
+      })
+      expect(api.enabled).toBe(false)
     })
   })
 

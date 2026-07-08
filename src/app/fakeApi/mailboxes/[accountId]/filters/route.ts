@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 const defaultFilters: ApiFilterItem[] = [
   {
     name: 'Filter 1',
-    enabled: 1,
+    enabled: true,
     rules: {
       op: 'and',
       rules: [
@@ -19,7 +19,7 @@ const defaultFilters: ApiFilterItem[] = [
       {
         method: 'fileinto',
         arguments: {
-          folder: 'INBOX',
+          folders: ['INBOX'],
           create_if_no_exist: true,
         },
       },
@@ -27,7 +27,7 @@ const defaultFilters: ApiFilterItem[] = [
   },
   {
     name: 'Filter 2',
-    enabled: 1,
+    enabled: true,
     rules: {
       op: 'and',
       rules: [
@@ -43,15 +43,39 @@ const defaultFilters: ApiFilterItem[] = [
       {
         method: 'fileinto',
         arguments: {
-          folder: 'INBOX',
+          folders: ['INBOX'],
           create_if_no_exist: true,
         },
       },
     ],
   },
   {
+    name: 'Copy to Archive',
+    enabled: true,
+    rules: {
+      op: 'and',
+      rules: [
+        {
+          field: 'subject',
+          operator: 'contains',
+          value: '[COPY]',
+        },
+      ],
+    },
+    actions: [
+      {
+        method: 'fileinto',
+        arguments: {
+          folders: ['Archive'],
+          create_if_no_exist: true,
+          keep_copy: true,
+        },
+      },
+    ],
+  },
+  {
     name: 'Filter 3',
-    enabled: 0,
+    enabled: false,
     rules: {
       op: 'and',
       rules: [
@@ -66,7 +90,7 @@ const defaultFilters: ApiFilterItem[] = [
       {
         method: 'fileinto',
         arguments: {
-          folder: 'INBOX',
+          folders: ['INBOX'],
           create_if_no_exist: true,
         },
       },

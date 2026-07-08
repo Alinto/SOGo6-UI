@@ -285,10 +285,18 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                                 onValueChange={(value) => {
                                   field.onChange(value)
                                   if (value === 'size') {
-                                    form.setValue(
-                                      `rules.${index}.condition`,
-                                      'SIZE_OVER'
+                                    const current = form.getValues(
+                                      `rules.${index}.condition`
                                     )
+                                    if (
+                                      current !== 'SIZE_OVER' &&
+                                      current !== 'SIZE_UNDER'
+                                    ) {
+                                      form.setValue(
+                                        `rules.${index}.condition`,
+                                        'SIZE_OVER'
+                                      )
+                                    }
                                   }
                                 }}
                                 value={field.value}
@@ -313,7 +321,8 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                           )}
                         />
                         <div className="flex items-start gap-2">
-                          {watchedCondition !== 'EXISTS' && (
+                          {watchedCondition !== 'EXISTS' &&
+                            watchedCondition !== 'NOT_EXISTS' && (
                             <FormField
                               control={form.control}
                               name={`rules.${index}.value`}
@@ -323,18 +332,15 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                                     <Input
                                       {...field}
                                       type={
-                                        watchedCondition === 'SIZE_OVER'
-                                          ? 'number'
+                                        watchedCondition === 'SIZE_OVER' ||
+                                        watchedCondition === 'SIZE_UNDER'
+                                          ? 'text'
                                           : 'text'
-                                      }
-                                      min={
-                                        watchedCondition === 'SIZE_OVER'
-                                          ? 0
-                                          : undefined
                                       }
                                       disabled={isReadOnly}
                                       placeholder={
-                                        watchedCondition === 'SIZE_OVER'
+                                        watchedCondition === 'SIZE_OVER' ||
+                                        watchedCondition === 'SIZE_UNDER'
                                           ? t('placeholders.size_value.string')
                                           : undefined
                                       }
@@ -478,7 +484,7 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                             )}
                           />
                         )}
-                        {watchedAction === 'removeheader' && (
+                        {watchedAction === 'flag' && (
                           <FormField
                             control={form.control}
                             name={`actions.${index}.value`}
@@ -489,7 +495,27 @@ const FilterEditDialog: React.FC<FilterEditDialogProps> = ({
                                     {...field}
                                     disabled={isReadOnly}
                                     placeholder={t(
-                                      'placeholders.header_name.string'
+                                      'placeholders.imap_flag.string'
+                                    )}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        )}
+                        {watchedAction === 'reject' && (
+                          <FormField
+                            control={form.control}
+                            name={`actions.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem className="flex-1">
+                                <FormControl>
+                                  <Input
+                                    {...field}
+                                    disabled={isReadOnly}
+                                    placeholder={t(
+                                      'placeholders.reject_message.string'
                                     )}
                                   />
                                 </FormControl>

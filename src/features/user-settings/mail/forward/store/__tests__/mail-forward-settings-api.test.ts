@@ -66,10 +66,10 @@ describe('mail-forward-settings-api', () => {
       const result = defs.getMailForwardSettings.transformResponse?.({
         data: {
           forward: {
-            enabled: 1,
-            forwardAddress: ['a@example.com'],
-            keepCopy: 1,
-            alwaysSend: 0,
+            enabled: true,
+            forward_address: ['a@example.com'],
+            keep_copy: true,
+            always_send: false,
           },
         },
         error_code: 'S000000',
@@ -111,8 +111,8 @@ describe('mail-forward-settings-api', () => {
         method: 'POST',
         body: {
           Forward: expect.objectContaining({
-            enabled: 1,
-            forwardAddress: ['a@example.com'],
+            enabled: true,
+            forward_address: ['a@example.com'],
           }),
         },
       })
@@ -123,10 +123,10 @@ describe('mail-forward-settings-api', () => {
         data: {
           filters: null,
           forward: {
-            enabled: 1,
-            forwardAddress: ['a@example.com'],
-            keepCopy: 0,
-            alwaysSend: 1,
+            enabled: true,
+            forward_address: ['a@example.com'],
+            keep_copy: false,
+            always_send: true,
           },
           vacation: null,
           notification: null,

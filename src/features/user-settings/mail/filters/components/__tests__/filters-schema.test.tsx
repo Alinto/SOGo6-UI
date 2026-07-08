@@ -13,8 +13,7 @@ const mockTranslate = ((key: string) => {
       'At least one condition is required',
     'errors.validation.actions_required.string':
       'At least one action is required',
-    'errors.validation.action_unavailable.string':
-      'This action is not available yet',
+    'errors.validation.flag_required.string': 'An IMAP flag is required',
   }
   return messages[key] ?? key
 }) as (key: string) => string
@@ -74,14 +73,15 @@ describe('filters-schema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('rejects flag actions in v1', () => {
+  it('accepts flag action with value', () => {
     const filter = createEmptyFilter()
     filter.name = 'Flag filter'
     filter.rules[0].value = 'test'
     filter.actions[0].action = 'flag'
+    filter.actions[0].value = '\\Flagged'
 
     const result = filtersSchema.safeParse({ filters: [filter] })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
   })
 
   it('returns a translated message for invalid forward email', () => {
@@ -114,30 +114,31 @@ describe('filters-schema', () => {
     expect(result.success).toBe(true)
   })
 
-  it('requires numeric value for SIZE_OVER condition', () => {
+  it('requires value for SIZE_OVER condition', () => {
     const filter = createEmptyFilter()
     filter.name = 'Size filter'
     filter.rules[0].field = 'size'
     filter.rules[0].condition = 'SIZE_OVER'
-    filter.rules[0].value = 'abc'
+    filter.rules[0].value = ''
     filter.actions[0].action = 'discard'
 
     const result = filtersSchema.safeParse({ filters: [filter] })
     expect(result.success).toBe(false)
   })
 
-  it('requires header name for removeheader action', () => {
+  it('accepts SIZE_UNDER condition with value', () => {
     const filter = createEmptyFilter()
-    filter.name = 'Remove header'
-    filter.rules[0].value = 'test'
-    filter.actions[0].action = 'removeheader'
-    filter.actions[0].value = ''
+    filter.name = 'Size filter'
+    filter.rules[0].field = 'size'
+    filter.rules[0].condition = 'SIZE_UNDER'
+    filter.rules[0].value = '10M'
+    filter.actions[0].action = 'discard'
 
     const result = filtersSchema.safeParse({ filters: [filter] })
-    expect(result.success).toBe(false)
+    expect(result.success).toBe(true)
   })
 
-  it('requires SIZE_OVER condition for size field', () => {
+  it('requires SIZE_OVER or SIZE_UNDER condition for size field', () => {
     const filter = createEmptyFilter()
     filter.name = 'Size filter'
     filter.rules[0].field = 'size'

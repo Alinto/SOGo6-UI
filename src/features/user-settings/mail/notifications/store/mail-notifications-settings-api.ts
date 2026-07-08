@@ -1,3 +1,4 @@
+import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import { unwrapBackendResponse } from '@/lib/api/backend-response'
 import {
@@ -7,6 +8,7 @@ import {
 import type { UnknownAction } from '@reduxjs/toolkit'
 import type { Dispatch } from 'redux'
 import type {
+  ApiNotification,
   ApiNotificationGetResponse,
   ApiNotificationPostResponse,
 } from '../mail-notifications-api-types'
@@ -17,7 +19,7 @@ import {
 } from '../mail-notifications-utils'
 
 const mailNotificationOnQueryStarted = async (
-  _arg: unknown,
+  arg: { notification: MailNotification },
   {
     dispatch,
     queryFulfilled,
@@ -26,12 +28,46 @@ const mailNotificationOnQueryStarted = async (
     queryFulfilled: Promise<{ data: MailNotification }>
   }
 ) => {
-  await createApiNotificationHandler(dispatch, {
+  const baseHandler = createApiNotificationHandler(dispatch, {
+    displayNotificationOnSuccess: false,
     successTitle: 'mail_notify.save.success.title.string',
     successMessage: 'mail_notify.save.success.message.string',
     errorTitle: 'mail_notify.save.error.title.string',
     errorMessage: 'mail_notify.save.error.message.string',
-  })(undefined, { queryFulfilled })
+  })
+
+  try {
+    const { data } = await queryFulfilled
+
+    if (arg.notification.enabled && !data.enabled) {
+      dispatch(
+        addNotification({
+          type: 'warning',
+          title: 'mail_notify.save.warning.title.string',
+          message: 'mail_notify.save.warning.message.string',
+          details: '',
+          duration: 6000,
+        })
+      )
+      return
+    }
+
+    if (arg.notification.enabled || arg.notification.addresses.length > 0) {
+      dispatch(
+        addNotification({
+          type: 'success',
+          title: 'mail_notify.save.success.title.string',
+          message: 'mail_notify.save.success.message.string',
+          details: '',
+          duration: 3000,
+        })
+      )
+    }
+  } catch {
+    await baseHandler(undefined, {
+      queryFulfilled: queryFulfilled as Promise<unknown>,
+    })
+  }
 }
 
 export const getMailNotifyUrl = (accountId = '0') =>
@@ -86,3 +122,13 @@ export const {
 } = injectedEndpoints
 
 export const mailNotificationSettingsApiEndpoints = injectedEndpoints
+
+export function wasNotificationPersisted(
+  requested: ApiNotification,
+  response: ApiNotification | null
+): boolean {
+  if (!requested.enabled) {
+    return true
+  }
+  return Boolean(response?.enabled)
+}

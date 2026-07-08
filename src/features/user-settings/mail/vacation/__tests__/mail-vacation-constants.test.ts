@@ -25,6 +25,6 @@ describe('mail-vacation-constants', () => {
     expect(EMPTY_WEEKDAYS.monday).toBe(false)
     expect(DEFAULT_VACATION.enabled).toBe(false)
     expect(DEFAULT_VACATION.constraints.startTime).toBe('18:00')
-    expect(DEFAULT_VACATION.constraints.days).toEqual(EMPTY_WEEKDAYS)
+    expect(DEFAULT_VACATION.constraints.weekdays).toEqual(EMPTY_WEEKDAYS)
   })
 })

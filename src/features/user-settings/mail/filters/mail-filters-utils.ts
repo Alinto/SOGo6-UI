@@ -1,14 +1,17 @@
 import type {
   ApiFilterAction,
+  ApiFilterActionArguments,
   ApiFilterItem,
   ApiFilterRuleGroup,
   ApiFilterRuleLeaf,
   ApiFilterRuleNode,
 } from './mail-filters-api-types'
 import {
+  ADVANCED_FILTER_FIELDS,
   API_CONDITION_TO_UI,
   API_METHOD_TO_UI_ACTION,
   DEFAULT_CREATE_IF_NO_EXIST,
+  DEFAULT_IMAP_FLAG,
   UI_ACTION_TO_API_METHOD,
   UI_CONDITION_TO_API,
 } from './mail-filters-constants'
@@ -61,9 +64,34 @@ function isApiRuleLeaf(node: ApiFilterRuleNode): node is ApiFilterRuleLeaf {
   return 'field' in node && !('op' in node)
 }
 
+function getFolderFromArguments(args: ApiFilterActionArguments): string {
+  if (args.folders?.length) {
+    return String(args.folders[0])
+  }
+  return String(args.folder ?? '')
+}
+
+function hasMultipleFolders(args: ApiFilterActionArguments): boolean {
+  return (args.folders?.length ?? 0) > 1
+}
+
+function hasMultipleAddresses(args: ApiFilterActionArguments): boolean {
+  const addresses = args.addresses?.length
+    ? args.addresses
+    : args.address
+      ? [args.address]
+      : []
+  return addresses.length > 1
+}
+
 function mapApiLeafToUiRule(leaf: ApiFilterRuleLeaf): MailFilterRule {
-  const condition =
+  let condition =
     API_CONDITION_TO_UI[leaf.operator.toLowerCase()] ?? leaf.operator
+
+  if (leaf.field === 'size') {
+    if (leaf.operator === 'over') condition = 'SIZE_OVER'
+    if (leaf.operator === 'under') condition = 'SIZE_UNDER'
+  }
 
   return {
     id: stableRuleIdFromLeaf(leaf),
@@ -80,6 +108,16 @@ function hasNestedGroups(node: ApiFilterRuleNode): boolean {
   return node.rules.some((child) => isApiRuleGroup(child))
 }
 
+function hasAdvancedFieldsInLeaves(node: ApiFilterRuleNode): boolean {
+  if (isApiRuleLeaf(node)) {
+    return ADVANCED_FILTER_FIELDS.has(node.field)
+  }
+  if (isApiRuleGroup(node)) {
+    return node.rules.some((child) => hasAdvancedFieldsInLeaves(child))
+  }
+  return false
+}
+
 export function mapApiRuleTreeToFlatRules(node: ApiFilterRuleNode): {
   operator: FilterOperator
   rules: MailFilterRule[]
@@ -90,13 +128,13 @@ export function mapApiRuleTreeToFlatRules(node: ApiFilterRuleNode): {
       return {
         operator: 'AND',
         rules: [mapApiLeafToUiRule(node)],
-        advancedStructure: false,
+        advancedStructure: ADVANCED_FILTER_FIELDS.has(node.field),
       }
     }
     return { operator: 'AND', rules: [], advancedStructure: true }
   }
 
-  if (hasNestedGroups(node)) {
+  if (hasNestedGroups(node) || hasAdvancedFieldsInLeaves(node)) {
     return { operator: 'AND', rules: [], advancedStructure: true }
   }
 
@@ -153,25 +191,51 @@ export function mapFlatRulesToApiTree(
 
 function mapApiActionToUi(action: ApiFilterAction): MailFilterAction {
   const method = action.method.toLowerCase()
+  const args = action.arguments ?? {}
 
   if (method === 'copy') {
-    const folder = String(action.arguments.folder ?? '')
     return {
       id: stableActionIdFromApi(action),
       action: 'copy',
-      value: folder,
+      value: getFolderFromArguments(args),
       createIfNotExist:
-        action.arguments.create_if_no_exist !== undefined
-          ? Boolean(action.arguments.create_if_no_exist)
+        args.create_if_no_exist !== undefined
+          ? Boolean(args.create_if_no_exist)
           : DEFAULT_CREATE_IF_NO_EXIST,
+      unsupportedAction: hasMultipleFolders(args),
+      rawAction: hasMultipleFolders(args) ? action : undefined,
     }
   }
 
-  if (method === 'removeheader') {
+  if (method === 'fileinto') {
+    const isCopy = Boolean(args.keep_copy)
     return {
       id: stableActionIdFromApi(action),
-      action: 'removeheader',
-      value: String(action.arguments.header_name ?? ''),
+      action: isCopy ? 'copy' : 'move',
+      value: getFolderFromArguments(args),
+      createIfNotExist:
+        args.create_if_no_exist !== undefined
+          ? Boolean(args.create_if_no_exist)
+          : DEFAULT_CREATE_IF_NO_EXIST,
+      unsupportedAction: hasMultipleFolders(args),
+      rawAction: hasMultipleFolders(args) ? action : undefined,
+    }
+  }
+
+  if (method === 'addflag' || method === 'imapflags') {
+    const flags = args.flags ?? []
+    return {
+      id: stableActionIdFromApi(action),
+      action: 'flag',
+      value: flags.length > 0 ? String(flags[0]) : DEFAULT_IMAP_FLAG,
+    }
+  }
+
+  if (method === 'reject') {
+    return {
+      id: stableActionIdFromApi(action),
+      action: 'reject',
+      value: String(args.message ?? ''),
     }
   }
 
@@ -187,24 +251,15 @@ function mapApiActionToUi(action: ApiFilterAction): MailFilterAction {
     }
   }
 
-  if (uiAction === 'move') {
-    const folder = String(action.arguments.folder ?? '')
-    return {
-      id: stableActionIdFromApi(action),
-      action: 'move',
-      value: folder,
-      createIfNotExist:
-        action.arguments.create_if_no_exist !== undefined
-          ? Boolean(action.arguments.create_if_no_exist)
-          : DEFAULT_CREATE_IF_NO_EXIST,
-    }
-  }
-
   if (uiAction === 'forward') {
+    const address =
+      args.addresses?.[0] ?? args.address ?? ''
     return {
       id: stableActionIdFromApi(action),
       action: 'forward',
-      value: String(action.arguments.address ?? ''),
+      value: String(address),
+      unsupportedAction: hasMultipleAddresses(args),
+      rawAction: hasMultipleAddresses(args) ? action : undefined,
     }
   }
 
@@ -220,8 +275,21 @@ function mapUiActionToApi(action: MailFilterAction): ApiFilterAction | null {
     return action.rawAction
   }
 
-  if (action.action === 'flag' || action.action === 'reject') {
-    return null
+  if (action.action === 'flag') {
+    const flag = action.value.trim() || DEFAULT_IMAP_FLAG
+    return {
+      method: 'addflag',
+      arguments: { flags: [flag] },
+    }
+  }
+
+  if (action.action === 'reject') {
+    return {
+      method: 'reject',
+      arguments: action.value.trim()
+        ? { message: action.value }
+        : {},
+    }
   }
 
   const method =
@@ -237,20 +305,22 @@ function mapUiActionToApi(action: MailFilterAction): ApiFilterAction | null {
     return {
       method: 'fileinto',
       arguments: {
-        folder: action.value,
+        folders: action.value ? [action.value] : [],
         create_if_no_exist:
           action.createIfNotExist ?? DEFAULT_CREATE_IF_NO_EXIST,
+        keep_copy: false,
       },
     }
   }
 
   if (action.action === 'copy') {
     return {
-      method: 'copy',
+      method: 'fileinto',
       arguments: {
-        folder: action.value,
+        folders: action.value ? [action.value] : [],
         create_if_no_exist:
           action.createIfNotExist ?? DEFAULT_CREATE_IF_NO_EXIST,
+        keep_copy: true,
       },
     }
   }
@@ -258,14 +328,7 @@ function mapUiActionToApi(action: MailFilterAction): ApiFilterAction | null {
   if (action.action === 'forward') {
     return {
       method: 'redirect',
-      arguments: { address: action.value },
-    }
-  }
-
-  if (action.action === 'removeheader') {
-    return {
-      method: 'removeheader',
-      arguments: { header_name: action.value },
+      arguments: { addresses: action.value ? [action.value] : [] },
     }
   }
 
@@ -280,6 +343,7 @@ export function mapApiFilterToUi(item: ApiFilterItem): MailFilter {
   const hasUnsupportedActions = actions.some(
     (action) => action.unsupportedAction
   )
+  const isAdvanced = advancedStructure || hasUnsupportedActions
 
   return {
     id: stableFilterIdFromApiItem(item),
@@ -288,8 +352,9 @@ export function mapApiFilterToUi(item: ApiFilterItem): MailFilter {
     enabled: Boolean(item.enabled),
     rules,
     actions,
-    advancedStructure,
-    readOnly: advancedStructure || hasUnsupportedActions,
+    advancedStructure: isAdvanced,
+    readOnly: isAdvanced,
+    rawRules: isAdvanced ? item.rules : undefined,
   }
 }
 
@@ -298,10 +363,15 @@ export function mapUiFilterToApi(filter: MailFilter): ApiFilterItem {
     .map(mapUiActionToApi)
     .filter((action): action is ApiFilterAction => action !== null)
 
+  const rules =
+    filter.readOnly && filter.rawRules
+      ? filter.rawRules
+      : mapFlatRulesToApiTree(filter.operator, filter.rules)
+
   return {
     name: filter.name,
-    enabled: filter.enabled ? 1 : 0,
-    rules: mapFlatRulesToApiTree(filter.operator, filter.rules),
+    enabled: filter.enabled,
+    rules,
     actions: supportedActions,
   }
 }

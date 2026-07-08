@@ -55,7 +55,7 @@ describe('mail-filters-settings-api', () => {
           filters: [
             {
               name: 'Filter 1',
-              enabled: 1,
+              enabled: true,
               rules: {
                 op: 'and',
                 rules: [
@@ -108,7 +108,7 @@ describe('mail-filters-settings-api', () => {
           filters: [
             {
               name: 'Filter 1',
-              enabled: 1,
+              enabled: true,
               rules: {
                 op: 'and',
                 rules: [

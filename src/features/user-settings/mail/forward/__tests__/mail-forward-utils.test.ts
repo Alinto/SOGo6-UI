@@ -9,10 +9,10 @@ import {
 
 describe('mail-forward-utils', () => {
   const sampleApiForward: ApiForward = {
-    enabled: 1,
-    forwardAddress: ['a@example.com', 'b@example.com'],
-    keepCopy: 1,
-    alwaysSend: 0,
+    enabled: true,
+    forward_address: ['a@example.com', 'b@example.com'],
+    keep_copy: true,
+    always_send: false,
   }
 
   describe('createEmptyForward', () => {
@@ -44,10 +44,10 @@ describe('mail-forward-utils', () => {
       const ui = mapApiForwardToUi(sampleApiForward)
       const api = mapUiForwardToApi(ui)
 
-      expect(api.enabled).toBe(1)
-      expect(api.forwardAddress).toEqual(['a@example.com', 'b@example.com'])
-      expect(api.keepCopy).toBe(1)
-      expect(api.alwaysSend).toBe(0)
+      expect(api.enabled).toBe(true)
+      expect(api.forward_address).toEqual(['a@example.com', 'b@example.com'])
+      expect(api.keep_copy).toBe(true)
+      expect(api.always_send).toBe(false)
     })
 
     it('preserves config when disabled', () => {
@@ -55,8 +55,8 @@ describe('mail-forward-utils', () => {
       ui.enabled = false
       const api = mapUiForwardToApi(ui)
 
-      expect(api.enabled).toBe(0)
-      expect(api.forwardAddress).toEqual(['a@example.com', 'b@example.com'])
+      expect(api.enabled).toBe(false)
+      expect(api.forward_address).toEqual(['a@example.com', 'b@example.com'])
     })
   })
 
@@ -95,8 +95,8 @@ describe('mail-forward-utils', () => {
       const ui = mapApiForwardToUi(null)
       const api = mapUiForwardToApi(ui)
 
-      expect(api.enabled).toBe(0)
-      expect(api.forwardAddress).toEqual([])
+      expect(api.enabled).toBe(false)
+      expect(api.forward_address).toEqual([])
     })
   })
 })

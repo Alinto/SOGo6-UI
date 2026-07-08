@@ -23,7 +23,10 @@ const dateRangeSchema = z
   })
   .nullable()
 
-export const createVacationSchema = (t: VacationTranslator) =>
+export const createVacationSchema = (
+  t: VacationTranslator,
+  vacationAllowResponseAlways = false
+) =>
   z
     .object({
       enabled: z.boolean(),
@@ -36,10 +39,10 @@ export const createVacationSchema = (t: VacationTranslator) =>
         startTime: z.string(),
         endTime: z.string(),
         weekdaysEnabled: z.boolean(),
-        days: weekdaysSchema,
+        weekdays: weekdaysSchema,
+        responseIntervalDays: z.number().int().nullable(),
       }),
       alwaysSend: z.boolean(),
-      ignoreLists: z.boolean(),
     })
     .superRefine((values, ctx) => {
       if (!values.enabled) return
@@ -53,7 +56,10 @@ export const createVacationSchema = (t: VacationTranslator) =>
       }
 
       if (values.constraints.enableDates) {
-        if (!values.constraints.dateRange?.from || !values.constraints.dateRange?.to) {
+        if (
+          !values.constraints.dateRange?.from ||
+          !values.constraints.dateRange?.to
+        ) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: t('errors.validation.dates_required.string'),
@@ -88,12 +94,29 @@ export const createVacationSchema = (t: VacationTranslator) =>
       }
 
       if (values.constraints.weekdaysEnabled) {
-        const hasDay = Object.values(values.constraints.days).some(Boolean)
+        const hasDay = Object.values(values.constraints.weekdays).some(Boolean)
         if (!hasDay) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: t('errors.validation.weekday_required.string'),
-            path: ['constraints', 'days'],
+            path: ['constraints', 'weekdays'],
+          })
+        }
+      }
+
+      const intervalDays = values.constraints.responseIntervalDays
+      if (intervalDays !== null) {
+        if (intervalDays < 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t('errors.validation.response_interval_invalid.string'),
+            path: ['constraints', 'responseIntervalDays'],
+          })
+        } else if (intervalDays === 0 && !vacationAllowResponseAlways) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: t('errors.validation.response_interval_zero.string'),
+            path: ['constraints', 'responseIntervalDays'],
           })
         }
       }

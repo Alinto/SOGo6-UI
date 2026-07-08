@@ -74,9 +74,12 @@
             "not_match_regex": {
                 "string": "Does not match regex"
             },
-            "is_under": {
-                "string": "Is under"
+            "not_exists": {
+                "string": "Does not exist"
             },
+            "size_under": {
+                "string": "Is under (KB)"
+            },,
             "is_over": {
                 "string": "Is over"
             }
@@ -231,7 +234,13 @@
                 "string": "Header name (e.g. X-Spam-Flag)"
             },
             "size_value": {
-                "string": "Size in KB"
+                "string": "Size (e.g. 1024, 5M, 10K)"
+            },
+            "imap_flag": {
+                "string": "IMAP flag (e.g. \\Flagged)"
+            },
+            "reject_message": {
+                "string": "Optional reject message"
             }
         },
         "success": {
@@ -283,7 +292,10 @@
                     "string": "Enter a valid size in KB"
                 },
                 "size_condition_required": {
-                    "string": "Size rules must use the size operator"
+                    "string": "Size rules must use over or under"
+                },
+                "flag_required": {
+                    "string": "An IMAP flag is required"
                 },
                 "action_unavailable": {
                     "string": "This action is not available yet"

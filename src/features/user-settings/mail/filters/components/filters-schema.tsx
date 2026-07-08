@@ -17,6 +17,7 @@ const createFilterRuleSchema = () =>
     field_value: z.string().optional(),
     condition: z.string().min(1),
     value: z.string(),
+    case_sensitive: z.boolean().optional(),
   })
 
 const createFilterActionSchema = (t: FiltersTranslator) =>
@@ -42,13 +43,6 @@ const createFilterActionSchema = (t: FiltersTranslator) =>
           path: ['value'],
         })
       }
-      if (action.action === 'removeheader' && !action.value.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: t('errors.validation.header_name_required.string'),
-          path: ['value'],
-        })
-      }
       if (action.action === 'forward') {
         const result = emailSchema.safeParse(action.value.trim())
         if (!result.success) {
@@ -59,11 +53,11 @@ const createFilterActionSchema = (t: FiltersTranslator) =>
           })
         }
       }
-      if (action.action === 'flag' || action.action === 'reject') {
+      if (action.action === 'flag' && !action.value.trim()) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: t('errors.validation.action_unavailable.string'),
-          path: ['action'],
+          message: t('errors.validation.flag_required.string'),
+          path: ['value'],
         })
       }
     })
@@ -85,8 +79,13 @@ const createFilterItemSchema = (t: FiltersTranslator) =>
         .min(1, t('errors.validation.actions_required.string')),
       advancedStructure: z.boolean().optional(),
       readOnly: z.boolean().optional(),
+      rawRules: z.unknown().optional(),
     })
     .superRefine((filter, ctx) => {
+      if (filter.readOnly || filter.advancedStructure) {
+        return
+      }
+
       if (filter.operator !== 'ALL' && filter.rules.length === 0) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -103,18 +102,25 @@ const createFilterItemSchema = (t: FiltersTranslator) =>
             path: ['rules', index, 'field_value'],
           })
         }
-        if (rule.field === 'size' && rule.condition !== 'SIZE_OVER') {
+        if (
+          rule.field === 'size' &&
+          rule.condition !== 'SIZE_OVER' &&
+          rule.condition !== 'SIZE_UNDER'
+        ) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: t('errors.validation.size_condition_required.string'),
             path: ['rules', index, 'condition'],
           })
         }
-        if (rule.condition === 'EXISTS') {
+        if (rule.condition === 'EXISTS' || rule.condition === 'NOT_EXISTS') {
           return
         }
-        if (rule.condition === 'SIZE_OVER') {
-          if (!rule.value.trim() || Number.isNaN(Number(rule.value))) {
+        if (
+          rule.condition === 'SIZE_OVER' ||
+          rule.condition === 'SIZE_UNDER'
+        ) {
+          if (!rule.value.trim()) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
               message: t('errors.validation.size_value_required.string'),

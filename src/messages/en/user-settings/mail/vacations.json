@@ -33,6 +33,12 @@
                 },
                 "weekday_required": {
                     "string": "Select at least one weekday when weekday constraints are enabled."
+                },
+                "response_interval_invalid": {
+                    "string": "Response interval must be zero or a positive number."
+                },
+                "response_interval_zero": {
+                    "string": "A zero-day response interval is not allowed on this domain."
                 }
             }
         },
@@ -102,8 +108,16 @@
                 }
             },
             "response": {
-                "to_mailling_list": {
-                    "string": "Do not send responses to mailing lists"
+                "interval_days": {
+                    "label": {
+                        "string": "Minimum days between auto replies"
+                    },
+                    "placeholder": {
+                        "string": "Leave empty for default behavior"
+                    },
+                    "description": {
+                        "string": "Prevents sending duplicate vacation replies within this period (RFC 5230 :days)."
+                    }
                 },
                 "send_always": {
                     "label": {

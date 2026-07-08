@@ -1,19 +1,33 @@
-import type { ApiFilterAction } from './mail-filters-api-types'
+import type {
+  ApiFilterAction,
+  ApiFilterRuleNode,
+} from './mail-filters-api-types'
 
-export type FilterField = 'from' | 'to' | 'subject' | 'header' | 'size'
+export type FilterField =
+  | 'from'
+  | 'to'
+  | 'cc'
+  | 'to or cc'
+  | 'subject'
+  | 'header'
+  | 'body'
+  | 'size'
 
 export type FilterOperator = 'AND' | 'OR' | 'ALL'
 
 export type FilterCondition =
   | 'IS'
+  | 'IS_NOT'
   | 'CONTAINS'
   | 'NOT_CONTAIN'
   | 'MATCH'
+  | 'NOT_MATCH'
   | 'MATCH_REGEX'
-  | 'STARTS_WITH'
-  | 'ENDS_WITH'
+  | 'NOT_REGEX'
   | 'EXISTS'
+  | 'NOT_EXISTS'
   | 'SIZE_OVER'
+  | 'SIZE_UNDER'
 
 export type FilterActionType =
   | 'move'
@@ -22,7 +36,6 @@ export type FilterActionType =
   | 'stop'
   | 'keep'
   | 'discard'
-  | 'removeheader'
   | 'flag'
   | 'reject'
 
@@ -54,4 +67,6 @@ export interface MailFilter {
   /** True when API rule tree cannot be edited safely in flat UI */
   advancedStructure?: boolean
   readOnly?: boolean
+  /** Original API rules preserved for advanced/read-only filters */
+  rawRules?: ApiFilterRuleNode
 }

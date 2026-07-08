@@ -9,9 +9,9 @@ import {
 
 describe('mail-notifications-utils', () => {
   const sampleApiNotification: ApiNotification = {
-    enabled: 1,
-    notifyAddresses: ['a@example.com', 'b@example.com'],
-    notifyMessage: 'Filter triggered',
+    enabled: true,
+    notify_addresses: ['a@example.com', 'b@example.com'],
+    notify_message: 'Filter triggered',
   }
 
   describe('createEmptyNotification', () => {
@@ -43,9 +43,9 @@ describe('mail-notifications-utils', () => {
       const ui = mapApiNotificationToUi(sampleApiNotification)
       const api = mapUiNotificationToApi(ui)
 
-      expect(api.enabled).toBe(1)
-      expect(api.notifyAddresses).toEqual(['a@example.com', 'b@example.com'])
-      expect(api.notifyMessage).toBe('Filter triggered')
+      expect(api.enabled).toBe(true)
+      expect(api.notify_addresses).toEqual(['a@example.com', 'b@example.com'])
+      expect(api.notify_message).toBe('Filter triggered')
     })
 
     it('preserves config when disabled', () => {
@@ -53,8 +53,8 @@ describe('mail-notifications-utils', () => {
       ui.enabled = false
       const api = mapUiNotificationToApi(ui)
 
-      expect(api.enabled).toBe(0)
-      expect(api.notifyAddresses).toEqual(['a@example.com', 'b@example.com'])
+      expect(api.enabled).toBe(false)
+      expect(api.notify_addresses).toEqual(['a@example.com', 'b@example.com'])
     })
   })
 
@@ -95,9 +95,9 @@ describe('mail-notifications-utils', () => {
       const ui = mapApiNotificationToUi(null)
       const api = mapUiNotificationToApi(ui)
 
-      expect(api.enabled).toBe(0)
-      expect(api.notifyAddresses).toEqual([])
-      expect(api.notifyMessage).toBe('')
+      expect(api.enabled).toBe(false)
+      expect(api.notify_addresses).toEqual([])
+      expect(api.notify_message).toBe('')
     })
   })
 })

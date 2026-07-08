@@ -1,4 +1,9 @@
+import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
+
+jest.mock('@/features/notifications', () => ({
+  addNotification: jest.fn((payload) => ({ type: 'notifications/add', payload })),
+}))
 
 jest.mock('@/features/notifications/api-notification-handler', () => ({
   createApiNotificationHandler: jest.fn(() => jest.fn()),
@@ -27,6 +32,7 @@ jest.mock('@/lib/redux/api/api-slice', () => {
 import {
   getMailNotifyUrl,
   mailNotificationSettingsApiEndpoints,
+  wasNotificationPersisted,
 } from '../mail-notifications-settings-api'
 import { createEmptyNotification } from '../../mail-notifications-utils'
 
@@ -66,9 +72,9 @@ describe('mail-notifications-settings-api', () => {
       const result = defs.getMailNotificationSettings.transformResponse?.({
         data: {
           notification: {
-            enabled: 1,
-            notifyAddresses: ['a@example.com'],
-            notifyMessage: 'Alert',
+            enabled: true,
+            notify_addresses: ['a@example.com'],
+            notify_message: 'Alert',
           },
         },
         error_code: 'S000000',
@@ -111,9 +117,9 @@ describe('mail-notifications-settings-api', () => {
         method: 'POST',
         body: {
           Notification: expect.objectContaining({
-            enabled: 1,
-            notifyAddresses: ['a@example.com'],
-            notifyMessage: 'Alert',
+            enabled: true,
+            notify_addresses: ['a@example.com'],
+            notify_message: 'Alert',
           }),
         },
       })
@@ -126,9 +132,9 @@ describe('mail-notifications-settings-api', () => {
           forward: null,
           vacation: null,
           notification: {
-            enabled: 1,
-            notifyAddresses: ['a@example.com'],
-            notifyMessage: 'Alert',
+            enabled: true,
+            notify_addresses: ['a@example.com'],
+            notify_message: 'Alert',
           },
         },
         error_code: 'S000000',
@@ -137,6 +143,30 @@ describe('mail-notifications-settings-api', () => {
 
       expect(result?.enabled).toBe(true)
       expect(result?.message).toBe('Alert')
+    })
+  })
+
+  describe('wasNotificationPersisted', () => {
+    it('returns true when disabled', () => {
+      expect(
+        wasNotificationPersisted(
+          { enabled: false, notify_addresses: [], notify_message: '' },
+          null
+        )
+      ).toBe(true)
+    })
+
+    it('returns false when enabled but response is missing', () => {
+      expect(
+        wasNotificationPersisted(
+          {
+            enabled: true,
+            notify_addresses: ['a@example.com'],
+            notify_message: 'Alert',
+          },
+          null
+        )
+      ).toBe(false)
     })
   })
 
@@ -150,25 +180,52 @@ describe('mail-notifications-settings-api', () => {
       )
     })
 
-    it('calls createApiNotificationHandler with mail notify messages', async () => {
+    it('dispatches success notification when enabled settings persist', async () => {
       const dispatch = jest.fn()
-      const queryFulfilled = Promise.resolve({ data: createEmptyNotification() })
+      const notification = {
+        ...createEmptyNotification(),
+        enabled: true,
+        addresses: ['a@example.com'],
+      }
+      const queryFulfilled = Promise.resolve({
+        data: { ...notification, enabled: true },
+      })
 
       await defs.updateMailNotificationSettings.onQueryStarted?.(
-        { accountId: '0', notification: createEmptyNotification() },
+        { accountId: '0', notification },
         { dispatch, queryFulfilled }
       )
 
-      expect(createApiNotificationHandler).toHaveBeenCalledWith(
-        dispatch,
+      expect(addNotification).toHaveBeenCalledWith(
         expect.objectContaining({
-          successTitle: 'mail_notify.save.success.title.string',
-          successMessage: 'mail_notify.save.success.message.string',
-          errorTitle: 'mail_notify.save.error.title.string',
-          errorMessage: 'mail_notify.save.error.message.string',
+          type: 'success',
+          title: 'mail_notify.save.success.title.string',
         })
       )
-      expect(mockNotificationFn).toHaveBeenCalled()
+    })
+
+    it('dispatches warning when enabled settings were not persisted', async () => {
+      const dispatch = jest.fn()
+      const notification = {
+        ...createEmptyNotification(),
+        enabled: true,
+        addresses: ['a@example.com'],
+      }
+      const queryFulfilled = Promise.resolve({
+        data: { ...notification, enabled: false },
+      })
+
+      await defs.updateMailNotificationSettings.onQueryStarted?.(
+        { accountId: '0', notification },
+        { dispatch, queryFulfilled }
+      )
+
+      expect(addNotification).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'warning',
+          title: 'mail_notify.save.warning.title.string',
+        })
+      )
     })
   })
 })

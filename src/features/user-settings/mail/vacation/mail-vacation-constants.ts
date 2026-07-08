@@ -53,8 +53,8 @@ export const DEFAULT_VACATION: MailVacation = {
     startTime: '18:00',
     endTime: '08:00',
     weekdaysEnabled: false,
-    days: { ...EMPTY_WEEKDAYS },
+    weekdays: { ...EMPTY_WEEKDAYS },
+    responseIntervalDays: null,
   },
   alwaysSend: false,
-  ignoreLists: false,
 }

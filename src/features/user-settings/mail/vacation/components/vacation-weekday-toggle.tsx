@@ -11,7 +11,7 @@ import { UI_WEEKDAY_KEYS } from '../mail-vacation-constants'
 
 interface VacationWeekdayToggleProps {
   control: Control<VacationFormValues>
-  name: 'constraints.days'
+  name: 'constraints.weekdays'
 }
 
 function VacationWeekdayToggle({ control, name }: VacationWeekdayToggleProps) {
