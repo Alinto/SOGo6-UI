@@ -2,10 +2,12 @@
 
 import {
   createDraft,
-  selectAllDrafts,
-  selectOpenDraftIds,
   setActiveDraft,
 } from '@/features/mails/store/mail-compose-slice'
+import {
+  selectAllDrafts,
+  selectOpenDraftIds,
+} from '@/features/mails/store/mail-compose-selectors'
 import { useLazyGetEditMessageQuery } from '@/features/mails/store/mails-api'
 import type { ImapMessages, ImapFolderType } from '@/features/mails/mails-types'
 import { apiDataToMailComposeDraft } from '@/features/mails/utils/mail-compose-from-api'

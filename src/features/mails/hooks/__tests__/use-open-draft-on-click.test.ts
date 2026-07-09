@@ -17,6 +17,9 @@ jest.mock('@/lib/redux/hooks', () => ({
 jest.mock('@/features/mails/store/mail-compose-slice', () => ({
   createDraft: jest.fn((payload) => ({ type: 'createDraft', payload })),
   setActiveDraft: jest.fn((id) => ({ type: 'setActiveDraft', payload: id })),
+}))
+
+jest.mock('@/features/mails/store/mail-compose-selectors', () => ({
   selectOpenDraftIds: (state: { mailCompose: { openDraftIds: string[] } }) =>
     state.mailCompose.openDraftIds,
   selectAllDrafts: (state: { mailCompose: { drafts: Record<string, unknown> } }) =>

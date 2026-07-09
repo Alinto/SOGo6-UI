@@ -79,7 +79,7 @@
             },
             "size_under": {
                 "string": "Is under (KB)"
-            },,
+            },
             "is_over": {
                 "string": "Is over"
             }
