@@ -1,5 +1,8 @@
+# Pin Node LTS (Active LTS) — same major everywhere (build + runtime).
+ARG NODE_VERSION=24
+
 # Dependencies
-FROM node:22-alpine AS deps
+FROM node:${NODE_VERSION}-alpine AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
@@ -11,7 +14,7 @@ RUN \
   fi
 
 # Builder
-FROM node:22-alpine AS builder
+FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -21,15 +24,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Prune node_modules to keep only production dependencies
-FROM node:22-alpine AS prod-deps
-ENV NODE_ENV production
+FROM node:${NODE_VERSION}-alpine AS prod-deps
+ENV NODE_ENV=production
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 COPY package.json package-lock.json* ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Lightweight cleanup stage to remove unnecessary files
-FROM alpine:3.22 AS cleanup
+FROM alpine:3.24 AS cleanup
 WORKDIR /app
 COPY --from=prod-deps /app/node_modules ./node_modules
 
@@ -41,18 +44,16 @@ RUN find ./node_modules -type d -name "*.d.ts" -exec rm -rf {} + 2>/dev/null || 
     find ./node_modules/@ckeditor -type f \( -name "*.map" -o -name "*.ts" -o -name "*.jsx" \) -delete 2>/dev/null || true && \
     find ./node_modules -type d -name "node_modules" ! -path "./node_modules" -exec rm -rf {} + 2>/dev/null || true
 
-# Runner - ultra minimal production image based on Alpine
-FROM alpine:3.22 AS runner
+# Runner — same Node image as build stages (no apk nodejs mismatch)
+FROM node:${NODE_VERSION}-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV="production"
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Install only Node.js (minimal runtime, no npm)
-RUN apk add --no-cache nodejs
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN apk add --no-cache wget && \
+    addgroup --system --gid 1001 nodejs && \
+    adduser --system --uid 1001 --ingroup nodejs nextjs
 
 # Copy cleaned node_modules
 COPY --from=cleanup --chown=nextjs:nodejs /app/node_modules ./node_modules
@@ -72,5 +73,8 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://127.0.0.1:3000/env || exit 1
 
 CMD ["node", "server.js"]

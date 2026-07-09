@@ -133,6 +133,28 @@ describe('env-service', () => {
     })
   })
 
+  describe('fetchEnvVars (production)', () => {
+    beforeEach(() => {
+      process.env.NODE_ENV = 'production'
+    })
+
+    it('throws when REACT_APP_API_BASE_URL is missing from /env', async () => {
+      ;(global.fetch as jest.Mock).mockResolvedValueOnce(mockResponse({}))
+
+      await expect(fetchEnvVars()).rejects.toThrow(
+        'REACT_APP_API_BASE_URL is not configured'
+      )
+      expect(isEnvLoaded()).toBe(false)
+    })
+
+    it('throws when fetch /env rejects instead of falling back to /fakeApi', async () => {
+      ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('network'))
+
+      await expect(fetchEnvVars()).rejects.toThrow('network')
+      expect(isUsingFakeApi()).toBe(false)
+    })
+  })
+
   describe('fetchEnvVars health check (development)', () => {
     beforeEach(() => {
       process.env.NODE_ENV = 'development'

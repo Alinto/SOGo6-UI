@@ -114,12 +114,22 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
           )
         ),
       ])
-      cachedBaseUrl = envVars.REACT_APP_API_BASE_URL || '/fakeApi'
+      cachedBaseUrl =
+        envVars.REACT_APP_API_BASE_URL?.trim() ||
+        (process.env.NODE_ENV === 'production' ? undefined : '/fakeApi')
+
+      if (!cachedBaseUrl) {
+        throw new Error('REACT_APP_API_BASE_URL is not configured')
+      }
 
       if (process.env.NODE_ENV === 'development') {
         console.log('🌐 API Base URL initialized:', cachedBaseUrl)
       }
     } catch (error) {
+      if (process.env.NODE_ENV === 'production') {
+        throw error
+      }
+
       console.warn(
         '⚠️ Could not resolve API base URL, using /fakeApi',
         error

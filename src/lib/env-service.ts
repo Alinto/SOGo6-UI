@@ -17,6 +17,10 @@ let isApiHealthy: boolean | null = null
 const HEALTH_CHECK_MS = 2000
 const ENV_FETCH_MS = 4000
 
+/** Mock API fallback is allowed only outside production (dev + tests). */
+const allowFakeApiFallback = (): boolean =>
+  process.env.NODE_ENV !== 'production'
+
 /**
  * Check if the API is reachable via GET /system (same check for relative and absolute base URLs).
  */
@@ -107,10 +111,18 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
       }
 
       const data = await response.json()
-      // Check if the configured API is healthy (only in development)
-      const configuredApiUrl = data.REACT_APP_API_BASE_URL || '/fakeApi'
       const isDevelopment = process.env.NODE_ENV === 'development'
+      const configuredApiUrl =
+        data.REACT_APP_API_BASE_URL?.trim() ||
+        (allowFakeApiFallback() ? '/fakeApi' : undefined)
 
+      if (!configuredApiUrl) {
+        throw new Error('REACT_APP_API_BASE_URL is not configured')
+      }
+
+      data.REACT_APP_API_BASE_URL = configuredApiUrl
+
+      // Check if the configured API is healthy (only in development)
       if (isDevelopment && configuredApiUrl !== '/fakeApi') {
         console.log(
           `%c🔍 Checking API connectivity: ${configuredApiUrl}`,
@@ -144,6 +156,10 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
       envCache = data
       return data
     } catch (error) {
+      if (!allowFakeApiFallback()) {
+        throw error
+      }
+
       console.warn(
         `⚠️  Failed to fetch environment variables.\n` +
           `➡️  Switching to /fakeApi (mock data)`,

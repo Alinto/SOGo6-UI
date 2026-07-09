@@ -1,3 +1,7 @@
+# Legacy static-export image — NOT compatible with the current app
+# (requires output: 'export', no middleware, no /env, no /fakeApi).
+# Use the root Dockerfile for production deployments.
+#
 # Dependencies
 FROM node:22-alpine AS deps
 RUN apk add --no-cache libc6-compat
