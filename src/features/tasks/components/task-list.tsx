@@ -15,6 +15,9 @@ type TaskListProps = {
   onEdit: (taskKey: string) => void
   onDelete: (taskKey: string) => void
   onCreateClick: () => void
+  selectionMode?: boolean
+  selectedTaskKeys?: string[]
+  onToggleSelection?: (taskKey: string) => void
 }
 
 function TaskListSkeleton() {
@@ -38,6 +41,9 @@ function TaskList({
   onEdit,
   onDelete,
   onCreateClick,
+  selectionMode = false,
+  selectedTaskKeys = [],
+  onToggleSelection,
 }: TaskListProps) {
   if (isLoading) {
     return <TaskListSkeleton />
@@ -59,6 +65,9 @@ function TaskList({
             onToggleComplete={onToggleComplete}
             onEdit={onEdit}
             onDelete={onDelete}
+            selectionMode={selectionMode}
+            isSelected={selectedTaskKeys.includes(key)}
+            onToggleSelection={onToggleSelection}
           />
         )
       })}

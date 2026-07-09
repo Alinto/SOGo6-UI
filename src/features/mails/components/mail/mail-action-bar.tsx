@@ -11,7 +11,7 @@ export default function MailActionsBar({
   return (
     <div
       className={cn(
-        'inline-flex items-center rounded-md border py-1 shadow-sm',
+        'inline-flex items-center rounded-md border px-1 py-1 shadow-sm',
         className
       )}
     >

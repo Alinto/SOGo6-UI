@@ -1,11 +1,12 @@
 import '@testing-library/jest-dom'
 import reducer, {
-  closeForm,
+  enterSelectionMode,
+  exitSelectionMode,
   openCreateForm,
-  openEditForm,
   setCalendarFilter,
-  setSearchQuery,
+  setSelectedTaskKeys,
   setStatusFilter,
+  toggleTaskSelection,
 } from '../tasks-ui-slice'
 
 describe('tasksUiSlice', () => {
@@ -20,6 +21,8 @@ describe('tasksUiSlice', () => {
       expect(state.isFormOpen).toBe(false)
       expect(state.selectedCalendarKey).toBeNull()
       expect(state.searchQuery).toBe('')
+      expect(state.selectionMode).toBe(false)
+      expect(state.selectedTaskKeys).toEqual([])
     })
   })
 
@@ -28,6 +31,14 @@ describe('tasksUiSlice', () => {
       const state = reducer(undefined, setStatusFilter('today'))
       expect(state.statusFilter).toBe('today')
     })
+
+    it('clears selection state', () => {
+      let state = reducer(undefined, enterSelectionMode())
+      state = reducer(state, setSelectedTaskKeys(['task-1']))
+      state = reducer(state, setStatusFilter('completed'))
+      expect(state.selectionMode).toBe(false)
+      expect(state.selectedTaskKeys).toEqual([])
+    })
   })
 
   describe('setCalendarFilter', () => {
@@ -35,12 +46,32 @@ describe('tasksUiSlice', () => {
       const state = reducer(undefined, setCalendarFilter('cal-1'))
       expect(state.selectedCalendarKey).toBe('cal-1')
     })
+
+    it('clears selection state', () => {
+      let state = reducer(undefined, enterSelectionMode())
+      state = reducer(state, setSelectedTaskKeys(['task-1']))
+      state = reducer(state, setCalendarFilter('cal-1'))
+      expect(state.selectionMode).toBe(false)
+      expect(state.selectedTaskKeys).toEqual([])
+    })
   })
 
-  describe('setSearchQuery', () => {
-    it('updates search query', () => {
-      const state = reducer(undefined, setSearchQuery('hello'))
-      expect(state.searchQuery).toBe('hello')
+  describe('selection mode', () => {
+    it('enters and exits selection mode', () => {
+      let state = reducer(undefined, enterSelectionMode())
+      expect(state.selectionMode).toBe(true)
+      state = reducer(state, setSelectedTaskKeys(['task-1']))
+      state = reducer(state, exitSelectionMode())
+      expect(state.selectionMode).toBe(false)
+      expect(state.selectedTaskKeys).toEqual([])
+    })
+
+    it('toggles task selection', () => {
+      let state = reducer(undefined, enterSelectionMode())
+      state = reducer(state, toggleTaskSelection('task-1'))
+      expect(state.selectedTaskKeys).toEqual(['task-1'])
+      state = reducer(state, toggleTaskSelection('task-1'))
+      expect(state.selectedTaskKeys).toEqual([])
     })
   })
 
@@ -51,17 +82,12 @@ describe('tasksUiSlice', () => {
       expect(state.editingTaskKey).toBeNull()
     })
 
-    it('openEditForm sets editing key', () => {
-      const state = reducer(undefined, openEditForm('task-1'))
-      expect(state.isFormOpen).toBe(true)
-      expect(state.editingTaskKey).toBe('task-1')
-    })
-
-    it('closeForm resets form state', () => {
-      let state = reducer(undefined, openEditForm('task-1'))
-      state = reducer(state, closeForm())
-      expect(state.isFormOpen).toBe(false)
-      expect(state.editingTaskKey).toBeNull()
+    it('openCreateForm clears selection state', () => {
+      let state = reducer(undefined, enterSelectionMode())
+      state = reducer(state, setSelectedTaskKeys(['task-1']))
+      state = reducer(state, openCreateForm())
+      expect(state.selectionMode).toBe(false)
+      expect(state.selectedTaskKeys).toEqual([])
     })
   })
 

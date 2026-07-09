@@ -250,7 +250,7 @@ export default function MailDetailActionBar({
       onPrint={onPrint}
       printDisabled={isPrintDisabled}
       onViewSource={() => void handleViewSource()}
-      triggerClassName="rounded-none"
+      triggerClassName="rounded-r-md"
     />
   ) : null
 
@@ -276,10 +276,10 @@ export default function MailDetailActionBar({
         <MailActionsBar
           actions={desktopActions}
           onAction={handleMainAction}
-          className="rounded-r-none border-r-0"
+          className="rounded-r-none border-r-0 pr-0"
         />
         {desktopMoreMenu ? (
-          <div className="inline-flex items-center rounded-md rounded-l-none border border-l-0 py-1 pr-1 shadow-sm">
+          <div className="inline-flex items-center rounded-md rounded-l-none border border-l-0 px-1 py-1 shadow-sm">
             {desktopMoreMenu}
           </div>
         ) : null}

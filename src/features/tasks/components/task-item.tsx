@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import TaskCompleteCheckbox from '@/features/tasks/components/task-complete-checkbox'
+import TaskSelectCheckbox from '@/features/tasks/components/task-select-checkbox'
 import TaskProgressBar from '@/features/tasks/components/task-progress-bar'
 import type { Task } from '@/features/tasks/tasks-types'
 import { isTaskOverdue } from '@/features/tasks/utils/task-due'
@@ -23,6 +24,9 @@ type TaskItemProps = {
   onToggleComplete: (task: Task) => Promise<void>
   onEdit: (taskKey: string) => void
   onDelete: (taskKey: string) => void
+  selectionMode?: boolean
+  isSelected?: boolean
+  onToggleSelection?: (taskKey: string) => void
 }
 
 function TaskItem({
@@ -31,6 +35,9 @@ function TaskItem({
   onToggleComplete,
   onEdit,
   onDelete,
+  selectionMode = false,
+  isSelected = false,
+  onToggleSelection,
 }: TaskItemProps) {
   const t = useTranslations('TASKS')
   const taskKey = task.key ?? task.id ?? ''
@@ -61,25 +68,55 @@ function TaskItem({
     [onToggleComplete, task]
   )
 
+  const handleRowClick = useCallback(() => {
+    if (!selectionMode || !taskKey) return
+    onToggleSelection?.(taskKey)
+  }, [onToggleSelection, selectionMode, taskKey])
+
+  const handleSelectionCheckboxChange = useCallback(
+    (checked: boolean | 'indeterminate') => {
+      if (!taskKey) return
+      const shouldSelect = checked === true
+      if (shouldSelect !== isSelected) {
+        onToggleSelection?.(taskKey)
+      }
+    },
+    [isSelected, onToggleSelection, taskKey]
+  )
+
   return (
     <li
       data-testid={`task-item-${taskKey}`}
       className={cn(
-        'border-border flex items-start gap-3 rounded-lg border p-3 transition-opacity duration-300',
-        isCompleted && 'opacity-55'
+        'border-border flex items-start gap-3 rounded-lg border p-3 transition-[opacity,background-color] duration-300',
+        isCompleted && !selectionMode && 'opacity-55',
+        selectionMode && 'cursor-pointer',
+        isSelected && 'border-primary/40 bg-primary/10'
       )}
+      onClick={selectionMode ? handleRowClick : undefined}
     >
-      <TaskCompleteCheckbox
-        completed={isCompleted}
-        label={task.title}
-        onToggle={handleToggle}
-      />
+      {selectionMode ? (
+        <TaskSelectCheckbox
+          checked={isSelected}
+          label={task.title}
+          data-testid="task-select-checkbox"
+          onCheckedChange={handleSelectionCheckboxChange}
+          onClick={(event) => event.stopPropagation()}
+        />
+      ) : (
+        <TaskCompleteCheckbox
+          completed={isCompleted}
+          label={task.title}
+          onToggle={handleToggle}
+        />
+      )}
 
       <div className="min-w-0 flex-1 space-y-1">
         <p
           className={cn(
             'text-sm font-medium transition-[color,text-decoration-color] duration-300',
-            isCompleted && 'text-muted-foreground line-through decoration-muted-foreground/60'
+            isCompleted &&
+              'text-muted-foreground line-through decoration-muted-foreground/60'
           )}
         >
           {task.title}
@@ -136,26 +173,28 @@ function TaskItem({
         )}
       </div>
 
-      <div className="flex shrink-0 gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => taskKey && onEdit(taskKey)}
-          aria-label={t('actions.edit.string')}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          onClick={() => taskKey && onDelete(taskKey)}
-          aria-label={t('actions.delete.string')}
-        >
-          <Trash2 className="h-4 w-4" />
-        </Button>
-      </div>
+      {!selectionMode && (
+        <div className="flex shrink-0 gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => taskKey && onEdit(taskKey)}
+            aria-label={t('actions.edit.string')}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => taskKey && onDelete(taskKey)}
+            aria-label={t('actions.delete.string')}
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </li>
   )
 }

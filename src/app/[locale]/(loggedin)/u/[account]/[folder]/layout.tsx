@@ -14,7 +14,9 @@ import {
   useFastAccessRequired,
 } from '@/features/mails/components/sidebars/fast-access/context'
 import ListToolbar from '@/features/mails/components/list/list-toolbar'
+import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
 import React from 'react'
@@ -33,6 +35,7 @@ function MailLayoutInner({
     (state: RootState) => state.mailLayout.mode
   )
   const { isOpen, activeModule, closeModule } = useFastAccessRequired()
+  const toolbarMode = useListToolbarMode()
 
   const isSplitMode = mailLayoutMode === 'split' && !isMobile
   const isClassicLayout = layoutType === 'classic' || isSplitMode
@@ -55,7 +58,14 @@ function MailLayoutInner({
       >
         <SidebarInset className="flex min-w-0 flex-col overflow-x-hidden">
           <ListToolbar />
-          <div className="flex h-[calc(100vh-var(--header-height)-52px)] w-full overflow-hidden p-1">
+          <div
+            className={cn(
+              'flex w-full overflow-hidden p-1',
+              toolbarMode === 'hidden'
+                ? 'h-[calc(100vh-var(--header-height))]'
+                : 'h-[calc(100vh-var(--header-height)-52px)]'
+            )}
+          >
             {content}
           </div>
         </SidebarInset>

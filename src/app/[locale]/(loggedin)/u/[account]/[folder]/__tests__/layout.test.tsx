@@ -67,6 +67,9 @@ jest.mock('@/features/mails/components/list/list-toolbar', () => ({
   __esModule: true,
   default: () => <div data-testid="list-toolbar">Toolbar</div>,
 }))
+jest.mock('@/features/mails/hooks/use-list-toolbar-mode', () => ({
+  useListToolbarMode: jest.fn(() => 'list'),
+}))
 jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: (fn: (s: { mailLayout: { mode: string } }) => string) =>
     fn({ mailLayout: { mode: 'full' } }),
@@ -157,6 +160,28 @@ describe('Mail Folder Layout', () => {
     })
     render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
     expect(screen.getByTestId('modern-content')).toBeInTheDocument()
+  })
+
+  it('should use full content height when toolbar is hidden on mail detail', () => {
+    const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+    useListToolbarMode.mockReturnValue('hidden')
+
+    const { container } = render(
+      <Layout classic={mockClassic}>{mockChildren}</Layout>
+    )
+    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
+    expect(contentDiv).toHaveClass('h-[calc(100vh-var(--header-height))]')
+  })
+
+  it('should reserve toolbar height when list toolbar is visible', () => {
+    const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+    useListToolbarMode.mockReturnValue('list')
+
+    const { container } = render(
+      <Layout classic={mockClassic}>{mockChildren}</Layout>
+    )
+    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
+    expect(contentDiv).toHaveClass('h-[calc(100vh-var(--header-height)-52px)]')
   })
 
   it('should render children with flexbox column layout', () => {

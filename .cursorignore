@@ -14,10 +14,6 @@ pnpm-lock.yaml
 *.log
 npm-debug.log*
 
-# Docker
-Dockerfile*
-.dockerignore
-
 # Translations (keep only English as reference)
 src/messages/de/
 src/messages/es/

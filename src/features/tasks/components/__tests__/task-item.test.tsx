@@ -60,6 +60,32 @@ describe('TaskItem', () => {
   })
 
   describe('integration', () => {
+    it('shows selection checkbox in selection mode', async () => {
+      const user = userEvent.setup()
+      const onToggleSelection = jest.fn()
+      render(
+        <TaskItem
+          task={task}
+          calendars={calendars}
+          onToggleComplete={jest.fn()}
+          onEdit={jest.fn()}
+          onDelete={jest.fn()}
+          selectionMode
+          isSelected={false}
+          onToggleSelection={onToggleSelection}
+        />
+      )
+
+      expect(screen.getByTestId('task-select-checkbox')).toBeInTheDocument()
+      expect(screen.queryByTestId('task-checkbox')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'actions.edit.string' })
+      ).not.toBeInTheDocument()
+
+      await user.click(screen.getByTestId('task-item-t1'))
+      expect(onToggleSelection).toHaveBeenCalledWith('t1')
+    })
+
     it('calls onEdit and onDelete', async () => {
       const user = userEvent.setup()
       const onEdit = jest.fn()

@@ -106,15 +106,8 @@ jest.mock('@/features/mails/components/mail/mail-detail-navigation', () => ({
   default: () => <div data-testid="mail-detail-navigation" />,
 }))
 
-jest.mock('@/features/mails/hooks/use-mail-detail-navigation', () => ({
-  useMailDetailNavigation: jest.fn(() => ({
-    isOnMailDetailPath: false,
-    isActive: false,
-    canGoPrev: false,
-    canGoNext: false,
-    goPrev: jest.fn(),
-    goNext: jest.fn(),
-  })),
+jest.mock('@/features/mails/hooks/use-list-toolbar-mode', () => ({
+  useListToolbarMode: jest.fn(() => 'list'),
 }))
 
 const mockUseAppSelector = jest.fn((fn: (s: any) => any) =>
@@ -196,22 +189,10 @@ describe('ListToolbar', () => {
     })
   })
 
-  describe('mobile mail detail view', () => {
+  describe('mail detail view', () => {
     it('shows mail navigation instead of list controls on mobile', () => {
-      const { useIsMobile } = require('@/hooks/use-mobile')
-      const {
-        useMailDetailNavigation,
-      } = require('@/features/mails/hooks/use-mail-detail-navigation')
-
-      useIsMobile.mockReturnValue(true)
-      useMailDetailNavigation.mockReturnValue({
-        isOnMailDetailPath: true,
-        isActive: true,
-        canGoPrev: true,
-        canGoNext: true,
-        goPrev: jest.fn(),
-        goNext: jest.fn(),
-      })
+      const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+      useListToolbarMode.mockReturnValue('detail-navigation')
 
       render(<ListToolbar />)
 
@@ -219,6 +200,15 @@ describe('ListToolbar', () => {
       expect(screen.queryByTestId('list-pagination')).not.toBeInTheDocument()
       expect(screen.queryByTestId('list-filter-dropdown')).not.toBeInTheDocument()
       expect(screen.queryByTestId('checkbox')).not.toBeInTheDocument()
+    })
+
+    it('renders nothing on desktop full-screen mail detail', () => {
+      const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+      useListToolbarMode.mockReturnValue('hidden')
+
+      const { container } = render(<ListToolbar />)
+
+      expect(container).toBeEmptyDOMElement()
     })
   })
 })
