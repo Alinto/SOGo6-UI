@@ -200,6 +200,60 @@
                 }
             }
         },
+        "folders_set_type": {
+            "success": {
+                "title": {
+                    "string": "Folder type updated"
+                },
+                "message": {
+                    "string": "The folder type has been updated."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to update folder type"
+                },
+                "message": {
+                    "string": "An error occurred while updating the folder type. Please try again."
+                }
+            }
+        },
+        "folders_move": {
+            "success": {
+                "title": {
+                    "string": "Folder moved"
+                },
+                "message": {
+                    "string": "The folder has been moved."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to move folder"
+                },
+                "message": {
+                    "string": "An error occurred while moving the folder. Please try again."
+                }
+            }
+        },
+        "folders_export": {
+            "success": {
+                "title": {
+                    "string": "Export started"
+                },
+                "message": {
+                    "string": "The folder export has been started."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Failed to export folder"
+                },
+                "message": {
+                    "string": "An error occurred while exporting the folder. Please try again."
+                }
+            }
+        },
         "calendar_create": {
             "success": {
                 "title": {
@@ -832,6 +886,14 @@
                     },
                     "message": {
                         "string": "An error occurred while saving your mail notification settings."
+                    }
+                },
+                "warning": {
+                    "title": {
+                        "string": "Notification settings not applied"
+                    },
+                    "message": {
+                        "string": "Your server does not support mail notifications (enotify extension). Settings were not saved."
                     }
                 }
             }

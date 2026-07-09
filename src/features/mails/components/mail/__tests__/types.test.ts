@@ -45,11 +45,13 @@ describe('Mail Types', () => {
       REPLY: 'reply',
       REPLY_ALL: 'reply-all',
       FORWARD: 'forward',
+      EDIT_DRAFT: 'edit-draft',
+      USE_TEMPLATE: 'use-template',
     })
   })
 
-  it('should have exactly 16 action types', () => {
-    expect(Object.keys(ActionId)).toHaveLength(16)
+  it('should have exactly 18 action types', () => {
+    expect(Object.keys(ActionId)).toHaveLength(18)
   })
 
   describe('Type definitions', () => {

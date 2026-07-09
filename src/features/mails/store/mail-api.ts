@@ -44,9 +44,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'mail_send.error.message.string',
         })(undefined, { queryFulfilled })
       },
-      invalidatesTags: (_result, _error) => [
-        { type: FOLDER_MESSAGES_SLICE, folder: 'Drafts' },
-        { type: FOLDER_MESSAGES_SLICE, folder: 'Sent' },
+      invalidatesTags: () => [
+        FOLDER_MESSAGES_SLICE,
         MAILS_FOLDERS_SLICE,
       ],
     }),
@@ -84,10 +83,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             successMessage: 'save_draft.success.message.string',
           })(undefined, { queryFulfilled })
         },
-        invalidatesTags: (_result, _error) => [
-          { type: FOLDER_MESSAGES_SLICE, folder: 'Drafts' },
-          MAILS_FOLDERS_SLICE,
-        ],
+        invalidatesTags: () => [FOLDER_MESSAGES_SLICE, MAILS_FOLDERS_SLICE],
       }
     ),
 
@@ -105,10 +101,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'discard_draft.error.message.string',
         })(undefined, { queryFulfilled })
       },
-      invalidatesTags: (_result, _error) => [
-        { type: FOLDER_MESSAGES_SLICE, folder: 'Drafts' },
-        MAILS_FOLDERS_SLICE,
-      ],
+      invalidatesTags: () => [FOLDER_MESSAGES_SLICE, MAILS_FOLDERS_SLICE],
     }),
 
     // POST mail/:key/attachments or POST mail/attachments (no key yet)

@@ -45,8 +45,12 @@ jest.mock('@/components/ui/sidebar', () => ({
   ),
 }))
 
+jest.mock('@/components/ui/tooltip', () => ({
+  TooltipWrapper: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}))
+
 jest.mock('lucide-react/dynamic', () => ({
-  DynamicIcon: ({ name }: any) => <span data-testid={`icon-${name}`} />,
+  DynamicIcon: ({ name }: { name: string }) => <span data-testid={`icon-${name}`} />,
 }))
 
 import SidebarItem from '../sidebar-item'
@@ -120,6 +124,7 @@ describe('SidebarItem', () => {
       folderName: 'Work',
       accountId: '0',
       isDefault: false,
+      folderType: 'NORMAL' as const,
     }
 
     it('should show rename for user-created folders', () => {
@@ -144,6 +149,27 @@ describe('SidebarItem', () => {
       )
       expect(
         screen.queryByText('folders.actions.rename.string')
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Virtual folders', () => {
+    it('should only show delete action for non-selectable folders', () => {
+      mockProfile()
+      render(
+        <SidebarItem
+          {...defaultProps}
+          name="Virtual"
+          isVirtual
+          selectable={false}
+          folderPath="Virtual"
+          folderName="Virtual"
+          accountId="0"
+        />
+      )
+      expect(screen.getByText('folders.actions.delete.string')).toBeInTheDocument()
+      expect(
+        screen.queryByText('folders.actions.new_subfolder.string')
       ).not.toBeInTheDocument()
     })
   })

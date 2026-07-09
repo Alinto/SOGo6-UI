@@ -58,5 +58,53 @@
     "readOnly": false,
     "selectable": true,
     "default": true
+  },
+  {
+    "name": "Templates",
+    "path": "Templates",
+    "type": "TEMPLATE",
+    "unseen_count": 0,
+    "messages": 1,
+    "flags": ["\\HasNoChildren"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": true,
+    "default": true
+  },
+  {
+    "name": "Mes envois",
+    "path": "Mes envois",
+    "type": "SENT",
+    "unseen_count": 0,
+    "messages": 2,
+    "flags": ["\\HasNoChildren"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": true,
+    "default": false
+  },
+  {
+    "name": "Virtual",
+    "path": "Virtual",
+    "type": "NORMAL",
+    "unseen_count": 0,
+    "messages": 0,
+    "flags": ["\\HasChildren", "\\Noselect"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": false,
+    "default": false
+  },
+  {
+    "name": "Work",
+    "path": "Virtual/Work",
+    "type": "NORMAL",
+    "unseen_count": 1,
+    "messages": 4,
+    "flags": ["\\HasNoChildren"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": true,
+    "default": false
   }
 ]

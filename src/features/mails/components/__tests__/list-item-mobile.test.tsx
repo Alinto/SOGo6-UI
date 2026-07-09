@@ -59,6 +59,16 @@ jest.mock('../list-item-utils', () => ({
   formatDate: jest.fn((date) => 'Dec 18'),
 }))
 
+jest.mock('@/features/mails/hooks/use-current-folder', () => ({
+  useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
+}))
+
+jest.mock('@/features/mails/hooks/use-open-draft-on-click', () => ({
+  useOpenDraftOnClick: jest.fn(() => ({
+    openDraftIfNeeded: jest.fn(async () => false),
+  })),
+}))
+
 jest.mock('../swipeable-mail-item', () => {
   return jest.fn(({ children, disabled }) => (
     <div data-testid="swipeable-mail-item" data-disabled={disabled}>

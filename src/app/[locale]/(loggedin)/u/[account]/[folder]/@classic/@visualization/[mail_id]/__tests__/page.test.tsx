@@ -10,6 +10,17 @@ jest.mock('@/features/mails/store/mails-api', () => ({
   })),
 }))
 
+jest.mock('@/features/mails/hooks/use-current-folder', () => ({
+  useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
+}))
+
+jest.mock('@/features/mails/hooks/use-mail-detail-folder-actions', () => ({
+  useMailDetailFolderActions: jest.fn(() => ({
+    folderSpecificActions: [],
+    handleFolderSpecificAction: jest.fn(),
+  })),
+}))
+
 jest.mock('@/features/mails/hooks/use-print-mail', () => ({
   usePrintMail: jest.fn(() => ({
     handlePrint: jest.fn(),

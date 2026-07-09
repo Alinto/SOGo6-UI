@@ -24,6 +24,7 @@ jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
 
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
+  useGetFoldersQuery: jest.fn(() => ({ data: [], isLoading: false })),
 }))
 
 jest.mock('@/features/mails/components/list', () => ({

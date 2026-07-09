@@ -18,6 +18,8 @@ export const ActionId = {
   REPLY: 'reply',
   REPLY_ALL: 'reply-all',
   FORWARD: 'forward',
+  EDIT_DRAFT: 'edit-draft',
+  USE_TEMPLATE: 'use-template',
 } as const
 
 export type ActionIdValue = (typeof ActionId)[keyof typeof ActionId]

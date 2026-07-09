@@ -110,6 +110,14 @@ jest.mock('../../utils', () => ({
     if (path === 'Archive') return 'archive'
     return 'folder'
   }),
+  iconSelectorByType: jest.fn((type) => {
+    if (type === 'INBOX') return 'inbox'
+    if (type === 'SENT') return 'send'
+    if (type === 'DRAFT' || type === 'DRAFTS') return 'file-text'
+    if (type === 'TRASH') return 'trash-2'
+    if (type === 'JUNK') return 'alert-triangle'
+    return 'folder'
+  }),
   nameSelector: jest.fn((name) => {
     if (name.toLowerCase() === 'inbox') return 'folders.inbox.string'
     if (name.toLowerCase() === 'sent') return 'folders.sent.string'
@@ -117,6 +125,14 @@ jest.mock('../../utils', () => ({
     if (name.toLowerCase() === 'trash') return 'folders.trash.string'
     if (name.toLowerCase() === 'junk') return 'folders.junk.string'
     if (name.toLowerCase() === 'archive') return 'folders.archive.string'
+    return undefined
+  }),
+  nameSelectorByType: jest.fn((type) => {
+    if (type === 'INBOX') return 'folders.inbox.string'
+    if (type === 'SENT') return 'folders.sent.string'
+    if (type === 'DRAFT' || type === 'DRAFTS') return 'folders.drafts.string'
+    if (type === 'TRASH') return 'folders.trash.string'
+    if (type === 'JUNK') return 'folders.junk.string'
     return undefined
   }),
 }))
@@ -130,6 +146,7 @@ describe('MailSidebar Component', () => {
     {
       name: 'INBOX',
       path: 'INBOX',
+      type: 'INBOX',
       unseen_count: 5,
       messages: 50,
       flags: [],
@@ -141,6 +158,7 @@ describe('MailSidebar Component', () => {
     {
       name: 'Sent',
       path: 'Sent',
+      type: 'SENT',
       unseen_count: 0,
       messages: 30,
       flags: [],
@@ -152,6 +170,7 @@ describe('MailSidebar Component', () => {
     {
       name: 'Work',
       path: 'Work',
+      type: 'NORMAL',
       unseen_count: 2,
       messages: 15,
       flags: [],
@@ -163,6 +182,7 @@ describe('MailSidebar Component', () => {
         {
           name: 'Projects',
           path: 'Work/Projects',
+          type: 'NORMAL',
           unseen_count: 0,
           messages: 5,
           flags: [],
@@ -520,18 +540,21 @@ describe('MailSidebar Component', () => {
 
   describe('Folder Icons and Names', () => {
     it('should show INBOX with inbox icon', () => {
-      const { iconSelector } = require('../../utils')
+      const { iconSelectorByType } = require('../../utils')
       render(<MailSidebar />)
 
-      expect(iconSelector).toHaveBeenCalledWith('INBOX')
+      expect(iconSelectorByType).toHaveBeenCalledWith('INBOX')
     })
 
     it('should show translated folder names for default folders', () => {
-      const { nameSelector } = require('../../utils')
       render(<MailSidebar />)
 
-      expect(nameSelector).toHaveBeenCalledWith('INBOX')
-      expect(nameSelector).toHaveBeenCalledWith('Sent')
+      expect(screen.getByTestId('sidebar-item-INBOX')).toHaveTextContent(
+        'folders.inbox.string'
+      )
+      expect(screen.getByTestId('sidebar-item-Sent')).toHaveTextContent(
+        'folders.sent.string'
+      )
     })
 
     it('should show custom folder names for non-default folders', () => {
@@ -562,11 +585,12 @@ describe('MailSidebar Component', () => {
     })
 
     it('should show folder icon for non-default folders', () => {
-      const { iconSelector } = require('../../utils')
+      const { iconSelectorByType } = require('../../utils')
       const customFolders: ImapFolder[] = [
         {
           name: 'CustomFolder',
           path: 'CustomFolder',
+          type: 'NORMAL',
           unseen_count: 0,
           messages: 5,
           flags: [],
@@ -584,7 +608,7 @@ describe('MailSidebar Component', () => {
 
       render(<MailSidebar />)
 
-      expect(iconSelector).toHaveBeenCalledWith('CustomFolder')
+      expect(iconSelectorByType).toHaveBeenCalledWith('NORMAL')
     })
   })
 

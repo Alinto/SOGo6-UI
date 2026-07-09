@@ -1,11 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
+import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { useRouter } from '@/lib/i18n/navigation'
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
-import { createClientId } from '@/lib/utils/create-client-id'
 import {
   Calendar,
   ChevronsUp,
@@ -19,15 +20,9 @@ import { useParams } from 'next/navigation'
 import React, { memo, useCallback, useRef } from 'react'
 import { ImapMessagesList } from '../mails-types'
 import {
-  createDraft,
-  selectAllDrafts,
-  selectOpenDraftIds,
-  setActiveDraft,
-  useLazyGetEditMessageQuery,
   useMailActionMutation,
   useMoveToTrashMutation,
 } from '../store'
-import { apiDataToMailComposeDraft } from '../utils/mail-compose-from-api'
 import { formatDate } from './list-item-utils'
 import SwipeableMailItem from './swipeable-mail-item'
 
@@ -50,20 +45,14 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   )
   const [onDelete] = useMoveToTrashMutation()
   const [mailAction] = useMailActionMutation()
-  const dispatch = useAppDispatch()
-  const openDraftIds = useAppSelector(selectOpenDraftIds)
-  const allDrafts = useAppSelector(selectAllDrafts)
-  const [triggerGetEditMessage] = useLazyGetEditMessageQuery()
-  const { id, from, to, flagged, hasAttachment } = data
+  const { folderType } = useCurrentFolder(folderString, accountString)
+  const { openDraftIfNeeded } = useOpenDraftOnClick()
+  const { id, from, flagged, hasAttachment } = data
   const showHighPriority = data.priority <= 2
   const showSnippet = data.snippet.trim().length > 0
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
-  const isDraftsFolder = folderString.toLocaleLowerCase() === 'drafts'
-  const recipient = to[0]
-  const displayName = isDraftsFolder
-    ? recipient?.name || recipient?.email || ''
-    : from.name || from.email
+  const displayName = getListDisplayContact(data, folderType)
   const containerRef = useRef<HTMLDivElement>(null)
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -153,34 +142,15 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               data.deleted && 'opacity-60'
             )}
             onClick={async () => {
-              // Don't navigate if we were swiping
               if (isSwipingRef.current) return
 
-              if (isDraftsFolder) {
-                const existingDraftId = openDraftIds.find(
-                  (draftId) => allDrafts[draftId]?.mailKey === id
-                )
-                if (existingDraftId) {
-                  dispatch(setActiveDraft(existingDraftId))
-                  return
-                }
-
-                const result = await triggerGetEditMessage({
-                  folder: folderString,
-                  mailId: id,
-                  accountId: accountString,
-                })
-                const draftId = createClientId()
-                dispatch(
-                  createDraft({
-                    draftId,
-                    initialData: apiDataToMailComposeDraft(draftId, {
-                      ...result.data,
-                    }),
-                  })
-                )
-                return
-              }
+              const openedDraft = await openDraftIfNeeded({
+                folderType,
+                folderPath: folderString,
+                accountId: accountString,
+                mailId: id,
+              })
+              if (openedDraft) return
 
               push(
                 `/u/${accountString}/${encodeURIComponent(folderString)}/${id}`

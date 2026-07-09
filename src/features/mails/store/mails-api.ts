@@ -420,9 +420,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/purge`,
         method: 'POST',
         body: {
-          ...(date && { date }),
-          ...(applyToSubfolders !== undefined && { applyToSubfolders }),
-          ...(permanentlyDelete !== undefined && { permanentlyDelete }),
+          do_subfolders: applyToSubfolders ?? true,
+          permanently_delete: permanentlyDelete ?? false,
+          date: date ?? new Date().toISOString().slice(0, 10),
         },
       }),
       invalidatesTags: (_result, _error, { folderPath }) => [
@@ -570,6 +570,71 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    setFolderType: builder.mutation<
+      ImapFolder,
+      { accountId: string; folderPath: string; type: string }
+    >({
+      query: ({ accountId, folderPath, type }) => ({
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
+        method: 'PATCH',
+        body: { type },
+      }),
+      transformResponse: (response: BackendResponse<RawImapFolder>) =>
+        normalizeImapFolder(response.data),
+      invalidatesTags: [MAILS_FOLDERS_SLICE],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_set_type.success.title.string',
+          successMessage: 'folders_set_type.success.message.string',
+          errorTitle: 'folders_set_type.error.title.string',
+          errorMessage: 'folders_set_type.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
+    moveFolder: builder.mutation<
+      ImapFolder,
+      { accountId: string; folderPath: string; newPath: string }
+    >({
+      query: ({ accountId, folderPath, newPath }) => ({
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
+        method: 'PATCH',
+        body: { name: newPath },
+      }),
+      transformResponse: (response: BackendResponse<RawImapFolder>) =>
+        normalizeImapFolder(response.data),
+      invalidatesTags: [MAILS_FOLDERS_SLICE],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_move.success.title.string',
+          successMessage: 'folders_move.success.message.string',
+          errorTitle: 'folders_move.error.title.string',
+          errorMessage: 'folders_move.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
+    exportFolder: builder.mutation<
+      { job_id?: string },
+      { accountId: string; folderPath: string }
+    >({
+      query: ({ accountId, folderPath }) => ({
+        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/export`,
+        method: 'POST',
+      }),
+      transformResponse: (
+        response: BackendResponse<{ job_id?: string }>
+      ) => response.data ?? {},
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_export.success.title.string',
+          successMessage: 'folders_export.success.message.string',
+          errorTitle: 'folders_export.error.title.string',
+          errorMessage: 'folders_export.error.message.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
     getEditMessage: builder.query<
       ImapMessages,
       {
@@ -663,6 +728,9 @@ export const {
   useCreateFolderMutation,
   useDeleteFolderMutation,
   useRenameFolderMutation,
+  useSetFolderTypeMutation,
+  useMoveFolderMutation,
+  useExportFolderMutation,
 } = injectedEndpoints
 
 export const mailsApiEndpoints = injectedEndpoints

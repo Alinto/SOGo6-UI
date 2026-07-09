@@ -11,6 +11,8 @@ import type { Action } from '@/features/mails/components/mail/types'
 import { ActionId } from '@/features/mails/components/mail/types'
 import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
+import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
+import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
@@ -42,12 +44,22 @@ const VisualizationPage: React.FC = () => {
   })
 
   const { handlePrint, isPrintDisabled } = usePrintMail(data)
-  const { rightActions, handleMailAction } = useMailReplyActions({
+  const { folderType } = useCurrentFolder(folder, account)
+  const { rightActions, handleMailAction, hideReplyActions } = useMailReplyActions({
     mail: data,
     mailId: mail_id,
     folder,
     accountId: account,
+    folderType,
   })
+  const { folderSpecificActions, handleFolderSpecificAction } =
+    useMailDetailFolderActions({
+      folderType,
+      folder,
+      accountId: account,
+      mailId: mail_id,
+      mail: data,
+    })
 
   if (!mail_id) return null
   if (isLoading)
@@ -106,7 +118,9 @@ const VisualizationPage: React.FC = () => {
           <MailDetailActionBar
             accountId={Array.isArray(account) ? account[0] : account}
             folder={folder}
+            folderType={folderType}
             mailId={mail_id}
+            mail={data}
             seen={data.seen}
             flags={data.flags}
             onPrint={handlePrint}
@@ -115,8 +129,11 @@ const VisualizationPage: React.FC = () => {
           <div className="ml-auto">
             {isMobile ? (
               <MailActionsBar
-                actions={rightActions}
-                onAction={(idx, action) => handleMailAction(idx, action)}
+                actions={[...folderSpecificActions, ...(hideReplyActions ? [] : rightActions)]}
+                onAction={(idx, action) => {
+                  if (handleFolderSpecificAction(action)) return
+                  handleMailAction(idx, action)
+                }}
               />
             ) : (
               <MailActionsBar

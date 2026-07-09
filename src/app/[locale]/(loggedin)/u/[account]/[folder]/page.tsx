@@ -3,6 +3,7 @@
 import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
+import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
@@ -23,7 +24,7 @@ const Page = () => {
   const pathname = usePathname()
   const { replace } = useRouter()
   const activeFilter = searchParams.get('filter') ?? 'all'
-  const { data, isLoading, isFetching, error, refetch, currentPage } =
+  const { data, isLoading, isFetching, error, refetch, currentPage, isVirtualFolder } =
     useFolderMessages({
       folder: folderPath,
       accountId: accountString,
@@ -66,6 +67,10 @@ const Page = () => {
     () => getClientFilteredMails(data?.mails ?? [], activeFilter),
     [data, activeFilter]
   )
+
+  if (isVirtualFolder) {
+    return <VirtualFolderEmptyState />
+  }
 
   if (isLoading) return <ListSkeleton />
 

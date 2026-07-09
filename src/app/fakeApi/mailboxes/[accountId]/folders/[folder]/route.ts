@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import {
   removeMailboxDemoFolder,
-  renameMailboxDemoFolder,
+  updateMailboxDemoFolder,
 } from '@/app/fakeApi/utils/mailbox-demo-folders'
 
 const ok = <T>(data: T) => ({
@@ -31,22 +31,26 @@ export async function PATCH(
   ctx: { params: Promise<{ accountId: string; folder: string }> }
 ) {
   const { folder } = await ctx.params
-  const body = (await req.json()) as { name?: string }
+  const body = (await req.json()) as { name?: string; type?: string }
   const newName = body.name?.trim()
+  const folderType = body.type?.trim()
 
-  if (!newName) {
+  if (!newName && !folderType) {
     return NextResponse.json(
-      { error_code: 'S000002', error_msg: 'Folder name is required' },
+      { error_code: 'S000002', error_msg: 'Folder update payload is required' },
       { status: 400 }
     )
   }
 
-  const updated = renameMailboxDemoFolder(folder, newName)
+  const updated = updateMailboxDemoFolder(folder, {
+    ...(newName ? { name: newName } : {}),
+    ...(folderType ? { type: folderType } : {}),
+  })
   if (!updated) {
     return NextResponse.json(
       {
         error_code: 'S000306',
-        error_msg: 'Folder cannot be renamed',
+        error_msg: 'Folder cannot be updated',
       },
       { status: 400 }
     )

@@ -29,19 +29,15 @@ export function findFolderByPath(
 }
 
 export function isJunkFolderPath(
-  folderPath: string,
+  _folderPath: string,
   folder?: ImapFolder
 ): boolean {
-  if (folder?.type === 'JUNK') return true
-  const lower = folderPath.toLowerCase()
-  return lower === 'junk' || lower.endsWith('/junk')
+  return folder?.type === 'JUNK'
 }
 
 export function isTrashFolderPath(
-  folderPath: string,
+  _folderPath: string,
   folder?: ImapFolder
 ): boolean {
-  if (folder?.type === 'TRASH') return true
-  const lower = folderPath.toLowerCase()
-  return lower === 'trash' || lower.endsWith('/trash')
+  return folder?.type === 'TRASH'
 }

@@ -60,39 +60,57 @@ function folderPathExists(path: string): boolean {
   return getEffectiveFlatFolders().some((folder) => folder.path === path)
 }
 
+/** Renomme ou déplace un dossier (seed ou créé en session). */
+export function updateMailboxDemoFolder(
+  oldPath: string,
+  updates: { name?: string; type?: string }
+): ImapFolder | null {
+  const folder =
+    findFlatFolderByPath(oldPath) ??
+    createdFlatFolders.find((item) => item.path === oldPath)
+
+  if (!folder) return null
+
+  if (updates.type) {
+    folder.type = updates.type as ImapFolder['type']
+  }
+
+  if (updates.name) {
+    const newPath = updates.name.includes(folder.delimiter)
+      ? updates.name
+      : (() => {
+          const parts = oldPath.split(folder.delimiter)
+          parts[parts.length - 1] = updates.name!
+          return parts.join(folder.delimiter)
+        })()
+
+    if (newPath !== oldPath) {
+      if (folderPathExists(newPath) && newPath !== oldPath) {
+        return null
+      }
+
+      const childPrefix = `${oldPath}${folder.delimiter}`
+      for (const child of [...baseFlatFolders, ...createdFlatFolders]) {
+        if (child.path.startsWith(childPrefix)) {
+          child.path = newPath + child.path.slice(oldPath.length)
+          const childParts = child.path.split(child.delimiter)
+          child.name = childParts[childParts.length - 1] ?? child.name
+        }
+      }
+
+      folder.path = newPath
+      const pathParts = newPath.split(folder.delimiter)
+      folder.name = pathParts[pathParts.length - 1] ?? folder.name
+    }
+  }
+
+  return folder
+}
+
 /** Renomme uniquement un dossier créé en session (les dossiers du seed sont protégés). */
 export function renameMailboxDemoFolder(
   oldPath: string,
   newName: string
 ): ImapFolder | null {
-  const idx = createdFlatFolders.findIndex((folder) => folder.path === oldPath)
-  if (idx === -1) return null
-
-  const folder = createdFlatFolders[idx]
-  const delimiter = folder.delimiter
-  const parts = oldPath.split(delimiter)
-  parts[parts.length - 1] = newName
-  const newPath = parts.join(delimiter)
-
-  if (newPath === oldPath) {
-    return folder
-  }
-
-  if (folderPathExists(newPath)) {
-    return null
-  }
-
-  folder.name = newName
-  folder.path = newPath
-
-  const childPrefix = `${oldPath}${delimiter}`
-  for (const child of createdFlatFolders) {
-    if (child.path.startsWith(childPrefix)) {
-      child.path = newPath + child.path.slice(oldPath.length)
-      const childParts = child.path.split(child.delimiter)
-      child.name = childParts[childParts.length - 1] ?? child.name
-    }
-  }
-
-  return folder
+  return updateMailboxDemoFolder(oldPath, { name: newName })
 }

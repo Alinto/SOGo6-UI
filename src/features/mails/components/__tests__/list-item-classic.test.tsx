@@ -22,6 +22,16 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('@/features/mails/hooks/use-current-folder', () => ({
+  useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
+}))
+
+jest.mock('@/features/mails/hooks/use-open-draft-on-click', () => ({
+  useOpenDraftOnClick: jest.fn(() => ({
+    openDraftIfNeeded: jest.fn(async () => false),
+  })),
+}))
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>

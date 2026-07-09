@@ -1,4 +1,5 @@
-import { nameSelector } from '../components/utils'
+import { nameSelector, nameSelectorByType } from '../components/utils'
+import type { ImapFolderType } from '../mails-types'
 
 function decodeFolderSegment(segment: string): string {
   try {
@@ -21,8 +22,12 @@ export function folderPathFromParams(
 
 export function getFolderDisplayName(
   folderPath: string,
-  translateCommons: (key: string) => string
+  translateCommons: (key: string) => string,
+  folderType?: ImapFolderType
 ): string {
+  const typeKey = nameSelectorByType(folderType)
+  if (typeKey) return translateCommons(typeKey)
+
   const translationKey = nameSelector(folderPath)
   if (translationKey) return translateCommons(translationKey)
 

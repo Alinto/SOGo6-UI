@@ -8,6 +8,7 @@ import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useMemo } from 'react'
+import { useCurrentFolder } from './use-current-folder'
 
 const EXCLUDED_PARAMS = ['filter']
 
@@ -33,6 +34,8 @@ export function useFolderMessages({ folder, accountId }: UseFolderMessagesOption
   const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
   const skipFolderFetch = useAppSelector(selectSkipFolderFetch)
+  const { isSelectable, isVirtual, isLoading: isFolderLoading } =
+    useCurrentFolder(folder, accountId)
 
   const params = useMemo(() => {
     const urlParams = Array.from(searchParams.keys())
@@ -67,7 +70,7 @@ export function useFolderMessages({ folder, accountId }: UseFolderMessagesOption
 
   const queryResult = useGetFolderMessagesQuery(
     { folder, accountId: accountId ?? '0', params },
-    { skip: skipFolderFetch }
+    { skip: skipFolderFetch || !isSelectable || isFolderLoading }
   )
 
   const { data } = queryResult
@@ -84,5 +87,5 @@ export function useFolderMessages({ folder, accountId }: UseFolderMessagesOption
     )
   }, [data, accountId, folder, dispatch])
 
-  return { ...queryResult, currentPage, params }
+  return { ...queryResult, currentPage, params, isVirtualFolder: isVirtual }
 }

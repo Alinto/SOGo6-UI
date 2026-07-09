@@ -15,7 +15,11 @@ import { useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
 import { folderPathFromParams } from '../../utils/folder-path-from-params'
-import { iconSelector, nameSelector } from '../utils'
+import {
+  getFolderTranslationKey,
+  isVirtualFolder,
+} from '../../utils/folder-type-helpers'
+import { iconSelectorByType, nameSelectorByType } from '../utils'
 import { AccountSwitcher } from './account-switcher'
 import ComposeOpener from './compose-opener'
 import SidebarItem from './sidebar-item'
@@ -35,6 +39,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   )
 
   const isActive = urlFolder === folder.path
+  const isVirtual = isVirtualFolder(folder)
 
   const hasSubfolders =
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0
@@ -46,25 +51,47 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const [open, setOpen] = useState(false)
   const effectiveOpen = descendantActive || open
 
-  const name = nameSelector(folder.name)
-  const displayName = name ? t(name) : folder.name
+  const typeTranslationKey =
+    getFolderTranslationKey(folder.type) ?? nameSelectorByType(folder.type)
+  const displayName = typeTranslationKey ? t(typeTranslationKey) : folder.name
+
+  const navigateToFolder = () => {
+    if (isVirtual) return
+    push(`/u/${account}/${encodeURIComponent(folder.path)}`)
+  }
+
+  const toggleExpand = () => {
+    setOpen((prev) => !prev)
+  }
+
+  const handleClick = () => {
+    if (isVirtual) {
+      if (hasSubfolders) toggleExpand()
+      return
+    }
+    if (hasSubfolders) {
+      toggleExpand()
+      navigateToFolder()
+      return
+    }
+    navigateToFolder()
+  }
 
   if (!hasSubfolders) {
     return (
       <SidebarMenuItem>
         <SidebarItem
-          icon={iconSelector(folder.path)}
+          icon={iconSelectorByType(folder.type)}
           isDefault={folder.default}
           name={displayName}
           isActive={isActive}
-          handleClick={() => {
-            push(`/u/${account}/${encodeURIComponent(folder.path)}`)
-          }}
+          handleClick={handleClick}
           folderPath={folder.path}
           folderName={folder.name}
           accountId={String(account ?? '0')}
-          hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
+          hasSubfolders={false}
           selectable={folder.selectable}
+          isVirtual={isVirtual}
           unseenCount={folder.unseen_count}
           folderType={folder.type}
           folderDelimiter={folder.delimiter}
@@ -81,20 +108,22 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
     >
       <SidebarMenuItem>
         <SidebarItem
-          icon={iconSelector(folder.path)}
+          icon={iconSelectorByType(folder.type)}
           isDefault={folder.default}
           isOpen={effectiveOpen}
           name={displayName}
           isActive={isActive}
-          handleClick={() => {
-            setOpen((prev) => !prev)
-            push(`/u/${account}/${encodeURIComponent(folder.path)}`)
+          handleClick={handleClick}
+          onExpandClick={(e) => {
+            e.stopPropagation()
+            toggleExpand()
           }}
           folderPath={folder.path}
           folderName={folder.name}
           accountId={String(account ?? '0')}
-          hasSubfolders={!!folder.subfolders?.length || !!folder.children?.length}
+          hasSubfolders
           selectable={folder.selectable}
+          isVirtual={isVirtual}
           unseenCount={folder.unseen_count}
           folderType={folder.type}
           folderDelimiter={folder.delimiter}
@@ -115,7 +144,9 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
 
 export function MailSidebar() {
   const { account } = useParams()
-  const { data, isFetching } = useGetFoldersQuery({ accountId: String(account ?? '0') })
+  const { data, isFetching } = useGetFoldersQuery({
+    accountId: String(account ?? '0'),
+  })
   if (isFetching) return <SidebarSkeleton />
 
   return (
@@ -125,7 +156,6 @@ export function MailSidebar() {
           <AccountSwitcher />
         </SidebarMenu>
       </SidebarGroup>
-      {/* Sticky header */}
       <SidebarGroup className="sticky top-0 z-10 ml-0 py-0 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           <SidebarMenuItem>
@@ -133,7 +163,6 @@ export function MailSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
-      {/* Scrollable folders */}
       <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           {data?.map((folder) => (

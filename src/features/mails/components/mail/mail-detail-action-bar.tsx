@@ -1,6 +1,9 @@
 'use client'
 
 import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
+import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
+import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import type { ImapFolderType } from '@/features/mails/mails-types'
 import { useDownloadMailMutation, useLazyGetMailRawQuery } from '@/features/mails/store/mails-api'
 import type { MailNavigationContext } from '@/features/mails/utils/mail-detail-navigation'
 import { useRouter } from '@/lib/i18n/navigation'
@@ -19,7 +22,9 @@ import { ActionId, type Action } from './types'
 export type MailDetailActionBarProps = {
   accountId: string
   folder: string
+  folderType?: ImapFolderType
   mailId: string
+  mail?: import('@/features/mails/mails-types').ImapMessages
   seen: boolean
   flags?: string[]
   navigation?: MailNavigationContext
@@ -32,7 +37,9 @@ export type MailDetailActionBarProps = {
 export default function MailDetailActionBar({
   accountId,
   folder,
+  folderType: folderTypeProp,
   mailId,
+  mail,
   seen,
   flags = [],
   navigation,
@@ -43,6 +50,18 @@ export default function MailDetailActionBar({
 }: MailDetailActionBarProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const { push } = useRouter()
+  const { folderType: resolvedFolderType } = useCurrentFolder(folder, accountId)
+  const folderType = folderTypeProp ?? resolvedFolderType
+  const {
+    folderSpecificActions,
+    handleFolderSpecificAction,
+  } = useMailDetailFolderActions({
+    folderType,
+    folder,
+    accountId,
+    mailId,
+    mail,
+  })
   const [confirmVariant, setConfirmVariant] =
     useState<MailActionConfirmVariant | null>(null)
   const [labelOpen, setLabelOpen] = useState(false)
@@ -136,6 +155,7 @@ export default function MailDetailActionBar({
   const handleMainAction = useCallback(
     (_idx: number, action: Action) => {
       if (action.disabled || isLoading) return
+      if (handleFolderSpecificAction(action)) return
       switch (action.id) {
         case ActionId.DELETE:
           openConfirm('delete')
@@ -156,7 +176,7 @@ export default function MailDetailActionBar({
           break
       }
     },
-    [isLoading, openConfirm, markUnread, enableLabel]
+    [isLoading, openConfirm, markUnread, enableLabel, handleFolderSpecificAction]
   )
 
   const spamOrHamAction: Action = isJunk
@@ -174,6 +194,7 @@ export default function MailDetailActionBar({
       }
 
   const desktopActions: Action[] = [
+    ...folderSpecificActions,
     {
       id: ActionId.DELETE,
       icon: <Trash2 size={18} />,

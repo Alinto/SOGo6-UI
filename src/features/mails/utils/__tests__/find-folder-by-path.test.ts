@@ -63,13 +63,22 @@ describe('isJunkFolderPath', () => {
     expect(isJunkFolderPath('Junk', junk)).toBe(true)
   })
 
-  it('falls back to path string', () => {
-    expect(isJunkFolderPath('junk')).toBe(true)
+  it('returns false without junk type', () => {
+    expect(isJunkFolderPath('INBOX', findFolderByPath(tree, 'INBOX'))).toBe(
+      false
+    )
   })
 })
 
 describe('isTrashFolderPath', () => {
-  it('detects trash via path string', () => {
-    expect(isTrashFolderPath('Trash')).toBe(true)
+  it('detects trash via folder type only', () => {
+    const trashFolder: ImapFolder = {
+      ...tree[1],
+      name: 'Trash',
+      path: 'Trash',
+      type: 'TRASH',
+    }
+    expect(isTrashFolderPath('Trash', trashFolder)).toBe(true)
+    expect(isTrashFolderPath('Trash')).toBe(false)
   })
 })

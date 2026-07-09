@@ -24,8 +24,14 @@ jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(),
 }))
 
+jest.mock('@/lib/i18n/navigation', () => ({
+  usePathname: jest.fn(() => '/u/test@example.com/INBOX'),
+  useRouter: jest.fn(() => ({ replace: jest.fn(), push: jest.fn() })),
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
+  useGetFoldersQuery: jest.fn(() => ({ data: [], isLoading: false })),
 }))
 
 jest.mock('@/features/mails/components/skeletons/list-skeleton', () => {

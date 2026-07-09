@@ -14,7 +14,7 @@ import { useMemo, useState } from 'react'
 import { AutoSizer, List } from 'react-virtualized'
 import { ImapFolder } from '../mails-types'
 import { useGetFoldersQuery } from '../store/mails-api'
-import { iconSelector } from './utils'
+import { iconSelectorByType } from './utils'
 
 interface FlattenedFolder extends ImapFolder {
   level: number
@@ -105,7 +105,7 @@ const SearchFolders = () => {
                           style={{ paddingLeft: f.level * 20 }}
                         >
                           <DynamicIcon
-                            name={iconSelector(f.path || f.name)}
+                            name={iconSelectorByType(f.type)}
                             className="mr-2 h-4 w-4"
                           />
                           {f.name}

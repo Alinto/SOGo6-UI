@@ -38,6 +38,23 @@ jest.mock('@/features/mails/hooks/use-mail-item-actions', () => ({
 jest.mock('@/features/mails/store/mails-api', () => ({
   useDownloadMailMutation: () => [jest.fn()],
   useLazyGetMailRawQuery: () => [jest.fn()],
+  useGetFoldersQuery: () => ({ data: [], isLoading: false }),
+  useLazyGetEditMessageQuery: () => [jest.fn()],
+}))
+
+jest.mock('@/features/mails/hooks/use-current-folder', () => ({
+  useCurrentFolder: jest.fn(() => ({
+    folderType: 'INBOX',
+    isSelectable: true,
+    isVirtual: false,
+  })),
+}))
+
+jest.mock('@/features/mails/hooks/use-mail-detail-folder-actions', () => ({
+  useMailDetailFolderActions: jest.fn(() => ({
+    folderSpecificActions: [],
+    handleFolderSpecificAction: jest.fn(() => false),
+  })),
 }))
 
 jest.mock('../mail-label-picker-dialog', () => ({

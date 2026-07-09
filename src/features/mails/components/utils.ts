@@ -1,6 +1,12 @@
 import { IconName } from 'lucide-react/dynamic'
+import type { ImapFolderType } from '../mails-types'
+import {
+  getFolderIcon,
+  getFolderTranslationKey,
+} from '../utils/folder-type-helpers'
 import { FOLDERS_NAME } from './constants'
 
+/** @deprecated Prefer getFolderIcon(folder.type) */
 const iconSelector = (path: string, defaultIcon?: IconName): IconName => {
   if (path === FOLDERS_NAME.INBOX) return 'inbox'
   if (path === FOLDERS_NAME.SENT) return 'send'
@@ -10,6 +16,13 @@ const iconSelector = (path: string, defaultIcon?: IconName): IconName => {
   if (defaultIcon) return defaultIcon
   return 'folder'
 }
+
+const iconSelectorByType = (
+  type?: ImapFolderType,
+  defaultIcon?: IconName
+): IconName => getFolderIcon(type, defaultIcon)
+
+/** @deprecated Prefer getFolderTranslationKey(folder.type) for system folders */
 const nameSelector = (name: string): string | undefined => {
   if (name.toLocaleLowerCase() === FOLDERS_NAME.INBOX.toLocaleLowerCase())
     return 'folders.inbox.string'
@@ -24,6 +37,9 @@ const nameSelector = (name: string): string | undefined => {
   return undefined
 }
 
+const nameSelectorByType = (type?: ImapFolderType): string | undefined =>
+  getFolderTranslationKey(type)
+
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B'
   if (bytes < 1024) return `${bytes} B`
@@ -31,4 +47,10 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
-export { formatFileSize, iconSelector, nameSelector }
+export {
+  formatFileSize,
+  iconSelector,
+  iconSelectorByType,
+  nameSelector,
+  nameSelectorByType,
+}

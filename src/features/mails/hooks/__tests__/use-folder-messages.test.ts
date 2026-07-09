@@ -25,6 +25,16 @@ jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: (...args: any[]) => mockGetFolderMessagesQuery(...args),
 }))
 
+jest.mock('../use-current-folder', () => ({
+  useCurrentFolder: jest.fn(() => ({
+    isSelectable: true,
+    isVirtual: false,
+    isLoading: false,
+  })),
+}))
+
+import { useCurrentFolder } from '../use-current-folder'
+
 import { useFolderMessages } from '../use-folder-messages'
 
 const mockData = {
@@ -201,6 +211,19 @@ describe('useFolderMessages', () => {
       renderHook(() => useFolderMessages({ folder: 'INBOX' }))
       await act(async () => {})
       expect(mockDispatch).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('virtual folders', () => {
+    it('skips folder messages query when folder is not selectable', () => {
+      ;(useCurrentFolder as jest.Mock).mockReturnValue({
+        isSelectable: false,
+        isVirtual: true,
+        isLoading: false,
+      })
+      renderHook(() => useFolderMessages({ folder: 'Virtual' }))
+      const [, options] = mockGetFolderMessagesQuery.mock.calls[0]
+      expect(options.skip).toBe(true)
     })
   })
 

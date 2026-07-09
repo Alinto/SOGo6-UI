@@ -14,6 +14,14 @@
                     "string": "Forward",
                     "description": "Forward the current message to another recipient"
                 },
+                "edit_draft": {
+                    "string": "Edit",
+                    "description": "Open the draft in the composer"
+                },
+                "use_template": {
+                    "string": "Use template",
+                    "description": "Create a new draft from this template without modifying it"
+                },
                 "return": {
                     "string": "Return to search results",
                     "description": "Return to search results"
@@ -336,6 +344,88 @@
                     "string": "Mark as Read",
                     "description": "Button to mark the current folder as read"
                 },
+                "export": {
+                    "string": "Export",
+                    "description": "Button to export all messages in the current folder"
+                },
+                "move_to": {
+                    "string": "Move to",
+                    "description": "Button to move the current folder under another parent"
+                },
+                "set_as": {
+                    "string": "Set as",
+                    "description": "Button to assign a semantic folder type to a normal folder"
+                },
+                "empty_folder": {
+                    "string": "Empty folder",
+                    "description": "Button to permanently empty trash or junk folder"
+                },
+                "action_unavailable": {
+                    "string": "This action is not available yet",
+                    "description": "Tooltip shown when a folder action is disabled because the backend is not ready"
+                },
+                "empty_folder_dialog": {
+                    "title": {
+                        "string": "Empty folder"
+                    },
+                    "description": {
+                        "string": "Permanently delete all messages in \"{folder}\"? This action cannot be undone."
+                    },
+                    "confirm": {
+                        "string": "Empty folder"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
+                },
+                "set_as_dialog": {
+                    "title": {
+                        "string": "Set folder type"
+                    },
+                    "description": {
+                        "string": "Choose the semantic type for \"{folder}\"."
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "types": {
+                        "DRAFT": {
+                            "string": "Drafts"
+                        },
+                        "SENT": {
+                            "string": "Sent"
+                        },
+                        "TRASH": {
+                            "string": "Trash"
+                        },
+                        "JUNK": {
+                            "string": "Junk"
+                        },
+                        "TEMPLATE": {
+                            "string": "Templates"
+                        }
+                    }
+                },
+                "move_to_dialog": {
+                    "title": {
+                        "string": "Move folder"
+                    },
+                    "description": {
+                        "string": "Choose a new parent for \"{folder}\"."
+                    },
+                    "placeholder": {
+                        "string": "Select destination"
+                    },
+                    "root": {
+                        "string": "Root level"
+                    },
+                    "confirm": {
+                        "string": "Move"
+                    },
+                    "cancel": {
+                        "string": "Cancel"
+                    }
+                },
                 "sharing": {
                     "string": "Sharing",
                     "title": {
@@ -539,6 +629,22 @@
             "junk": {
                 "string": "Junk",
                 "description": "Messages identified as spam"
+            },
+            "template": {
+                "string": "Templates",
+                "description": "Message templates"
+            },
+            "virtual_folder": {
+                "string": "Virtual folder — expand to browse subfolders",
+                "description": "Tooltip for non-selectable IMAP folders"
+            },
+            "virtual_empty": {
+                "title": {
+                    "string": "Virtual folder"
+                },
+                "description": {
+                    "string": "This folder cannot contain messages. Expand it in the sidebar to browse subfolders."
+                }
             }
         }
     }

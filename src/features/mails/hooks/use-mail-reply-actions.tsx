@@ -5,7 +5,11 @@ import type {
   RightActionsType,
 } from '@/features/mails/components/mail/types'
 import { ActionId } from '@/features/mails/components/mail/types'
-import type { ImapMessages } from '@/features/mails/mails-types'
+import type { ImapMessages, ImapFolderType } from '@/features/mails/mails-types'
+import {
+  isDraftFolderType,
+  isTemplateFolderType,
+} from '@/features/mails/utils/folder-type-helpers'
 import {
   createDraft,
   useLazyGetEditMessageQuery,
@@ -26,6 +30,7 @@ interface UseMailReplyActionsOptions {
   mailId?: string
   folder?: string
   accountId?: string
+  folderType?: import('@/features/mails/mails-types').ImapFolderType
 }
 
 export function useMailReplyActions({
@@ -33,6 +38,7 @@ export function useMailReplyActions({
   mailId,
   folder,
   accountId,
+  folderType,
 }: UseMailReplyActionsOptions) {
   const t = useTranslations('MAILS_COMMONS')
   const dispatch = useAppDispatch()
@@ -113,5 +119,12 @@ export function useMailReplyActions({
     }
   }
 
-  return { rightActions, handleMailAction }
+  const hideReplyActions =
+    isDraftFolderType(folderType) || isTemplateFolderType(folderType)
+
+  return {
+    rightActions: hideReplyActions ? [] : rightActions,
+    handleMailAction,
+    hideReplyActions,
+  }
 }
