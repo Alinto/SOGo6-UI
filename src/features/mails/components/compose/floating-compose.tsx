@@ -3,6 +3,7 @@
 import {
   AlertDialog,
   AlertDialogAction,
+  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
@@ -105,6 +106,14 @@ function resolveAccountId(
   return '0'
 }
 
+type EmptyContentAlert = 'subject' | 'body' | 'both'
+
+const EMPTY_CONTENT_ALERT_KEY: Record<EmptyContentAlert, string> = {
+  subject: 'no_subject_alert',
+  body: 'no_body_alert',
+  both: 'no_subject_body_alert',
+}
+
 export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   draftId,
 }) => {
@@ -164,6 +173,8 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
   const [triggerDownloadAttachment] = useLazyDownloadAttachmentQuery()
 
   const [showNoRecipientAlert, setShowNoRecipientAlert] = React.useState(false)
+  const [emptyContentAlert, setEmptyContentAlert] =
+    React.useState<EmptyContentAlert | null>(null)
   const [isDragOver, setIsDragOver] = React.useState(false)
   const dragCounterRef = React.useRef(0)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
@@ -294,13 +305,8 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     dispatch(closeDraft({ draftId }))
   }
 
-  const handleSend = async () => {
+  const performSend = async () => {
     if (!selectedIdentity?.mail) return
-
-    if (toRecipients.length === 0) {
-      setShowNoRecipientAlert(true)
-      return
-    }
 
     const result = await sendMail({
       accountId,
@@ -322,6 +328,38 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     if (!('error' in result)) {
       dispatch(closeDraft({ draftId }))
     }
+  }
+
+  const handleSend = async () => {
+    if (!selectedIdentity?.mail) return
+
+    if (toRecipients.length === 0) {
+      setShowNoRecipientAlert(true)
+      return
+    }
+
+    const isSubjectEmpty = subject.trim().length === 0
+    const isBodyEmpty = body.trim().length === 0
+
+    if (isSubjectEmpty && isBodyEmpty) {
+      setEmptyContentAlert('both')
+      return
+    }
+    if (isSubjectEmpty) {
+      setEmptyContentAlert('subject')
+      return
+    }
+    if (isBodyEmpty) {
+      setEmptyContentAlert('body')
+      return
+    }
+
+    await performSend()
+  }
+
+  const handleConfirmSendAnyway = async () => {
+    setEmptyContentAlert(null)
+    await performSend()
   }
 
   const handleAttachmentClick = () => {
@@ -870,6 +908,34 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setShowNoRecipientAlert(false)}>
               {t('no_recipient_alert.ok.string')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={emptyContentAlert !== null}
+        onOpenChange={(open) => !open && setEmptyContentAlert(null)}
+      >
+        <AlertDialogContent className="z-9999">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {emptyContentAlert &&
+                t(`${EMPTY_CONTENT_ALERT_KEY[emptyContentAlert]}.title.string`)}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {emptyContentAlert &&
+                t(
+                  `${EMPTY_CONTENT_ALERT_KEY[emptyContentAlert]}.content.string`
+                )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEmptyContentAlert(null)}>
+              {t('empty_content_alert.cancel.string')}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => void handleConfirmSendAnyway()}>
+              {t('empty_content_alert.send.string')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
