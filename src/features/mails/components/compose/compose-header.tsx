@@ -17,13 +17,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import ComposeRecipientField from './compose-recipient-field'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
 import { Check, PenLine } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useCallback, useRef } from 'react'
+import { selectDraftData } from '../../store/mail-compose-selectors'
 import {
   MailComposeRecipient,
   updateIdentity,
@@ -31,7 +31,7 @@ import {
   updateSelectedSignatureKey,
   updateSubject,
 } from '../../store/mail-compose-slice'
-import { selectDraftData } from '../../store/mail-compose-selectors'
+import ComposeRecipientField from './compose-recipient-field'
 
 interface ComposeHeaderProps {
   draftId: string
@@ -77,7 +77,11 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
 
   React.useEffect(() => {
     if (hasInitializedRecipients.current) return
-    if (!toRecipients?.length && !ccRecipients?.length && !bccRecipients?.length)
+    if (
+      !toRecipients?.length &&
+      !ccRecipients?.length &&
+      !bccRecipients?.length
+    )
       return
     hasInitializedRecipients.current = true
     setToTags(
@@ -124,7 +128,10 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       handleAdd: (value: string) => {
         const trimmed = value.trim()
         if (!trimmed || !isValidEmail(trimmed)) return
-        if (tags.some((tag) => tag.value.toLowerCase() === trimmed.toLowerCase())) return
+        if (
+          tags.some((tag) => tag.value.toLowerCase() === trimmed.toLowerCase())
+        )
+          return
         const newTags = [...tags, { id: createClientId(), value: trimmed }]
         setTags(newTags)
         dispatchRecipients(field, newTags)
@@ -304,8 +311,13 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
         </div>
       </div>
 
+      {isOverLimit && (
+        <p className="text-destructive mt-1 ml-2 text-xs">
+          {t('max_recipients_reached.string', { max: mailMaxRecipient })}
+        </p>
+      )}
       <div className="mt-2 flex w-full items-stretch">
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <ComposeRecipientField
             tags={toTags}
             remove={toHandlers.remove}
@@ -322,7 +334,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
             tabIndex={0}
             onClick={() => setShowCc((prev) => !prev)}
             onKeyDown={(e) => e.key === 'Enter' && setShowCc((prev) => !prev)}
-            className={`cursor-pointer select-none text-sm ${showCc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+            className={`cursor-pointer text-sm select-none ${showCc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           >
             {t('cc.string')}
           </span>
@@ -331,18 +343,12 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
             tabIndex={0}
             onClick={() => setShowBcc((prev) => !prev)}
             onKeyDown={(e) => e.key === 'Enter' && setShowBcc((prev) => !prev)}
-            className={`cursor-pointer select-none text-sm ${showBcc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
+            className={`cursor-pointer text-sm select-none ${showBcc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           >
             {t('bcc.string')}
           </span>
         </div>
       </div>
-
-      {isOverLimit && (
-        <p className="text-destructive mt-1 text-xs">
-          {t('max_recipients_reached.string', { max: mailMaxRecipient })}
-        </p>
-      )}
 
       {showCc && (
         <div className="mt-2">

@@ -35,6 +35,49 @@
             },
             "context": "Alert shown when the user tries to send a message without any recipients"
         },
+        "no_subject_alert": {
+            "title": {
+                "string": "No subject",
+                "context": "Title of the confirmation shown when the user tries to send a message without a subject"
+            },
+            "content": {
+                "string": "This message has no subject. Do you want to send it anyway?",
+                "context": "Content of the confirmation shown when the user tries to send a message without a subject"
+            },
+            "context": "Confirmation shown when the user tries to send a message without a subject"
+        },
+        "no_body_alert": {
+            "title": {
+                "string": "No content",
+                "context": "Title of the confirmation shown when the user tries to send a message without any content"
+            },
+            "content": {
+                "string": "This message has no content. Do you want to send it anyway?",
+                "context": "Content of the confirmation shown when the user tries to send a message without any content"
+            },
+            "context": "Confirmation shown when the user tries to send a message without any content"
+        },
+        "no_subject_body_alert": {
+            "title": {
+                "string": "No subject and no content",
+                "context": "Title of the confirmation shown when the user tries to send a message without a subject and without any content"
+            },
+            "content": {
+                "string": "This message has no subject and no content. Do you want to send it anyway?",
+                "context": "Content of the confirmation shown when the user tries to send a message without a subject and without any content"
+            },
+            "context": "Confirmation shown when the user tries to send a message without a subject and without any content"
+        },
+        "empty_content_alert": {
+            "send": {
+                "string": "Send anyway",
+                "context": "Label for the button confirming the send despite the missing subject and/or content"
+            },
+            "cancel": {
+                "string": "Cancel",
+                "context": "Label for the button cancelling the send to let the user fix the missing subject and/or content"
+            }
+        },
         "schedule_sending": {
             "string": "Schedule sending",
             "context": "Schedule the sending of the composed message"
