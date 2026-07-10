@@ -34,6 +34,10 @@ jest.mock('@/features/themes/themes-client', () => ({
   ),
 }))
 
+jest.mock('@/components/env-gate', () => ({
+  EnvGate: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}))
+
 // Import after mocks
 import Layout from '../layout'
 

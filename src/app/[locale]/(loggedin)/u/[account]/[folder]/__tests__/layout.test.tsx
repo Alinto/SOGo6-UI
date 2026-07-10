@@ -70,6 +70,10 @@ jest.mock('@/features/mails/components/list/list-toolbar', () => ({
 jest.mock('@/features/mails/hooks/use-list-toolbar-mode', () => ({
   useListToolbarMode: jest.fn(() => 'list'),
 }))
+jest.mock('@/features/mails/components/mail-sse-listener', () => ({
+  __esModule: true,
+  default: () => <div data-testid="mail-sse-listener" />,
+}))
 jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: (fn: (s: { mailLayout: { mode: string } }) => string) =>
     fn({ mailLayout: { mode: 'full' } }),
@@ -95,6 +99,11 @@ describe('Mail Folder Layout', () => {
     render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
     const sidebarProviders = screen.getAllByTestId('sidebar-provider')
     expect(sidebarProviders.length).toBeGreaterThan(0)
+  })
+
+  it('should mount the mail SSE listener', () => {
+    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
+    expect(screen.getByTestId('mail-sse-listener')).toBeInTheDocument()
   })
 
   it('should render modern layout content by default', () => {

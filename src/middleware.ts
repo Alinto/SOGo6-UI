@@ -15,10 +15,29 @@ export function generateLocaleRegex(locales: readonly string[]): RegExp {
   return new RegExp(`^/(${localePattern})(/|$)`)
 }
 
+/** Strip port from host header before domain comparison. */
+export function normalizeHostname(hostname: string): string {
+  return hostname.split(':')[0].toLowerCase()
+}
+
+/** Strict hostname equality (no substring match). */
+export function hostnameMatchesAdminDomain(
+  hostname: string,
+  domain: string
+): boolean {
+  const normalizedDomain = domain.trim().toLowerCase()
+  if (!normalizedDomain) {
+    return false
+  }
+  return normalizeHostname(hostname) === normalizedDomain
+}
+
 // Function to check if the request is from the admin domain
 export function isAdminDomain(hostname: string): boolean {
   const adminDomains = process.env.NEXT_PUBLIC_ADMIN_DOMAINS?.split(',') || []
-  return adminDomains.some((domain) => hostname.includes(domain.trim()))
+  return adminDomains.some((domain) =>
+    hostnameMatchesAdminDomain(hostname, domain)
+  )
 }
 
 // Function to check if the path is admin panel (including all sub-routes)

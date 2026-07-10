@@ -32,6 +32,17 @@
         "language": {
             "english": "English",
             "french": "Français"
+        },
+        "serviceUnavailable": {
+            "title": {
+                "string": "Service unavailable"
+            },
+            "description": {
+                "string": "The application could not connect to the server. Please try again later or contact your administrator."
+            },
+            "retry": {
+                "string": "Try again"
+            }
         }
     }
 }

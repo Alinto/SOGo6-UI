@@ -20,6 +20,11 @@ import { useAppDispatch } from '../../hooks'
 import type { AppDispatch } from '../../store'
 import { getSSEServiceInstance } from '../sse-api'
 
+export interface MailReceivedListenerFallbacks {
+  defaultSubject: string
+  defaultSenderName: string
+}
+
 /**
  * Hook to listen for mail:received SSE events and update cache
  *
@@ -35,7 +40,8 @@ import { getSSEServiceInstance } from '../sse-api'
  */
 export function useMailReceivedListener(
   folder: string = 'INBOX',
-  params?: Record<string, string | number | boolean>
+  params?: Record<string, string | number | boolean>,
+  fallbacks?: MailReceivedListenerFallbacks
 ) {
   const dispatch = useAppDispatch()
 
@@ -63,7 +69,7 @@ export function useMailReceivedListener(
       unsubscribe = sseService.subscribe('mail:received', (message) => {
         if (message.type === 'mail:received' && message.data) {
           const mailData = message.data as Record<string, unknown>
-          updateMailsCache(dispatch, folder, params, mailData)
+          updateMailsCache(dispatch, folder, params, mailData, fallbacks)
         }
       })
     }
@@ -80,7 +86,7 @@ export function useMailReceivedListener(
         unsubscribe()
       }
     }
-  }, [dispatch, folder, params])
+  }, [dispatch, folder, params, fallbacks])
 }
 
 /**
@@ -93,16 +99,20 @@ function updateMailsCache(
   dispatch: AppDispatch,
   folder: string,
   params: Record<string, string | number | boolean> | undefined,
-  mailData: Record<string, unknown>
+  mailData: Record<string, unknown>,
+  fallbacks?: MailReceivedListenerFallbacks
 ) {
+  const defaultSubject = fallbacks?.defaultSubject ?? ''
+  const defaultSenderName = fallbacks?.defaultSenderName ?? ''
+
   // Create a new mail object from SSE data
   const newMail: ImapMessagesList = {
     id: (mailData.id as string) || `mail-${Date.now()}`,
-    subject: (mailData.subject as string) || 'New Message',
+    subject: (mailData.subject as string) || defaultSubject,
     from: {
       name:
         ((mailData.from as Record<string, unknown>)?.name as string) ||
-        'Unknown',
+        defaultSenderName,
       email:
         ((mailData.from as Record<string, unknown>)?.email as string) || '',
     },

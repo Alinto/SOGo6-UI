@@ -646,6 +646,14 @@
                     "string": "This folder cannot contain messages. Expand it in the sidebar to browse subfolders."
                 }
             }
+        },
+        "sse": {
+            "defaultSubject": {
+                "string": "New message"
+            },
+            "defaultSender": {
+                "string": "Unknown sender"
+            }
         }
     }
 }

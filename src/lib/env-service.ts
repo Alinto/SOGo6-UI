@@ -3,10 +3,11 @@ import React from 'react'
 export interface EnvVariables {
   REACT_APP_API_BASE_URL?: string
   REACT_APP_API_URL?: string
+  NEXT_PUBLIC_ADMIN_DOMAINS?: string
   SSE_ENABLED?: boolean
   /** Runtime prefill for /auth/login (from LOGIN_PREFILL_EMAIL or legacy NEXT_PUBLIC_* on server). */
   LOGIN_PREFILL_EMAIL?: string
-  /** Runtime prefill for /auth/login/pwd (from LOGIN_PREFILL_PASSWORD or legacy NEXT_PUBLIC_* on server). */
+  /** Runtime prefill for /auth/login/pwd (from LOGIN_PREFILL_PASSWORD or legacy NEXT_PUBLIC_* on server). Dev only. */
   LOGIN_PREFILL_PASSWORD?: string
 }
 
@@ -236,11 +237,18 @@ export const useEnvVars = () => {
     refetch: () => {
       clearEnvCache()
       setLoading(true)
-      return fetchEnvVars().then((vars) => {
-        setEnvVars(vars)
-        setLoading(false)
-        return vars
-      })
+      setError(null)
+      return fetchEnvVars()
+        .then((vars) => {
+          setEnvVars(vars)
+          setLoading(false)
+          return vars
+        })
+        .catch((err) => {
+          setError(err instanceof Error ? err : new Error(String(err)))
+          setLoading(false)
+          throw err
+        })
     },
   }
 }

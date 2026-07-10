@@ -255,5 +255,26 @@ describe('env-service', () => {
       expect(result.current.envVars?.REACT_APP_API_BASE_URL).toBe('/b')
       expect(global.fetch).toHaveBeenCalledTimes(2)
     })
+
+    it('refetch surfaces errors in production mode', async () => {
+      process.env.NODE_ENV = 'production'
+      ;(global.fetch as jest.Mock)
+        .mockResolvedValueOnce(
+          mockResponse({ REACT_APP_API_BASE_URL: 'https://api.example.test' })
+        )
+        .mockRejectedValueOnce(new Error('network'))
+
+      const { result } = renderHook(() => useEnvVars())
+
+      await waitFor(() => {
+        expect(result.current.loading).toBe(false)
+      })
+
+      await act(async () => {
+        await expect(result.current.refetch()).rejects.toThrow()
+      })
+
+      expect(result.current.error).toBeTruthy()
+    })
   })
 })

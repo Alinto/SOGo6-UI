@@ -14,6 +14,7 @@ import {
   useFastAccessRequired,
 } from '@/features/mails/components/sidebars/fast-access/context'
 import ListToolbar from '@/features/mails/components/list/list-toolbar'
+import MailSSEListener from '@/features/mails/components/mail-sse-listener'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
@@ -49,6 +50,7 @@ function MailLayoutInner({
       defaultOpen
       className="min-w-0"
     >
+      <MailSSEListener />
       <SidebarProvider
         name="right-mail-sidebar-2"
         defaultOpen={false}

@@ -1,5 +1,6 @@
 'use client'
 
+import { isUsingFakeApi } from '@/lib/env-service'
 import { useTranslations } from 'next-intl'
 import { useEffect } from 'react'
 import { toast } from 'sonner'
@@ -8,6 +9,10 @@ export function DemoWarningToast() {
   const t = useTranslations('COMMON')
 
   useEffect(() => {
+    if (!isUsingFakeApi()) {
+      return
+    }
+
     // Show toast after 1 second
     const timer = setTimeout(() => {
       toast.warning(`${t('demo.warning.title.string')}`, {

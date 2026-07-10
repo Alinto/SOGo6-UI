@@ -57,10 +57,12 @@ jest.mock('next/server', () => {
 import type { NextRequest } from 'next/server'
 import handler, {
   generateLocaleRegex,
+  hostnameMatchesAdminDomain,
   isAdminDomain,
   isAdminPanelPath,
   isAuthPath,
   isLocaleRootPath,
+  normalizeHostname,
 } from '../middleware'
 
 function createRequest(pathname: string, host = 'mail.example.com') {
@@ -91,6 +93,22 @@ describe('middleware helpers', () => {
       process.env.NEXT_PUBLIC_ADMIN_DOMAINS = 'admin.example.com,ops.example.com'
       expect(isAdminDomain('admin.example.com')).toBe(true)
       expect(isAdminDomain('mail.example.com')).toBe(false)
+    })
+
+    it('does not match admin domains as substrings', () => {
+      process.env.NEXT_PUBLIC_ADMIN_DOMAINS = 'admin.example.com'
+      expect(isAdminDomain('evil-admin.example.com')).toBe(false)
+      expect(isAdminDomain('notadmin.example.com.evil.tld')).toBe(false)
+    })
+
+    it('ignores port when comparing hostnames', () => {
+      process.env.NEXT_PUBLIC_ADMIN_DOMAINS = 'admin.example.com'
+      expect(hostnameMatchesAdminDomain('admin.example.com:3000', 'admin.example.com')).toBe(
+        true
+      )
+      expect(normalizeHostname('Admin.Example.COM:443')).toBe(
+        'admin.example.com'
+      )
     })
   })
 

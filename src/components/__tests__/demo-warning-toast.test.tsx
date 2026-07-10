@@ -1,5 +1,6 @@
 import { render, waitFor } from '@testing-library/react'
 import { toast } from 'sonner'
+import { isUsingFakeApi } from '@/lib/env-service'
 import { DemoWarningToast } from '../demo-warning-toast'
 
 // Mock sonner
@@ -8,6 +9,10 @@ jest.mock('sonner', () => ({
     warning: jest.fn(),
     dismiss: jest.fn(),
   },
+}))
+
+jest.mock('@/lib/env-service', () => ({
+  isUsingFakeApi: jest.fn(() => true),
 }))
 
 // Mock next-intl
@@ -99,5 +104,14 @@ describe('DemoWarningToast', () => {
     actionOnClick()
 
     expect(toast.dismiss).toHaveBeenCalled()
+  })
+
+  it('should not display toast when not using fake API', () => {
+    ;(isUsingFakeApi as jest.Mock).mockReturnValue(false)
+
+    render(<DemoWarningToast />)
+    jest.advanceTimersByTime(1000)
+
+    expect(toast.warning).not.toHaveBeenCalled()
   })
 })
