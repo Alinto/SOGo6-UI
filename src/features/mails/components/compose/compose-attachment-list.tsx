@@ -1,0 +1,144 @@
+'use client'
+
+import { formatFileSize } from '@/features/mails/components/utils'
+import { useAppDispatch } from '@/lib/redux/hooks'
+import { cn } from '@/lib/utils'
+import { Download, Paperclip, X } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import {
+  useDeleteAttachmentMutation,
+  useLazyDownloadAttachmentQuery,
+} from '../../store/mail-api'
+import { removeAttachment } from '../../store/mail-compose-slice'
+import type { MailComposeAttachment } from '../../store/mail-compose-slice'
+
+interface ComposeAttachmentListProps {
+  draftId: string
+  accountId: string
+  mailKey: string | null
+  attachments: MailComposeAttachment[]
+}
+
+export function ComposeAttachmentList({
+  draftId,
+  accountId,
+  mailKey,
+  attachments,
+}: ComposeAttachmentListProps) {
+  const t = useTranslations('COMPOSE')
+  const dispatch = useAppDispatch()
+  const [deleteAttachment] = useDeleteAttachmentMutation()
+  const [triggerDownloadAttachment] = useLazyDownloadAttachmentQuery()
+
+  if (attachments.length === 0) return null
+
+  const handleDeleteAttachment = async (attachment: MailComposeAttachment) => {
+    // If not yet uploaded or no mailKey, just remove from store
+    if (attachment.uploadStatus !== 'completed' || mailKey == null) {
+      dispatch(removeAttachment({ draftId, attachmentId: attachment.draftId }))
+      return
+    }
+    const result = await deleteAttachment({
+      accountId,
+      mailKey,
+      filename: attachment.name,
+    })
+
+    if (!('error' in result)) {
+      dispatch(removeAttachment({ draftId, attachmentId: attachment.draftId }))
+    }
+  }
+
+  const handleDownloadAttachment = async (
+    attachment: MailComposeAttachment
+  ) => {
+    if (attachment.uploadStatus !== 'completed' || mailKey == null) return
+
+    try {
+      const blob = await triggerDownloadAttachment({
+        accountId,
+        mailKey,
+        filename: attachment.name,
+      }).unwrap()
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = attachment.name
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to download attachment:', error)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-1 border-t px-4 py-2">
+      {attachments.map((att) => (
+        <div
+          key={att.draftId}
+          className={cn(
+            'bg-muted flex flex-col rounded px-2 py-1.5 text-xs',
+            att.uploadStatus === 'error' && 'border-destructive border'
+          )}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center gap-2">
+              <Paperclip
+                className={cn(
+                  'h-3 w-3 shrink-0',
+                  att.uploadStatus === 'uploading' && 'animate-pulse'
+                )}
+              />
+              <span className="truncate">{att.name}</span>
+              <span className="text-muted-foreground shrink-0">
+                {formatFileSize(att.size)}
+              </span>
+              {att.uploadStatus === 'error' && (
+                <span className="text-destructive shrink-0">
+                  {t('attachment_error.string')}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-1">
+              {att.uploadStatus === 'completed' && (
+                <button
+                  className="hover:text-primary ml-2 shrink-0"
+                  onClick={() => void handleDownloadAttachment(att)}
+                  title={t('attachment.title.string')}
+                >
+                  <Download className="h-3 w-3" />
+                </button>
+              )}
+              <button
+                className="hover:text-destructive shrink-0"
+                onClick={() => void handleDeleteAttachment(att)}
+                disabled={att.uploadStatus === 'uploading'}
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          </div>
+
+          {att.uploadStatus === 'uploading' && (
+            <div className="mt-1.5 flex items-center gap-2">
+              <div className="bg-muted-foreground/20 h-1 flex-1 overflow-hidden rounded-full">
+                <div
+                  className="bg-primary h-full rounded-full transition-all duration-300"
+                  style={{ width: `${att.uploadProgress ?? 0}%` }}
+                />
+              </div>
+              <span className="text-muted-foreground w-7 shrink-0 text-right">
+                {att.uploadProgress ?? 0}%
+              </span>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+export default ComposeAttachmentList
