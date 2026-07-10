@@ -126,6 +126,7 @@ jest.mock('@/lib/env-service', () => ({
     REACT_APP_API_BASE_URL: '/fakeApi',
     SSE_ENABLED: true,
   }),
+  isUsingFakeApi: jest.fn(() => false),
 }))
 
 jest.mock('@/lib/redux/sse', () => ({
