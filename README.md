@@ -4,6 +4,8 @@
 
 **A modern webmail and groupware client (Next.js 16) for the [SOGo 6](https://www.sogo.nu/) API.**
 
+SOGo 6 is a new iteration with a total overhaul. The SOGo 5 codebase is available [here](https://github.com/Alinto/sogo).
+
 [Prerequisites](#prerequisites) · [Quick start](#quick-start) · [Backend](#backend) · [Configuration](#configuration) · [Docker deployment](#docker-deployment) · [Scripts](#scripts) · [Contributing](#contributing)
 
 </div>
@@ -242,7 +244,7 @@ Covers Redux slices, RTK Query endpoints, components, hooks, and snapshots.
 
 ## Contributing
 
-See **[`CONTRIBUTING.md`](./CONTRIBUTING.md)** and **[`AGENTS.md`](./AGENTS.md)**.
+External contributions are **not open** at this time. See **[`CONTRIBUTING.md`](./CONTRIBUTING.md)** and **[`AGENTS.md`](./AGENTS.md)** for context and conventions.
 
 ## License
 
