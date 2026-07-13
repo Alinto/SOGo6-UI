@@ -12,7 +12,7 @@ Thank you for your interest in contributing. This project is the **web frontend*
 
 ```bash
 npm install
-cp .env.example .env.development   # adjust if needed
+cp .env.example .env.development 
 npm run dev
 ```
 
@@ -26,6 +26,8 @@ npm run check:translations
 ```
 
 `npm run build` may succeed with type/lint issues because of `next.config.mjs` overrides — CI and reviewers still expect `type-check` and `lint` to pass for changed code.
+
+Production builds use Turbopack by default (`npm run build`). Use `npm run build:webpack` if you need the legacy Webpack bundler.
 
 ## Pull requests
 

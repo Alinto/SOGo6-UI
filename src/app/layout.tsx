@@ -1,9 +1,11 @@
-import type { Metadata } from 'next'
-import './globals.css'
-import { geistSans, geistMono, openDyslexic } from '@/lib/fonts'
 import { ThemeProvider } from '@/components/theme-provider'
+import { geistMono, geistSans, openDyslexic } from '@/lib/fonts'
+import { getDefaultLocale } from '@/lib/i18n/config'
 import StoreProvider from '@/lib/redux/store-provider'
+import type { Metadata } from 'next'
+import { getLocale } from 'next-intl/server'
 import React from 'react'
+import './globals.css'
 
 // import { ModeToggle } from "@/components/theme-switcher";
 
@@ -26,12 +28,16 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({
   children,
-  params,
 }: Readonly<{
   children: React.ReactNode
-  params: Promise<{ locale: string }>
 }>) {
-  const { locale } = await params
+  let locale = getDefaultLocale()
+  try {
+    locale = await getLocale()
+  } catch {
+    // Root layout may render before locale is resolved (e.g. in tests)
+  }
+
   return (
     <html
       suppressHydrationWarning

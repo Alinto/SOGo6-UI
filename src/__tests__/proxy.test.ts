@@ -55,7 +55,7 @@ jest.mock('next/server', () => {
 })
 
 import type { NextRequest } from 'next/server'
-import handler, {
+import proxy, {
   generateLocaleRegex,
   hostnameMatchesAdminDomain,
   isAdminDomain,
@@ -63,7 +63,7 @@ import handler, {
   isAuthPath,
   isLocaleRootPath,
   normalizeHostname,
-} from '../middleware'
+} from '../proxy'
 
 function createRequest(pathname: string, host = 'mail.example.com') {
   return new (jest.requireMock('next/server').NextRequest)(
@@ -72,7 +72,7 @@ function createRequest(pathname: string, host = 'mail.example.com') {
   ) as NextRequest
 }
 
-describe('middleware helpers', () => {
+describe('proxy helpers', () => {
   const originalAdminDomains = process.env.NEXT_PUBLIC_ADMIN_DOMAINS
 
   afterAll(() => {
@@ -90,7 +90,8 @@ describe('middleware helpers', () => {
 
   describe('isAdminDomain', () => {
     it('returns true when host matches configured admin domains', () => {
-      process.env.NEXT_PUBLIC_ADMIN_DOMAINS = 'admin.example.com,ops.example.com'
+      process.env.NEXT_PUBLIC_ADMIN_DOMAINS =
+        'admin.example.com,ops.example.com'
       expect(isAdminDomain('admin.example.com')).toBe(true)
       expect(isAdminDomain('mail.example.com')).toBe(false)
     })
@@ -103,9 +104,12 @@ describe('middleware helpers', () => {
 
     it('ignores port when comparing hostnames', () => {
       process.env.NEXT_PUBLIC_ADMIN_DOMAINS = 'admin.example.com'
-      expect(hostnameMatchesAdminDomain('admin.example.com:3000', 'admin.example.com')).toBe(
-        true
-      )
+      expect(
+        hostnameMatchesAdminDomain(
+          'admin.example.com:3000',
+          'admin.example.com'
+        )
+      ).toBe(true)
       expect(normalizeHostname('Admin.Example.COM:443')).toBe(
         'admin.example.com'
       )
@@ -137,9 +141,8 @@ describe('middleware helpers', () => {
   })
 })
 
-describe('middleware handler', () => {
+describe('proxy handler', () => {
   const originalAdminDomains = process.env.NEXT_PUBLIC_ADMIN_DOMAINS
-  const originalNodeEnv = process.env.NODE_ENV
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -151,18 +154,20 @@ describe('middleware handler', () => {
 
   afterAll(() => {
     process.env.NEXT_PUBLIC_ADMIN_DOMAINS = originalAdminDomains
-    process.env.NODE_ENV = originalNodeEnv
+    jest.restoreAllMocks()
   })
 
   it('redirects paths without a locale prefix to the default locale', async () => {
-    const response = await handler(createRequest('/mails'))
+    const response = await proxy(createRequest('/mails'))
 
     expect(response.status).toBe(307)
-    expect(response.headers.get('location')).toBe('http://mail.example.com/en/mails')
+    expect(response.headers.get('location')).toBe(
+      'http://mail.example.com/en/mails'
+    )
   })
 
   it('preserves query params when redirecting to default locale', async () => {
-    const response = await handler(createRequest('/mails?folder=inbox'))
+    const response = await proxy(createRequest('/mails?folder=inbox'))
 
     expect(response.headers.get('location')).toBe(
       'http://mail.example.com/en/mails?folder=inbox'
@@ -173,16 +178,14 @@ describe('middleware handler', () => {
     const intlResponse = jest.requireMock('next/server').NextResponse.next()
     mockIntlMiddleware.mockResolvedValue(intlResponse)
 
-    const response = await handler(createRequest('/en/auth/login'))
+    const response = await proxy(createRequest('/en/auth/login'))
 
     expect(mockIntlMiddleware).toHaveBeenCalledTimes(1)
     expect(response).toBe(intlResponse)
   })
 
   it('redirects admin domain locale root to admin panel', async () => {
-    const response = await handler(
-      createRequest('/en', 'admin.example.com')
-    )
+    const response = await proxy(createRequest('/en', 'admin.example.com'))
 
     expect(response.status).toBe(307)
     expect(response.headers.get('location')).toBe(
@@ -192,7 +195,7 @@ describe('middleware handler', () => {
   })
 
   it('redirects non-admin routes on admin domain to admin panel', async () => {
-    const response = await handler(
+    const response = await proxy(
       createRequest('/en/mails', 'admin.example.com')
     )
 
@@ -203,9 +206,12 @@ describe('middleware handler', () => {
   })
 
   it('blocks admin panel on user domain outside development', async () => {
-    process.env.NODE_ENV = 'production'
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'production',
+    })
 
-    const response = await handler(createRequest('/en/admin_panel'))
+    const response = await proxy(createRequest('/en/admin_panel'))
 
     expect(response.status).toBe(307)
     expect(response.headers.get('location')).toBe('http://mail.example.com/en')
@@ -213,22 +219,28 @@ describe('middleware handler', () => {
   })
 
   it('allows admin panel on user domain in development', async () => {
-    process.env.NODE_ENV = 'development'
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'development',
+    })
     const intlResponse = jest.requireMock('next/server').NextResponse.next()
     mockIntlMiddleware.mockResolvedValue(intlResponse)
 
-    const response = await handler(createRequest('/en/admin_panel'))
+    const response = await proxy(createRequest('/en/admin_panel'))
 
     expect(mockIntlMiddleware).toHaveBeenCalledTimes(1)
     expect(response).toBe(intlResponse)
   })
 
   it('delegates regular user routes to next-intl middleware', async () => {
-    process.env.NODE_ENV = 'production'
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'production',
+    })
     const intlResponse = jest.requireMock('next/server').NextResponse.next()
     mockIntlMiddleware.mockResolvedValue(intlResponse)
 
-    const response = await handler(createRequest('/en/mails'))
+    const response = await proxy(createRequest('/en/mails'))
 
     expect(mockIntlMiddleware).toHaveBeenCalledTimes(1)
     expect(response).toBe(intlResponse)

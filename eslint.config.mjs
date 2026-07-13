@@ -1,51 +1,43 @@
-import { defineConfig } from "eslint/config";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
-import jestPlugin from "eslint-plugin-jest";
-import nextIntlTranslationKey from "./config/eslint-rules/next-intl-translation-key.js";
+import { defineConfig } from 'eslint/config'
+import eslintConfigPrettier from 'eslint-config-prettier'
+import nextCoreWebVitals from 'eslint-config-next/core-web-vitals'
+import jestPlugin from 'eslint-plugin-jest'
+import tseslint from 'typescript-eslint'
+import nextIntlTranslationKey from './config/eslint-rules/next-intl-translation-key.js'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
-
-export default defineConfig([{
-    files: ["src/**/*.{js,ts,jsx,tsx}"],
-    ignores: ["src/**/__tests__/**", "src/**/__mocks__/**"],
-    extends: compat.extends(
-        "next",
-        "next/core-web-vitals",
-        "next/typescript",
-        "plugin:react-hooks/recommended",
-        "plugin:react/recommended",
-        "plugin:@typescript-eslint/recommended",
-        "eslint:recommended",
-        "prettier"
-    ),
+export default defineConfig([
+  ...nextCoreWebVitals,
+  eslintConfigPrettier,
+  {
+    files: ['src/**/*.{js,ts,jsx,tsx}'],
+    ignores: ['src/**/__tests__/**', 'src/**/__mocks__/**'],
     plugins: {
-        jest: jestPlugin,
-        "custom": {
-            rules: {
-                "next-intl-translation-key": nextIntlTranslationKey
-            }
-        }
+      jest: jestPlugin,
+      '@typescript-eslint': tseslint.plugin,
+      custom: {
+        rules: {
+          'next-intl-translation-key': nextIntlTranslationKey,
+        },
+      },
     },
     languageOptions: {
-        globals: jestPlugin.environments.globals.globals,
+      globals: jestPlugin.environments.globals.globals,
     },
     rules: {
-        "react/jsx-no-literals": ["warn", {
-            noStrings: true,
-            ignoreProps: true,
-        }],
-        "react/jsx-uses-react": "off",
-        "react/react-in-jsx-scope": "off",
-        "no-unused-vars": "off",
-        "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+      'react/jsx-no-literals': [
+        'warn',
+        {
+          noStrings: true,
+          ignoreProps: true,
+        },
+      ],
+      'react/jsx-uses-react': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
     },
-}]);
+  },
+])
