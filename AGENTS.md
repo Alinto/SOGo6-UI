@@ -4,13 +4,13 @@ This file provides context and guidelines for AI coding agents working on this p
 
 ## Project Overview
 
-**SOGo6-UI** is a modern web-based groupware frontend for the SOGo server, providing email, calendar, and address book functionality. It's built with Next.js 15 and React 19.
+**SOGo6-UI** is a modern web-based groupware frontend for the SOGo server, providing email, calendar, and address book functionality. It's built with Next.js 16 and React 19.
 
 ## Tech Stack
 
 | Category             | Technology                                             |
 | -------------------- | ------------------------------------------------------ |
-| Framework            | Next.js 15 (App Router, Turbopack)                     |
+| Framework            | Next.js 16 (App Router, Turbopack)                     |
 | Language             | TypeScript (strict mode)                               |
 | UI Library           | React 19                                               |
 | Styling              | Tailwind CSS, tailwind-merge, class-variance-authority |

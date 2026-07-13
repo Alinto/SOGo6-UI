@@ -2,7 +2,7 @@
 
 # SOGo 6 — Web Frontend
 
-**A modern webmail and groupware client (Next.js 15) for the [SOGo 6](https://www.sogo.nu/) API.**
+**A modern webmail and groupware client (Next.js 16) for the [SOGo 6](https://www.sogo.nu/) API.**
 
 [Prerequisites](#prerequisites) · [Quick start](#quick-start) · [Backend](#backend) · [Configuration](#configuration) · [Docker deployment](#docker-deployment) · [Scripts](#scripts) · [Contributing](#contributing)
 
@@ -135,7 +135,7 @@ NEXT_PUBLIC_ADMIN_DOMAINS=admin.localhost
 
 Production image: root **`Dockerfile`** (`output: 'standalone'`, Node 24, port **3000**).
 
-> **`Dockerfile.static`** is a legacy static-export experiment and is **not** compatible with the current app (middleware, `/env`, `/fakeApi`). Use the main **`Dockerfile`** only.
+> **`Dockerfile.static`** is a legacy static-export experiment and is **not** compatible with the current app (proxy, `/env`, `/fakeApi`). Use the main **`Dockerfile`** only.
 
 Environment files (`.env.development`, `.env.local`) are **not** baked into the image — configure at **container start** (same variables as [Configuration](#configuration), exposed via **`GET /env`**).
 
@@ -216,7 +216,8 @@ Reverse proxy (Nginx, Traefik, ingress, etc.) is configured by your platform tea
 | Command | Purpose |
 | ------- | ------- |
 | `npm run dev` | Dev server (Turbopack, port 3000) |
-| `npm run build` | Production build (`output: 'standalone'`) |
+| `npm run build` | Production build via Turbopack (`output: 'standalone'`) |
+| `npm run build:webpack` | Production build via Webpack (legacy fallback) |
 | `npm run start` | Next.js server after build |
 | `npm run lint` | ESLint on `src` |
 | `npm run type-check` | `tsc` (no emit) |

@@ -20,7 +20,7 @@ NEXT_PUBLIC_ADMIN_DOMAINS=admin.example.com,admin2.example.com,manage.example.co
 
 ### Domain Routing Logic
 
-The middleware (`src/middleware.ts`) implements the following rules:
+The proxy (`src/proxy.ts`) implements the following rules:
 
 1. **Authentication Routes** (`/[locale]/auth/*`)
    - Accessible from ALL domains
@@ -127,9 +127,9 @@ npm run dev
 
 ### Allowing Additional Routes on Admin Domain
 
-By default, the admin domain ONLY allows access to `/admin_panel`. If you need to allow additional routes on the admin domain, you can modify the middleware logic:
+By default, the admin domain ONLY allows access to `/admin_panel`. If you need to allow additional routes on the admin domain, you can modify the proxy logic:
 
-**Option 1**: Allow specific routes by editing the `isAdminPanelPath` function in `src/middleware.ts`:
+**Option 1**: Allow specific routes by editing the `isAdminPanelPath` function in `src/proxy.ts`:
 
 ```typescript
 export function isAdminPanelPath(pathname: string): boolean {
@@ -173,7 +173,7 @@ export function isAuthPath(pathname: string): boolean {
 
 1. Check that you're accessing from the correct domain
 2. Verify the domain is listed in `NEXT_PUBLIC_ADMIN_DOMAINS`
-3. Check the browser console for any middleware errors
+3. Check the browser console for any proxy errors
 
 ### Issue: Infinite redirect loop
 
@@ -185,7 +185,7 @@ export function isAuthPath(pathname: string): boolean {
 
 ## Security Considerations
 
-1. **Domain Verification**: The middleware checks the `Host` header, which can be spoofed. For production, consider additional verification.
+1. **Domain Verification**: The proxy checks the `Host` header, which can be spoofed. For production, consider additional verification.
 
 2. **Authentication**: This feature handles routing only. Ensure proper authentication checks are in place in your components and API routes.
 

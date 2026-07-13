@@ -65,9 +65,9 @@ export function isAuthPath(pathname: string): boolean {
   return authPathRegex.test(pathname)
 }
 
-const middleware = createMiddleware(routing)
+const intlMiddleware = createMiddleware(routing)
 
-export default async function handler(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const hostname = req.headers.get('host') || ''
   const pathname = req.nextUrl.pathname
   const locales = getLocales()
@@ -90,7 +90,7 @@ export default async function handler(req: NextRequest) {
   // Domain-based routing logic
   // Allow auth routes on both domains
   if (isAuthRoute) {
-    return await middleware(req)
+    return await intlMiddleware(req)
   }
 
   // Admin domain - ONLY allow admin_panel routes
@@ -120,6 +120,6 @@ export default async function handler(req: NextRequest) {
     }
   }
 
-  const res = await middleware(req)
+  const res = await intlMiddleware(req)
   return res
 }

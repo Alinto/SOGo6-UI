@@ -22,8 +22,8 @@
   "runArgs": [
     "--network=host",
     "--add-host=host.docker.internal:host-gateway",
-    "--memory=6g",
-    "--memory-swap=8g",
+    "--memory=8g",
+    "--memory-swap=10g",
     "--cpus=6"
   ],
 
@@ -69,6 +69,7 @@
     "NODE_ENV": "development",
     "SHELL": "/bin/bash",
     "NEXT_TELEMETRY_DISABLED": "1",
+    "NODE_OPTIONS": "--max-old-space-size=4096",
     "REACT_APP_API_BASE_URL": "http://127.0.0.1:5000/api/user/v1",
     "SSE_ENABLED": "false"
   },

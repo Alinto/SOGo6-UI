@@ -2,7 +2,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "command": "npx next dev --turbopack",
+      "command": "npx next dev -p 3000",
       "name": "Debug (All)",
       "request": "launch",
       "serverReadyAction": {

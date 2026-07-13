@@ -20,9 +20,12 @@ jest.mock('@/lib/fonts', () => ({
   },
 }))
 
-// Mock next-intl's createTranslator
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('next-intl/server', () => ({
+  getLocale: jest.fn().mockResolvedValue('en'),
 }))
 
 // Mock the components
@@ -59,17 +62,10 @@ jest.mock('@/lib/redux/store-provider', () => {
 })
 
 describe('RootLayout', () => {
-  const mockParams = Promise.resolve({ locale: 'en' })
-
   it('should render children correctly', async () => {
     const testChild = <div data-testid="test-child">Test Content</div>
 
-    render(
-      await RootLayout({
-        children: testChild,
-        params: mockParams,
-      })
-    )
+    render(await RootLayout({ children: testChild }))
 
     expect(screen.getByTestId('test-child')).toBeInTheDocument()
     expect(screen.getByText('Test Content')).toBeInTheDocument()
@@ -78,12 +74,7 @@ describe('RootLayout', () => {
   it('should render ThemeProvider with correct props', async () => {
     const testChild = <div>Content</div>
 
-    render(
-      await RootLayout({
-        children: testChild,
-        params: mockParams,
-      })
-    )
+    render(await RootLayout({ children: testChild }))
 
     const themeProvider = screen.getByTestId('theme-provider')
     expect(themeProvider).toBeInTheDocument()
@@ -95,12 +86,7 @@ describe('RootLayout', () => {
   it('should render StoreProvider', async () => {
     const testChild = <div>Content</div>
 
-    render(
-      await RootLayout({
-        children: testChild,
-        params: mockParams,
-      })
-    )
+    render(await RootLayout({ children: testChild }))
 
     expect(screen.getByTestId('store-provider')).toBeInTheDocument()
   })
@@ -108,12 +94,7 @@ describe('RootLayout', () => {
   it('should include all required theme options', async () => {
     const testChild = <div>Content</div>
 
-    render(
-      await RootLayout({
-        children: testChild,
-        params: mockParams,
-      })
-    )
+    render(await RootLayout({ children: testChild }))
 
     const themeProvider = screen.getByTestId('theme-provider')
     const themes = themeProvider.getAttribute('data-themes')
@@ -128,12 +109,7 @@ describe('RootLayout', () => {
   it('should render nested providers in correct order', async () => {
     const testChild = <div data-testid="test-child">Nested Content</div>
 
-    render(
-      await RootLayout({
-        children: testChild,
-        params: mockParams,
-      })
-    )
+    render(await RootLayout({ children: testChild }))
 
     // Verify providers are rendered
     const themeProvider = screen.getByTestId('theme-provider')
@@ -151,15 +127,12 @@ describe('RootLayout', () => {
   })
 
   it('should handle different locales', async () => {
-    const testChild = <div>Content</div>
-    const frParams = Promise.resolve({ locale: 'fr' })
+    const { getLocale } = jest.requireMock('next-intl/server')
+    getLocale.mockResolvedValueOnce('fr')
 
-    render(
-      await RootLayout({
-        children: testChild,
-        params: frParams,
-      })
-    )
+    const testChild = <div>Content</div>
+
+    render(await RootLayout({ children: testChild }))
 
     expect(screen.getByText('Content')).toBeInTheDocument()
   })
@@ -172,12 +145,7 @@ describe('RootLayout', () => {
       </>
     )
 
-    render(
-      await RootLayout({
-        children: multipleChildren,
-        params: mockParams,
-      })
-    )
+    render(await RootLayout({ children: multipleChildren }))
 
     expect(screen.getByTestId('child-1')).toBeInTheDocument()
     expect(screen.getByTestId('child-2')).toBeInTheDocument()
