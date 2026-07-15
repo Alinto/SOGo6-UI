@@ -9,10 +9,17 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ replace: jest.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
   useAppSelector: (
-    selector: (state: { calendarUi: { createEventRequested: boolean } }) => unknown
+    selector: (state: {
+      calendarUi: { createEventRequested: boolean }
+    }) => unknown
   ) =>
     selector({
       calendarUi: { createEventRequested: false },
@@ -81,6 +88,7 @@ jest.mock('@/features/calendars', () => {
     useGetCalendarEventByIdQuery: () => ({
       data: undefined,
       isFetching: false,
+      isSuccess: false,
     }),
     useDeleteCalendarEventMutation: () => [
       mockDeleteCalendarEvent,

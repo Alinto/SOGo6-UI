@@ -654,6 +654,40 @@
             "defaultSender": {
                 "string": "Unknown sender"
             }
+        },
+        "invitation": {
+            "label": {
+                "string": "Calendar invitation",
+                "description": "Heading for an iMIP calendar invitation in mail view"
+            },
+            "synced_to_calendar": {
+                "string": "This event has been added to your calendar.",
+                "description": "Info banner after inbound iMIP sync"
+            },
+            "event_cancelled": {
+                "string": "This event has been cancelled.",
+                "description": "Message for iMIP CANCEL mails"
+            },
+            "reply_from_attendee": {
+                "string": "{name} responded: {status}",
+                "description": "Message when an attendee sends an iMIP REPLY"
+            },
+            "sync_pending": {
+                "string": "Syncing with your calendar…",
+                "description": "Event not found yet after opening invitation mail"
+            },
+            "retry": {
+                "string": "Retry",
+                "description": "Retry loading calendar event for invitation"
+            },
+            "view_in_calendar": {
+                "string": "View in calendar",
+                "description": "Link to open the event in the calendar module"
+            },
+            "recurring_badge": {
+                "string": "Recurring event",
+                "description": "Badge for recurring invitations"
+            }
         }
     }
 }

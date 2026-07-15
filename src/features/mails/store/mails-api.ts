@@ -14,7 +14,6 @@ import type {
   FolderShareUser,
   ImapFolder,
   ImapMessages,
-  ImapMessagesAPIResponse,
   ImapMessagesBackendResponse,
   UpdateFolderBody,
 } from '../mails-types'
@@ -34,6 +33,7 @@ import {
   normalizeAttachments,
   normalizeImapFolder,
   normalizeImapFolderTree,
+  normalizeMailDetail,
   transformFolderMessagesResponse,
   type BackendResponse,
   type RawImapFolder,
@@ -191,7 +191,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             attachments: normalizeAttachments(mail.attachments),
           }
         }
-        return mail
+        return normalizeMailDetail(mail)
       },
       providesTags: (result, error, { mailId }) => [
         { type: MAIL_SLICE, id: mailId },
@@ -338,11 +338,15 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
         if (isFolderRemovingAction(arg.action)) {
           patchResults.push(
-            ...removeMailFromAllFolderCaches(dispatch, getState() as RootState, {
-              accountId: arg.accountId,
-              folder: arg.folder,
-              mailId: arg.mailId,
-            })
+            ...removeMailFromAllFolderCaches(
+              dispatch,
+              getState() as RootState,
+              {
+                accountId: arg.accountId,
+                folder: arg.folder,
+                mailId: arg.mailId,
+              }
+            )
           )
           try {
             await queryFulfilled
@@ -622,9 +626,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/export`,
         method: 'POST',
       }),
-      transformResponse: (
-        response: BackendResponse<{ job_id?: string }>
-      ) => response.data ?? {},
+      transformResponse: (response: BackendResponse<{ job_id?: string }>) =>
+        response.data ?? {},
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
           successTitle: 'folders_export.success.title.string',
@@ -683,7 +686,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           | (BackendResponse<ImapMessages> & { key?: string })
           | ImapMessages
       ) => {
-
         let mail: ImapMessages & { key?: string } =
           'data' in response ? { ...response.data } : response
 

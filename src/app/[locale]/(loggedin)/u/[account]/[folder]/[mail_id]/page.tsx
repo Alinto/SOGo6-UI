@@ -5,15 +5,18 @@ import MailContent from '@/features/mails/components/mail/mail-content'
 import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
+import MailInvitationWidget from '@/features/mails/components/mail/mail-invitation-widget'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
 import { parseEmailContact } from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
+import { useMailDetailNavigation } from '@/features/mails/hooks/use-mail-detail-navigation'
+import { useMailInvitation } from '@/features/mails/hooks/use-mail-invitation'
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
-import { useMailDetailNavigation } from '@/features/mails/hooks/use-mail-detail-navigation'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useAppSelector } from '@/lib/redux/hooks'
 
 import { Action, ActionId } from '@/features/mails/components/mail/types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -43,6 +46,9 @@ const MailPage: React.FC = () => {
     mailId: mail_id,
     accountId: account,
   })
+
+  const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
+  const invitation = useMailInvitation(data, currentUserEmail)
 
   const { handlePrint, isPrintDisabled } = usePrintMail(data)
   const { rightActions, handleMailAction } = useMailReplyActions({
@@ -150,7 +156,12 @@ const MailPage: React.FC = () => {
             accountId={account}
           />
         )}
-        <MailContent body={data.body} attachments={data.attachments} />
+        {invitation.kind !== 'none' ? (
+          <MailInvitationWidget state={invitation} />
+        ) : null}
+        {invitation.kind === 'none' || data.body?.trim() ? (
+          <MailContent body={data.body} attachments={data.attachments} />
+        ) : null}
       </div>
     </div>
   )

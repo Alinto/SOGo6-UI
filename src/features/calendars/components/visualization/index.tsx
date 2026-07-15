@@ -1,7 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import {
   Bell,
@@ -16,12 +15,14 @@ import {
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 import type {
-  AttendanceStatus,
   CalendarEvent,
   EventAttendee,
   EventReminder,
 } from '../../calendars-types'
-import { usePostEventAttendanceMutation } from '../../store/calendars-api'
+import {
+  RSVP_STATUSES,
+  useEventAttendance,
+} from '../../hooks/use-event-attendance'
 
 interface VisualizationProps {
   data: CalendarEvent
@@ -103,41 +104,14 @@ function AttendeeParticipationStatus({
   )
 }
 
-const RSVP_STATUSES: AttendanceStatus[] = ['accepted', 'tentative', 'declined']
-
 const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
   const t = useTranslations('CALENDARS')
-  const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
-  const [postAttendance, { isLoading: isAttendanceLoading }] =
-    usePostEventAttendanceMutation()
-
-  const normalizedUserEmail = currentUserEmail?.trim().toLowerCase() ?? ''
-
-  const rawAttendeeStatus = data.attendees?.find(
-    (a) => a.email.trim().toLowerCase() === normalizedUserEmail
-  )?.status
-
-  /** Map ICS needs-action to no highlighted RSVP button until user responds. */
-  const currentAttendeeStatus =
-    rawAttendeeStatus === 'needs-action' ? undefined : rawAttendeeStatus
-
-  const isAttendee = Boolean(
-    normalizedUserEmail &&
-    data.attendees?.some(
-      (a) => a.email.trim().toLowerCase() === normalizedUserEmail
-    )
-  )
-
-  const eventKey = data.key ?? data.id ?? undefined
-
-  const handleAttendance = async (status: AttendanceStatus) => {
-    if (!eventKey) return
-    await postAttendance({
-      eventKey,
-      status,
-      recurrence_id: data.recurrence_id ?? undefined,
-    }).unwrap()
-  }
+  const {
+    currentAttendeeStatus,
+    isAttendee,
+    handleAttendance,
+    isAttendanceLoading,
+  } = useEventAttendance(data)
 
   const visibility = data.visibility ?? 'public'
   const showAs = data.show_as ?? 'busy'
