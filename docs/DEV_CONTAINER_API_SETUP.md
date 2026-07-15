@@ -116,12 +116,11 @@ Check browser console (F12) for status messages, then:
 # Verify API is running
 docker ps | grep api
 
-# Test connectivity
-curl http://localhost:8000                    # From host
-curl http://host.docker.internal:8000        # From container
+# Test connectivity (from host)
+curl -fsS http://localhost:8000/api/user/v1/system || echo "API unreachable"
 
-# Run validation script
-./.devcontainer/validate-api.sh
+# From dev container
+curl -fsS http://host.docker.internal:8000/api/user/v1/system || echo "API unreachable"
 
 # Refresh page after fixing
 ```
@@ -178,7 +177,10 @@ nano .env.development                   # Edit API URL
 
 # Development
 npm run dev                             # Start dev server
-./.devcontainer/validate-api.sh         # Validate API connection
+
+# Validate API connection
+curl -fsS http://localhost:3000/env
+curl -fsS http://127.0.0.1:5000/api/user/v1/system
 
 # Debug
 docker ps                               # Check containers

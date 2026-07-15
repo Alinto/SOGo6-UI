@@ -24,8 +24,8 @@ const PasswordForm: React.FC = () => {
     defaultValues,
   })
 
-  function onSubmit(values: z.infer<typeof schema>) {
-    console.log(values)
+  function onSubmit(_values: z.infer<typeof schema>) {
+    // TODO: wire to password change API when available
   }
 
   return (
