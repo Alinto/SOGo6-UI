@@ -1,4 +1,8 @@
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
+import {
+  IMIP_FAKEAPI_EVENT_KEY,
+  IMIP_FAKEAPI_REQUEST_UID,
+} from './imip-mail-seed'
 
 function getToday(): Date {
   const today = new Date()
@@ -139,6 +143,39 @@ export function generateDefaultCalendarEvents(): Record<
           Date.now() - 2 * 24 * 60 * 60 * 1000
         ).toISOString(),
         sequence: 2,
+      },
+      {
+        id: IMIP_FAKEAPI_EVENT_KEY,
+        key: IMIP_FAKEAPI_EVENT_KEY,
+        calendar_id: 'personal-cal-1',
+        uid: IMIP_FAKEAPI_REQUEST_UID,
+        title: 'Product demo (iMIP)',
+        description: 'Invitation received by email (fakeApi iMIP seed)',
+        location: 'Virtual — Teams',
+        date_start: '2026-07-15T10:00:00.000Z',
+        date_end: '2026-07-15T11:00:00.000Z',
+        all_day: false,
+        timezone: 'Europe/Paris',
+        status: 'confirmed',
+        visibility: 'public',
+        show_as: 'busy',
+        organizer: {
+          email: 'c.martin@sogomail.eu',
+          name: 'Claire Martin',
+          role: 'chair',
+          status: 'accepted',
+        },
+        attendees: [
+          {
+            email: 'sogo-tests1@example.org',
+            name: 'John Paul',
+            role: 'required',
+            status: 'needs-action',
+            rsvp: true,
+          },
+        ],
+        related_to: [],
+        sequence: 0,
       },
       {
         id: 'evt_004',

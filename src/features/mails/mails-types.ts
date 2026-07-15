@@ -58,17 +58,28 @@ export interface ImapAttachments {
   count: number
 }
 
+/** Calendar / contact metadata attached to a mail (API: `mail_type_data`). */
+export interface MailTypeDataItem {
+  ics_content?: string
+  vcard_content?: string
+  /** Set by backend after inbound iMIP processing (phase 2). */
+  event_key?: string
+  method?: string
+}
+
 export interface ImapMessages {
   id?: string
   uid?: string
-  attachments: ImapAttachments | Array<{
-    contentType: string
-    displayUri: string
-    downloadUri: string
-    extension: string
-    filename: string
-    size: number
-  }>
+  attachments:
+    | ImapAttachments
+    | Array<{
+        contentType: string
+        displayUri: string
+        downloadUri: string
+        extension: string
+        filename: string
+        size: number
+      }>
   contentUri?: string
   seen: boolean
   answered: boolean
@@ -101,6 +112,11 @@ export interface ImapMessages {
   is_signed?: boolean
   valid?: boolean | null
   certificates?: unknown[]
+  /** Ex. `"event"`, `"contact"` (API snake_case). */
+  mail_type?: string[]
+  mailType?: string[]
+  mail_type_data?: MailTypeDataItem[]
+  mailTypeData?: MailTypeDataItem[]
 }
 
 export interface ImapMessagesAPIResponse {
@@ -147,13 +163,16 @@ export interface FolderShareUser {
 }
 
 export interface FolderShareData {
-  users: Record<string, {
-    uid: string
-    c_email?: string
-    cn?: string
-    userClass: 'normal-user' | 'public-user'
-    rights: FolderShareRights
-  }>
+  users: Record<
+    string,
+    {
+      uid: string
+      c_email?: string
+      cn?: string
+      userClass: 'normal-user' | 'public-user'
+      rights: FolderShareRights
+    }
+  >
 }
 
 export type ShareRightPreset = 'read' | 'write' | 'admin' | 'none'

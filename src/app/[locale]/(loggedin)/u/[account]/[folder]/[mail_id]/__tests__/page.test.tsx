@@ -1,7 +1,8 @@
-import '@testing-library/jest-dom'
+import authReducer from '@/features/auth/components/store/auth.slice'
 import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { configureStore } from '@reduxjs/toolkit'
+import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import { Provider } from 'react-redux'
 import MailPage from '../page'
@@ -9,12 +10,24 @@ import MailPage from '../page'
 const createTestStore = (preloadedState: Record<string, unknown> = {}) =>
   configureStore({
     reducer: {
+      auth: authReducer,
       mailNavigation: mailNavigationReducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().concat(apiSlice.middleware),
-    preloadedState,
+    preloadedState: {
+      auth: {
+        token: null,
+        user: {
+          uid: 'test',
+          cn: 'Test User',
+          email: 'test@example.com',
+        },
+        rememberMe: false,
+      },
+      ...preloadedState,
+    },
   })
 
 // Mock des hooks Next.js
@@ -56,13 +69,23 @@ jest.mock('@/features/mails/hooks/use-mail-reply-actions', () => ({
   })),
 }))
 
+jest.mock('@/features/mails/hooks/use-mail-invitation', () => ({
+  useMailInvitation: jest.fn(() => ({ kind: 'none' })),
+}))
+
+jest.mock('@/features/mails/components/mail/mail-invitation-widget', () =>
+  jest.fn(() => <div data-testid="mail-invitation-widget">Invitation</div>)
+)
+
 // Mock des composants
 jest.mock('@/features/mails/components/mail/mail-action-bar', () =>
   jest.fn(() => <div data-testid="mail-actions-bar">Mail Actions Bar</div>)
 )
 
 jest.mock('@/features/mails/components/mail/mail-detail-action-bar', () =>
-  jest.fn(() => <div data-testid="mail-detail-action-bar">Mail Detail Actions</div>)
+  jest.fn(() => (
+    <div data-testid="mail-detail-action-bar">Mail Detail Actions</div>
+  ))
 )
 
 jest.mock('@/features/mails/components/mail/mail-content', () =>
@@ -216,5 +239,43 @@ describe('MailPage', () => {
       </Provider>
     )
     expect(screen.getByTestId('mail-content')).toBeInTheDocument()
+  })
+
+  it('should render invitation widget when mail has calendar event', () => {
+    const { useGetMailQuery } = require('@/features/mails/store/mails-api')
+    const {
+      useMailInvitation,
+    } = require('@/features/mails/hooks/use-mail-invitation')
+
+    useGetMailQuery.mockReturnValue({
+      data: { ...mockMailData, mail_type: ['event'] },
+      isLoading: false,
+      isError: false,
+    })
+    useMailInvitation.mockReturnValue({
+      kind: 'invitation',
+      parsed: {
+        method: 'REQUEST',
+        uid: 'uid@test.org',
+        summary: 'Demo',
+        dtStart: '2026-07-15T10:00:00.000Z',
+        allDay: false,
+      },
+      eventKey: 'evt-1',
+      canRsvp: true,
+      event: {
+        id: 'evt-1',
+        calendar_id: 'cal-1',
+        title: 'Demo',
+        all_day: false,
+      },
+    })
+
+    render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
+    expect(screen.getByTestId('mail-invitation-widget')).toBeInTheDocument()
   })
 })

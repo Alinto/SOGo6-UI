@@ -1,9 +1,11 @@
 import type {
   ImapAttachments,
   ImapFolder,
+  ImapMessages,
   ImapMessagesAPIResponse,
   ImapMessagesBackendResponse,
   ImapMessagesList,
+  MailTypeDataItem,
 } from '../mails-types'
 
 /** Backend wraps every response in `{ data, error_code, error_msg }`. */
@@ -67,7 +69,9 @@ export function normalizeImapFolder(folder: RawImapFolder): ImapFolder {
   } as ImapFolder
 }
 
-export function normalizeImapFolderTree(folders: RawImapFolder[]): ImapFolder[] {
+export function normalizeImapFolderTree(
+  folders: RawImapFolder[]
+): ImapFolder[] {
   return folders.map(normalizeImapFolder)
 }
 
@@ -125,6 +129,36 @@ export function mapMailToListItem(mail: RawMailListItem): ImapMessagesList {
  * @param contents - Contents from the backend
  * @returns Content of the mail or empty string if unavailable
  */
+function normalizeMailTypeData(raw: unknown): MailTypeDataItem[] {
+  if (!Array.isArray(raw)) return []
+  return raw.filter(
+    (item): item is MailTypeDataItem =>
+      typeof item === 'object' && item !== null
+  )
+}
+
+/** Normalizes mail detail fields from API (snake_case + camelCase aliases). */
+export function normalizeMailDetail(mail: ImapMessages): ImapMessages {
+  const mailType = normalizeListMailTypes(
+    mail.mail_type !== undefined && mail.mail_type !== null
+      ? mail.mail_type
+      : mail.mailType
+  )
+  const mailTypeData = normalizeMailTypeData(
+    mail.mail_type_data !== undefined && mail.mail_type_data !== null
+      ? mail.mail_type_data
+      : mail.mailTypeData
+  )
+
+  return {
+    ...mail,
+    mail_type: mailType,
+    mailType,
+    mail_type_data: mailTypeData,
+    mailTypeData,
+  }
+}
+
 export function extractBodyFromContents(
   contents: Array<{ content: string; contentType: string }> | undefined
 ): string {

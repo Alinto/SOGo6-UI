@@ -52,6 +52,7 @@ import {
 } from '@/lib/utils/form-dialog-layout'
 import { Pencil } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type { SlotInfo } from 'react-big-calendar'
 
@@ -101,6 +102,9 @@ function findCalendarByRef(
 
 const CalendarPage = () => {
   const t = useTranslations('CALENDARS')
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const deepLinkEventKey = searchParams.get('event')
   const calendarState = useCalendarState()
   const { isCalendarVisible } = useCalendarVisibility()
   const dispatch = useAppDispatch()
@@ -124,6 +128,12 @@ const CalendarPage = () => {
       { skip: eventKeyForQuery === null }
     )
 
+  const { data: deepLinkEvent, isSuccess: isDeepLinkLoaded } =
+    useGetCalendarEventByIdQuery(
+      { eventKey: deepLinkEventKey ?? '' },
+      { skip: !deepLinkEventKey }
+    )
+
   const handleSelectEvent = useCallback((event: CalendarEvent) => {
     setDialogMode('view')
     setSelectedEvent(event)
@@ -132,6 +142,28 @@ const CalendarPage = () => {
   useEffect(() => {
     return registerCalendarEventSelection(handleSelectEvent)
   }, [handleSelectEvent])
+
+  useEffect(() => {
+    if (!deepLinkEventKey || !isDeepLinkLoaded || !deepLinkEvent) return
+
+    queueMicrotask(() => {
+      handleSelectEvent(deepLinkEvent)
+    })
+
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('event')
+    const query = params.toString()
+    router.replace(query ? `/calendars?${query}` : '/calendars', {
+      scroll: false,
+    })
+  }, [
+    deepLinkEvent,
+    deepLinkEventKey,
+    handleSelectEvent,
+    isDeepLinkLoaded,
+    router,
+    searchParams,
+  ])
 
   useEffect(() => {
     if (createEventRequested) {
