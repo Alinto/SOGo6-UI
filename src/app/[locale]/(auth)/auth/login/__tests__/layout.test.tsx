@@ -1,3 +1,4 @@
+import { useAppSelector } from '@/lib/redux/hooks'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import Layout from '../layout'
@@ -10,7 +11,22 @@ jest.mock('next/image', () => ({
   ),
 }))
 
+const mockPush = jest.fn()
+jest.mock('next/navigation', () => ({
+  useRouter: () => ({ push: mockPush }),
+}))
+
+// Not authenticated by default; individual tests can override.
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: jest.fn(() => false),
+}))
+
 describe('Auth Login Layout', () => {
+  afterEach(() => {
+    jest.mocked(useAppSelector).mockReturnValue(false)
+    mockPush.mockClear()
+  })
+
   it('renders children correctly', () => {
     render(
       <Layout>
@@ -67,5 +83,18 @@ describe('Auth Login Layout', () => {
     const gridContainer = container.querySelector('.grid')
     expect(gridContainer).toBeInTheDocument()
     expect(gridContainer).toHaveClass('min-h-svh', 'lg:grid-cols-2')
+  })
+
+  it('redirects to /u/0/INBOX and does not render children when already authenticated', () => {
+    jest.mocked(useAppSelector).mockReturnValue(true)
+
+    render(
+      <Layout>
+        <div data-testid="test-content">Test Content</div>
+      </Layout>
+    )
+
+    expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
+    expect(screen.queryByTestId('test-content')).not.toBeInTheDocument()
   })
 })
