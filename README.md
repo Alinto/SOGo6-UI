@@ -1,6 +1,6 @@
 <div align="center">
 
-# SOGo 6 — Web Frontend
+# SOGo 6 - Web Frontend
 
 **A modern webmail and groupware client (Next.js 16) for the [SOGo 6](https://www.sogo.nu/) API.**
 
@@ -10,11 +10,13 @@ SOGo 6 is a new iteration with a total overhaul. The SOGo 5 codebase is availabl
 
 </div>
 
+> **Alpha release** - The product is still evolving. For completed features, planned work, and overall progress, see the [SOGo 6 development plan](https://www.sogo.nu/files/docs/v6/SOGo6-DevDoc/alpha/SOGo6Plan.html).
+
 ---
 
 ## Overview
 
-Modern web client (App Router, React 19, strict TypeScript) for mail, calendars, address books, and part of administration. It talks to the **SOGo 6 backend** over HTTP (`/api/user/v1`, etc.) — not the legacy SOGo 5 UI stack.
+Modern web client (App Router, React 19, strict TypeScript) for mail, calendars, address books, and part of administration. It talks to the **SOGo 6 backend** over HTTP (`/api/user/v1`, etc.) - not the legacy SOGo 5 UI stack.
 
 In **development**, if the real backend is unreachable, the app may fall back to **mock** routes under `/fakeApi`. In **production**, a missing or invalid API configuration surfaces as an error (no silent mock fallback).
 
@@ -139,7 +141,7 @@ Production image: root **`Dockerfile`** (`output: 'standalone'`, Node 24, port *
 
 > **`Dockerfile.static`** is a legacy static-export experiment and is **not** compatible with the current app (proxy, `/env`, `/fakeApi`). Use the main **`Dockerfile`** only.
 
-Environment files (`.env.development`, `.env.local`) are **not** baked into the image — configure at **container start** (same variables as [Configuration](#configuration), exposed via **`GET /env`**).
+Environment files (`.env.development`, `.env.local`) are **not** baked into the image - configure at **container start** (same variables as [Configuration](#configuration), exposed via **`GET /env`**).
 
 ### Build
 
@@ -189,7 +191,7 @@ curl -s http://127.0.0.1:5000/api/user/v1/system
 
 (`jq` is optional for pretty-printing.)
 
-Open [http://localhost:3000](http://localhost:3000) — Network tab should show `127.0.0.1:5000/api/user/v1/...`, not `/fakeApi/...`.
+Open [http://localhost:3000](http://localhost:3000) - Network tab should show `127.0.0.1:5000/api/user/v1/...`, not `/fakeApi/...`.
 
 ### Production layout (recommended)
 
