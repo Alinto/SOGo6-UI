@@ -145,9 +145,9 @@
         "attachment": {
             "string": "Insert attachment",
             "context": "Button to insert an attachment into the message body",
-            "title": {
-                "string": "Attachment",
-                "context": "Title for the attachment button"
+            "download": {
+                "string": "Download attachment",
+                "context": "Title for the download attachment button"
             }
         },
         "return_receipt": {
