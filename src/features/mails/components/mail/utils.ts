@@ -1,22 +1,86 @@
+import { getCachedEnvVars } from '@/lib/env-service'
 import React, { useEffect, useRef } from 'react'
 
-export function parseEmailContact(str: string | { name: string; email: string }) {
+// Resolve API base URL at call time (env may load after module init)
+function getApiBaseUrl(): string {
+  const fromEnv = getCachedEnvVars()?.REACT_APP_API_BASE_URL
+  if (fromEnv && fromEnv !== '/fakeApi') {
+    return fromEnv
+  }
+  return '/api/user/v1'
+}
+
+/**
+ * Builds the complete URL for an attachment
+ * If the URL is relative, adds the API base URL
+ * Properly encodes special characters (spaces, accents, etc.)
+ *
+ * @param uri - Attachment URI (relative or absolute)
+ * @returns Complete URL to download the attachment
+ */
+export function buildAttachmentUrl(uri: string): string {
+  // Edge case: Empty or undefined URI
+  if (!uri) {
+    return ''
+  }
+
+  // If the URL is already absolute (http:// or https://), return it as is
+  if (uri.startsWith('http://') || uri.startsWith('https://')) {
+    return uri
+  }
+
+  // If the URL is relative to /fakeApi, return it as is (Next.js route)
+  if (uri.startsWith('/fakeApi')) {
+    return uri
+  }
+
+  // Normalize the base URL (remove trailing slash)
+  const base = getApiBaseUrl()
+  const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base
+
+  // Normalize the URI (remove leading slash)
+  const normalizedUri = uri.startsWith('/') ? uri.slice(1) : uri
+
+  // Encode each path segment separately to handle special characters
+  // This preserves "/" but encodes spaces, accents, apostrophes, etc.
+  const segments = normalizedUri.split('/')
+  const encodedSegments = segments.map((segment) => encodeURIComponent(segment))
+  const encodedUri = encodedSegments.join('/')
+
+  return `${normalizedBase}/${encodedUri}`
+}
+
+export function buildAttachmentsUrl({
+  accountId,
+  folder,
+  mailId,
+}: {
+  accountId: string
+  folder: string
+  mailId: string
+}): string {
+  return `mailboxes/${accountId}/folders/${folder}/mails/${mailId}/attachments/`
+}
+
+export function parseEmailContact(
+  str: string | { name: string; email: string }
+) {
   if (typeof str === 'object' && str !== null) {
     return {
       name: str.name || '',
       email: str.email || '',
     }
   }
-  
+
   if (typeof str !== 'string') {
     return { name: '', email: '' }
   }
-  
+
   const match = str.trim().match(/^(.*)\s*<([^>]+)>$/)
   if (match) {
     return { name: match[1].trim(), email: match[2].trim() }
   }
-  
+
   return { name: '', email: str.trim() }
 }
 
@@ -97,42 +161,46 @@ export function blockExternalImages(html: string): string {
 /**
  * Sanitize HTML pour supprimer les vecteurs XSS courants
  * Protection contre : <script>, event handlers, javascript:, iframes, etc.
- * 
+ *
  * @param html - HTML brut du mail
  * @returns HTML nettoyé et sécurisé
  */
 export function sanitizeEmailHtml(html: string): string {
   if (!html || typeof html !== 'string') return ''
-  
+
   try {
-    return html
-      // 1. Supprimer <script> (avec contenu)
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-      
-      // 2. Supprimer tous les event handlers (onclick, onerror, onload, etc.)
-      .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
-      .replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
-      
-      // 3. Bloquer javascript: dans les attributs href
-      .replace(/(href\s*=\s*["'])javascript:/gi, '$1about:blank#blocked-')
-      
-      // 4. Bloquer data: URI (sauf images)
-      .replace(/(src\s*=\s*["'])data:(?!image)/gi, '$1about:blank#blocked-')
-      
-      // 5. Neutraliser <iframe>, <object>, <embed>
-      .replace(/<(iframe|object|embed)(\s[^>]*)?>/gi, '<div data-blocked="$1"$2>')
-      .replace(/<\/(iframe|object|embed)>/gi, '</div>')
-      
-      // 6. Supprimer <base> (peut rediriger tous les liens relatifs)
-      .replace(/<base\b[^>]*>/gi, '')
-      
-      // 7. Neutralize <form> (no unauthorized submit)
-      .replace(/<form(\s[^>]*)?>/gi, '<div data-blocked="form"$1>')
-      .replace(/<\/form>/gi, '</div>')
-      
-      // 8. Supprimer <meta> refresh (redirection auto)
-      .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh[^>]*>/gi, '')
-      
+    return (
+      html
+        // 1. Supprimer <script> (avec contenu)
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+
+        // 2. Supprimer tous les event handlers (onclick, onerror, onload, etc.)
+        .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
+        .replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
+
+        // 3. Bloquer javascript: dans les attributs href
+        .replace(/(href\s*=\s*["'])javascript:/gi, '$1about:blank#blocked-')
+
+        // 4. Bloquer data: URI (sauf images)
+        .replace(/(src\s*=\s*["'])data:(?!image)/gi, '$1about:blank#blocked-')
+
+        // 5. Neutraliser <iframe>, <object>, <embed>
+        .replace(
+          /<(iframe|object|embed)(\s[^>]*)?>/gi,
+          '<div data-blocked="$1"$2>'
+        )
+        .replace(/<\/(iframe|object|embed)>/gi, '</div>')
+
+        // 6. Supprimer <base> (peut rediriger tous les liens relatifs)
+        .replace(/<base\b[^>]*>/gi, '')
+
+        // 7. Neutralize <form> (no unauthorized submit)
+        .replace(/<form(\s[^>]*)?>/gi, '<div data-blocked="form"$1>')
+        .replace(/<\/form>/gi, '</div>')
+
+        // 8. Supprimer <meta> refresh (redirection auto)
+        .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh[^>]*>/gi, '')
+    )
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('❌ [sanitizeEmailHtml] Error:', error)
@@ -143,35 +211,35 @@ export function sanitizeEmailHtml(html: string): string {
 
 /**
  * Displays the HTML content of an email in an isolated Shadow DOM
- * 
+ *
  * Security architecture in 3 layers:
  * 1. Shadow DOM : CSS isolation (mail styles don't affect the UI)
  * 2. Sanitization : Removal of XSS vectors (scripts, event handlers)
  * 3. Content Security : No execution of inline JavaScript
- * 
+ *
  * Features :
  * - Performance optimized (style created once)
  * - Responsive design
  * - Neutral styles (light mode only)
- * 
+ *
  * @param html - HTML content of the mail (will be automatically sanitized)
  */
 export const ShadowEmailContent = ({ html }: { html: string }) => {
   const hostRef = useRef<HTMLDivElement>(null)
   const shadowRootRef = useRef<ShadowRoot | null>(null)
-  
+
   // Create Shadow DOM and styles ONLY ONCE
   useEffect(() => {
     const host = hostRef.current
     if (!host) return
-    
+
     // If already created, skip
     if (shadowRootRef.current) return
-    
+
     // Create Shadow DOM
     const shadowRoot = host.attachShadow({ mode: 'open' })
     shadowRootRef.current = shadowRoot
-    
+
     // Add base styles
     const style = document.createElement('style')
     style.textContent = `
@@ -288,37 +356,35 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
       }
     `
     shadowRoot.appendChild(style)
-    
+
     // Create content container
     const contentContainer = document.createElement('div')
     contentContainer.className = 'mail-content-wrapper'
     shadowRoot.appendChild(contentContainer)
-    
   }, []) // Executed ONLY ONCE at mount
-  
+
   // Update content when HTML changes
   useEffect(() => {
     const shadowRoot = shadowRootRef.current
     if (!shadowRoot) return
-    
+
     const contentContainer = shadowRoot.querySelector('.mail-content-wrapper')
     if (!contentContainer) return
-    
+
     // Sanitize puis injecter
     const cleanHtml = sanitizeEmailHtml(html || '')
     contentContainer.innerHTML = cleanHtml
-    
+
     if (process.env.NODE_ENV === 'development' && html && !cleanHtml) {
       console.warn('⚠️ [ShadowEmailContent] HTML was sanitized to empty string')
     }
-    
   }, [html])
-  
+
   // Disable false positive: ref is only accessed in useEffect, not during render
   // eslint-disable-next-line
   return React.createElement('div', {
     ref: hostRef,
     className: 'mail-shadow-root',
-    style: { minHeight: '100px' }
+    style: { minHeight: '100px' },
   })
 }

@@ -9,10 +9,13 @@ import { MailReturnButton } from '@/features/mails/components/mail/mail-return-b
 import MailSubject from '@/features/mails/components/mail/mail-subject'
 import type { Action } from '@/features/mails/components/mail/types'
 import { ActionId } from '@/features/mails/components/mail/types'
-import { parseEmailContact } from '@/features/mails/components/mail/utils'
+import {
+  buildAttachmentsUrl,
+  parseEmailContact,
+} from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
-import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
@@ -45,13 +48,14 @@ const VisualizationPage: React.FC = () => {
 
   const { handlePrint, isPrintDisabled } = usePrintMail(data)
   const { folderType } = useCurrentFolder(folder, account)
-  const { rightActions, handleMailAction, hideReplyActions } = useMailReplyActions({
-    mail: data,
-    mailId: mail_id,
-    folder,
-    accountId: account,
-    folderType,
-  })
+  const { rightActions, handleMailAction, hideReplyActions } =
+    useMailReplyActions({
+      mail: data,
+      mailId: mail_id,
+      folder,
+      accountId: account,
+      folderType,
+    })
   const { folderSpecificActions, handleFolderSpecificAction } =
     useMailDetailFolderActions({
       folderType,
@@ -129,7 +133,10 @@ const VisualizationPage: React.FC = () => {
           <div className="ml-auto">
             {isMobile ? (
               <MailActionsBar
-                actions={[...folderSpecificActions, ...(hideReplyActions ? [] : rightActions)]}
+                actions={[
+                  ...folderSpecificActions,
+                  ...(hideReplyActions ? [] : rightActions),
+                ]}
                 onAction={(idx, action) => {
                   if (handleFolderSpecificAction(action)) return
                   handleMailAction(idx, action)
@@ -166,7 +173,15 @@ const VisualizationPage: React.FC = () => {
               accountId={account}
             />
           )}
-          <MailContent body={data.body} attachments={data.attachments} />
+          <MailContent
+            body={data.body}
+            attachments={data.attachments}
+            attachmentsUrl={buildAttachmentsUrl({
+              accountId: account,
+              folder,
+              mailId: mail_id,
+            })}
+          />
         </div>
       </div>
     </div>

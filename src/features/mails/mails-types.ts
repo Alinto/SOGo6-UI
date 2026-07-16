@@ -48,8 +48,6 @@ export interface ImapAttachmentPart {
   name: string
   contentType: string
   size: number
-  downloadUri: string
-  displayUri: string
 }
 
 export interface ImapAttachments {
@@ -74,8 +72,6 @@ export interface ImapMessages {
     | ImapAttachments
     | Array<{
         contentType: string
-        displayUri: string
-        downloadUri: string
         extension: string
         filename: string
         size: number

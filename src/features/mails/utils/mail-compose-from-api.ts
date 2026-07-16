@@ -14,8 +14,6 @@ type RawApiAttachment = {
   filename: string
   contentType: string
   size: number
-  downloadUri: string
-  displayUri: string
   extension: string
 }
 
@@ -92,10 +90,15 @@ function escapeHtml(value: string): string {
     .replace(/'/g, '&#39;')
 }
 
-function formatContactForForward(contact?: { name?: string; email?: string }): string {
+function formatContactForForward(contact?: {
+  name?: string
+  email?: string
+}): string {
   if (!contact?.email) return ''
   const safeEmail = escapeHtml(contact.email)
-  return contact.name ? `${escapeHtml(contact.name)} &lt;${safeEmail}&gt;` : safeEmail
+  return contact.name
+    ? `${escapeHtml(contact.name)} &lt;${safeEmail}&gt;`
+    : safeEmail
 }
 
 function formatDateForForward(date: number | string): string {

@@ -183,7 +183,7 @@ export function extractBodyFromContents(
 
 /**
  * Normalizes attachments from the backend to the ImapAttachments format
- * Backend : Array<{filename, contentType, size, downloadUri, displayUri, extension}>
+ * Backend : Array<{filename, contentType, size, extension}>
  * Frontend : ImapAttachments {parts: [...], count, zipUri?}
  * @param attachments - Raw attachments from the backend or already normalized
  * @returns Format ImapAttachments unifié
@@ -195,8 +195,6 @@ export function normalizeAttachments(
         filename: string
         contentType: string
         size: number
-        downloadUri: string
-        displayUri: string
         extension: string
       }>
 ): ImapAttachments {
@@ -218,8 +216,6 @@ export function normalizeAttachments(
         name: att.filename || 'unnamed',
         contentType: att.contentType || 'application/octet-stream',
         size: att.size || 0,
-        downloadUri: att.downloadUri || '',
-        displayUri: att.displayUri || '',
       }))
 
       return {
