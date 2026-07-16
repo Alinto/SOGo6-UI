@@ -1,5 +1,10 @@
 import type { ImapFolder } from '../../mails-types'
+import { FOLDER_RENAME_API_ENABLED } from '../can-rename-folder'
 import { getFolderActions } from '../folder-actions'
+
+const describeWhenRenameApiEnabled = FOLDER_RENAME_API_ENABLED
+  ? describe
+  : describe.skip
 
 const baseFolder = (
   overrides: Partial<ImapFolder> = {}
@@ -38,17 +43,25 @@ describe('getFolderActions', () => {
 
   it('adds normal-only actions for NORMAL folders', () => {
     const actions = getFolderActions(baseFolder({ type: 'NORMAL' }))
-    expect(actions.map((action) => action.id)).toEqual([
+    const expected = [
       'mark_as_read',
       'new_subfolder',
       'sharing',
       'export',
       'expunge',
-      'rename',
+      ...(FOLDER_RENAME_API_ENABLED ? (['rename'] as const) : []),
       'move_to',
       'set_as',
       'delete',
-    ])
+    ]
+    expect(actions.map((action) => action.id)).toEqual(expected)
+  })
+
+  describeWhenRenameApiEnabled('rename action', () => {
+    it('includes rename for NORMAL folders when API is enabled', () => {
+      const actions = getFolderActions(baseFolder({ type: 'NORMAL' }))
+      expect(actions.some((action) => action.id === 'rename')).toBe(true)
+    })
   })
 
   it('disables backend-blocked actions', () => {
