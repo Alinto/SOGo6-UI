@@ -1,40 +1,40 @@
 import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import {
-  apiSlice,
-  CALENDAR_EVENTS_SLICE,
   CALENDARS_SLICE,
+  CALENDAR_EVENTS_SLICE,
   CALENDAR_SYNC_SLICE,
   USER_SEARCH_SLICE,
+  apiSlice,
 } from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
 import { BaseQueryFn, EndpointBuilder, skipToken } from '@reduxjs/toolkit/query'
 import type {
   ApiCalendarEventResponse,
+  ApiCalendarEventsResponse,
   ApiCalendarResponse,
   ApiCalendarsResponse,
-  ApiCalendarEventsResponse,
+  ApiDataResponse,
   AttendanceStatus,
   Calendar,
   CalendarCreateBody,
   CalendarEvent,
   CalendarEventCreateBody,
-  EventRecurrence,
-  CalendarEventQueryArgs,
   CalendarEventUpdateBody,
   CalendarEventsResponse,
+  CalendarSyncResult,
+  CalendarSyncStatus,
   CalendarUpdateBody,
   CalendarsResponse,
-  FreeBusyRequest,
-  FreeBusyApiResponse,
-  UserSearchResult,
+  EventRecurrence,
   ExternalCalendarCreateBody,
   ExternalCalendarUpdateBody,
-  CalendarSyncStatus,
-  CalendarSyncResult,
-  ApiDataResponse,
+  FreeBusyApiResponse,
+  FreeBusyRequest,
+  UserSearchResult,
 } from '../calendars-types'
 import { DEFAULT_CALENDAR_COLOR } from '../calendars-types'
+import { patchEventInCachedTimeRangeQueries } from './calendars-events-cache'
 
 const userSearchUrl = () => 'users/search'
 
@@ -199,8 +199,8 @@ function normalizeCalendarResponse(
 }
 
 function normalizeCalendarEvent(event: CalendarEvent): CalendarEvent {
-  const startDate = event.date_start 
-  const endDate = event.date_end 
+  const startDate = event.date_start
+  const endDate = event.date_end
   const calendarId = event.calendar_id ?? event.calendar_key ?? null
 
   return {
@@ -249,88 +249,8 @@ type UpdateQueryDataFn = <T>(
   updateRecipe: (draft: T) => void
 ) => UnknownAction
 
-const updateQueryData = apiSlice.util.updateQueryData as unknown as UpdateQueryDataFn
-
-function eventMatchesKey(event: CalendarEvent, eventKey: string): boolean {
-  return (
-    event.id === eventKey ||
-    event.key === eventKey ||
-    (event.uid != null && event.uid === eventKey)
-  )
-}
-
-type CachedEventsQueryEntry = {
-  endpointName?: string
-  originalArgs?: unknown
-  data?: CalendarEvent[]
-}
-
-function patchEventsInCachedQuery(
-  dispatch: (action: UnknownAction) => void,
-  entry: CachedEventsQueryEntry,
-  eventKey: string,
-  updatedEvent: CalendarEvent
-) {
-  if (!entry.originalArgs || !Array.isArray(entry.data)) return
-
-  const patchFn = (draft: CalendarEvent[]) => {
-    const idx = draft.findIndex((e) => eventMatchesKey(e, eventKey))
-    if (idx >= 0) {
-      draft[idx] = {
-        ...draft[idx],
-        ...updatedEvent,
-        calendar_id: updatedEvent.calendar_id ?? draft[idx].calendar_id,
-      }
-    }
-  }
-
-  if (entry.endpointName === 'getEvents') {
-    dispatch(
-      updateQueryData<CalendarEvent[]>(
-        'getEvents',
-        entry.originalArgs as { startDate: string; endDate: string },
-        patchFn
-      )
-    )
-  } else if (entry.endpointName === 'getEventsInTimeRange') {
-    dispatch(
-      updateQueryData<CalendarEvent[]>(
-        'getEventsInTimeRange',
-        entry.originalArgs as {
-          calendarIds: string[]
-          startDate: string
-          endDate: string
-        },
-        patchFn
-      )
-    )
-  }
-}
-
-/** Keep grid/list caches in sync after attendance without waiting for refetch. */
-function patchEventInCachedTimeRangeQueries(
-  dispatch: (action: UnknownAction) => void,
-  getState: () => unknown,
-  eventKey: string,
-  updatedEvent: CalendarEvent
-) {
-  const apiState = (getState() as {
-    api?: { queries?: Record<string, CachedEventsQueryEntry> }
-  }).api?.queries
-
-  if (!apiState) return
-
-  for (const entry of Object.values(apiState)) {
-    if (
-      entry?.endpointName !== 'getEvents' &&
-      entry?.endpointName !== 'getEventsInTimeRange'
-    ) {
-      continue
-    }
-
-    patchEventsInCachedQuery(dispatch, entry, eventKey, updatedEvent)
-  }
-}
+const updateQueryData = apiSlice.util
+  .updateQueryData as unknown as UpdateQueryDataFn
 
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
@@ -345,7 +265,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: (key) => calendarUrl(key),
       transformResponse: (response: ApiCalendarResponse | Calendar) =>
         normalizeCalendarResponse(response),
-      providesTags: (result, error, key) => [{ type: CALENDARS_SLICE, id: key }],
+      providesTags: (result, error, key) => [
+        { type: CALENDARS_SLICE, id: key },
+      ],
     }),
     createCalendar: builder.mutation<Calendar, CalendarCreateBody>({
       query: (body) => ({
@@ -468,10 +390,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
 
     // Calendar Events endpoints
-    getCalendarEventById: builder.query<
-      CalendarEvent,
-      { eventKey: string }
-    >({
+    getCalendarEventById: builder.query<CalendarEvent, { eventKey: string }>({
       query: ({ eventKey }) => eventUrl(eventKey),
       transformResponse: (response: ApiCalendarEventResponse | CalendarEvent) =>
         normalizeCalendarEvent('data' in response ? response.data : response),
@@ -497,7 +416,11 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
     updateCalendarEvent: builder.mutation<
       CalendarEvent,
-      { eventKey: string; body: CalendarEventUpdateBody; silentSuccess?: boolean }
+      {
+        eventKey: string
+        body: CalendarEventUpdateBody
+        silentSuccess?: boolean
+      }
     >({
       query: ({ eventKey, body }) => ({
         url: eventUrl(eventKey),
@@ -508,10 +431,25 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         normalizeCalendarEvent('data' in response ? response.data : response),
       invalidatesTags: (result, error, arg) =>
         arg.silentSuccess ? [] : [CALENDAR_EVENTS_SLICE],
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getState }) {
         if (arg.silentSuccess) {
           try {
-            await queryFulfilled
+            const { data: updatedEvent } = await queryFulfilled
+            // Drag/resize skips tag invalidation (no toast/refetch flicker);
+            // patch cached time-range queries so view switches keep the new dates.
+            dispatch(
+              updateQueryData<CalendarEvent>(
+                'getCalendarEventById',
+                { eventKey: arg.eventKey },
+                () => updatedEvent
+              )
+            )
+            patchEventInCachedTimeRangeQueries(
+              dispatch,
+              getState,
+              arg.eventKey,
+              updatedEvent
+            )
           } catch {
             await notifyUpdateCalendarEvent(dispatch, queryFulfilled)
           }
@@ -702,12 +640,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       CalendarEvent[],
       { calendarIds: string[]; search: string }
     >({
-      queryFn: async (
-        { calendarIds, search },
-        api,
-        _options,
-        baseQuery
-      ) => {
+      queryFn: async ({ calendarIds, search }, api, _options, baseQuery) => {
         if (search.length < 2 || calendarIds.length === 0) {
           return { data: [] }
         }
@@ -785,9 +718,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: userSearchUrl(),
         params: { q, limit },
       }),
-      transformResponse: (response: {
-        data: { users: UserSearchResult[] }
-      }) => response.data.users,
+      transformResponse: (response: { data: { users: UserSearchResult[] } }) =>
+        response.data.users,
       providesTags: (result, error, { q, limit = 10 }) => [
         { type: USER_SEARCH_SLICE, id: `${q}:${limit}` },
       ],
@@ -808,30 +740,21 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           await queryFulfilled
 
           dispatch(
-            updateQueryData<Calendar[]>(
-              'getCalendars',
-              undefined,
-              (draft) => {
-                const calendar = draft.find(
-                  (cal) => cal.key === id || cal.id === id
-                )
-                if (calendar) calendar.u_hidden = hidden
-              }
-            )
+            updateQueryData<Calendar[]>('getCalendars', undefined, (draft) => {
+              const calendar = draft.find(
+                (cal) => cal.key === id || cal.id === id
+              )
+              if (calendar) calendar.u_hidden = hidden
+            })
           )
 
           dispatch(
-            updateQueryData<Calendar | null>(
-              'getCalendarById',
-              id,
-              (draft) => {
-                if (draft) {
-                  draft.u_hidden = hidden
-                }
+            updateQueryData<Calendar | null>('getCalendarById', id, (draft) => {
+              if (draft) {
+                draft.u_hidden = hidden
               }
-            )
+            })
           )
-
         } catch {
           // Local-only visibility updates should fail silently.
         }
