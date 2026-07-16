@@ -46,15 +46,20 @@ jest.mock('@/components/ui/sidebar', () => ({
 }))
 
 jest.mock('@/components/ui/tooltip', () => ({
-  TooltipWrapper: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipWrapper: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }))
 
 jest.mock('lucide-react/dynamic', () => ({
-  DynamicIcon: ({ name }: { name: string }) => <span data-testid={`icon-${name}`} />,
+  DynamicIcon: ({ name }: { name: string }) => (
+    <span data-testid={`icon-${name}`} />
+  ),
 }))
 
-import SidebarItem from '../sidebar-item'
+import { FOLDER_RENAME_API_ENABLED } from '@/features/mails/utils/can-rename-folder'
 import { useProfile } from '@/features/user-profile'
+import SidebarItem from '../sidebar-item'
 
 // --- Helper ---
 
@@ -127,7 +132,15 @@ describe('SidebarItem', () => {
       folderType: 'NORMAL' as const,
     }
 
-    it('should show rename for user-created folders', () => {
+    it('should show rename for user-created folders when rename API is enabled', () => {
+      if (!FOLDER_RENAME_API_ENABLED) {
+        mockProfile()
+        render(<SidebarItem {...defaultProps} {...folderProps} />)
+        expect(
+          screen.queryByText('folders.actions.rename.string')
+        ).not.toBeInTheDocument()
+        return
+      }
       mockProfile()
       render(<SidebarItem {...defaultProps} {...folderProps} />)
       expect(
@@ -167,7 +180,9 @@ describe('SidebarItem', () => {
           accountId="0"
         />
       )
-      expect(screen.getByText('folders.actions.delete.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('folders.actions.delete.string')
+      ).toBeInTheDocument()
       expect(
         screen.queryByText('folders.actions.new_subfolder.string')
       ).not.toBeInTheDocument()
