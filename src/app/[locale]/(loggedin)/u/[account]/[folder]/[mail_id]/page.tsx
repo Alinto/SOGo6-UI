@@ -8,7 +8,10 @@ import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobil
 import MailInvitationWidget from '@/features/mails/components/mail/mail-invitation-widget'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
-import { parseEmailContact } from '@/features/mails/components/mail/utils'
+import {
+  buildAttachmentsUrl,
+  parseEmailContact,
+} from '@/features/mails/components/mail/utils'
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
 import { useMailDetailNavigation } from '@/features/mails/hooks/use-mail-detail-navigation'
 import { useMailInvitation } from '@/features/mails/hooks/use-mail-invitation'
@@ -160,7 +163,15 @@ const MailPage: React.FC = () => {
           <MailInvitationWidget state={invitation} />
         ) : null}
         {invitation.kind === 'none' || data.body?.trim() ? (
-          <MailContent body={data.body} attachments={data.attachments} />
+          <MailContent
+            body={data.body}
+            attachments={data.attachments}
+            attachmentsUrl={buildAttachmentsUrl({
+              accountId: account,
+              folder,
+              mailId: mail_id,
+            })}
+          />
         ) : null}
       </div>
     </div>

@@ -160,6 +160,16 @@
                     "string": "Download all attachments",
                     "description": "ARIA label for the download all attachments link"
                 },
+                "download_error": {
+                    "title": {
+                        "string": "Download failed",
+                        "description": "Title of the error toast shown when an attachment fails to download"
+                    },
+                    "message": {
+                        "string": "The attachment could not be downloaded. Please try again.",
+                        "description": "Message of the error toast shown when an attachment fails to download"
+                    }
+                },
                 "more_attachments_count": {
                     "string": "+{count}",
                     "description": "Compact label to reveal additional hidden attachments (e.g. +3)"
