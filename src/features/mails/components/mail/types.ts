@@ -85,8 +85,6 @@ export type ImapAttachmentPart = {
   name: string
   contentType: string
   size: number
-  downloadUri: string
-  displayUri: string
 }
 
 export type AttachmentNameProps = {
@@ -98,6 +96,7 @@ export type AttachmentNameProps = {
 export type MailAttachmentProps = {
   part: ImapAttachmentPart
   className?: string
+  attachmentsUrl?: string
 }
 
 export type ImapAttachments = {
@@ -109,6 +108,7 @@ export type ImapAttachments = {
 export type MailContentProps = {
   body: string
   attachments?: ImapAttachments
+  attachmentsUrl: string
 }
 
 export type MailShowImageProps = {

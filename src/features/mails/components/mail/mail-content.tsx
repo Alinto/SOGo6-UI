@@ -11,7 +11,11 @@ import {
   ShadowEmailContent,
 } from './utils'
 
-export default function MailContent({ body, attachments }: MailContentProps) {
+export default function MailContent({
+  body,
+  attachments,
+  attachmentsUrl,
+}: MailContentProps) {
   const [showImages, setShowImages] = useState(false)
 
   const hasImages = useMemo(() => {
@@ -31,7 +35,10 @@ export default function MailContent({ body, attachments }: MailContentProps) {
       <div className="border-muted my-2 border-t" />
 
       {attachments && attachments.count > 0 && (
-        <AttachmentDisplay attachments={attachments} />
+        <AttachmentDisplay
+          attachments={attachments}
+          attachmentsUrl={attachmentsUrl}
+        />
       )}
 
       {hasImages && !showImages && (
