@@ -3,6 +3,7 @@ import {
   CONTACT_LOOKUP_PAGE_SIZE,
   fetchAllDistributionLists,
   fetchContactLookupMap,
+  fetchContactsByKeys,
 } from '../fetch-contact-lookup-map'
 
 function paginationHeaders(page: number, totalPages: number, total: number) {
@@ -22,9 +23,7 @@ describe('fetchContactLookupMap', () => {
       .mockResolvedValueOnce({
         data: {
           data: {
-            contacts: [
-              { key: 'c1', first_name: 'Alice', last_name: 'Martin' },
-            ],
+            contacts: [{ key: 'c1', first_name: 'Alice', last_name: 'Martin' }],
           },
         },
         meta: {
@@ -55,7 +54,9 @@ describe('fetchContactLookupMap', () => {
   })
 
   it('stops when baseQuery returns an error', async () => {
-    const baseQuery = jest.fn().mockResolvedValueOnce({ error: { status: 500 } })
+    const baseQuery = jest
+      .fn()
+      .mockResolvedValueOnce({ error: { status: 500 } })
     const map = await fetchContactLookupMap('book-1', baseQuery)
 
     expect(map.size).toBe(0)
@@ -90,6 +91,46 @@ describe('fetchContactLookupMap', () => {
   it('exposes lookup safety constants', () => {
     expect(CONTACT_LOOKUP_PAGE_SIZE).toBeGreaterThan(0)
     expect(CONTACT_LOOKUP_MAX).toBeGreaterThan(CONTACT_LOOKUP_PAGE_SIZE)
+  })
+})
+
+describe('fetchContactsByKeys', () => {
+  it('fetches each member contact by key', async () => {
+    const baseQuery = jest
+      .fn()
+      .mockImplementation(({ url }: { url: string }) => {
+        if (url.endsWith('/contacts/c1')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                key: 'c1',
+                first_name: 'Alice',
+                last_name: 'Martin',
+                emails: [{ value: 'alice@example.com' }],
+              },
+            },
+          })
+        }
+        if (url.endsWith('/contacts/c2')) {
+          return Promise.resolve({
+            data: {
+              data: {
+                key: 'c2',
+                first_name: 'Bob',
+                last_name: 'Smith',
+                emails: [{ value: 'bob@example.com' }],
+              },
+            },
+          })
+        }
+        return Promise.resolve({ error: { status: 404 } })
+      })
+
+    const map = await fetchContactsByKeys('book-1', ['c1', 'c2'], baseQuery)
+
+    expect(baseQuery).toHaveBeenCalledTimes(2)
+    expect(map.get('c1')?.firstName).toBe('Alice')
+    expect(map.get('c2')?.lastName).toBe('Smith')
   })
 })
 

@@ -14,10 +14,7 @@ import {
 import type { ParsedPagination } from './parse-x-pagination'
 import { unwrapApiData } from './unwrap-api-data'
 
-export function mergeBookEntries(
-  contacts: VCard[],
-  lists: VCard[]
-): VCard[] {
+export function mergeBookEntries(contacts: VCard[], lists: VCard[]): VCard[] {
   return [...lists, ...contacts]
 }
 
@@ -30,8 +27,7 @@ export function buildBookEntriesResponse(
   const items = mergeBookEntries(contacts, lists)
   const contactTotal = contactsPagination?.total ?? contacts.length
   const listTotal = options?.listTotal ?? lists.length
-  const page =
-    contactsPagination?.page ?? options?.listsPagination?.page ?? 1
+  const page = contactsPagination?.page ?? options?.listsPagination?.page ?? 1
   const contactsPages = contactsPagination?.totalPages ?? 1
   const listsPages = options?.listsPagination?.totalPages ?? 1
   const totalPages = Math.max(contactsPages, listsPages)
@@ -63,7 +59,9 @@ export function parseContactsAndListsFromBackend(
     ? listsData
     : ((listsData as ApiListsCollectionData).lists ?? [])
 
-  const contacts = normalizeContactsList(rawContacts as ApiContactsListData['contacts'])
+  const contacts = normalizeContactsList(
+    rawContacts as ApiContactsListData['contacts']
+  )
   const lookupMap =
     contactsByKey instanceof Map
       ? contactsByKey
@@ -108,7 +106,10 @@ export function parseListTagId(tagId: string): string | null {
   return tagId.startsWith('list:') ? tagId.slice(5) : null
 }
 
-export function normalizeSingleEntry(raw: unknown): VCard {
+export function normalizeSingleEntry(
+  raw: unknown,
+  contactsByKey?: Map<string, VCard>
+): VCard {
   const value = unwrapApiData(raw)
   if (
     value &&
@@ -117,7 +118,10 @@ export function normalizeSingleEntry(raw: unknown): VCard {
     'name' in value &&
     !('first_name' in value)
   ) {
-    return normalizeDistributionList(value as ApiDistributionList)
+    return normalizeDistributionList(
+      value as ApiDistributionList,
+      contactsByKey ?? new Map()
+    )
   }
   return normalizeContact(value as Parameters<typeof normalizeContact>[0])
 }

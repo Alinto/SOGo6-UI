@@ -1,21 +1,29 @@
-import {
-  ALL_CONTACTS_BOOK_ID,
-  CONTACT_LOOKUP_MAX,
-  CONTACT_LOOKUP_PAGE_SIZE,
-} from '../address-books-constants'
 import type {
   ApiContactsListData,
   ApiDistributionList,
   ApiListsCollectionData,
 } from '../address-books-api-types'
+import {
+  ALL_CONTACTS_BOOK_ID,
+  CONTACT_LOOKUP_MAX,
+  CONTACT_LOOKUP_PAGE_SIZE,
+} from '../address-books-constants'
 import type { VCard } from '../address-books-types'
-import { addressBookContactsPath, addressBookListsPath, allContactsPath } from './api-routes'
+import {
+  addressBookContactPath,
+  addressBookContactsPath,
+  addressBookListsPath,
+  allContactsPath,
+} from './api-routes'
+import { normalizeContact, normalizeContactsList } from './normalize-contact'
 import { buildContactsByKey } from './normalize-list'
-import { normalizeContactsList } from './normalize-contact'
 import { parseXPaginationFromMeta } from './parse-x-pagination'
 import { unwrapApiData } from './unwrap-api-data'
 
-export { CONTACT_LOOKUP_MAX, CONTACT_LOOKUP_PAGE_SIZE } from '../address-books-constants'
+export {
+  CONTACT_LOOKUP_MAX,
+  CONTACT_LOOKUP_PAGE_SIZE,
+} from '../address-books-constants'
 
 type BaseQueryResult = {
   data?: unknown
@@ -40,9 +48,7 @@ function parseContactsPayload(payload: unknown): VCard[] {
   if (Array.isArray(data)) {
     return normalizeContactsList(data)
   }
-  return normalizeContactsList(
-    (data as ApiContactsListData).contacts ?? []
-  )
+  return normalizeContactsList((data as ApiContactsListData).contacts ?? [])
 }
 
 function contactCollectionPath(bookId: string): string {
@@ -87,6 +93,35 @@ export async function fetchContactLookupMap(
 
     if (contacts.length === 0) break
   }
+
+  return map
+}
+
+export async function fetchContactsByKeys(
+  bookId: string,
+  contactKeys: string[],
+  baseQuery: BaseQueryFn,
+  options?: FetchLoopOptions
+): Promise<Map<string, VCard>> {
+  const map = new Map<string, VCard>()
+  const uniqueKeys = [...new Set(contactKeys.filter(Boolean))]
+
+  await Promise.all(
+    uniqueKeys.map(async (contactKey) => {
+      if (options?.signal?.aborted) return
+
+      const result = await baseQuery({
+        url: addressBookContactPath(bookId, contactKey),
+        signal: options?.signal,
+      })
+      if (result.error) return
+
+      const contact = normalizeContact(unwrapApiData(result.data))
+      for (const [key, value] of buildContactsByKey([contact])) {
+        map.set(key, value)
+      }
+    })
+  )
 
   return map
 }
