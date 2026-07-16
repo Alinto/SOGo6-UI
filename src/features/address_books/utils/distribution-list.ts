@@ -31,14 +31,15 @@ export function membersFromContacts(contacts: VCard[]): ContactMember[] {
 
 export function getMemberDisplayLabel(member: ContactMember): string {
   if (member.displayName?.trim()) {
-    return member.displayName
+    return member.displayName.trim()
   }
-  return member.email
+  if (member.email?.trim()) {
+    return member.email.trim()
+  }
+  return member.contactId ?? ''
 }
 
 export function getDistributionListEmails(contact: VCard): string[] {
   if (!isDistributionList(contact)) return []
-  return (contact.members ?? [])
-    .map((member) => member.email)
-    .filter(Boolean)
+  return (contact.members ?? []).map((member) => member.email).filter(Boolean)
 }

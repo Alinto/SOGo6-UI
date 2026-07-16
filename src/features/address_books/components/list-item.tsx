@@ -11,9 +11,9 @@ import { Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { memo, useState } from 'react'
+import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import { VCard } from '../address-books-types'
 import { getContactDisplayName } from '../utils/contact-list'
-import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import {
   getDistributionListMemberCount,
   isDistributionList,
@@ -27,6 +27,19 @@ interface ListItemProps {
   allContactsView?: boolean
   sourceBookName?: string | null
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: VCard) => void
+}
+
+function getContactPhotoSrc(data: VCard): string | undefined {
+  const candidates = [data.photo, ...(data.photos ?? [])].filter(
+    Boolean
+  ) as string[]
+  return candidates.find(
+    (src) =>
+      src.startsWith('data:') ||
+      src.startsWith('blob:') ||
+      src.startsWith('http://') ||
+      src.startsWith('https://')
+  )
 }
 
 function ListItem({
@@ -45,6 +58,7 @@ function ListItem({
   const [isHovered, setIsHovered] = useState(false)
   const isList = isDistributionList(data)
   const displayName = getContactDisplayName(data)
+  const photoSrc = getContactPhotoSrc(data)
 
   const shouldShowCheckbox = showCheckbox || isHovered || isSelected
 
@@ -67,7 +81,7 @@ function ListItem({
   const handleItemClick = () => {
     const targetBookId =
       book_id === ALL_CONTACTS_BOOK_ID
-        ? data.addressBookKey ?? book_id
+        ? (data.addressBookKey ?? book_id)
         : book_id
     const kindQuery = isList ? '?kind=group' : ''
     push(`/address_books/${targetBookId}/${id}${kindQuery}`)
@@ -126,7 +140,9 @@ function ListItem({
             </AvatarFallback>
           ) : (
             <>
-              <AvatarImage src="/images/account-avatar.svg" />
+              {photoSrc ? (
+                <AvatarImage src={photoSrc} alt="" className="object-cover" />
+              ) : null}
               <AvatarFallback>
                 {firstName[0]?.toUpperCase()}
                 {lastName[0]?.toUpperCase()}

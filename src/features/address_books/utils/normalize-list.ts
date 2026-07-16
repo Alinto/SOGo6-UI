@@ -59,6 +59,7 @@ export function buildContactsByKey(contacts: VCard[]): Map<string, VCard> {
   for (const contact of contacts) {
     map.set(contact.id, contact)
     if (contact.key) map.set(contact.key, contact)
+    if (contact.uid) map.set(contact.uid, contact)
   }
   return map
 }

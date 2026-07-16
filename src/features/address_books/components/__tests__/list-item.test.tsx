@@ -19,7 +19,9 @@ jest.mock('@/components/ui/avatar', () => ({
   Avatar: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="avatar">{children}</div>
   ),
-  AvatarImage: () => <img data-testid="avatar-image" alt="" />,
+  AvatarImage: ({ src, alt }: { src?: string; alt?: string }) => (
+    <img data-testid="avatar-image" src={src} alt={alt} />
+  ),
   AvatarFallback: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="avatar-fallback">{children}</div>
   ),
@@ -46,10 +48,16 @@ jest.mock('@/components/ui/checkbox', () => ({
 }))
 
 jest.mock('@/components/ui/tooltip', () => ({
-  TooltipProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipProvider: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
   Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  TooltipTrigger: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-  TooltipContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  TooltipContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 jest.mock('../../store/address-books-api', () => ({
@@ -73,10 +81,7 @@ describe('ListItem', () => {
     kind: 'group',
     firstName: 'Team',
     lastName: '',
-    members: [
-      { email: 'a@example.com' },
-      { email: 'b@example.com' },
-    ],
+    members: [{ email: 'a@example.com' }, { email: 'b@example.com' }],
   }
 
   const mockOnHandleCheckboxClick = jest.fn()
@@ -96,7 +101,25 @@ describe('ListItem', () => {
       )
       expect(screen.getByTestId('avatar')).toBeInTheDocument()
       expect(screen.getByTestId('avatar-fallback')).toHaveTextContent('JD')
+      expect(screen.queryByTestId('avatar-image')).not.toBeInTheDocument()
       expect(screen.getByText('John Doe')).toBeInTheDocument()
+    })
+
+    it('renders contact photo when available', () => {
+      render(
+        <ListItem
+          data={{
+            ...contact,
+            photo: 'data:image/jpeg;base64,abc',
+          }}
+          isSelected={false}
+          onHandleCheckboxClick={mockOnHandleCheckboxClick}
+        />
+      )
+      expect(screen.getByTestId('avatar-image')).toHaveAttribute(
+        'src',
+        'data:image/jpeg;base64,abc'
+      )
     })
 
     it('renders distribution list with member count', () => {

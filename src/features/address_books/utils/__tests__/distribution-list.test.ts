@@ -3,6 +3,7 @@ import {
   getDistributionListEmails,
   getDistributionListMemberCount,
   getDistributionListName,
+  getMemberDisplayLabel,
   isDistributionList,
   isIndividualContact,
   membersFromContacts,
@@ -71,5 +72,11 @@ describe('distribution-list utils', () => {
       email: '',
       displayName: 'Bob Sans',
     })
+  })
+
+  it('falls back to contact id when member has no display name or email', () => {
+    expect(
+      getMemberDisplayLabel({ contactId: 'missing-contact', email: '' })
+    ).toBe('missing-contact')
   })
 })
