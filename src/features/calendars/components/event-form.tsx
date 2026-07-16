@@ -9,6 +9,7 @@ import {
   FormField,
   FormItem,
   FormLabel,
+  FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import {
@@ -45,6 +46,11 @@ import {
 } from 'react-hook-form'
 import * as z from 'zod'
 import {
+  CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH,
+  CALENDAR_EVENT_LOCATION_MAX_LENGTH,
+  CALENDAR_EVENT_TITLE_MAX_LENGTH,
+} from '../calendar-constants'
+import {
   DEFAULT_CALENDAR_COLOR,
   type AttendeeInputItem,
   type CalendarEventUpdateBody,
@@ -67,11 +73,6 @@ import {
 } from './recurrence-selector'
 import { TimelineFreeBusy } from './timeline-freebusy'
 import { mapBackendFreeBusyToAvailability } from './utils'
-import {
-  CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH,
-  CALENDAR_EVENT_LOCATION_MAX_LENGTH,
-  CALENDAR_EVENT_TITLE_MAX_LENGTH,
-} from '../calendar-constants'
 
 const recurrenceFrequencies = [
   'daily',
@@ -80,17 +81,14 @@ const recurrenceFrequencies = [
   'yearly',
 ] as const satisfies readonly RecurrenceRuleValue['frequency'][]
 
-const formSchema = z.object({
+const eventFormFieldsSchema = z.object({
   calendar_key: z.string().min(1),
   title: z.string().min(1).max(CALENDAR_EVENT_TITLE_MAX_LENGTH),
   start: z.string(),
   end: z.string(),
   all_day: z.boolean(),
   timezone: z.string().default('UTC'),
-  description: z
-    .string()
-    .max(CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH)
-    .optional(),
+  description: z.string().max(CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH).optional(),
   location: z.string().max(CALENDAR_EVENT_LOCATION_MAX_LENGTH).optional(),
   visibility: z.enum(['public', 'private', 'confidential']),
   show_as: z.enum(['busy', 'free', 'out-of-office', 'tentative']),
@@ -127,6 +125,28 @@ const formSchema = z.object({
     .default(null),
 })
 
+type EventFormTranslator = (key: string) => string
+
+function parseEventFormBound(value: string, allDay: boolean): Date | null {
+  if (!value) return null
+  const parsed = new Date(allDay ? `${value.slice(0, 10)}T00:00:00` : value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+export function createEventFormSchema(t: EventFormTranslator) {
+  return eventFormFieldsSchema.superRefine((values, ctx) => {
+    const start = parseEventFormBound(values.start, values.all_day)
+    const end = parseEventFormBound(values.end, values.all_day)
+    if (start && end && end < start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t('eventForm.errors.date_order.string'),
+        path: ['end'],
+      })
+    }
+  })
+}
+
 export type EventFormProps = {
   calendarKey: string
   calendars?: Calendar[]
@@ -136,7 +156,7 @@ export type EventFormProps = {
   onCancel: () => void
 }
 
-type EventFormValues = z.infer<typeof formSchema>
+type EventFormValues = z.infer<typeof eventFormFieldsSchema>
 
 // format Date to match input value (the input value should be in the user's local timezone)
 // not allDay : type="datetime-local" value format YYYY-MM-DDTHH:mm, e.g. "2024-07-01T14:30"
@@ -239,6 +259,8 @@ export function EventForm({
   const [pendingFormValues, setPendingFormValues] =
     useState<EventFormValues | null>(null)
 
+  const schema = useMemo(() => createEventFormSchema(t), [t])
+
   const resolvedCalendarKey = useMemo(
     () => resolveCalendarKeyForForm(calendars, event ?? null, calendarKey),
     [calendars, calendarKey, event]
@@ -255,7 +277,7 @@ export function EventForm({
   }, [calendars, resolvedCalendarKey])
 
   const form = useForm<EventFormValues>({
-    resolver: zodResolver(formSchema) as Resolver<EventFormValues>,
+    resolver: zodResolver(schema) as Resolver<EventFormValues>,
     defaultValues: {
       calendar_key: resolvedCalendarKey,
       title: event?.title ?? '',
@@ -649,6 +671,7 @@ export function EventForm({
                     {...field}
                   />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />

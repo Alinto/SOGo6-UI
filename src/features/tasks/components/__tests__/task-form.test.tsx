@@ -7,20 +7,41 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: { children: React.ReactNode; open?: boolean }) =>
-    open ? <div data-testid="task-form-dialog">{children}</div> : null,
-  DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
+  Dialog: ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode
+    open?: boolean
+  }) => (open ? <div data-testid="task-form-dialog">{children}</div> : null),
+  DialogContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogHeader: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogTitle: ({ children }: { children: React.ReactNode }) => (
+    <h2>{children}</h2>
+  ),
 }))
 
 jest.mock('@/components/ui/select', () => ({
-  Select: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  SelectItem: ({ children, value }: { children: React.ReactNode; value: string }) => (
-    <option value={value}>{children}</option>
+  Select: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
   ),
-  SelectTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  SelectContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  SelectItem: ({
+    children,
+    value,
+  }: {
+    children: React.ReactNode
+    value: string
+  }) => <option value={value}>{children}</option>,
+  SelectTrigger: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   SelectValue: () => null,
 }))
 
@@ -124,6 +145,35 @@ describe('TaskForm', () => {
         expect(onSubmit).toHaveBeenCalled()
       })
       expect(onClose).toHaveBeenCalled()
+    })
+
+    it('blocks submit when due is before start', async () => {
+      const user = userEvent.setup()
+      const onSubmit = jest.fn().mockResolvedValue(undefined)
+      render(
+        <TaskForm
+          open
+          calendars={calendars}
+          onClose={jest.fn()}
+          onSubmit={onSubmit}
+        />
+      )
+      await user.type(screen.getByLabelText('form.title.string'), 'New task')
+      await user.type(
+        screen.getByLabelText('form.date_start.string'),
+        '2024-07-16T10:00'
+      )
+      await user.type(
+        screen.getByLabelText('form.due.string'),
+        '2024-07-15T10:00'
+      )
+      await user.click(screen.getByRole('button', { name: 'form.save.string' }))
+      await waitFor(() => {
+        expect(
+          screen.getByText('form.errors.date_order.string')
+        ).toBeInTheDocument()
+      })
+      expect(onSubmit).not.toHaveBeenCalled()
     })
   })
 })

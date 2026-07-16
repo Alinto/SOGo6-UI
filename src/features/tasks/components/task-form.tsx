@@ -2,6 +2,12 @@
 
 import { Button } from '@/components/ui/button'
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import {
   Form,
   FormControl,
   FormField,
@@ -17,12 +23,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Textarea } from '@/components/ui/textarea'
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+  CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH,
+  CALENDAR_EVENT_TITLE_MAX_LENGTH,
+} from '@/features/calendars/calendar-constants'
+import type { Calendar } from '@/features/calendars/calendars-types'
+import TaskProgressField from '@/features/tasks/components/task-progress-field'
+import type { Task, TaskCreateBody } from '@/features/tasks/tasks-types'
+import { clampTaskProgress } from '@/features/tasks/utils/task-progress'
 import {
   formDialogBodyClassName,
   formDialogContentClassName,
@@ -30,18 +39,9 @@ import {
   formDialogHeaderClassName,
   formDialogTitleClassName,
 } from '@/lib/utils/form-dialog-layout'
-import { Textarea } from '@/components/ui/textarea'
-import type { Calendar } from '@/features/calendars/calendars-types'
-import {
-  CALENDAR_EVENT_DESCRIPTION_MAX_LENGTH,
-  CALENDAR_EVENT_TITLE_MAX_LENGTH,
-} from '@/features/calendars/calendar-constants'
-import type { Task, TaskCreateBody } from '@/features/tasks/tasks-types'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslations } from 'next-intl'
-import TaskProgressField from '@/features/tasks/components/task-progress-field'
-import { clampTaskProgress } from '@/features/tasks/utils/task-progress'
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useMemo, useRef } from 'react'
 import { useForm } from 'react-hook-form'
 import * as z from 'zod'
 
@@ -52,7 +52,7 @@ const taskStatuses = [
   'cancelled',
 ] as const
 
-const taskFormSchema = z.object({
+const taskFormFieldsSchema = z.object({
   title: z.string().min(1).max(CALENDAR_EVENT_TITLE_MAX_LENGTH),
   description: z
     .string()
@@ -71,7 +71,29 @@ const taskFormSchema = z.object({
     .nullable(),
 })
 
-type TaskFormValues = z.infer<typeof taskFormSchema>
+type TaskFormTranslator = (key: string) => string
+
+function parseTaskFormBound(value: string | null | undefined): Date | null {
+  if (!value) return null
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+export function createTaskFormSchema(t: TaskFormTranslator) {
+  return taskFormFieldsSchema.superRefine((values, ctx) => {
+    const start = parseTaskFormBound(values.date_start)
+    const due = parseTaskFormBound(values.due)
+    if (start && due && due < start) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: t('form.errors.date_order.string'),
+        path: ['due'],
+      })
+    }
+  })
+}
+
+type TaskFormValues = z.infer<typeof taskFormFieldsSchema>
 
 type TaskFormProps = {
   open: boolean
@@ -112,13 +134,15 @@ function TaskForm({
 }: TaskFormProps) {
   const t = useTranslations('TASKS')
   const isEdit = Boolean(task?.key ?? task?.id)
+  const schema = useMemo(() => createTaskFormSchema(t), [t])
 
   const form = useForm<TaskFormValues>({
-    resolver: zodResolver(taskFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: {
       title: '',
       description: '',
-      calendar_key: defaultCalendarKey ?? calendars[0]?.key ?? calendars[0]?.id ?? '',
+      calendar_key:
+        defaultCalendarKey ?? calendars[0]?.key ?? calendars[0]?.id ?? '',
       due: '',
       date_start: '',
       status: 'needs_action',
@@ -135,10 +159,7 @@ function TaskForm({
         title: task.title,
         description: task.description ?? '',
         calendar_key:
-          task.calendar_key ??
-          task.calendar_id ??
-          defaultCalendarKey ??
-          '',
+          task.calendar_key ?? task.calendar_id ?? defaultCalendarKey ?? '',
         due: toDatetimeLocal(task.due),
         date_start: toDatetimeLocal(task.date_start),
         status: task.status ?? 'needs_action',
@@ -151,10 +172,7 @@ function TaskForm({
         title: '',
         description: '',
         calendar_key:
-          defaultCalendarKey ??
-          calendars[0]?.key ??
-          calendars[0]?.id ??
-          '',
+          defaultCalendarKey ?? calendars[0]?.key ?? calendars[0]?.id ?? '',
         due: '',
         date_start: '',
         status: 'needs_action',
@@ -216,7 +234,9 @@ function TaskForm({
       <DialogContent className={formDialogContentClassName('2xl')}>
         <DialogHeader className={formDialogHeaderClassName}>
           <DialogTitle className={formDialogTitleClassName}>
-            {isEdit ? t('form.edit_title.string') : t('form.create_title.string')}
+            {isEdit
+              ? t('form.edit_title.string')
+              : t('form.create_title.string')}
           </DialogTitle>
         </DialogHeader>
 
@@ -227,163 +247,182 @@ function TaskForm({
             data-testid="task-form"
           >
             <div className={formDialogBodyClassName}>
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.title.string')}</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="calendar_key"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.calendar.string')}</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={isEdit}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {calendars.map((cal) => {
-                        const key = cal.key ?? cal.id ?? ''
-                        return (
-                          <SelectItem key={key} value={key}>
-                            {cal.name}
-                          </SelectItem>
-                        )
-                      })}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="due"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.due.string')}</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="date_start"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.date_start.string')}</FormLabel>
-                  <FormControl>
-                    <Input type="datetime-local" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.status.string')}</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {taskStatuses.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {t(`status.${s}.string`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="priority"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.priority.string')}</FormLabel>
-                  <Select
-                    value={String(field.value)}
-                    onValueChange={(v) => field.onChange(Number(v))}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="0">{t('priority.none.string')}</SelectItem>
-                      <SelectItem value="1">{t('priority.high.string')}</SelectItem>
-                      <SelectItem value="5">{t('priority.medium.string')}</SelectItem>
-                      <SelectItem value="9">{t('priority.low.string')}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-              )}
-            />
-
-            {status === 'in_process' && (
               <FormField
                 control={form.control}
-                name="percent_complete"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
+                    <FormLabel>{t('form.title.string')}</FormLabel>
                     <FormControl>
-                      <TaskProgressField
-                        value={field.value ?? 0}
-                        onChange={(value) => {
-                          field.onChange(value)
-                          if (value > 0 && form.getValues('status') === 'needs_action') {
-                            form.setValue('status', 'in_process')
-                          }
-                        }}
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="calendar_key"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.calendar.string')}</FormLabel>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isEdit}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {calendars.map((cal) => {
+                          const key = cal.key ?? cal.id ?? ''
+                          return (
+                            <SelectItem key={key} value={key}>
+                              {cal.name}
+                            </SelectItem>
+                          )
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="due"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.due.string')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="datetime-local"
+                        {...field}
+                        value={field.value ?? ''}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="date_start"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.date_start.string')}</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="datetime-local"
+                        {...field}
+                        value={field.value ?? ''}
                       />
                     </FormControl>
                   </FormItem>
                 )}
               />
-            )}
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('form.description.string')}</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} value={field.value ?? ''} rows={4} />
-                  </FormControl>
-                </FormItem>
+              <FormField
+                control={form.control}
+                name="status"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.status.string')}</FormLabel>
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {taskStatuses.map((s) => (
+                          <SelectItem key={s} value={s}>
+                            {t(`status.${s}.string`)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.priority.string')}</FormLabel>
+                    <Select
+                      value={String(field.value)}
+                      onValueChange={(v) => field.onChange(Number(v))}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="0">
+                          {t('priority.none.string')}
+                        </SelectItem>
+                        <SelectItem value="1">
+                          {t('priority.high.string')}
+                        </SelectItem>
+                        <SelectItem value="5">
+                          {t('priority.medium.string')}
+                        </SelectItem>
+                        <SelectItem value="9">
+                          {t('priority.low.string')}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
+                )}
+              />
+
+              {status === 'in_process' && (
+                <FormField
+                  control={form.control}
+                  name="percent_complete"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <TaskProgressField
+                          value={field.value ?? 0}
+                          onChange={(value) => {
+                            field.onChange(value)
+                            if (
+                              value > 0 &&
+                              form.getValues('status') === 'needs_action'
+                            ) {
+                              form.setValue('status', 'in_process')
+                            }
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               )}
-            />
 
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('form.description.string')}</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} value={field.value ?? ''} rows={4} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
             </div>
 
             <div className={formDialogFooterClassName}>
