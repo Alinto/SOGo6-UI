@@ -86,7 +86,9 @@ export function ComposeToolbar({
           title={t('attachment.string')}
           onClick={onAttachmentClick}
         >
-          <Paperclip className={cn('h-5 w-5', isUploading && 'animate-pulse')} />
+          <Paperclip
+            className={cn('h-5 w-5', isUploading && 'animate-pulse')}
+          />
         </Button>
 
         {jitsiEnabled && (
@@ -196,7 +198,9 @@ export function ComposeToolbar({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="z-9999 w-40">
             <DropdownMenuGroup>
-              <DropdownMenuItem>{t('schedule_sending.string')}</DropdownMenuItem>
+              <DropdownMenuItem disabled>
+                {t('schedule_sending.string')}
+              </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>

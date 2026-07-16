@@ -9,8 +9,8 @@ import {
   useDeleteAttachmentMutation,
   useLazyDownloadAttachmentQuery,
 } from '../../store/mail-api'
-import { removeAttachment } from '../../store/mail-compose-slice'
 import type { MailComposeAttachment } from '../../store/mail-compose-slice'
+import { removeAttachment } from '../../store/mail-compose-slice'
 
 interface ComposeAttachmentListProps {
   draftId: string
@@ -105,15 +105,15 @@ export function ComposeAttachmentList({
             <div className="flex gap-1">
               {att.uploadStatus === 'completed' && (
                 <button
-                  className="hover:text-primary ml-2 shrink-0"
+                  className="hover:text-primary ml-2 shrink-0 cursor-pointer"
                   onClick={() => void handleDownloadAttachment(att)}
-                  title={t('attachment.title.string')}
+                  title={t('attachment.download.string')}
                 >
                   <Download className="h-3 w-3" />
                 </button>
               )}
               <button
-                className="hover:text-destructive shrink-0"
+                className="hover:text-destructive shrink-0 cursor-pointer"
                 onClick={() => void handleDeleteAttachment(att)}
                 disabled={att.uploadStatus === 'uploading'}
               >
