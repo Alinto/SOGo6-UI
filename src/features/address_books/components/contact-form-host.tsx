@@ -14,9 +14,7 @@ import {
   useUpdateVCardMutation,
 } from '../store/address-books-api'
 import { closeForm } from '../store/address-books-ui-slice'
-import {
-  getContactApiErrorMessageKey,
-} from '../utils/map-contact-api-error'
+import { getContactApiErrorMessageKey } from '../utils/map-contact-api-error'
 import { serializeContactFromForm } from '../utils/serialize-contact'
 import ContactForm, {
   fromFieldArray,
@@ -35,8 +33,11 @@ function ContactFormHost() {
   const [updateContact, { isLoading: isUpdating }] = useUpdateVCardMutation()
 
   const editingContactId = ui.editingContactId
-  const { editingEntity: editingContact, isEditLoading, isEditLoadError } =
-    useAddressBookEditState(editingContactId, activeBookId, ui.isFormOpen)
+  const {
+    editingEntity: editingContact,
+    isEditLoading,
+    isEditLoadError,
+  } = useAddressBookEditState(editingContactId, activeBookId, ui.isFormOpen)
 
   const handleClose = useCallback(() => {
     setSubmitError(null)
@@ -56,7 +57,11 @@ function ContactFormHost() {
       urls: fromFieldArray(values.urls),
       categories: values.categories.length ? values.categories : undefined,
       birthday: values.birthday?.trim() || undefined,
-      photos: values.photoDataUri ? [values.photoDataUri] : undefined,
+      photos: values.clearPhoto
+        ? []
+        : values.photoDataUri
+          ? [values.photoDataUri]
+          : undefined,
       note: values.note?.trim() || undefined,
     }),
     []
@@ -97,14 +102,7 @@ function ContactFormHost() {
         )
       }
     },
-    [
-      activeBookId,
-      addContact,
-      buildVCardPayload,
-      push,
-      tErrors,
-      updateContact,
-    ]
+    [activeBookId, addContact, buildVCardPayload, push, tErrors, updateContact]
   )
 
   if (!activeBookId && ui.isFormOpen) {

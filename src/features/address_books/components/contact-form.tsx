@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -39,9 +40,35 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2, Plus, Trash2, UserRound } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { memo, useEffect, useMemo, type ChangeEvent } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import * as z from 'zod'
+
+/** undefined = unchanged, null = removed, string = new or replaced inline photo */
+type PhotoPayload = string | null | undefined
+
+function readFileAsDataURL(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result)
+        return
+      }
+      reject(new Error('Invalid read result'))
+    }
+    reader.onerror = () => reject(reader.error ?? new Error('Read failed'))
+    reader.readAsDataURL(file)
+  })
+}
 
 const addressRowSchema = z.object({
   street: z.string().max(500).optional(),
@@ -54,7 +81,13 @@ const addressRowSchema = z.object({
 })
 
 const contactFieldTypeSchema = z.enum(['_none', 'work', 'home', 'other'])
-const phoneFieldTypeSchema = z.enum(['_none', 'work', 'home', 'mobile', 'other'])
+const phoneFieldTypeSchema = z.enum([
+  '_none',
+  'work',
+  'home',
+  'mobile',
+  'other',
+])
 
 const contactFormSchema = z
   .object({
@@ -145,7 +178,9 @@ function toEmailFieldArray(contact?: VCard | null) {
   if (contact?.structuredEmails?.length) {
     return contact.structuredEmails.map((entry) => ({
       value: entry.value,
-      type: (entry.types?.[0] ?? '_none') as z.infer<typeof contactFieldTypeSchema>,
+      type: (entry.types?.[0] ?? '_none') as z.infer<
+        typeof contactFieldTypeSchema
+      >,
       pref: entry.pref === 1,
     }))
   }
@@ -163,7 +198,9 @@ function toPhoneFieldArray(contact?: VCard | null) {
   if (contact?.structuredPhones?.length) {
     return contact.structuredPhones.map((entry) => ({
       value: entry.number,
-      type: (entry.types?.[0] ?? '_none') as z.infer<typeof phoneFieldTypeSchema>,
+      type: (entry.types?.[0] ?? '_none') as z.infer<
+        typeof phoneFieldTypeSchema
+      >,
       pref: entry.pref === 1,
     }))
   }
@@ -258,7 +295,17 @@ function ContactForm({
       title: '',
       emails: [{ value: '', type: '_none', pref: false }],
       phoneNumbers: [{ value: '', type: '_none', pref: false }],
-      addresses: [{ street: '', city: '', postalCode: '', region: '', poBox: '', extended: '', country: '' }],
+      addresses: [
+        {
+          street: '',
+          city: '',
+          postalCode: '',
+          region: '',
+          poBox: '',
+          extended: '',
+          country: '',
+        },
+      ],
       urls: [{ value: '' }],
       impp: [{ value: '' }],
       birthday: '',
@@ -284,14 +331,44 @@ function ContactForm({
   const imppFields = useFieldArray({ control: form.control, name: 'impp' })
   const selectedCategories =
     useWatch({ control: form.control, name: 'categories' }) ?? []
-  const photoPreview = useWatch({ control: form.control, name: 'photoDataUri' })
-  const contactKind = useWatch({ control: form.control, name: 'contactKind' }) ?? 'individual'
+  const contactKind =
+    useWatch({ control: form.control, name: 'contactKind' }) ?? 'individual'
+
+  const [photoPreviewSrc, setPhotoPreviewSrc] = useState<string | undefined>()
+  const [photoError, setPhotoError] = useState<string | null>(null)
+  const [isFilePickerOpen, setIsFilePickerOpen] = useState(false)
+  const photoPayloadRef = useRef<PhotoPayload>(undefined)
+  const photoObjectUrlRef = useRef<string | null>(null)
+  const photoInputRef = useRef<HTMLInputElement>(null)
+
+  const revokePhotoObjectUrl = useCallback(() => {
+    if (photoObjectUrlRef.current) {
+      URL.revokeObjectURL(photoObjectUrlRef.current)
+      photoObjectUrlRef.current = null
+    }
+  }, [])
 
   const emailTypeOptions = ['_none', 'work', 'home', 'other'] as const
   const phoneTypeOptions = ['_none', 'work', 'home', 'mobile', 'other'] as const
 
+  const formResetKey = useMemo(() => {
+    if (!open) return null
+    if (contact) return `edit:${contact.id}:${contact.updated_at ?? ''}`
+    return `create:${prefill?.firstName ?? ''}:${prefill?.lastName ?? ''}`
+  }, [open, contact, prefill])
+
   useEffect(() => {
-    if (!open || isLoading || loadError) return
+    return () => {
+      revokePhotoObjectUrl()
+    }
+  }, [revokePhotoObjectUrl])
+
+  useEffect(() => {
+    if (!formResetKey || isLoading || loadError) return
+
+    revokePhotoObjectUrl()
+    photoPayloadRef.current = undefined
+    setPhotoError(null)
 
     if (contact) {
       form.reset({
@@ -317,10 +394,11 @@ function ContactForm({
         birthdayUnknownYear: contact.birthday?.startsWith('--') ?? false,
         anniversary: contact.anniversary ?? '',
         categories: contact.categories ?? [],
-        photoDataUri: contact.photos?.[0] ?? contact.photo,
+        photoDataUri: undefined,
         clearPhoto: false,
         note: contact.note ?? '',
       })
+      setPhotoPreviewSrc(contact.photos?.[0] ?? contact.photo)
       return
     }
 
@@ -345,38 +423,68 @@ function ContactForm({
       birthdayUnknownYear: false,
       anniversary: prefill?.anniversary ?? '',
       categories: prefill?.categories ?? [],
-      photoDataUri: prefill?.photo,
+      photoDataUri: undefined,
       clearPhoto: false,
       note: prefill?.note ?? '',
     })
-  }, [open, contact, prefill, form, isLoading, loadError])
+    setPhotoPreviewSrc(prefill?.photo)
+  }, [
+    formResetKey,
+    isLoading,
+    loadError,
+    contact,
+    prefill,
+    form,
+    revokePhotoObjectUrl,
+  ])
+
+  const handlePhotoPick = () => {
+    setIsFilePickerOpen(true)
+    photoInputRef.current?.click()
+    // Native file pickers do not always fire change on cancel; clear the guard on next focus.
+    window.setTimeout(() => {
+      const clearGuard = () => setIsFilePickerOpen(false)
+      window.addEventListener('focus', clearGuard, { once: true })
+    }, 0)
+  }
 
   const handlePhotoChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const input = event.target
+    const file = input.files?.[0]
+    setIsFilePickerOpen(false)
     if (!file) return
 
-    if (file.size > CONTACT_PHOTO_MAX_BYTES) {
-      form.setError('photoDataUri', {
-        message: tErrors('file_too_large.string'),
-      })
-      return
+    try {
+      if (file.size > CONTACT_PHOTO_MAX_BYTES) {
+        setPhotoError(tErrors('file_too_large.string'))
+        return
+      }
+
+      revokePhotoObjectUrl()
+      const objectUrl = URL.createObjectURL(file)
+      photoObjectUrlRef.current = objectUrl
+      setPhotoPreviewSrc(objectUrl)
+      setPhotoError(null)
+
+      const dataUri = await readFileAsDataURL(file)
+      photoPayloadRef.current = dataUri
+    } catch {
+      revokePhotoObjectUrl()
+      setPhotoPreviewSrc(
+        contact?.photos?.[0] ?? contact?.photo ?? prefill?.photo
+      )
+      photoPayloadRef.current = undefined
+      setPhotoError(tErrors('generic.string'))
+    } finally {
+      input.value = ''
     }
-
-    const dataUri = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-
-    form.clearErrors('photoDataUri')
-    form.setValue('photoDataUri', dataUri)
-    form.setValue('clearPhoto', false)
   }
 
   const handleRemovePhoto = () => {
-    form.setValue('photoDataUri', undefined)
-    form.setValue('clearPhoto', true)
+    revokePhotoObjectUrl()
+    setPhotoPreviewSrc(undefined)
+    photoPayloadRef.current = null
+    setPhotoError(null)
   }
 
   const handleCategoryToggle = (name: string, checked: boolean) => {
@@ -388,12 +496,26 @@ function ContactForm({
   }
 
   const handleSubmit = form.handleSubmit(async (values) => {
-    await onSubmit(values, contact?.id)
+    const photoPayload = photoPayloadRef.current
+    const photoValues =
+      photoPayload === null
+        ? { photoDataUri: undefined, clearPhoto: true as const }
+        : typeof photoPayload === 'string'
+          ? { photoDataUri: photoPayload, clearPhoto: false as const }
+          : { photoDataUri: undefined, clearPhoto: false as const }
+
+    await onSubmit({ ...values, ...photoValues }, contact?.id)
     onClose()
   })
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next && isFilePickerOpen) return
+        if (!next) onClose()
+      }}
+    >
       <DialogContent className={formDialogContentClassName('lg')}>
         <DialogHeader className={formDialogHeaderClassName}>
           <DialogTitle className={formDialogTitleClassName}>
@@ -416,7 +538,9 @@ function ContactForm({
               className="space-y-4 px-6 py-4"
               data-testid="contact-form-load-error"
             >
-              <p className="text-destructive text-sm">{t('load_error.title.string')}</p>
+              <p className="text-destructive text-sm">
+                {t('load_error.title.string')}
+              </p>
               <p className="text-muted-foreground text-sm">
                 {t('load_error.description.string')}
               </p>
@@ -430,726 +554,794 @@ function ContactForm({
         )}
 
         {!isLoading && !loadError && (
-        <Form {...form}>
-          <form
-            onSubmit={handleSubmit}
-            className="flex min-h-0 flex-1 flex-col overflow-hidden"
-          >
-            <div className={formDialogBodyClassName}>
-            {submitError && (
-              <p className="text-destructive text-sm" data-testid="contact-form-submit-error">
-                {submitError}
-              </p>
-            )}
-            <FormField
-              control={form.control}
-              name="contactKind"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.contact_kind.string')}</FormLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger data-testid="contact-kind-select">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="individual">
-                        {t('fields.contact_kind_individual.string')}
-                      </SelectItem>
-                      <SelectItem value="org">
-                        {t('fields.contact_kind_org.string')}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="firstName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.first_name.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} autoComplete="given-name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lastName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.last_name.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} autoComplete="family-name" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="middleName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.middle_name.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="nickname"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.nickname.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="prefix"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.prefix.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="suffix"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.suffix.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <FormField
-              control={form.control}
-              name="organization"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {contactKind === 'org'
-                      ? t('fields.organization_required.string')
-                      : t('fields.organization.string')}
-                  </FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="jobTitle"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.job_title.string')}</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="department"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.department.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('fields.role.string')}</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t('emails.string')}</FormLabel>
-              {emailFields.fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`emails.${index}.value`}
-                    render={({ field: emailField }) => (
-                      <FormItem className="min-w-0 flex-1">
-                        <FormControl>
-                          <Input
-                            {...emailField}
-                            type="email"
-                            autoComplete="email"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`emails.${index}.type`}
-                    render={({ field: typeField }) => (
-                      <FormItem className="w-28 shrink-0">
-                        <Select
-                          value={typeField.value ?? '_none'}
-                          onValueChange={typeField.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('fields.type.string')} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {emailTypeOptions.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option === '_none'
-                                  ? t('fields.type_default.string')
-                                  : t(`fields.email_type_${option}.string`)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`emails.${index}.pref`}
-                    render={({ field: prefField }) => (
-                      <FormItem className="flex shrink-0 items-center gap-2 pt-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={Boolean(prefField.value)}
-                            onCheckedChange={prefField.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="!mt-0 font-normal">
-                          {t('fields.pref.string')}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  {emailFields.fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="mt-0.5 shrink-0"
-                      onClick={() => emailFields.remove(index)}
-                      aria-label={t('remove_field.string')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => emailFields.append({ value: '', type: '_none', pref: false })}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                {t('add_email.string')}
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t('phone_numbers.string')}</FormLabel>
-              {phoneFields.fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`phoneNumbers.${index}.value`}
-                    render={({ field: phoneField }) => (
-                      <FormItem className="min-w-0 flex-1">
-                        <FormControl>
-                          <Input {...phoneField} type="tel" autoComplete="tel" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`phoneNumbers.${index}.type`}
-                    render={({ field: typeField }) => (
-                      <FormItem className="w-28 shrink-0">
-                        <Select
-                          value={typeField.value ?? '_none'}
-                          onValueChange={typeField.onChange}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('fields.type.string')} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {phoneTypeOptions.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option === '_none'
-                                  ? t('fields.type_default.string')
-                                  : t(`fields.phone_type_${option}.string`)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name={`phoneNumbers.${index}.pref`}
-                    render={({ field: prefField }) => (
-                      <FormItem className="flex shrink-0 items-center gap-2 pt-2">
-                        <FormControl>
-                          <Checkbox
-                            checked={Boolean(prefField.value)}
-                            onCheckedChange={prefField.onChange}
-                          />
-                        </FormControl>
-                        <FormLabel className="!mt-0 font-normal">
-                          {t('fields.pref.string')}
-                        </FormLabel>
-                      </FormItem>
-                    )}
-                  />
-                  {phoneFields.fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="mt-0.5 shrink-0"
-                      onClick={() => phoneFields.remove(index)}
-                      aria-label={t('remove_field.string')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  phoneFields.append({ value: '', type: '_none', pref: false })
-                }
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                {t('add_phone.string')}
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t('addresses.string')}</FormLabel>
-              {addressFields.fields.map((field, index) => (
-                <div key={field.id} className="space-y-2 rounded-md border p-3">
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.street`}
-                      render={({ field: streetField }) => (
-                        <FormItem className="sm:col-span-2">
-                          <FormLabel>{t('fields.street.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...streetField} autoComplete="street-address" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.city`}
-                      render={({ field: cityField }) => (
-                        <FormItem>
-                          <FormLabel>{t('fields.city.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...cityField} autoComplete="address-level2" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.postalCode`}
-                      render={({ field: postalField }) => (
-                        <FormItem>
-                          <FormLabel>{t('fields.postal_code.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...postalField} autoComplete="postal-code" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.region`}
-                      render={({ field: regionField }) => (
-                        <FormItem>
-                          <FormLabel>{t('fields.region.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...regionField} autoComplete="address-level1" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.poBox`}
-                      render={({ field: poBoxField }) => (
-                        <FormItem>
-                          <FormLabel>{t('fields.po_box.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...poBoxField} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.extended`}
-                      render={({ field: extendedField }) => (
-                        <FormItem className="sm:col-span-2">
-                          <FormLabel>{t('fields.extended.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...extendedField} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name={`addresses.${index}.country`}
-                      render={({ field: countryField }) => (
-                        <FormItem className="sm:col-span-2">
-                          <FormLabel>{t('fields.country.string')}</FormLabel>
-                          <FormControl>
-                            <Input {...countryField} autoComplete="country-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  {addressFields.fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => addressFields.remove(index)}
-                      aria-label={t('remove_field.string')}
-                    >
-                      <Trash2 className="mr-1 h-4 w-4" />
-                      {t('remove_field.string')}
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  addressFields.append({
-                    street: '',
-                    city: '',
-                    postalCode: '',
-                    region: '',
-                    poBox: '',
-                    extended: '',
-                    country: '',
-                  })
-                }
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                {t('add_address.string')}
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t('urls.string')}</FormLabel>
-              {urlFields.fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`urls.${index}.value`}
-                    render={({ field: urlField }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input {...urlField} type="url" placeholder="https://" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {urlFields.fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="mt-0.5 shrink-0"
-                      onClick={() => urlFields.remove(index)}
-                      aria-label={t('remove_field.string')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => urlFields.append({ value: '' })}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                {t('add_url.string')}
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <FormLabel>{t('fields.impp.string')}</FormLabel>
-              {imppFields.fields.map((field, index) => (
-                <div key={field.id} className="flex items-start gap-2">
-                  <FormField
-                    control={form.control}
-                    name={`impp.${index}.value`}
-                    render={({ field: imppField }) => (
-                      <FormItem className="flex-1">
-                        <FormControl>
-                          <Input {...imppField} placeholder="xmpp:user@example.com" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  {imppFields.fields.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="mt-0.5 shrink-0"
-                      onClick={() => imppFields.remove(index)}
-                      aria-label={t('remove_field.string')}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => imppFields.append({ value: '' })}
-              >
-                <Plus className="mr-1 h-4 w-4" />
-                {t('add_impp.string')}
-              </Button>
-            </div>
-
-            <FormField
-              control={form.control}
-              name="birthday"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('birthday.string')}</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="date" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="birthdayUnknownYear"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center gap-2 space-y-0">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={(checked) => field.onChange(checked === true)}
-                    />
-                  </FormControl>
-                  <FormLabel>{t('fields.birthday_unknown_year.string')}</FormLabel>
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="anniversary"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('fields.anniversary.string')}</FormLabel>
-                  <FormControl>
-                    <Input {...field} type="date" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {categoryOptions.length > 0 && (
-              <div className="space-y-2">
-                <FormLabel>{t('categories.string')}</FormLabel>
-                <div className="flex flex-wrap gap-3">
-                  {categoryOptions.map((category) => (
-                    <label
-                      key={category.name}
-                      className="flex items-center gap-2 text-sm"
-                    >
-                      <Checkbox
-                        checked={selectedCategories.includes(category.name)}
-                        onCheckedChange={(checked) =>
-                          handleCategoryToggle(category.name, checked === true)
-                        }
-                      />
-                      <span>{category.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <FormLabel>{t('photo.string')}</FormLabel>
-              <div className="flex flex-wrap items-center gap-4">
-                {photoPreview ? (
-                  <div
-                    role="img"
-                    aria-label={t('photo.string')}
-                    className="h-20 w-20 rounded-full bg-cover bg-center ring-2 ring-border"
-                    style={{ backgroundImage: `url(${photoPreview})` }}
-                  />
-                ) : (
-                  <div
-                    className="bg-muted/50 flex h-20 w-20 items-center justify-center rounded-full border border-dashed"
-                    aria-hidden
+          <Form {...form}>
+            <form
+              onSubmit={handleSubmit}
+              className="flex min-h-0 flex-1 flex-col overflow-hidden"
+            >
+              <div className={formDialogBodyClassName}>
+                {submitError && (
+                  <p
+                    className="text-destructive text-sm"
+                    data-testid="contact-form-submit-error"
                   >
-                    <UserRound className="text-muted-foreground h-8 w-8" />
+                    {submitError}
+                  </p>
+                )}
+                <FormField
+                  control={form.control}
+                  name="contactKind"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('fields.contact_kind.string')}</FormLabel>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger data-testid="contact-kind-select">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="individual">
+                            {t('fields.contact_kind_individual.string')}
+                          </SelectItem>
+                          <SelectItem value="org">
+                            {t('fields.contact_kind_org.string')}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.first_name.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} autoComplete="given-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.last_name.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} autoComplete="family-name" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="middleName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.middle_name.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="nickname"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.nickname.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="prefix"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.prefix.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="suffix"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.suffix.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="organization"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        {contactKind === 'org'
+                          ? t('fields.organization_required.string')
+                          : t('fields.organization.string')}
+                      </FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="jobTitle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('fields.job_title.string')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="department"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.department.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.role.string')}</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>{t('emails.string')}</FormLabel>
+                  {emailFields.fields.map((field, index) => (
+                    <div key={field.id} className="flex items-start gap-2">
+                      <FormField
+                        control={form.control}
+                        name={`emails.${index}.value`}
+                        render={({ field: emailField }) => (
+                          <FormItem className="min-w-0 flex-1">
+                            <FormControl>
+                              <Input
+                                {...emailField}
+                                type="email"
+                                autoComplete="email"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`emails.${index}.type`}
+                        render={({ field: typeField }) => (
+                          <FormItem className="w-28 shrink-0">
+                            <Select
+                              value={typeField.value ?? '_none'}
+                              onValueChange={typeField.onChange}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={t('fields.type.string')}
+                                  />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {emailTypeOptions.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option === '_none'
+                                      ? t('fields.type_default.string')
+                                      : t(`fields.email_type_${option}.string`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`emails.${index}.pref`}
+                        render={({ field: prefField }) => (
+                          <FormItem className="flex shrink-0 items-center gap-2 pt-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={Boolean(prefField.value)}
+                                onCheckedChange={prefField.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel className="!mt-0 font-normal">
+                              {t('fields.pref.string')}
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      {emailFields.fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-0.5 shrink-0"
+                          onClick={() => emailFields.remove(index)}
+                          aria-label={t('remove_field.string')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      emailFields.append({
+                        value: '',
+                        type: '_none',
+                        pref: false,
+                      })
+                    }
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {t('add_email.string')}
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>{t('phone_numbers.string')}</FormLabel>
+                  {phoneFields.fields.map((field, index) => (
+                    <div key={field.id} className="flex items-start gap-2">
+                      <FormField
+                        control={form.control}
+                        name={`phoneNumbers.${index}.value`}
+                        render={({ field: phoneField }) => (
+                          <FormItem className="min-w-0 flex-1">
+                            <FormControl>
+                              <Input
+                                {...phoneField}
+                                type="tel"
+                                autoComplete="tel"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`phoneNumbers.${index}.type`}
+                        render={({ field: typeField }) => (
+                          <FormItem className="w-28 shrink-0">
+                            <Select
+                              value={typeField.value ?? '_none'}
+                              onValueChange={typeField.onChange}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue
+                                    placeholder={t('fields.type.string')}
+                                  />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {phoneTypeOptions.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option === '_none'
+                                      ? t('fields.type_default.string')
+                                      : t(`fields.phone_type_${option}.string`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name={`phoneNumbers.${index}.pref`}
+                        render={({ field: prefField }) => (
+                          <FormItem className="flex shrink-0 items-center gap-2 pt-2">
+                            <FormControl>
+                              <Checkbox
+                                checked={Boolean(prefField.value)}
+                                onCheckedChange={prefField.onChange}
+                              />
+                            </FormControl>
+                            <FormLabel className="!mt-0 font-normal">
+                              {t('fields.pref.string')}
+                            </FormLabel>
+                          </FormItem>
+                        )}
+                      />
+                      {phoneFields.fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-0.5 shrink-0"
+                          onClick={() => phoneFields.remove(index)}
+                          aria-label={t('remove_field.string')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      phoneFields.append({
+                        value: '',
+                        type: '_none',
+                        pref: false,
+                      })
+                    }
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {t('add_phone.string')}
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>{t('addresses.string')}</FormLabel>
+                  {addressFields.fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="space-y-2 rounded-md border p-3"
+                    >
+                      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.street`}
+                          render={({ field: streetField }) => (
+                            <FormItem className="sm:col-span-2">
+                              <FormLabel>{t('fields.street.string')}</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...streetField}
+                                  autoComplete="street-address"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.city`}
+                          render={({ field: cityField }) => (
+                            <FormItem>
+                              <FormLabel>{t('fields.city.string')}</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...cityField}
+                                  autoComplete="address-level2"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.postalCode`}
+                          render={({ field: postalField }) => (
+                            <FormItem>
+                              <FormLabel>
+                                {t('fields.postal_code.string')}
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...postalField}
+                                  autoComplete="postal-code"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.region`}
+                          render={({ field: regionField }) => (
+                            <FormItem>
+                              <FormLabel>{t('fields.region.string')}</FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...regionField}
+                                  autoComplete="address-level1"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.poBox`}
+                          render={({ field: poBoxField }) => (
+                            <FormItem>
+                              <FormLabel>{t('fields.po_box.string')}</FormLabel>
+                              <FormControl>
+                                <Input {...poBoxField} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.extended`}
+                          render={({ field: extendedField }) => (
+                            <FormItem className="sm:col-span-2">
+                              <FormLabel>
+                                {t('fields.extended.string')}
+                              </FormLabel>
+                              <FormControl>
+                                <Input {...extendedField} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`addresses.${index}.country`}
+                          render={({ field: countryField }) => (
+                            <FormItem className="sm:col-span-2">
+                              <FormLabel>
+                                {t('fields.country.string')}
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  {...countryField}
+                                  autoComplete="country-name"
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                      {addressFields.fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => addressFields.remove(index)}
+                          aria-label={t('remove_field.string')}
+                        >
+                          <Trash2 className="mr-1 h-4 w-4" />
+                          {t('remove_field.string')}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      addressFields.append({
+                        street: '',
+                        city: '',
+                        postalCode: '',
+                        region: '',
+                        poBox: '',
+                        extended: '',
+                        country: '',
+                      })
+                    }
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {t('add_address.string')}
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>{t('urls.string')}</FormLabel>
+                  {urlFields.fields.map((field, index) => (
+                    <div key={field.id} className="flex items-start gap-2">
+                      <FormField
+                        control={form.control}
+                        name={`urls.${index}.value`}
+                        render={({ field: urlField }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                {...urlField}
+                                type="url"
+                                placeholder="https://"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {urlFields.fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-0.5 shrink-0"
+                          onClick={() => urlFields.remove(index)}
+                          aria-label={t('remove_field.string')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => urlFields.append({ value: '' })}
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {t('add_url.string')}
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  <FormLabel>{t('fields.impp.string')}</FormLabel>
+                  {imppFields.fields.map((field, index) => (
+                    <div key={field.id} className="flex items-start gap-2">
+                      <FormField
+                        control={form.control}
+                        name={`impp.${index}.value`}
+                        render={({ field: imppField }) => (
+                          <FormItem className="flex-1">
+                            <FormControl>
+                              <Input
+                                {...imppField}
+                                placeholder="xmpp:user@example.com"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {imppFields.fields.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="mt-0.5 shrink-0"
+                          onClick={() => imppFields.remove(index)}
+                          aria-label={t('remove_field.string')}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => imppFields.append({ value: '' })}
+                  >
+                    <Plus className="mr-1 h-4 w-4" />
+                    {t('add_impp.string')}
+                  </Button>
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="birthday"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('birthday.string')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="birthdayUnknownYear"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center gap-2 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={(checked) =>
+                            field.onChange(checked === true)
+                          }
+                        />
+                      </FormControl>
+                      <FormLabel>
+                        {t('fields.birthday_unknown_year.string')}
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="anniversary"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('fields.anniversary.string')}</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {categoryOptions.length > 0 && (
+                  <div className="space-y-2">
+                    <FormLabel>{t('categories.string')}</FormLabel>
+                    <div className="flex flex-wrap gap-3">
+                      {categoryOptions.map((category) => (
+                        <label
+                          key={category.name}
+                          className="flex items-center gap-2 text-sm"
+                        >
+                          <Checkbox
+                            checked={selectedCategories.includes(category.name)}
+                            onCheckedChange={(checked) =>
+                              handleCategoryToggle(
+                                category.name,
+                                checked === true
+                              )
+                            }
+                          />
+                          <span>{category.name}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 )}
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button type="button" variant="outline" size="sm" asChild>
-                    <label className="cursor-pointer">
-                      {photoPreview ? t('photo_change.string') : t('photo_upload.string')}
+
+                <div className="space-y-2">
+                  <Label>{t('photo.string')}</Label>
+                  <div className="flex flex-wrap items-center gap-4">
+                    {photoPreviewSrc ? (
+                      <img
+                        src={photoPreviewSrc}
+                        alt={t('photo.string')}
+                        className="ring-border h-20 w-20 rounded-full object-cover ring-2"
+                        data-testid="contact-photo-preview"
+                      />
+                    ) : (
+                      <div
+                        className="bg-muted/50 flex h-20 w-20 items-center justify-center rounded-full border border-dashed"
+                        aria-hidden
+                      >
+                        <UserRound className="text-muted-foreground h-8 w-8" />
+                      </div>
+                    )}
+                    <div className="flex flex-wrap items-center gap-2">
                       <input
+                        ref={photoInputRef}
                         type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
-                        className="sr-only"
+                        accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/tiff"
+                        className="hidden"
+                        data-testid="contact-photo-input"
                         onChange={handlePhotoChange}
                       />
-                    </label>
-                  </Button>
-                  {photoPreview && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleRemovePhoto}
-                    >
-                      {t('photo_remove.string')}
-                    </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={handlePhotoPick}
+                      >
+                        {photoPreviewSrc
+                          ? t('photo_change.string')
+                          : t('photo_upload.string')}
+                      </Button>
+                      {photoPreviewSrc && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={handleRemovePhoto}
+                        >
+                          {t('photo_remove.string')}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  {photoError && (
+                    <p className="text-destructive text-[0.8rem] font-medium">
+                      {photoError}
+                    </p>
                   )}
                 </div>
+
+                <FormField
+                  control={form.control}
+                  name="note"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('notes.string')}</FormLabel>
+                      <FormControl>
+                        <Textarea {...field} rows={3} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-              <FormField
-                control={form.control}
-                name="photoDataUri"
-                render={() => <FormMessage />}
-              />
-            </div>
 
-            <FormField
-              control={form.control}
-              name="note"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t('notes.string')}</FormLabel>
-                  <FormControl>
-                    <Textarea {...field} rows={3} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            </div>
-
-            <div className={formDialogFooterClassName}>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-                disabled={isSubmitting}
-              >
-                {t('cancel.string')}
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
-                {isEdit ? t('save.string') : t('create.string')}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              <div className={formDialogFooterClassName}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                >
+                  {t('cancel.string')}
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting && (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  )}
+                  {isEdit ? t('save.string') : t('create.string')}
+                </Button>
+              </div>
+            </form>
+          </Form>
         )}
       </DialogContent>
     </Dialog>

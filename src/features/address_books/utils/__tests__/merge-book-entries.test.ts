@@ -11,7 +11,9 @@ import {
 
 describe('mergeBookEntries', () => {
   it('places lists before contacts', () => {
-    const contacts = [{ id: 'c1', version: '4.0', firstName: 'A', lastName: 'B' }]
+    const contacts = [
+      { id: 'c1', version: '4.0', firstName: 'A', lastName: 'B' },
+    ]
     const lists = [
       {
         id: 'l1',
@@ -48,10 +50,15 @@ describe('buildBookEntriesResponse', () => {
   })
 
   it('uses the higher page count when contacts and lists paginate differently', () => {
-    const result = buildBookEntriesResponse([], [], { total: 10, totalPages: 2, page: 1 }, {
-      listTotal: 50,
-      listsPagination: { total: 50, totalPages: 5, page: 1 },
-    })
+    const result = buildBookEntriesResponse(
+      [],
+      [],
+      { total: 10, totalPages: 2, page: 1 },
+      {
+        listTotal: 50,
+        listsPagination: { total: 50, totalPages: 5, page: 1 },
+      }
+    )
 
     expect(result.totalPages).toBe(5)
     expect(result.listTotal).toBe(50)
@@ -148,5 +155,35 @@ describe('normalizeSingleEntry', () => {
 
     expect(entry.kind).toBe('group')
     expect(entry.firstName).toBe('Team')
+  })
+
+  it('resolves list member names when a contact lookup map is provided', () => {
+    const contacts = new Map([
+      [
+        'c1',
+        {
+          id: 'c1',
+          version: '4.0',
+          firstName: 'Alice',
+          lastName: 'Martin',
+          emails: ['alice@example.com'],
+        },
+      ],
+    ])
+
+    const entry = normalizeSingleEntry(
+      {
+        key: 'l1',
+        name: 'Team',
+        members: ['c1'],
+      },
+      contacts
+    )
+
+    expect(entry.members?.[0]).toEqual({
+      contactId: 'c1',
+      email: 'alice@example.com',
+      displayName: 'Alice Martin',
+    })
   })
 })

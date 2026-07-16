@@ -8,7 +8,7 @@ import { useRouter } from '@/lib/i18n/navigation'
 import { Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React, { memo } from 'react'
+import { memo } from 'react'
 import type { VCard } from '../../address-books-types'
 import {
   getDistributionListMemberCount,
@@ -86,7 +86,9 @@ function DistributionListVisualization({
             {t('members.string')}
           </h2>
           {memberCount === 0 ? (
-            <p className="text-muted-foreground text-sm">{t('no_members.string')}</p>
+            <p className="text-muted-foreground text-sm">
+              {t('no_members.string')}
+            </p>
           ) : (
             <ul className="space-y-1">
               {(data.members ?? []).map((member, index) => {
@@ -101,9 +103,11 @@ function DistributionListVisualization({
                       disabled={!isClickable}
                     >
                       <span className="font-medium">{label}</span>
-                      <span className="text-muted-foreground truncate pl-3 text-xs">
-                        {member.email}
-                      </span>
+                      {member.email ? (
+                        <span className="text-muted-foreground truncate pl-3 text-xs">
+                          {member.email}
+                        </span>
+                      ) : null}
                     </button>
                   </li>
                 )
