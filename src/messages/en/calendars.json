@@ -427,6 +427,11 @@
           "string": "End time"
         }
       },
+      "errors": {
+        "date_order": {
+          "string": "End date must be on or after the start date."
+        }
+      },
       "timezone": {
         "label": {
           "string": "Timezone (event)"
