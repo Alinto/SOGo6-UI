@@ -89,7 +89,7 @@ describe('ComposeAttachmentList', () => {
         attachments={[attachment({ uploadStatus: 'completed' })]}
       />
     )
-    expect(screen.getByTitle('attachment.title.string')).toBeInTheDocument()
+    expect(screen.getByTitle('attachment.download.string')).toBeInTheDocument()
 
     rerender(
       <ComposeAttachmentList
@@ -98,7 +98,7 @@ describe('ComposeAttachmentList', () => {
       />
     )
     expect(
-      screen.queryByTitle('attachment.title.string')
+      screen.queryByTitle('attachment.download.string')
     ).not.toBeInTheDocument()
   })
 
@@ -194,9 +194,9 @@ describe('ComposeAttachmentList', () => {
     beforeEach(() => {
       global.URL.createObjectURL = jest.fn(() => 'blob:mock-url')
       global.URL.revokeObjectURL = jest.fn()
-      jest.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(
-        () => {}
-      )
+      jest
+        .spyOn(HTMLAnchorElement.prototype, 'click')
+        .mockImplementation(() => {})
     })
 
     it('triggers the download query and clicks a generated link', async () => {
@@ -212,7 +212,7 @@ describe('ComposeAttachmentList', () => {
         />
       )
 
-      await user.click(screen.getByTitle('attachment.title.string'))
+      await user.click(screen.getByTitle('attachment.download.string'))
 
       expect(mockTriggerDownloadAttachment).toHaveBeenCalledWith({
         accountId: 'acc-1',
@@ -239,7 +239,7 @@ describe('ComposeAttachmentList', () => {
         />
       )
 
-      await user.click(screen.getByTitle('attachment.title.string'))
+      await user.click(screen.getByTitle('attachment.download.string'))
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
         'Failed to download attachment:',
