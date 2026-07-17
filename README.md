@@ -2,7 +2,7 @@
 
 # SOGo 6 - Web Frontend
 
-**A modern webmail and groupware client (Next.js 16) for the [SOGo 6](https://www.sogo.nu/) API.**
+**A modern webmail and groupware client (Next.js 16) for the [SOGo](https://www.sogo.nu/) project.**
 
 SOGo 6 is a new iteration with a total overhaul. The SOGo 5 codebase is available [here](https://github.com/Alinto/sogo).
 
