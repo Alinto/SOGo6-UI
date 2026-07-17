@@ -1,19 +1,19 @@
 'use client'
 
 import { Checkbox } from '@/components/ui/checkbox'
-import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListSort from '@/features/mails/components/list/list-sort'
+import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import MailDetailNavigation from '@/features/mails/components/mail/mail-detail-navigation'
-import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
+import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
 import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
-import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import {
   folderPathFromParams,
@@ -91,9 +91,7 @@ const ListToolbar: React.FC = () => {
 
   const handleBulkAction = useCallback(
     async (idx: number) => {
-      const mailsById = new Map(
-        filteredMails.map((m) => [String(m.id), m])
-      )
+      const mailsById = new Map(filteredMails.map((m) => [String(m.id), m]))
       for (const id of selectedIds) {
         const item = mailsById.get(id)
         switch (idx) {
@@ -153,13 +151,18 @@ const ListToolbar: React.FC = () => {
   return (
     <div className="bg-background border-border flex w-full min-w-0 shrink-0 flex-col gap-1 overflow-x-hidden border-b px-3 py-2">
       <div className="flex min-w-0 flex-row flex-wrap items-center justify-between gap-y-1">
-        <div className="flex min-w-0 flex-row items-center gap-4">
-          <Checkbox
-            checked={allSelected ? true : someSelected ? 'indeterminate' : false}
-            onCheckedChange={handleSelectAll}
-          />
+        <div className="flex h-8 min-w-0 flex-row items-center gap-2">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+            <Checkbox
+              checked={
+                allSelected ? true : someSelected ? 'indeterminate' : false
+              }
+              onCheckedChange={handleSelectAll}
+            />
+          </span>
           {selectedIds.length > 0 ? (
             <MailActionsBar
+              compact
               actions={[
                 {
                   id: 'bulk-delete',
@@ -195,12 +198,14 @@ const ListToolbar: React.FC = () => {
               }}
             />
           ) : (
-            <>
-              <span className="text-lg font-semibold">{folderTitle}</span>
-              <span className="text-muted-foreground hidden text-sm md:inline-block">
+            <div className="flex min-w-0 items-baseline gap-2">
+              <span className="text-lg leading-none font-semibold">
+                {folderTitle}
+              </span>
+              <span className="text-muted-foreground hidden text-sm leading-none md:inline">
                 {t('messages_number.string', { number: displayedCount })}
               </span>
-            </>
+            </div>
           )}
         </div>
         <div className="flex min-w-0 flex-row flex-wrap items-center gap-2">

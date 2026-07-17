@@ -1,11 +1,11 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
-import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
+import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
@@ -87,21 +87,24 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         }}
       >
         {(isHovered || isSelected) && (
-          <span className="relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden">
-            <Checkbox
-              className="shrink-0 cursor-pointer bg-white"
-              checked={isSelected}
-              onClick={(e) => {
-                onHandleCheckboxClick(e, data)
-              }}
-            />
-          </span>
+          <MailListItemCheckbox
+            isSelected={isSelected}
+            data={data}
+            onHandleCheckboxClick={onHandleCheckboxClick}
+          />
         )}
-        <Avatar className={!isHovered && !isSelected ? 'h-6 w-6' : 'hidden'}>
-          <AvatarFallback>
-            {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+        <span
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center',
+            isHovered || isSelected ? 'hidden' : ''
+          )}
+        >
+          <Avatar className="h-6 w-6">
+            <AvatarFallback>
+              {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </span>
         <div>
           <Star
             fill={flagged ? 'yellow' : 'white'}

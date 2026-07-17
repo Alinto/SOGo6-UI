@@ -1,20 +1,20 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
-import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
+import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
   Archive,
-  Flame,
-  Inbox,
   Calendar,
   ChevronsUp,
+  Flame,
   Forward,
+  Inbox,
   Mail,
   MailOpen,
   Paperclip,
@@ -85,31 +85,29 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             mailId: id,
           })
           if (openedDraft) return
-          push(
-            `/u/${accountString}/${encodeURIComponent(folderString)}/${id}`
-          )
+          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
         }}
       >
-        <span
-          className={`relative flex h-6 w-6 shrink-0 items-center justify-center overflow-hidden ${
-            isSelected ? 'flex' : 'hidden group-hover:flex'
-          }`}
-        >
-          <Checkbox
-            className="shrink-0 cursor-pointer bg-white"
-            checked={isSelected}
-            onClick={(e) => onHandleCheckboxClick(e, data)}
-          />
-        </span>
+        <MailListItemCheckbox
+          isSelected={isSelected}
+          data={data}
+          onHandleCheckboxClick={onHandleCheckboxClick}
+          wrapperClassName={isSelected ? 'flex' : 'hidden group-hover:flex'}
+        />
 
-        <Avatar
-          className={`h-6 w-6 group-hover:hidden ${isSelected ? 'hidden' : ''}`}
+        <span
+          className={cn(
+            'flex h-8 w-8 shrink-0 items-center justify-center',
+            isSelected ? 'hidden' : 'group-hover:hidden'
+          )}
         >
-          <AvatarImage src="/images/account-avatar.svg" />
-          <AvatarFallback>
-            {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+          <Avatar className="h-6 w-6">
+            <AvatarImage src="/images/account-avatar.svg" />
+            <AvatarFallback>
+              {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </span>
 
         <div>
           <Star

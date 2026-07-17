@@ -38,6 +38,7 @@ export type Action = {
 export type MailActionsBarProps = {
   actions: Action[]
   className?: string
+  compact?: boolean
   onAction?: (idx: number, action: Action) => void
 }
 
