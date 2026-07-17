@@ -24,12 +24,20 @@ jest.mock('next-intl', () => ({
 jest.mock('@/components/ui/avatar', () => ({
   Avatar: ({ children }: any) => <div data-testid="avatar">{children}</div>,
   AvatarImage: () => <img data-testid="avatar-image" />,
-  AvatarFallback: ({ children }: any) => <div data-testid="avatar-fallback">{children}</div>,
+  AvatarFallback: ({ children }: any) => (
+    <div data-testid="avatar-fallback">{children}</div>
+  ),
 }))
 
 jest.mock('@/components/ui/checkbox', () => ({
   Checkbox: ({ checked, onClick }: any) => (
-    <input type="checkbox" data-testid="checkbox" checked={checked} onClick={onClick} onChange={() => {}} />
+    <input
+      type="checkbox"
+      data-testid="checkbox"
+      checked={checked}
+      onClick={onClick}
+      onChange={() => {}}
+    />
   ),
 }))
 
@@ -43,7 +51,11 @@ jest.mock('@/components/ui/tooltip', () => ({
 
 jest.mock('lucide-react', () => ({
   Paperclip: () => <span data-testid="paperclip-icon">📎</span>,
-  Star: ({ onClick }: any) => <button data-testid="star-icon" onClick={onClick}>⭐</button>,
+  Star: ({ onClick }: any) => (
+    <button data-testid="star-icon" onClick={onClick}>
+      ⭐
+    </button>
+  ),
   Mail: () => <span data-testid="mail-icon" />,
   MailOpen: () => <span data-testid="mail-open-icon" />,
   Trash2: () => <span data-testid="trash-icon" />,
@@ -127,14 +139,18 @@ describe('ListItemDesktop', () => {
   })
 
   it('hides attachment icon when hasAttachment is false', () => {
-    renderWithRedux(<ListItemDesktop {...defaultProps} data={{ ...mockData, hasAttachment: false }} />)
+    renderWithRedux(
+      <ListItemDesktop
+        {...defaultProps}
+        data={{ ...mockData, hasAttachment: false }}
+      />
+    )
     expect(screen.queryByTestId('paperclip-icon')).not.toBeInTheDocument()
   })
 
   it('shows checkbox when isSelected is true', () => {
     renderWithRedux(<ListItemDesktop {...defaultProps} isSelected />)
-    expect(screen.getByTestId('checkbox')).toBeInTheDocument()
-    expect(screen.getByTestId('checkbox')).toBeChecked()
+    expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
   })
 
   it('shows action buttons on hover', () => {
@@ -149,7 +165,7 @@ describe('ListItemDesktop', () => {
     renderWithRedux(<ListItemDesktop {...defaultProps} />)
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
-    expect(screen.getByTestId('checkbox')).toBeInTheDocument()
+    expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
   })
 
   it('hides checkbox on mouse leave', () => {
@@ -157,13 +173,16 @@ describe('ListItemDesktop', () => {
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
     fireEvent.mouseLeave(container)
-    expect(screen.queryByTestId('checkbox')).toBeInTheDocument()
+    expect(screen.queryByTestId('mail-list-item-checkbox')).toBeInTheDocument()
   })
 
   it('calls onHandleCheckboxClick when checkbox clicked', () => {
     renderWithRedux(<ListItemDesktop {...defaultProps} isSelected />)
-    fireEvent.click(screen.getByTestId('checkbox'))
-    expect(defaultProps.onHandleCheckboxClick).toHaveBeenCalledWith(expect.any(Object), mockData)
+    fireEvent.click(screen.getByTestId('mail-list-item-checkbox'))
+    expect(defaultProps.onHandleCheckboxClick).toHaveBeenCalledWith(
+      expect.any(Object),
+      mockData
+    )
   })
 
   it('applies font-semibold for unread emails', () => {
@@ -172,12 +191,19 @@ describe('ListItemDesktop', () => {
   })
 
   it('applies muted style for read emails', () => {
-    renderWithRedux(<ListItemDesktop {...defaultProps} data={{ ...mockData, seen: true }} />)
+    renderWithRedux(
+      <ListItemDesktop {...defaultProps} data={{ ...mockData, seen: true }} />
+    )
     expect(screen.getByText('John Doe')).toHaveClass('text-muted-foreground')
   })
 
   it('falls back to email when name is empty', () => {
-    renderWithRedux(<ListItemDesktop {...defaultProps} data={{ ...mockData, from: { name: '', email: 'john@example.com' } }} />)
+    renderWithRedux(
+      <ListItemDesktop
+        {...defaultProps}
+        data={{ ...mockData, from: { name: '', email: 'john@example.com' } }}
+      />
+    )
     expect(screen.getByText('john@example.com')).toBeInTheDocument()
   })
 

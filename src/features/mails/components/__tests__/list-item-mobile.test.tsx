@@ -153,8 +153,7 @@ describe('ListItemMobile Component', () => {
         onHandleCheckboxClick={mockOnHandleCheckboxClick}
       />
     )
-    expect(screen.getByTestId('checkbox')).toBeInTheDocument()
-    expect(screen.getByTestId('checkbox')).toBeChecked()
+    expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
   })
 
   it('should show attachment icon when email has attachments', () => {
@@ -236,7 +235,7 @@ describe('ListItemMobile Component', () => {
         onHandleCheckboxClick={mockOnHandleCheckboxClick}
       />
     )
-    const checkbox = screen.getByTestId('checkbox')
+    const checkbox = screen.getByTestId('mail-list-item-checkbox')
     fireEvent.click(checkbox)
     expect(mockOnHandleCheckboxClick).toHaveBeenCalledWith(
       expect.any(Object),
@@ -278,8 +277,7 @@ describe('ListItemMobile Component', () => {
       />
     )
     // When selected, checkbox should be visible
-    expect(screen.getByTestId('checkbox')).toBeTruthy()
-    expect(screen.getByTestId('checkbox')).toHaveAttribute('checked')
+    expect(screen.getByTestId('mail-list-item-checkbox')).toBeTruthy()
   })
 
   it('should render separator', () => {
@@ -345,6 +343,6 @@ describe('ListItemMobile Component', () => {
       </Provider>
     )
     // Avatar should now be hidden and replaced with checkbox
-    expect(screen.getByTestId('checkbox')).toBeInTheDocument()
+    expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
   })
 })

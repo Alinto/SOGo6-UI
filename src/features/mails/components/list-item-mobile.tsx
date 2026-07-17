@@ -1,10 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Checkbox } from '@/components/ui/checkbox'
 import { Separator } from '@/components/ui/separator'
-import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
-import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
+import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
@@ -19,10 +19,7 @@ import {
 import { useParams } from 'next/navigation'
 import React, { memo, useCallback, useRef } from 'react'
 import { ImapMessagesList } from '../mails-types'
-import {
-  useMailActionMutation,
-  useMoveToTrashMutation,
-} from '../store'
+import { useMailActionMutation, useMoveToTrashMutation } from '../store'
 import { formatDate } from './list-item-utils'
 import SwipeableMailItem from './swipeable-mail-item'
 
@@ -160,32 +157,30 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
             <div className="flex min-w-0 flex-row items-center gap-2">
               {/* Avatar on the left */}
               {isSelected && (
-                <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden">
-                  <Checkbox
-                    className="h-7 w-7 shrink-0 cursor-pointer bg-white"
-                    checked={isSelected}
-                    onClick={(e) => {
-                      onHandleCheckboxClick(e, data)
-                    }}
-                  />
-                </span>
+                <MailListItemCheckbox
+                  isSelected={isSelected}
+                  data={data}
+                  onHandleCheckboxClick={onHandleCheckboxClick}
+                  checkboxClassName="h-7 w-7"
+                />
               )}
-              <Avatar
-                className={
-                  !isSelected
-                    ? 'bg-secondary flex h-10 w-10 shrink-0 items-center justify-center'
-                    : 'hidden'
-                }
+              <span
+                className={cn(
+                  'flex h-10 w-10 shrink-0 items-center justify-center',
+                  isSelected ? 'hidden' : ''
+                )}
               >
-                <AvatarImage src="/images/account-avatar.svg" />
-                <AvatarFallback className="text-lg font-semibold">
-                  {from.name && from.name.length > 0
-                    ? from.name[0].toUpperCase()
-                    : from.email && from.email.length > 0
-                      ? from.email[0].toUpperCase()
-                      : '?'}
-                </AvatarFallback>
-              </Avatar>
+                <Avatar className="bg-secondary flex h-10 w-10 items-center justify-center">
+                  <AvatarImage src="/images/account-avatar.svg" />
+                  <AvatarFallback className="text-lg font-semibold">
+                    {from.name && from.name.length > 0
+                      ? from.name[0].toUpperCase()
+                      : from.email && from.email.length > 0
+                        ? from.email[0].toUpperCase()
+                        : '?'}
+                  </AvatarFallback>
+                </Avatar>
+              </span>
               {/* Content on the right */}
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="flex min-w-0 flex-row items-center justify-between gap-2">
