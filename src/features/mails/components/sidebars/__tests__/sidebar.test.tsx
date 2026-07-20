@@ -78,6 +78,11 @@ jest.mock('../compose-opener', () => ({
   default: () => <div data-testid="compose-opener">Compose Opener</div>,
 }))
 
+jest.mock('../mailbox-quota', () => ({
+  __esModule: true,
+  MailboxQuota: () => <div data-testid="mailbox-quota">Mailbox Quota</div>,
+}))
+
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
   default: ({ name, folderPath, handleClick, isActive }: any) => (

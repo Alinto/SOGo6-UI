@@ -77,6 +77,22 @@ export interface MailboxesResponse {
   error_msg: string
 }
 
+export interface MailboxQuota {
+  soft_quota_value: number
+  storage_limit: number
+  storage_used: number
+}
+
+export interface MailboxDetail extends Partial<Mailbox> {
+  quota?: MailboxQuota
+}
+
+export interface MailboxDetailResponse {
+  data: MailboxDetail
+  error_code: string
+  error_msg: string
+}
+
 export interface SkipNotification {
   _skipNotification?: boolean
 }

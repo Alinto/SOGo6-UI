@@ -4,6 +4,8 @@ import type { UnknownAction } from '@reduxjs/toolkit'
 import type { Dispatch } from 'redux'
 import {
   Mailbox,
+  MailboxDetail,
+  MailboxDetailResponse,
   MailboxesResponse,
   MailboxPOST,
   MailboxProfilePatch,
@@ -39,10 +41,12 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
       providesTags: [MAILBOXES_SLICE],
     }),
 
-    getUserMailbox: builder.query<MailboxesResponse, { id: string }>({
+    getUserMailbox: builder.query<MailboxDetail, { id: string }>({
       query: ({ id }) => ({
         url: `mailboxes/${id}`,
       }),
+      transformResponse: (response: MailboxDetailResponse) => response.data,
+      providesTags: [MAILBOXES_SLICE],
     }),
 
     createUserMailbox: builder.mutation<MailboxesResponse, MailboxPOST>({

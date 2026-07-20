@@ -292,6 +292,14 @@
             "delegate": {
                 "string": "Delegate",
                 "description": "Label for the delegate action in the account switcher menu (not yet implemented)"
+            },
+            "quota": {
+                "string": "{percent}% used on {total} MB",
+                "description": "Storage quota usage summary shown below the account switcher",
+                "warning": {
+                    "string": "Storage almost full",
+                    "description": "Tooltip for the warning icon shown when the quota is close to the limit"
+                }
             }
         },
         "to": {
