@@ -22,6 +22,7 @@ import {
 import { iconSelectorByType, nameSelectorByType } from '../utils'
 import { AccountSwitcher } from './account-switcher'
 import ComposeOpener from './compose-opener'
+import { MailboxQuota } from './mailbox-quota'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -45,8 +46,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0
 
   const descendantActive =
-    hasSubfolders &&
-    urlFolder.startsWith(folder.path + folder.delimiter)
+    hasSubfolders && urlFolder.startsWith(folder.path + folder.delimiter)
 
   const [open, setOpen] = useState(false)
   const effectiveOpen = descendantActive || open
@@ -155,6 +155,7 @@ export function MailSidebar() {
         <SidebarMenu>
           <AccountSwitcher />
         </SidebarMenu>
+        <MailboxQuota />
       </SidebarGroup>
       <SidebarGroup className="sticky top-0 z-10 ml-0 py-0 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
