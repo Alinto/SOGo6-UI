@@ -4,6 +4,10 @@ import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import {
+  MAIL_PRIORITY_HIGHEST,
+  MAIL_PRIORITY_NORMAL,
+} from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
@@ -30,6 +34,7 @@ interface ListItemClassicProps {
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
   onToggleRead?: (id: string) => void
+  onToggleFlag?: (id: string) => void
 }
 
 const ListItemClassic: React.FC<ListItemClassicProps> = ({
@@ -37,6 +42,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   isSelected,
   onHandleCheckboxClick,
   onToggleRead,
+  onToggleFlag,
 }) => {
   const t = useTranslations('MAILS_LIST')
   const tMinutesAgo = (count: number) => t('time.minutes_ago.string', { count })
@@ -51,7 +57,11 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const [isHovered, setIsHovered] = useState(false)
-  const showHighPriority = data.priority <= 2
+  const showHighPriority = data.priority < MAIL_PRIORITY_NORMAL
+  const priorityTitle =
+    data.priority === MAIL_PRIORITY_HIGHEST
+      ? t('priority.highest.string')
+      : t('priority.high.string')
   const showSnippet = data.snippet.trim().length > 0
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
@@ -110,6 +120,10 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
             fill={flagged ? 'yellow' : 'white'}
             className="h-4 w-4 cursor-pointer transition-all duration-200 hover:h-5 hover:w-5"
             strokeWidth={1}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleFlag?.(data.id)
+            }}
           />
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
@@ -154,10 +168,12 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
                 className={`flex min-w-0 items-center gap-1 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
               >
                 {showHighPriority && (
-                  <ChevronsUp
-                    className="h-4 w-4 shrink-0 text-orange-600"
-                    aria-hidden
-                  />
+                  <TooltipWrapper content={priorityTitle} side="top">
+                    <ChevronsUp
+                      className="h-4 w-4 shrink-0 text-orange-600"
+                      aria-hidden
+                    />
+                  </TooltipWrapper>
                 )}
                 {hasEventType && (
                   <Calendar

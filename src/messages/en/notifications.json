@@ -65,6 +65,20 @@
                     "string": "Could not move this message."
                 }
             },
+            "copy": {
+                "successTitle": {
+                    "string": "Message copied"
+                },
+                "successMessage": {
+                    "string": "The message was copied successfully."
+                },
+                "errorTitle": {
+                    "string": "Copy failed"
+                },
+                "errorMessage": {
+                    "string": "Could not copy this message."
+                }
+            },
             "tag": {
                 "successTitle": {
                     "string": "Label applied"
@@ -91,6 +105,34 @@
                 },
                 "errorMessage": {
                     "string": "Could not remove the label."
+                }
+            },
+            "flag": {
+                "successTitle": {
+                    "string": "Marked as important"
+                },
+                "successMessage": {
+                    "string": "The message was marked as important."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not mark this message as important."
+                }
+            },
+            "unflag": {
+                "successTitle": {
+                    "string": "Important flag removed"
+                },
+                "successMessage": {
+                    "string": "The message is no longer marked as important."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not remove the important flag."
                 }
             }
         },

@@ -111,6 +111,14 @@
             "minutes_ago": {
                 "string": "{count}m ago"
             }
+        },
+        "priority": {
+            "high": {
+                "string": "High priority"
+            },
+            "highest": {
+                "string": "Highest priority"
+            }
         }
     }
 }

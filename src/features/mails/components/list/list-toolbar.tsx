@@ -182,7 +182,7 @@ const ListToolbar: React.FC = () => {
                 {
                   id: 'bulk-spam',
                   title: isJunk
-                    ? tBar('move_to_inbox.string')
+                    ? tBar('report_not_spam.string')
                     : tBar('report_spam.string'),
                   icon: isJunk ? <Inbox size={16} /> : <Flame size={16} />,
                 },

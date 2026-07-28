@@ -8,7 +8,7 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 
-import { ColorPicker } from '@/components/ui/color-picker'
+import { ColorPicker, DEFAULT_COLORS } from '@/components/ui/color-picker'
 import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import { Input } from '@/components/ui/input'
 import {
@@ -71,7 +71,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
           onClick={() => {
             insert(fields.length, {
               name: '',
-              color: '',
+              color: DEFAULT_COLORS[0],
               isDefault: false,
             })
           }}

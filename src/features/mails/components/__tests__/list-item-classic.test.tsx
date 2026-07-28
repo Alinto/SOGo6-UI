@@ -1,9 +1,8 @@
 import { mailComposeReducer } from '@/features/mails/store'
-import { apiSlice } from '@/lib/redux/api/api-slice'
 import { useRouter } from '@/lib/i18n/navigation'
+import { apiSlice } from '@/lib/redux/api/api-slice'
 import { configureStore } from '@reduxjs/toolkit'
-import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { useParams, usePathname } from 'next/navigation'
 import { Provider } from 'react-redux'
 import { ImapMessagesList } from '../../mails-types'
@@ -96,7 +95,6 @@ describe('ListItemClassic', () => {
     expect(screen.getByText('J')).toBeInTheDocument() // Avatar fallback
   })
 
-
   it('should format date correctly', () => {
     const pastDate = new Date()
     pastDate.setDate(pastDate.getDate() - 10) // 10 days ago, not in current week
@@ -131,7 +129,6 @@ describe('ListItemClassic', () => {
     expect(screen.queryByTestId('paperclip-icon')).not.toBeInTheDocument()
   })
 
-
   it('should not apply unread background when seen is true', () => {
     const mockDataSeen = { ...mockData, seen: true }
 
@@ -148,7 +145,10 @@ describe('ListItemClassic', () => {
   })
 
   it('should use email initial when name is empty', () => {
-    const mockDataNoName = { ...mockData, from: { name: '', email: 'john@example.com' } }
+    const mockDataNoName = {
+      ...mockData,
+      from: { name: '', email: 'john@example.com' },
+    }
 
     renderWithRedux(
       <ListItemClassic
@@ -161,4 +161,24 @@ describe('ListItemClassic', () => {
     expect(screen.getByText('J')).toBeInTheDocument()
   })
 
+  it('calls onToggleFlag when star icon is clicked without navigating', () => {
+    const onToggleFlag = jest.fn()
+    const push = jest.fn()
+    mockUseRouter.mockReturnValue({ push } as any)
+
+    const { container } = renderWithRedux(
+      <ListItemClassic
+        data={mockData}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+        onToggleFlag={onToggleFlag}
+      />
+    )
+
+    const star = container.querySelector('svg.lucide-star')!
+    fireEvent.click(star)
+
+    expect(onToggleFlag).toHaveBeenCalledWith('1')
+    expect(push).not.toHaveBeenCalled()
+  })
 })

@@ -1,12 +1,6 @@
 import type { ApiNotificationStrings } from '@/features/notifications/api-notification-handler'
 
-type MailActionType =
-  | 'tag'
-  | 'untag'
-  | 'move'
-  | 'spam'
-  | 'ham'
-  | 'copy'
+type MailActionType = 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
 
 function normalizeMailActionDataArray(
   data: string | string[] | null | undefined
@@ -23,11 +17,35 @@ function isSeenFlagToggle(arg: {
   return normalizeMailActionDataArray(arg.data).includes('\\Seen')
 }
 
+function isFlaggedToggle(arg: {
+  action: MailActionType
+  data?: string | string[] | null
+}): boolean {
+  if (arg.action !== 'tag' && arg.action !== 'untag') return false
+  return normalizeMailActionDataArray(arg.data).includes('\\Flagged')
+}
+
 export function getMailActionNotificationKeys(arg: {
   action: MailActionType
   data?: string | string[] | null
 }): ApiNotificationStrings | null {
   if (isSeenFlagToggle(arg)) return null
+
+  if (isFlaggedToggle(arg)) {
+    return arg.action === 'tag'
+      ? {
+          successTitle: 'mail_action.flag.successTitle.string',
+          successMessage: 'mail_action.flag.successMessage.string',
+          errorTitle: 'mail_action.flag.errorTitle.string',
+          errorMessage: 'mail_action.flag.errorMessage.string',
+        }
+      : {
+          successTitle: 'mail_action.unflag.successTitle.string',
+          successMessage: 'mail_action.unflag.successMessage.string',
+          errorTitle: 'mail_action.unflag.errorTitle.string',
+          errorMessage: 'mail_action.unflag.errorMessage.string',
+        }
+  }
 
   switch (arg.action) {
     case 'spam':
@@ -50,6 +68,13 @@ export function getMailActionNotificationKeys(arg: {
         successMessage: 'mail_action.move.successMessage.string',
         errorTitle: 'mail_action.move.errorTitle.string',
         errorMessage: 'mail_action.move.errorMessage.string',
+      }
+    case 'copy':
+      return {
+        successTitle: 'mail_action.copy.successTitle.string',
+        successMessage: 'mail_action.copy.successMessage.string',
+        errorTitle: 'mail_action.copy.errorTitle.string',
+        errorMessage: 'mail_action.copy.errorMessage.string',
       }
     case 'tag':
       return {

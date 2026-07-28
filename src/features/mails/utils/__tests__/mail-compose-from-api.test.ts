@@ -96,7 +96,11 @@ describe('apiDataToMailComposeDraft', () => {
       const draft = apiDataToMailComposeDraft('draft-1', {
         body: '<p>Direct body</p>',
         contents: [
-          { content: '<p>HTML</p>', contentType: 'text/html', shouldDisplayAttachment: false },
+          {
+            content: '<p>HTML</p>',
+            contentType: 'text/html',
+            shouldDisplayAttachment: false,
+          },
         ],
       })
 
@@ -106,8 +110,16 @@ describe('apiDataToMailComposeDraft', () => {
     it('falls back to the html content when body is missing', () => {
       const draft = apiDataToMailComposeDraft('draft-1', {
         contents: [
-          { content: 'Plain text', contentType: 'text/plain', shouldDisplayAttachment: false },
-          { content: '<p>HTML content</p>', contentType: 'text/html', shouldDisplayAttachment: false },
+          {
+            content: 'Plain text',
+            contentType: 'text/plain',
+            shouldDisplayAttachment: false,
+          },
+          {
+            content: '<p>HTML content</p>',
+            contentType: 'text/html',
+            shouldDisplayAttachment: false,
+          },
         ],
       })
 
@@ -117,7 +129,11 @@ describe('apiDataToMailComposeDraft', () => {
     it('falls back to the plain text content when no html content is present', () => {
       const draft = apiDataToMailComposeDraft('draft-1', {
         contents: [
-          { content: 'Plain text only', contentType: 'text/plain', shouldDisplayAttachment: false },
+          {
+            content: 'Plain text only',
+            contentType: 'text/plain',
+            shouldDisplayAttachment: false,
+          },
         ],
       })
 
@@ -139,7 +155,11 @@ describe('apiDataToMailComposeDraft', () => {
     it('returns an empty string when contents has neither html nor plain text', () => {
       const draft = apiDataToMailComposeDraft('draft-1', {
         contents: [
-          { content: 'invite', contentType: 'text/calendar', shouldDisplayAttachment: false },
+          {
+            content: 'invite',
+            contentType: 'text/calendar',
+            shouldDisplayAttachment: false,
+          },
         ],
       })
 
@@ -275,11 +295,11 @@ describe('apiDataToMailComposeDraft', () => {
 
   describe('priority', () => {
     it.each([
-      [0, MAIL_PRIORITY_LOWEST],
-      [1, MAIL_PRIORITY_LOW],
-      [2, MAIL_PRIORITY_NORMAL],
-      [3, MAIL_PRIORITY_HIGH],
-      [4, MAIL_PRIORITY_HIGHEST],
+      [5, MAIL_PRIORITY_LOWEST],
+      [4, MAIL_PRIORITY_LOW],
+      [3, MAIL_PRIORITY_NORMAL],
+      [2, MAIL_PRIORITY_HIGH],
+      [1, MAIL_PRIORITY_HIGHEST],
     ])('coerces api priority %i to %i', (apiPriority, expected) => {
       const draft = apiDataToMailComposeDraft('draft-1', {
         priority: apiPriority,
@@ -362,7 +382,9 @@ describe('buildForwardedBody', () => {
     expect(result).toContain(
       'From: &lt;script&gt;alert(1)&lt;/script&gt; &lt;evil@example.com&gt;'
     )
-    expect(result).toContain('Subject: &lt;b&gt;Hi&lt;/b&gt; &amp; &quot;quotes&quot;')
+    expect(result).toContain(
+      'Subject: &lt;b&gt;Hi&lt;/b&gt; &amp; &quot;quotes&quot;'
+    )
   })
 
   it('returns an empty To line when there are no recipients', () => {
@@ -396,7 +418,10 @@ describe('buildQuotedReplyBody', () => {
 
   it('escapes html special characters in the sender name', () => {
     const result = buildQuotedReplyBody(
-      { from: { name: '<script>alert(1)</script>', email: 'evil@example.com' }, date: mail.date },
+      {
+        from: { name: '<script>alert(1)</script>', email: 'evil@example.com' },
+        date: mail.date,
+      },
       ''
     )
 

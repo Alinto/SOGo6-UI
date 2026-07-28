@@ -8,6 +8,7 @@ import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobil
 import MailInvitationWidget from '@/features/mails/components/mail/mail-invitation-widget'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
+import MailSubjectLabels from '@/features/mails/components/mail/mail-subject-labels'
 import {
   buildAttachmentsUrl,
   parseEmailContact,
@@ -18,6 +19,7 @@ import { useMailInvitation } from '@/features/mails/hooks/use-mail-invitation'
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
+import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
 
@@ -31,10 +33,11 @@ const MailPage: React.FC = () => {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const params = useParams() as {
     account: string
-    folder: string
+    folder: string | string[]
     mail_id: string
   }
-  const { folder, account, mail_id } = params
+  const { account, mail_id } = params
+  const folder = folderPathFromParams(params.folder)
   const isMobile = useIsMobile()
   const {
     canGoPrev,
@@ -114,11 +117,11 @@ const MailPage: React.FC = () => {
         <MailReturnButton folderPath={folder} />
         <MailDetailActionBar
           accountId={Array.isArray(account) ? account[0] : account}
-          folder={Array.isArray(folder) ? folder.join('/') : folder}
+          folder={folder}
           mailId={mail_id}
           seen={data.seen}
+          flagged={data.flagged}
           flags={data.flags}
-          navigation={mailNavigation}
           onPrint={handlePrint}
           isPrintDisabled={isPrintDisabled}
         />
@@ -136,7 +139,18 @@ const MailPage: React.FC = () => {
           )}
         </div>
       </div>
-      <MailSubject subject={subject} className="h-auto min-h-fit" />
+      <MailSubject
+        subject={subject}
+        className="h-auto min-h-fit"
+        labels={
+          <MailSubjectLabels
+            accountId={Array.isArray(account) ? account[0] : account}
+            folder={folder}
+            mailId={mail_id}
+            flags={data.flags}
+          />
+        }
+      />
       <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
         {isMobile ? (
           <MailHeaderMobile

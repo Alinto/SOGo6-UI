@@ -26,4 +26,28 @@ describe('getMailActionNotificationKeys', () => {
       successTitle: 'mail_action.tag.successTitle.string',
     })
   })
+
+  it('returns flag keys when tagging as important', () => {
+    expect(
+      getMailActionNotificationKeys({ action: 'tag', data: ['\\Flagged'] })
+    ).toMatchObject({
+      successTitle: 'mail_action.flag.successTitle.string',
+    })
+  })
+
+  it('returns unflag keys when untagging as important', () => {
+    expect(
+      getMailActionNotificationKeys({ action: 'untag', data: ['\\Flagged'] })
+    ).toMatchObject({
+      successTitle: 'mail_action.unflag.successTitle.string',
+    })
+  })
+
+  it('returns copy keys', () => {
+    expect(
+      getMailActionNotificationKeys({ action: 'copy', data: 'Archive' })
+    ).toMatchObject({
+      successTitle: 'mail_action.copy.successTitle.string',
+    })
+  })
 })

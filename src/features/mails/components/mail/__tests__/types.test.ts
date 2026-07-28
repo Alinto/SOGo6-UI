@@ -36,10 +36,12 @@ describe('Mail Types', () => {
       HAM: 'ham',
       MARK_UNREAD: 'mark-unread',
       LABEL: 'label',
+      IMPORTANT: 'important',
       MORE: 'more',
       ARCHIVE: 'archive',
       DOWNLOAD: 'download',
       MOVE: 'move',
+      COPY: 'copy',
       PRINT: 'print',
       VIEW_SOURCE: 'view-source',
       REPLY: 'reply',
@@ -50,8 +52,8 @@ describe('Mail Types', () => {
     })
   })
 
-  it('should have exactly 18 action types', () => {
-    expect(Object.keys(ActionId)).toHaveLength(18)
+  it('should have exactly 20 action types', () => {
+    expect(Object.keys(ActionId)).toHaveLength(20)
   })
 
   describe('Type definitions', () => {

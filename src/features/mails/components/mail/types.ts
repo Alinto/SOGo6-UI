@@ -9,10 +9,12 @@ export const ActionId = {
   HAM: 'ham',
   MARK_UNREAD: 'mark-unread',
   LABEL: 'label',
+  IMPORTANT: 'important',
   MORE: 'more',
   ARCHIVE: 'archive',
   DOWNLOAD: 'download',
   MOVE: 'move',
+  COPY: 'copy',
   PRINT: 'print',
   VIEW_SOURCE: 'view-source',
   REPLY: 'reply',
@@ -26,6 +28,7 @@ export type ActionIdValue = (typeof ActionId)[keyof typeof ActionId]
 
 export interface MailSubjectProps {
   subject: string
+  labels?: React.ReactNode
 }
 
 export type Action = {
@@ -40,6 +43,7 @@ export type MailActionsBarProps = {
   className?: string
   compact?: boolean
   onAction?: (idx: number, action: Action) => void
+  children?: React.ReactNode
 }
 
 export type MailReturnButtonProps = {

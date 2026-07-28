@@ -77,6 +77,12 @@ jest.mock('../swipeable-mail-item', () => {
   ))
 })
 
+const mockMailAction = jest.fn()
+jest.mock('../../store', () => ({
+  useMailActionMutation: jest.fn(() => [mockMailAction]),
+  useMoveToTrashMutation: jest.fn(() => [jest.fn()]),
+}))
+
 describe('ListItemMobile Component', () => {
   const mockData = {
     id: '123',
@@ -318,6 +324,42 @@ describe('ListItemMobile Component', () => {
     fireEvent.click(starButton)
     // Just verify the star button exists and can be clicked
     expect(starButton).toBeTruthy()
+  })
+
+  it('should tag the mail as flagged when star is clicked while unflagged', () => {
+    renderWithRedux(
+      <ListItemMobile
+        data={mockData}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    fireEvent.click(screen.getByTestId('star-icon'))
+    expect(mockMailAction).toHaveBeenCalledWith({
+      accountId: '0',
+      folder: 'inbox',
+      mailId: '123',
+      action: 'tag',
+      data: ['\\Flagged'],
+    })
+  })
+
+  it('should untag the mail when star is clicked while already flagged', () => {
+    renderWithRedux(
+      <ListItemMobile
+        data={{ ...mockData, flagged: true }}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    fireEvent.click(screen.getByTestId('star-icon'))
+    expect(mockMailAction).toHaveBeenCalledWith({
+      accountId: '0',
+      folder: 'inbox',
+      mailId: '123',
+      action: 'untag',
+      data: ['\\Flagged'],
+    })
   })
 
   it('should hide avatar when selected', () => {

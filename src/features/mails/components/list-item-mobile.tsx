@@ -1,8 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
+import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
@@ -16,6 +18,7 @@ import {
   Star,
   User,
 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { memo, useCallback, useRef } from 'react'
 import { ImapMessagesList } from '../mails-types'
@@ -34,6 +37,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   isSelected,
   onHandleCheckboxClick,
 }) => {
+  const t = useTranslations('MAILS_LIST')
   const { push } = useRouter()
   const { account, folder } = useParams()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
@@ -46,6 +50,10 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const showHighPriority = data.priority <= 2
+  const priorityTitle =
+    data.priority === MAIL_PRIORITY_HIGHEST
+      ? t('priority.highest.string')
+      : t('priority.high.string')
   const showSnippet = data.snippet.trim().length > 0
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
@@ -115,6 +123,16 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
       data: ['\\Seen'],
     })
   }, [data.seen, mailAction, accountString, folderString, id])
+
+  const handleToggleFlag = useCallback(() => {
+    mailAction({
+      accountId: accountString || '0',
+      folder: folderString,
+      mailId: id,
+      action: flagged ? 'untag' : 'tag',
+      data: ['\\Flagged'],
+    })
+  }, [flagged, mailAction, accountString, folderString, id])
 
   return (
     <>
@@ -204,10 +222,12 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                       className={`flex min-w-0 items-center gap-1 select-none ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
                     >
                       {showHighPriority && (
-                        <ChevronsUp
-                          className="h-4 w-4 shrink-0 text-orange-600"
-                          aria-hidden
-                        />
+                        <TooltipWrapper content={priorityTitle} side="top">
+                          <ChevronsUp
+                            className="h-4 w-4 shrink-0 text-orange-600"
+                            aria-hidden
+                          />
+                        </TooltipWrapper>
                       )}
                       {hasEventType && (
                         <Calendar
@@ -255,6 +275,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                       strokeWidth={1}
                       onClick={(e) => {
                         e.stopPropagation()
+                        handleToggleFlag()
                       }}
                     />
                   </div>

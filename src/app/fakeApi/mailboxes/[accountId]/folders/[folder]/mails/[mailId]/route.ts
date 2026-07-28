@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-import { mailDetailByFolderSeed } from '@/app/fakeApi/utils/mailbox-mail-detail-seed'
+import { getDemoData } from '@/app/fakeApi/utils/demo-storage'
+import {
+  buildMailFlagsKey,
+  MAIL_FLAGS_COOKIE,
+  MailFlagsOverrides,
+} from '@/app/fakeApi/utils/mailbox-flags-store'
 import { normalizeDemoMailDetail } from '@/app/fakeApi/utils/mailbox-mail-detail-normalize'
+import { mailDetailByFolderSeed } from '@/app/fakeApi/utils/mailbox-mail-detail-seed'
 
 const okEnvelope = <T>(data: T) => ({
   data,
@@ -16,8 +22,10 @@ const notFoundEnvelope = () => ({
 })
 
 export async function GET(
-  _req: NextRequest,
-  ctx: { params: Promise<{ accountId: string; folder: string; mailId: string }> }
+  req: NextRequest,
+  ctx: {
+    params: Promise<{ accountId: string; folder: string; mailId: string }>
+  }
 ) {
   const { folder, mailId } = await ctx.params
   const folderMessages = mailDetailByFolderSeed[folder] || []
@@ -27,13 +35,23 @@ export async function GET(
     return NextResponse.json(notFoundEnvelope(), { status: 404 })
   }
 
-  const normalized = normalizeDemoMailDetail(raw)
+  const flagsOverrides = getDemoData<MailFlagsOverrides>(
+    req,
+    MAIL_FLAGS_COOKIE,
+    {}
+  )
+  const overriddenFlags = flagsOverrides[buildMailFlagsKey(folder, mailId)]
+  const withFlags = overriddenFlags ? { ...raw, flags: overriddenFlags } : raw
+
+  const normalized = normalizeDemoMailDetail(withFlags)
   return NextResponse.json(okEnvelope(normalized))
 }
 
 export async function DELETE(
   _req: NextRequest,
-  _ctx: { params: Promise<{ accountId: string; folder: string; mailId: string }> }
+  _ctx: {
+    params: Promise<{ accountId: string; folder: string; mailId: string }>
+  }
 ) {
   return NextResponse.json({
     error_code: 'S000000',

@@ -9,6 +9,7 @@ interface ListItemProps {
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
   onToggleRead?: (id: string) => void
+  onToggleFlag?: (id: string) => void
   onDelete?: (id: string) => void
   onArchive?: (id: string) => void
   onSpam?: (id: string) => void
