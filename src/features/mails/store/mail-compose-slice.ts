@@ -2,11 +2,11 @@
 import type { Identity } from '@/features/user-profile/profile-types'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
-export const MAIL_PRIORITY_LOWEST = 0
-export const MAIL_PRIORITY_LOW = 1
-export const MAIL_PRIORITY_NORMAL = 2
-export const MAIL_PRIORITY_HIGH = 3
-export const MAIL_PRIORITY_HIGHEST = 4
+export const MAIL_PRIORITY_LOWEST = 5
+export const MAIL_PRIORITY_LOW = 4
+export const MAIL_PRIORITY_NORMAL = 3
+export const MAIL_PRIORITY_HIGH = 2
+export const MAIL_PRIORITY_HIGHEST = 1
 
 export interface MailComposeAttachment {
   draftId: string

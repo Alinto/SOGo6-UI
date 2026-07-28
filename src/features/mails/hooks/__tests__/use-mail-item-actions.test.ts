@@ -12,10 +12,7 @@ jest.mock('../../store/mails-api', () => ({
     mockMoveToTrash,
     { isLoading: false },
   ]),
-  useMailActionMutation: jest.fn(() => [
-    mockMailAction,
-    { isLoading: false },
-  ]),
+  useMailActionMutation: jest.fn(() => [mockMailAction, { isLoading: false }]),
 }))
 
 import { useMailItemActions } from '../use-mail-item-actions'
@@ -97,12 +94,6 @@ describe('useMailItemActions', () => {
       const { result } = renderHook(() =>
         useMailItemActions({
           ...defaultArgs,
-          navigation: {
-            folderKey: '0/INBOX',
-            orderedIds: ['42', '43'],
-            page: 1,
-            totalPages: 1,
-          },
           onRemoved,
         })
       )
@@ -116,7 +107,7 @@ describe('useMailItemActions', () => {
         folder: 'INBOX',
         mailId: '42',
       })
-      expect(onRemoved).toHaveBeenCalledWith({ target: 'next', id: '43' })
+      expect(onRemoved).toHaveBeenCalledWith()
     })
 
     it('does nothing when mail id is missing', async () => {
@@ -143,6 +134,17 @@ describe('useMailItemActions', () => {
         action: 'untag',
         data: ['\\Seen'],
       })
+    })
+
+    it('calls onRemoved after marking unread', async () => {
+      const onRemoved = jest.fn()
+      const { result } = renderHook(() =>
+        useMailItemActions({ ...defaultArgs, onRemoved })
+      )
+      await act(async () => {
+        await result.current.markUnread()
+      })
+      expect(onRemoved).toHaveBeenCalledWith()
     })
 
     it('skips when mail is already unread', async () => {
@@ -219,6 +221,46 @@ describe('useMailItemActions', () => {
         action: 'move',
         data: 'Archive',
       })
+    })
+  })
+
+  describe('moveMail', () => {
+    it('moves mail to the given destination and calls onRemoved', async () => {
+      const onRemoved = jest.fn()
+      const { result } = renderHook(() =>
+        useMailItemActions({ ...defaultArgs, onRemoved })
+      )
+      await act(async () => {
+        await result.current.moveMail('Archive/Projects')
+      })
+      expect(mockMailAction).toHaveBeenCalledWith({
+        accountId: '0',
+        folder: 'INBOX',
+        mailId: '42',
+        action: 'move',
+        data: 'Archive/Projects',
+      })
+      expect(onRemoved).toHaveBeenCalledWith()
+    })
+  })
+
+  describe('copyMail', () => {
+    it('copies mail to the given destination without calling onRemoved', async () => {
+      const onRemoved = jest.fn()
+      const { result } = renderHook(() =>
+        useMailItemActions({ ...defaultArgs, onRemoved })
+      )
+      await act(async () => {
+        await result.current.copyMail('Archive/Projects')
+      })
+      expect(mockMailAction).toHaveBeenCalledWith({
+        accountId: '0',
+        folder: 'INBOX',
+        mailId: '42',
+        action: 'copy',
+        data: 'Archive/Projects',
+      })
+      expect(onRemoved).not.toHaveBeenCalled()
     })
   })
 

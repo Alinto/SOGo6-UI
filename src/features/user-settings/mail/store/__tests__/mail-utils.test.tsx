@@ -1,18 +1,20 @@
-import {
-  mapMailGeneralSettingsToApi,
-  mapApiToMailGeneralSettings,
-  mapMailCategorySettingsToApi,
-  mapApiToMailCategorySettings,
-} from '../mail-utils'
 import type { UserPreferences } from '@/features/user-settings/store/user-preferences-api-types'
 import type {
-  MailGeneralSettings,
   MailCategoriesSettings,
+  MailGeneralSettings,
 } from '../../store/user-preferences-types'
+import {
+  mapApiToMailCategorySettings,
+  mapApiToMailGeneralSettings,
+  mapMailCategorySettingsToApi,
+  mapMailGeneralSettingsToApi,
+} from '../mail-utils'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function makeGeneralSettings(overrides: Partial<MailGeneralSettings> = {}): MailGeneralSettings {
+function makeGeneralSettings(
+  overrides: Partial<MailGeneralSettings> = {}
+): MailGeneralSettings {
   return {
     collectUnknownAddresses: false,
     collectUnknownAddressbookName: '',
@@ -35,7 +37,9 @@ function makeGeneralSettings(overrides: Partial<MailGeneralSettings> = {}): Mail
   }
 }
 
-function makeApiPreferences(overrides: Record<string, any> = {}): UserPreferences {
+function makeApiPreferences(
+  overrides: Record<string, any> = {}
+): UserPreferences {
   return {
     USER_MAIL_GENERAL_SETTINGS: {
       SOGO_U_ALLOW_MAILFOLDER_SUBSCRIBE: false,
@@ -63,14 +67,15 @@ function makeCategory(overrides = {}) {
   return { name: 'Work', color: '#3b82f6', isDefault: false, ...overrides }
 }
 
-function makeCategorySettings(overrides: Partial<MailCategoriesSettings> = {}): MailCategoriesSettings {
+function makeCategorySettings(
+  overrides: Partial<MailCategoriesSettings> = {}
+): MailCategoriesSettings {
   return { categories: [], ...overrides }
 }
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('mail-utils', () => {
-
   // ── mapMailGeneralSettingsToApi ───────────────────────────────────────────
 
   describe('mapMailGeneralSettingsToApi', () => {
@@ -102,81 +107,131 @@ describe('mail-utils', () => {
 
     describe('hideInlineAttachments → SOGO_U_ATTACHMENT_POSITION', () => {
       it('maps hideInlineAttachments: true to attachment position "below"', () => {
-        const result = mapMailGeneralSettingsToApi(makeGeneralSettings({ hideInlineAttachments: true }))
+        const result = mapMailGeneralSettingsToApi(
+          makeGeneralSettings({ hideInlineAttachments: true })
+        )
         expect(result.SOGO_U_ATTACHMENT_POSITION).toBe('below')
       })
 
       it('maps hideInlineAttachments: false to attachment position "above"', () => {
-        const result = mapMailGeneralSettingsToApi(makeGeneralSettings({ hideInlineAttachments: false }))
+        const result = mapMailGeneralSettingsToApi(
+          makeGeneralSettings({ hideInlineAttachments: false })
+        )
         expect(result.SOGO_U_ATTACHMENT_POSITION).toBe('above')
       })
 
       it('also sets SOGO_U_HIDE_INLINE_ATTACHMENT directly', () => {
-        expect(mapMailGeneralSettingsToApi(makeGeneralSettings({ hideInlineAttachments: true })).SOGO_U_HIDE_INLINE_ATTACHMENT).toBe(true)
-        expect(mapMailGeneralSettingsToApi(makeGeneralSettings({ hideInlineAttachments: false })).SOGO_U_HIDE_INLINE_ATTACHMENT).toBe(false)
+        expect(
+          mapMailGeneralSettingsToApi(
+            makeGeneralSettings({ hideInlineAttachments: true })
+          ).SOGO_U_HIDE_INLINE_ATTACHMENT
+        ).toBe(true)
+        expect(
+          mapMailGeneralSettingsToApi(
+            makeGeneralSettings({ hideInlineAttachments: false })
+          ).SOGO_U_HIDE_INLINE_ATTACHMENT
+        ).toBe(false)
       })
     })
 
     describe('composeIn enum mapping', () => {
       it('maps composeIn "html" to "html"', () => {
-        expect(mapMailGeneralSettingsToApi(makeGeneralSettings({ composeIn: 'html' })).SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT).toBe('html')
+        expect(
+          mapMailGeneralSettingsToApi(
+            makeGeneralSettings({ composeIn: 'html' })
+          ).SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT
+        ).toBe('html')
       })
 
       it('maps composeIn "text" to "text"', () => {
-        expect(mapMailGeneralSettingsToApi(makeGeneralSettings({ composeIn: 'text' })).SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT).toBe('text')
+        expect(
+          mapMailGeneralSettingsToApi(
+            makeGeneralSettings({ composeIn: 'text' })
+          ).SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT
+        ).toBe('text')
       })
     })
 
     describe('composeMailWindow enum mapping', () => {
       it('maps composeMailWindow "popup" to "popup"', () => {
-        expect(mapMailGeneralSettingsToApi(makeGeneralSettings({ composeMailWindow: 'popup' })).SOGO_U_COMPOSE_MAIL_WINDOW).toBe('popup')
+        expect(
+          mapMailGeneralSettingsToApi(
+            makeGeneralSettings({ composeMailWindow: 'popup' })
+          ).SOGO_U_COMPOSE_MAIL_WINDOW
+        ).toBe('popup')
       })
 
       it('maps composeMailWindow "inline" to "inline"', () => {
-        expect(mapMailGeneralSettingsToApi(makeGeneralSettings({ composeMailWindow: 'inline' })).SOGO_U_COMPOSE_MAIL_WINDOW).toBe('inline')
+        expect(
+          mapMailGeneralSettingsToApi(
+            makeGeneralSettings({ composeMailWindow: 'inline' })
+          ).SOGO_U_COMPOSE_MAIL_WINDOW
+        ).toBe('inline')
       })
     })
 
     describe('SOGO_U_USE_SIGNATURE array', () => {
       it('is empty when all sign-on flags are false', () => {
         const result = mapMailGeneralSettingsToApi(
-          makeGeneralSettings({ signOnNew: false, signOnReply: false, signOnForward: false })
+          makeGeneralSettings({
+            signOnNew: false,
+            signOnReply: false,
+            signOnForward: false,
+          })
         )
         expect(result.SOGO_U_USE_SIGNATURE).toEqual([])
       })
 
       it('includes "new" when signOnNew is true', () => {
-        const result = mapMailGeneralSettingsToApi(makeGeneralSettings({ signOnNew: true }))
+        const result = mapMailGeneralSettingsToApi(
+          makeGeneralSettings({ signOnNew: true })
+        )
         expect(result.SOGO_U_USE_SIGNATURE).toContain('new')
       })
 
       it('includes "reply" when signOnReply is true', () => {
-        const result = mapMailGeneralSettingsToApi(makeGeneralSettings({ signOnReply: true }))
+        const result = mapMailGeneralSettingsToApi(
+          makeGeneralSettings({ signOnReply: true })
+        )
         expect(result.SOGO_U_USE_SIGNATURE).toContain('reply')
       })
 
       it('includes "forward" when signOnForward is true', () => {
-        const result = mapMailGeneralSettingsToApi(makeGeneralSettings({ signOnForward: true }))
+        const result = mapMailGeneralSettingsToApi(
+          makeGeneralSettings({ signOnForward: true })
+        )
         expect(result.SOGO_U_USE_SIGNATURE).toContain('forward')
       })
 
       it('includes all three when all sign-on flags are true', () => {
         const result = mapMailGeneralSettingsToApi(
-          makeGeneralSettings({ signOnNew: true, signOnReply: true, signOnForward: true })
+          makeGeneralSettings({
+            signOnNew: true,
+            signOnReply: true,
+            signOnForward: true,
+          })
         )
         expect(result.SOGO_U_USE_SIGNATURE).toEqual(['new', 'reply', 'forward'])
       })
 
       it('preserves order: new, reply, forward', () => {
         const result = mapMailGeneralSettingsToApi(
-          makeGeneralSettings({ signOnNew: true, signOnReply: false, signOnForward: true })
+          makeGeneralSettings({
+            signOnNew: true,
+            signOnReply: false,
+            signOnForward: true,
+          })
         )
         expect(result.SOGO_U_USE_SIGNATURE).toEqual(['new', 'forward'])
       })
 
       it('does not include null values', () => {
         const result = mapMailGeneralSettingsToApi(
-          makeGeneralSettings({ signOnNew: false, signOnReply: true, signOnForward: false })
+          makeGeneralSettings({
+            signOnNew: false,
+            signOnReply: true,
+            signOnForward: false,
+          })
         )
         expect(result.SOGO_U_USE_SIGNATURE).not.toContain(null)
       })
@@ -216,64 +271,108 @@ describe('mail-utils', () => {
 
     describe('attachmentPosition mapping', () => {
       it('maps SOGO_U_ATTACHMENT_POSITION "below" to "below"', () => {
-        const result = mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_ATTACHMENT_POSITION: 'below' }))
+        const result = mapApiToMailGeneralSettings(
+          makeApiPreferences({ SOGO_U_ATTACHMENT_POSITION: 'below' })
+        )
         expect(result.attachmentPosition).toBe('below')
       })
 
       it('maps SOGO_U_ATTACHMENT_POSITION "above" to "above"', () => {
-        const result = mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_ATTACHMENT_POSITION: 'above' }))
+        const result = mapApiToMailGeneralSettings(
+          makeApiPreferences({ SOGO_U_ATTACHMENT_POSITION: 'above' })
+        )
         expect(result.attachmentPosition).toBe('above')
       })
 
       it('defaults to "above" for any other value', () => {
-        const result = mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_ATTACHMENT_POSITION: undefined }))
+        const result = mapApiToMailGeneralSettings(
+          makeApiPreferences({ SOGO_U_ATTACHMENT_POSITION: undefined })
+        )
         expect(result.attachmentPosition).toBe('above')
       })
     })
 
     describe('composeIn mapping', () => {
       it('maps SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT "html" to "html"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: 'html' })).composeIn).toBe('html')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: 'html' })
+          ).composeIn
+        ).toBe('html')
       })
 
       it('maps SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT "text" to "text"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: 'text' })).composeIn).toBe('text')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: 'text' })
+          ).composeIn
+        ).toBe('text')
       })
 
       it('defaults to "text" when value is not "html"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: undefined })).composeIn).toBe('text')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COMPOSE_MAIL_TYPE_DEFAULT: undefined })
+          ).composeIn
+        ).toBe('text')
       })
     })
 
     describe('composeMailWindow mapping', () => {
       it('maps SOGO_U_COMPOSE_MAIL_WINDOW "popup" to "popup"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COMPOSE_MAIL_WINDOW: 'popup' })).composeMailWindow).toBe('popup')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COMPOSE_MAIL_WINDOW: 'popup' })
+          ).composeMailWindow
+        ).toBe('popup')
       })
 
       it('maps SOGO_U_COMPOSE_MAIL_WINDOW "inline" to "inline"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COMPOSE_MAIL_WINDOW: 'inline' })).composeMailWindow).toBe('inline')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COMPOSE_MAIL_WINDOW: 'inline' })
+          ).composeMailWindow
+        ).toBe('inline')
       })
 
       it('defaults to "inline" when value is not "popup"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COMPOSE_MAIL_WINDOW: undefined })).composeMailWindow).toBe('inline')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COMPOSE_MAIL_WINDOW: undefined })
+          ).composeMailWindow
+        ).toBe('inline')
       })
     })
 
     describe('SOGO_U_USE_SIGNATURE → signOn* booleans', () => {
       it('sets signOnNew true when "new" is in the array', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['new'] })).signOnNew).toBe(true)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['new'] })
+          ).signOnNew
+        ).toBe(true)
       })
 
       it('sets signOnReply true when "reply" is in the array', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['reply'] })).signOnReply).toBe(true)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['reply'] })
+          ).signOnReply
+        ).toBe(true)
       })
 
       it('sets signOnForward true when "forward" is in the array', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['forward'] })).signOnForward).toBe(true)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['forward'] })
+          ).signOnForward
+        ).toBe(true)
       })
 
       it('sets all signOn flags false when array is empty', () => {
-        const result = mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_USE_SIGNATURE: [] }))
+        const result = mapApiToMailGeneralSettings(
+          makeApiPreferences({ SOGO_U_USE_SIGNATURE: [] })
+        )
         expect(result.signOnNew).toBe(false)
         expect(result.signOnReply).toBe(false)
         expect(result.signOnForward).toBe(false)
@@ -281,7 +380,9 @@ describe('mail-utils', () => {
 
       it('sets all signOn flags true when all values are present', () => {
         const result = mapApiToMailGeneralSettings(
-          makeApiPreferences({ SOGO_U_USE_SIGNATURE: ['new', 'reply', 'forward'] })
+          makeApiPreferences({
+            SOGO_U_USE_SIGNATURE: ['new', 'reply', 'forward'],
+          })
         )
         expect(result.signOnNew).toBe(true)
         expect(result.signOnReply).toBe(true)
@@ -289,7 +390,9 @@ describe('mail-utils', () => {
       })
 
       it('falls back to empty array when SOGO_U_USE_SIGNATURE is undefined', () => {
-        const result = mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_USE_SIGNATURE: undefined }))
+        const result = mapApiToMailGeneralSettings(
+          makeApiPreferences({ SOGO_U_USE_SIGNATURE: undefined })
+        )
         expect(result.signOnNew).toBe(false)
         expect(result.signOnReply).toBe(false)
         expect(result.signOnForward).toBe(false)
@@ -298,35 +401,69 @@ describe('mail-utils', () => {
 
     describe('fallbacks when USER_MAIL_GENERAL_SETTINGS fields are missing', () => {
       it('defaults autoMarkAsReadDelay to 0', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_MARK_READ_DELAY: undefined })).autoMarkAsReadDelay).toBe(0)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_MARK_READ_DELAY: undefined })
+          ).autoMarkAsReadDelay
+        ).toBe(0)
       })
 
       it('defaults collectUnknownAddresses to false', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COLLECT_UNKNWON_ADDRESSES: undefined })).collectUnknownAddresses).toBe(false)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_COLLECT_UNKNWON_ADDRESSES: undefined })
+          ).collectUnknownAddresses
+        ).toBe(false)
       })
 
       it('defaults collectUnknownAddressbookName to empty string', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_COLLECT_UNKNWON_ADDRESSBOOK_NAME: undefined })).collectUnknownAddressbookName).toBe('')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({
+              SOGO_U_COLLECT_UNKNWON_ADDRESSBOOK_NAME: undefined,
+            })
+          ).collectUnknownAddressbookName
+        ).toBe('')
       })
 
       it('defaults mailAllowReceipt to false', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_MAIL_ALLOW_RECEIPT: undefined })).mailAllowReceipt).toBe(false)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_MAIL_ALLOW_RECEIPT: undefined })
+          ).mailAllowReceipt
+        ).toBe(false)
       })
 
       it('defaults mailfolderSubscribe to false', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_ALLOW_MAILFOLDER_SUBSCRIBE: undefined })).mailfolderSubscribe).toBe(false)
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_ALLOW_MAILFOLDER_SUBSCRIBE: undefined })
+          ).mailfolderSubscribe
+        ).toBe(false)
       })
 
       it('defaults forwardMessages to "inline"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_MAIL_FORWARDING_FORMAT: undefined })).forwardMessages).toBe('inline')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_MAIL_FORWARDING_FORMAT: undefined })
+          ).forwardMessages
+        ).toBe('inline')
       })
 
       it('defaults startReply to "above"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_REPLY_POSITION: undefined })).startReply).toBe('above')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_REPLY_POSITION: undefined })
+          ).startReply
+        ).toBe('above')
       })
 
       it('defaults placeSignature to "below"', () => {
-        expect(mapApiToMailGeneralSettings(makeApiPreferences({ SOGO_U_SIGNATURE_POSITION: undefined })).placeSignature).toBe('below')
+        expect(
+          mapApiToMailGeneralSettings(
+            makeApiPreferences({ SOGO_U_SIGNATURE_POSITION: undefined })
+          ).placeSignature
+        ).toBe('below')
       })
     })
   })
@@ -335,20 +472,27 @@ describe('mail-utils', () => {
 
   describe('mapMailCategorySettingsToApi', () => {
     it('returns the correct top-level key', () => {
-      expect(mapMailCategorySettingsToApi(makeCategorySettings())).toHaveProperty('SOGO_U_MAIL_CATEGORIES')
+      expect(
+        mapMailCategorySettingsToApi(makeCategorySettings())
+      ).toHaveProperty('SOGO_U_MAIL_CATEGORIES')
     })
 
     it('returns an empty array when categories is empty', () => {
-      expect(mapMailCategorySettingsToApi(makeCategorySettings()).SOGO_U_MAIL_CATEGORIES).toEqual([])
+      expect(
+        mapMailCategorySettingsToApi(makeCategorySettings())
+          .SOGO_U_MAIL_CATEGORIES
+      ).toEqual([])
     })
 
     it('maps a single category to API shape', () => {
       const settings = makeCategorySettings({
-        categories: [makeCategory({ name: 'Inbox', color: '#ef4444', isDefault: true })],
+        categories: [
+          makeCategory({ name: 'Inbox', color: '#ef4444', isDefault: true }),
+        ],
       })
-      expect(mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES).toEqual([
-        { name: 'Inbox', color: '#ef4444', is_default: true },
-      ])
+      expect(
+        mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
+      ).toEqual([{ name: 'Inbox', color: '#ef4444', is_default: true }])
     })
 
     it('maps multiple categories preserving order', () => {
@@ -359,18 +503,32 @@ describe('mail-utils', () => {
           makeCategory({ name: 'Spam', color: '#ef4444', isDefault: false }),
         ],
       })
-      const result = mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
+      const result =
+        mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
       expect(result).toHaveLength(3)
-      expect(result[0]).toEqual({ name: 'Work', color: '#3b82f6', is_default: false })
-      expect(result[1]).toEqual({ name: 'Personal', color: '#10b981', is_default: true })
-      expect(result[2]).toEqual({ name: 'Spam', color: '#ef4444', is_default: false })
+      expect(result[0]).toEqual({
+        name: 'Work',
+        color: '#3b82f6',
+        is_default: false,
+      })
+      expect(result[1]).toEqual({
+        name: 'Personal',
+        color: '#10b981',
+        is_default: true,
+      })
+      expect(result[2]).toEqual({
+        name: 'Spam',
+        color: '#ef4444',
+        is_default: false,
+      })
     })
 
     it('converts camelCase isDefault to snake_case is_default', () => {
       const settings = makeCategorySettings({
         categories: [makeCategory({ isDefault: true })],
       })
-      const [cat] = mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
+      const [cat] =
+        mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
       expect(cat).toHaveProperty('is_default', true)
       expect(cat).not.toHaveProperty('isDefault')
     })
@@ -379,7 +537,8 @@ describe('mail-utils', () => {
       const settings = makeCategorySettings({
         categories: [makeCategory({ name: 'Exact Name', color: '#abcdef' })],
       })
-      const [cat] = mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
+      const [cat] =
+        mapMailCategorySettingsToApi(settings).SOGO_U_MAIL_CATEGORIES
       expect(cat.name).toBe('Exact Name')
       expect(cat.color).toBe('#abcdef')
     })
@@ -389,14 +548,18 @@ describe('mail-utils', () => {
 
   describe('mapApiToMailCategorySettings', () => {
     it('returns an empty categories array when SOGO_U_MAIL_CATEGORIES is empty', () => {
-      expect(mapApiToMailCategorySettings(makeApiPreferences()).categories).toEqual([])
+      expect(
+        mapApiToMailCategorySettings(makeApiPreferences()).categories
+      ).toEqual([])
     })
 
     it('maps a single API category to MailCategory', () => {
       const data = {
         ...makeApiPreferences(),
         USER_MAIL_CATEGORY_SETTINGS: {
-          SOGO_U_MAIL_CATEGORIES: [{ name: 'Work', color: '#ef4444', is_default: true }],
+          SOGO_U_MAIL_CATEGORIES: [
+            { name: 'Work', color: '#ef4444', is_default: true },
+          ],
         },
       } as unknown as UserPreferences
       expect(mapApiToMailCategorySettings(data).categories).toEqual([
@@ -404,7 +567,7 @@ describe('mail-utils', () => {
       ])
     })
 
-    it('maps multiple API categories preserving order', () => {
+    it('sorts categories alphabetically by name', () => {
       const data = {
         ...makeApiPreferences(),
         USER_MAIL_CATEGORY_SETTINGS: {
@@ -416,15 +579,39 @@ describe('mail-utils', () => {
       } as unknown as UserPreferences
       const { categories } = mapApiToMailCategorySettings(data)
       expect(categories).toHaveLength(2)
-      expect(categories[0]).toEqual({ name: 'Work', color: '#3b82f6', isDefault: false })
-      expect(categories[1]).toEqual({ name: 'Personal', color: '#10b981', isDefault: true })
+      expect(categories[0]).toEqual({
+        name: 'Personal',
+        color: '#10b981',
+        isDefault: true,
+      })
+      expect(categories[1]).toEqual({
+        name: 'Work',
+        color: '#3b82f6',
+        isDefault: false,
+      })
+    })
+
+    it('sorts case-insensitively', () => {
+      const data = {
+        ...makeApiPreferences(),
+        USER_MAIL_CATEGORY_SETTINGS: {
+          SOGO_U_MAIL_CATEGORIES: [
+            { name: 'work', color: '#3b82f6', is_default: false },
+            { name: 'Apple', color: '#10b981', is_default: false },
+          ],
+        },
+      } as unknown as UserPreferences
+      const { categories } = mapApiToMailCategorySettings(data)
+      expect(categories.map((c) => c.name)).toEqual(['Apple', 'work'])
     })
 
     it('converts snake_case is_default to camelCase isDefault', () => {
       const data = {
         ...makeApiPreferences(),
         USER_MAIL_CATEGORY_SETTINGS: {
-          SOGO_U_MAIL_CATEGORIES: [{ name: 'X', color: '#000', is_default: true }],
+          SOGO_U_MAIL_CATEGORIES: [
+            { name: 'X', color: '#000', is_default: true },
+          ],
         },
       } as unknown as UserPreferences
       const [cat] = mapApiToMailCategorySettings(data).categories
@@ -433,7 +620,10 @@ describe('mail-utils', () => {
     })
 
     it('falls back to empty array when USER_MAIL_CATEGORY_SETTINGS is undefined', () => {
-      const data = { ...makeApiPreferences(), USER_MAIL_CATEGORY_SETTINGS: undefined } as unknown as UserPreferences
+      const data = {
+        ...makeApiPreferences(),
+        USER_MAIL_CATEGORY_SETTINGS: undefined,
+      } as unknown as UserPreferences
       expect(mapApiToMailCategorySettings(data).categories).toEqual([])
     })
 
@@ -449,11 +639,11 @@ describe('mail-utils', () => {
   // ── round-trip: categories ────────────────────────────────────────────────
 
   describe('round-trip: categories (toApi → fromApi)', () => {
-    it('recovers original category settings after mapping to API and back', () => {
+    it('recovers original category settings, sorted alphabetically, after mapping to API and back', () => {
       const original = makeCategorySettings({
         categories: [
-          makeCategory({ name: 'Work', color: '#3b82f6', isDefault: false }),
           makeCategory({ name: 'Personal', color: '#ef4444', isDefault: true }),
+          makeCategory({ name: 'Work', color: '#3b82f6', isDefault: false }),
         ],
       })
       const apiShape = mapMailCategorySettingsToApi(original)

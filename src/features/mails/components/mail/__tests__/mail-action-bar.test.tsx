@@ -6,7 +6,12 @@ import type { Action } from '../types'
 jest.mock('@/components/ui/buttons/tooltip-button', () => ({
   TooltipButton: jest.fn(
     ({ children, onClick, disabled, 'data-testid': testId, ...props }: any) => (
-      <button onClick={onClick} disabled={disabled} data-testid={testId} {...props}>
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        data-testid={testId}
+        {...props}
+      >
         {children}
       </button>
     )
@@ -79,9 +84,7 @@ describe('MailActionsBar', () => {
   describe('onAction callback', () => {
     it('calls onAction with index and action when non-disabled button is clicked', () => {
       const onAction = jest.fn()
-      render(
-        <MailActionsBar actions={defaultActions} onAction={onAction} />
-      )
+      render(<MailActionsBar actions={defaultActions} onAction={onAction} />)
 
       const buttons = screen.getAllByRole('button')
       fireEvent.click(buttons[0])
@@ -92,9 +95,7 @@ describe('MailActionsBar', () => {
 
     it('calls onAction for second action', () => {
       const onAction = jest.fn()
-      render(
-        <MailActionsBar actions={defaultActions} onAction={onAction} />
-      )
+      render(<MailActionsBar actions={defaultActions} onAction={onAction} />)
 
       const buttons = screen.getAllByRole('button')
       fireEvent.click(buttons[1])
@@ -133,10 +134,7 @@ describe('MailActionsBar', () => {
         defaultActions[1],
       ]
       render(
-        <MailActionsBar
-          actions={actionsWithDisabled}
-          onAction={onAction}
-        />
+        <MailActionsBar actions={actionsWithDisabled} onAction={onAction} />
       )
 
       const buttons = screen.getAllByRole('button')
@@ -152,10 +150,7 @@ describe('MailActionsBar', () => {
         defaultActions[1],
       ]
       render(
-        <MailActionsBar
-          actions={actionsWithDisabled}
-          onAction={onAction}
-        />
+        <MailActionsBar actions={actionsWithDisabled} onAction={onAction} />
       )
 
       const buttons = screen.getAllByRole('button')
@@ -172,13 +167,13 @@ describe('MailActionsBar', () => {
       expect(
         screen.getByTestId('mail-action-btn-previous-mail')
       ).toBeInTheDocument()
-      expect(screen.getByTestId('mail-action-btn-next-mail')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('mail-action-btn-next-mail')
+      ).toBeInTheDocument()
     })
 
     it('omits data-testid when action has no title', () => {
-      const actionsNoTitle: Action[] = [
-        { id: 'a1', icon: <span>Icon</span> },
-      ]
+      const actionsNoTitle: Action[] = [{ id: 'a1', icon: <span>Icon</span> }]
       render(<MailActionsBar actions={actionsNoTitle} />)
 
       const button = screen.getByRole('button')
@@ -204,27 +199,50 @@ describe('MailActionsBar', () => {
       ]
       render(<MailActionsBar actions={threeActions} />)
 
-      const separators = document.querySelectorAll(
-        'div[aria-hidden="true"]'
-      )
+      const separators = document.querySelectorAll('div[aria-hidden="true"]')
       expect(separators).toHaveLength(2)
     })
 
     it('renders no separator when only one action', () => {
       render(<MailActionsBar actions={[defaultActions[0]]} />)
 
-      const separators = document.querySelectorAll(
-        'div.bg-muted.mx-1.h-6.w-px'
-      )
+      const separators = document.querySelectorAll('div.bg-muted.mx-1.h-6.w-px')
       expect(separators).toHaveLength(0)
+    })
+  })
+
+  describe('children', () => {
+    it('renders children inside the same bordered container as the actions', () => {
+      render(
+        <MailActionsBar actions={defaultActions}>
+          <span data-testid="extra-child">Extra</span>
+        </MailActionsBar>
+      )
+
+      const container = document.querySelector(
+        'div.inline-flex.items-center.rounded-md.border'
+      )
+      const child = screen.getByTestId('extra-child')
+      expect(container).toContainElement(child)
+    })
+
+    it('does not add a separator between the last action and children', () => {
+      render(
+        <MailActionsBar actions={defaultActions}>
+          <span data-testid="extra-child">Extra</span>
+        </MailActionsBar>
+      )
+
+      const separators = document.querySelectorAll(
+        'div.bg-muted.mx-1.h-6.w-px[aria-hidden="true"]'
+      )
+      expect(separators).toHaveLength(1)
     })
   })
 
   describe('component stability', () => {
     it('renders consistently across re-renders', () => {
-      const { rerender } = render(
-        <MailActionsBar actions={defaultActions} />
-      )
+      const { rerender } = render(<MailActionsBar actions={defaultActions} />)
 
       expect(screen.getByTestId('icon-1')).toBeInTheDocument()
 

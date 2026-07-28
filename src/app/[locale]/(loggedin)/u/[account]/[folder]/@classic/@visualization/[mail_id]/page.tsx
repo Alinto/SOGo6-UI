@@ -7,6 +7,7 @@ import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
+import MailSubjectLabels from '@/features/mails/components/mail/mail-subject-labels'
 import type { Action } from '@/features/mails/components/mail/types'
 import { ActionId } from '@/features/mails/components/mail/types'
 import {
@@ -19,6 +20,7 @@ import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-deta
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
+import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -35,9 +37,7 @@ const VisualizationPage: React.FC = () => {
   }
   const { push } = useRouter()
   const { account, mail_id } = params
-  const folder = Array.isArray(params.folder)
-    ? params.folder.join('/')
-    : (params.folder ?? '')
+  const folder = folderPathFromParams(params.folder)
   const isMobile = useIsMobile()
 
   const { data, isLoading, isError } = useGetMailQuery({
@@ -126,6 +126,7 @@ const VisualizationPage: React.FC = () => {
             mailId={mail_id}
             mail={data}
             seen={data.seen}
+            flagged={data.flagged}
             flags={data.flags}
             onPrint={handlePrint}
             isPrintDisabled={isPrintDisabled}
@@ -150,7 +151,18 @@ const VisualizationPage: React.FC = () => {
             )}
           </div>
         </div>
-        <MailSubject subject={subject} className="h-auto min-h-fit" />
+        <MailSubject
+          subject={subject}
+          className="h-auto min-h-fit"
+          labels={
+            <MailSubjectLabels
+              accountId={account}
+              folder={folder}
+              mailId={mail_id}
+              flags={data.flags}
+            />
+          }
+        />
         <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
           {isMobile ? (
             <MailHeaderMobile

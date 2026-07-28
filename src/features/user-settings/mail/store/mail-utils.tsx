@@ -125,9 +125,12 @@ export function mapApiToMailCategorySettings(
   data: UserPreferences
 ): MailCategoriesSettings {
   return {
-    categories:
+    categories: (
       data.USER_MAIL_CATEGORY_SETTINGS?.SOGO_U_MAIL_CATEGORIES?.map((e) =>
         apiToMailCategory(e)
-      ) || [],
+      ) || []
+    ).sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    ),
   }
 }

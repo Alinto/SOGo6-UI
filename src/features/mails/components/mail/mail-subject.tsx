@@ -4,17 +4,21 @@ import { MailSubjectProps } from './types'
 
 const MailSubject: React.FC<MailSubjectProps & { className?: string }> = ({
   subject,
+  labels,
   className,
 }) => {
   return (
-    <h1
+    <div
       className={cn(
-        'w-full px-2 py-3 text-lg font-bold whitespace-normal sm:px-6 sm:py-4 sm:text-xl',
+        'flex w-full flex-wrap items-center gap-x-2 gap-y-2 px-2 py-3 sm:px-6 sm:py-4',
         className
       )}
     >
-      {subject}
-    </h1>
+      <h1 className="text-lg font-bold whitespace-normal sm:text-xl">
+        {subject}
+      </h1>
+      {labels}
+    </div>
   )
 }
 

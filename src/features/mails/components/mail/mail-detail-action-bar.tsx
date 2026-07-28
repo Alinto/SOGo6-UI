@@ -1,15 +1,17 @@
 'use client'
 
-import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
-import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
+import { useMailItemActions } from '@/features/mails/hooks/use-mail-item-actions'
 import type { ImapFolderType } from '@/features/mails/mails-types'
-import { useDownloadMailMutation, useLazyGetMailRawQuery } from '@/features/mails/store/mails-api'
-import type { MailNavigationContext } from '@/features/mails/utils/mail-detail-navigation'
+import {
+  useDownloadMailMutation,
+  useLazyGetMailRawQuery,
+} from '@/features/mails/store/mails-api'
 import { useRouter } from '@/lib/i18n/navigation'
-import { Flame, Inbox, Mail, Tag, Trash2 } from 'lucide-react'
+import { Flame, Inbox, Mail, Star, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import React, { useCallback, useState } from 'react'
+import { useCallback, useState } from 'react'
 import MailActionsBar from './mail-action-bar'
 import {
   MailActionConfirmDialog,
@@ -17,6 +19,10 @@ import {
 } from './mail-action-confirm-dialog'
 import MailLabelPickerDialog from './mail-label-picker-dialog'
 import MailMoreActionsMenu from './mail-more-actions-menu'
+import MailMoveCopyMenu, {
+  type MailMoveCopyMenuMode,
+} from './mail-move-copy-menu'
+import MailMoveDialog from './mail-move-dialog'
 import { ActionId, type Action } from './types'
 
 export type MailDetailActionBarProps = {
@@ -26,8 +32,8 @@ export type MailDetailActionBarProps = {
   mailId: string
   mail?: import('@/features/mails/mails-types').ImapMessages
   seen: boolean
+  flagged?: boolean
   flags?: string[]
-  navigation?: MailNavigationContext
   enableLabel?: boolean
   enableDesktopMore?: boolean
   onPrint?: () => void
@@ -41,8 +47,8 @@ export default function MailDetailActionBar({
   mailId,
   mail,
   seen,
+  flagged = false,
   flags = [],
-  navigation,
   enableLabel = true,
   enableDesktopMore = true,
   onPrint,
@@ -52,32 +58,23 @@ export default function MailDetailActionBar({
   const { push } = useRouter()
   const { folderType: resolvedFolderType } = useCurrentFolder(folder, accountId)
   const folderType = folderTypeProp ?? resolvedFolderType
-  const {
-    folderSpecificActions,
-    handleFolderSpecificAction,
-  } = useMailDetailFolderActions({
-    folderType,
-    folder,
-    accountId,
-    mailId,
-    mail,
-  })
+  const { folderSpecificActions, handleFolderSpecificAction } =
+    useMailDetailFolderActions({
+      folderType,
+      folder,
+      accountId,
+      mailId,
+      mail,
+    })
   const [confirmVariant, setConfirmVariant] =
     useState<MailActionConfirmVariant | null>(null)
   const [labelOpen, setLabelOpen] = useState(false)
+  const [createFolderMode, setCreateFolderMode] =
+    useState<MailMoveCopyMenuMode | null>(null)
 
-  const handleRemoved = useCallback(
-    (result: { target: 'next' | 'prev' | 'list'; id?: string }) => {
-      const encodedFolder = encodeURIComponent(folder)
-      const base = `/u/${accountId}/${encodedFolder}`
-      if (result.target === 'list') {
-        push(base)
-      } else if (result.id) {
-        push(`${base}/${encodeURIComponent(result.id)}`)
-      }
-    },
-    [accountId, folder, push]
-  )
+  const handleRemoved = useCallback(() => {
+    push(`/u/${accountId}/${encodeURIComponent(folder)}`)
+  }, [accountId, folder, push])
 
   const {
     deleteMail,
@@ -85,8 +82,12 @@ export default function MailDetailActionBar({
     markSpam,
     markHam,
     archiveMail,
+    moveMail,
+    copyMail,
     applyLabel,
     removeLabel,
+    markImportant,
+    removeImportant,
     isJunk,
     isLoading,
   } = useMailItemActions({
@@ -94,7 +95,6 @@ export default function MailDetailActionBar({
     folder,
     mailId,
     seen,
-    navigation,
     onRemoved: handleRemoved,
   })
 
@@ -172,18 +172,37 @@ export default function MailDetailActionBar({
         case ActionId.LABEL:
           if (enableLabel) setLabelOpen(true)
           break
+        case ActionId.IMPORTANT:
+          void (flagged ? removeImportant() : markImportant())
+          break
         default:
           break
       }
     },
-    [isLoading, openConfirm, markUnread, enableLabel, handleFolderSpecificAction]
+    [
+      isLoading,
+      openConfirm,
+      markUnread,
+      enableLabel,
+      flagged,
+      markImportant,
+      removeImportant,
+      handleFolderSpecificAction,
+    ]
+  )
+
+  const handleSelectMoveCopyDestination = useCallback(
+    (mode: MailMoveCopyMenuMode, destination: string) => {
+      void (mode === 'copy' ? copyMail(destination) : moveMail(destination))
+    },
+    [moveMail, copyMail]
   )
 
   const spamOrHamAction: Action = isJunk
     ? {
         id: ActionId.HAM,
         icon: <Inbox size={18} />,
-        title: t('move_to_inbox.string'),
+        title: t('report_not_spam.string'),
         disabled: isLoading,
       }
     : {
@@ -196,18 +215,32 @@ export default function MailDetailActionBar({
   const desktopActions: Action[] = [
     ...folderSpecificActions,
     {
-      id: ActionId.DELETE,
-      icon: <Trash2 size={18} />,
-      title: t('delete.string'),
+      id: ActionId.IMPORTANT,
+      icon: (
+        <Star
+          size={18}
+          className={flagged ? 'fill-yellow-400 text-yellow-400' : undefined}
+        />
+      ),
+      title: flagged
+        ? t('unmark_important.string')
+        : t('mark_important.string'),
       disabled: isLoading,
     },
-    spamOrHamAction,
     {
       id: ActionId.MARK_UNREAD,
       icon: <Mail size={18} />,
       title: t('mark_unread.string'),
       disabled: isLoading || seen === false,
     },
+    {
+      id: ActionId.DELETE,
+      icon: <Trash2 size={18} />,
+      title: t('delete.string'),
+      disabled: isLoading,
+    },
+    spamOrHamAction,
+
     {
       id: ActionId.LABEL,
       icon: <Tag size={18} />,
@@ -222,27 +255,34 @@ export default function MailDetailActionBar({
       isJunk={isJunk}
       markUnreadDisabled={seen === false}
       labelDisabled={!enableLabel}
-      showArchive={false}
-      showDownload={false}
-      showMove={false}
+      showArchive
+      showDownload
+      showSpamActions
+      showLabel
+      showMoveCopy
       showPrint={false}
-      showViewSource={false}
-      onMarkSpam={() => openConfirm('spam')}
-      onMarkHam={() => openConfirm('ham')}
+      showViewSource
+      folderSpecificActions={folderSpecificActions}
+      accountId={accountId}
+      currentFolder={folder}
       onMarkUnread={() => void markUnread()}
       onLabel={() => setLabelOpen(true)}
+      onMarkSpam={() => openConfirm('spam')}
+      onMarkHam={() => openConfirm('ham')}
+      onFolderSpecificAction={handleFolderSpecificAction}
+      onArchive={() => void archiveMail()}
+      onDownload={() => void handleDownload()}
+      onViewSource={() => void handleViewSource()}
+      onSelectDestination={handleSelectMoveCopyDestination}
+      onCreateFolder={setCreateFolderMode}
     />
   )
 
   const desktopMoreMenu = enableDesktopMore ? (
     <MailMoreActionsMenu
       disabled={isLoading}
-      showSpamActions={false}
-      showUnread={false}
-      showLabel={false}
       showArchive
       showDownload
-      showMove={false}
       showPrint
       showViewSource
       onArchive={() => void archiveMail()}
@@ -260,6 +300,12 @@ export default function MailDetailActionBar({
         <MailActionsBar
           actions={[
             {
+              id: ActionId.MARK_UNREAD,
+              icon: <Mail size={18} />,
+              title: t('mark_unread.string'),
+              disabled: isLoading || seen === false,
+            },
+            {
               id: ActionId.DELETE,
               icon: <Trash2 size={18} />,
               title: t('delete.string'),
@@ -268,21 +314,23 @@ export default function MailDetailActionBar({
           ]}
           onAction={(_idx, action) => {
             if (action.id === ActionId.DELETE) openConfirm('delete')
+            else if (action.id === ActionId.MARK_UNREAD) void markUnread()
           }}
         />
         {mobileMoreMenu}
       </div>
       <div className="hidden items-center sm:inline-flex">
-        <MailActionsBar
-          actions={desktopActions}
-          onAction={handleMainAction}
-          className="rounded-r-none border-r-0 pr-0"
-        />
-        {desktopMoreMenu ? (
-          <div className="inline-flex items-center rounded-md rounded-l-none border border-l-0 px-1 py-1 shadow-sm">
-            {desktopMoreMenu}
-          </div>
-        ) : null}
+        <MailActionsBar actions={desktopActions} onAction={handleMainAction}>
+          <MailMoveCopyMenu
+            accountId={accountId}
+            currentFolder={folder}
+            disabled={isLoading}
+            onSelectDestination={handleSelectMoveCopyDestination}
+            onCreateFolder={setCreateFolderMode}
+            triggerClassName={desktopMoreMenu ? undefined : 'rounded-r-md'}
+          />
+          {desktopMoreMenu}
+        </MailActionsBar>
       </div>
 
       <MailActionConfirmDialog
@@ -305,6 +353,23 @@ export default function MailDetailActionBar({
           isLoading={isLoading}
         />
       ) : null}
+
+      <MailMoveDialog
+        open={createFolderMode != null}
+        onOpenChange={(open) => {
+          if (!open) setCreateFolderMode(null)
+        }}
+        accountId={accountId}
+        currentFolder={folder}
+        isLoading={isLoading}
+        mode={createFolderMode ?? 'move'}
+        onConfirm={async (destination) => {
+          await (createFolderMode === 'copy'
+            ? copyMail(destination)
+            : moveMail(destination))
+          setCreateFolderMode(null)
+        }}
+      />
     </>
   )
 }

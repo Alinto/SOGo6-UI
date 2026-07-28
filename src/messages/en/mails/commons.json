@@ -38,6 +38,14 @@
                     "string": "Mark as unread",
                     "description": "Mark as unread"
                 },
+                "mark_important": {
+                    "string": "Mark as important",
+                    "description": "Flag the message as important"
+                },
+                "unmark_important": {
+                    "string": "Remove important flag",
+                    "description": "Remove the important flag from the message"
+                },
                 "label": {
                     "string": "Label",
                     "description": "Label",
@@ -46,8 +54,34 @@
                         "description": "Tooltip when label picker is not yet available"
                     }
                 },
-                "move_to_inbox": {
-                    "string": "Move to Inbox",
+                "label_dialog": {
+                    "empty": {
+                        "string": "No categories yet"
+                    },
+                    "apply": {
+                        "string": "Apply"
+                    },
+                    "new_tag": {
+                        "string": "New tag"
+                    },
+                    "new_tag_placeholder": {
+                        "string": "Tag name"
+                    },
+                    "duplicate_name": {
+                        "string": "A tag with this name already exists"
+                    },
+                    "remove_tag": {
+                        "string": "Remove {name} tag"
+                    },
+                    "create": {
+                        "string": "Create"
+                    },
+                    "configure": {
+                        "string": "Manage categories"
+                    }
+                },
+                "report_not_spam": {
+                    "string": "Mark as not spam",
                     "description": "Move message from Junk back to the Inbox"
                 },
                 "archive": {
@@ -61,6 +95,32 @@
                 "move": {
                     "string": "Move to folder",
                     "description": "Move message to another folder"
+                },
+                "move_dialog": {
+                    "cancel": {
+                        "string": "Cancel"
+                    },
+                    "new_folder": {
+                        "string": "New folder"
+                    },
+                    "new_folder_placeholder": {
+                        "string": "Folder name"
+                    },
+                    "parent_placeholder": {
+                        "string": "Parent folder (optional)"
+                    },
+                    "create_and_move": {
+                        "string": "Create & move"
+                    }
+                },
+                "copy": {
+                    "string": "Copy to folder",
+                    "description": "Copy message to another folder"
+                },
+                "copy_dialog": {
+                    "create_and_copy": {
+                        "string": "Create & copy"
+                    }
                 },
                 "print": {
                     "string": "Print",
@@ -92,6 +152,14 @@
                     "string": "View source",
                     "description": "View raw message source"
                 },
+                "report_phishing": {
+                    "string": "Report as phishing",
+                    "description": "Report the message as a phishing attempt"
+                },
+                "report_illegal": {
+                    "string": "Report as illegal",
+                    "description": "Report the message as illegal content"
+                },
                 "delete_confirm": {
                     "title": {
                         "string": "Delete message"
@@ -122,7 +190,7 @@
                 },
                 "ham_confirm": {
                     "title": {
-                        "string": "Move to Inbox"
+                        "string": "Mark as not spam"
                     },
                     "message": {
                         "string": "This message will be moved to your Inbox."
@@ -539,11 +607,21 @@
                         "string": "I understand this will permanently delete the selected mails and they cannot be recovered"
                     },
                     "datePresets": {
-                        "3months": { "string": "3 months" },
-                        "6months": { "string": "6 months" },
-                        "1year": { "string": "1 year" },
-                        "custom": { "string": "Custom date" },
-                        "all": { "string": "All mails" }
+                        "3months": {
+                            "string": "3 months"
+                        },
+                        "6months": {
+                            "string": "6 months"
+                        },
+                        "1year": {
+                            "string": "1 year"
+                        },
+                        "custom": {
+                            "string": "Custom date"
+                        },
+                        "all": {
+                            "string": "All mails"
+                        }
                     },
                     "successTitle": {
                         "string": "Folder purged"

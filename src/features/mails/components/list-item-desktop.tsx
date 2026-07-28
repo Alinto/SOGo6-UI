@@ -4,6 +4,7 @@ import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
+import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
@@ -34,6 +35,7 @@ interface ListItemDesktopProps {
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
   onToggleRead?: (id: string) => void
+  onToggleFlag?: (id: string) => void
   onDelete?: (id: string) => void
   onArchive?: (id: string) => void
   onSpam?: (id: string) => void
@@ -45,6 +47,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   isSelected,
   onHandleCheckboxClick,
   onToggleRead,
+  onToggleFlag,
   onDelete,
   onArchive,
   onSpam,
@@ -63,6 +66,10 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const { id, from, flagged, hasAttachment } = data
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
   const showHighPriority = data.priority <= 2
+  const priorityTitle =
+    data.priority === MAIL_PRIORITY_HIGHEST
+      ? t('priority.highest.string')
+      : t('priority.high.string')
   const showSnippet = data.snippet.trim().length > 0
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
@@ -114,7 +121,10 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             fill={flagged ? 'yellow' : 'white'}
             className="h-4 w-4 cursor-pointer transition-all duration-200 hover:h-5 hover:w-5"
             strokeWidth={1}
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleFlag?.(data.id)
+            }}
           />
         </div>
 
@@ -129,10 +139,12 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             className={`flex min-w-0 items-center gap-1 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
           >
             {showHighPriority && (
-              <ChevronsUp
-                className="h-4 w-4 shrink-0 text-orange-600"
-                aria-hidden
-              />
+              <TooltipWrapper content={priorityTitle} side="top">
+                <ChevronsUp
+                  className="h-4 w-4 shrink-0 text-orange-600"
+                  aria-hidden
+                />
+              </TooltipWrapper>
             )}
             {hasEventType && (
               <Calendar
@@ -224,7 +236,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
           </TooltipWrapper>
 
           {onMoveToInbox ? (
-            <TooltipWrapper content={tBar('move_to_inbox.string')} side="top">
+            <TooltipWrapper content={tBar('report_not_spam.string')} side="top">
               <button
                 onClick={(e) => {
                   e.stopPropagation()

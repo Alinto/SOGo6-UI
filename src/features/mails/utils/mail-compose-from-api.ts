@@ -23,13 +23,13 @@ export type ApiMailData = Partial<ImapMessages> & {
 
 function coercePriority(value: unknown): MailComposeDraft['priority'] {
   switch (value) {
-    case 0:
+    case MAIL_PRIORITY_LOWEST:
       return MAIL_PRIORITY_LOWEST
-    case 1:
+    case MAIL_PRIORITY_LOW:
       return MAIL_PRIORITY_LOW
-    case 3:
+    case MAIL_PRIORITY_HIGH:
       return MAIL_PRIORITY_HIGH
-    case 4:
+    case MAIL_PRIORITY_HIGHEST:
       return MAIL_PRIORITY_HIGHEST
     default:
       return MAIL_PRIORITY_NORMAL

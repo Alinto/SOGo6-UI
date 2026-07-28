@@ -9,7 +9,7 @@ import {
 import { Check } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 
-const DEFAULT_COLORS = [
+export const DEFAULT_COLORS = [
   '#ef4444',
   '#f97316',
   '#eab308',

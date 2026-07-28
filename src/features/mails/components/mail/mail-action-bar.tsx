@@ -8,6 +8,7 @@ export default function MailActionsBar({
   className = '',
   compact = false,
   onAction,
+  children,
 }: MailActionsBarProps) {
   return (
     <div
@@ -48,6 +49,7 @@ export default function MailActionsBar({
           </TooltipButton>
         </React.Fragment>
       ))}
+      {children}
     </div>
   )
 }

@@ -49,11 +49,18 @@ const MessagesList: React.FC<MessagesListProps> = ({
     folder as string | string[] | undefined
   )
 
-  const { deleteMail, toggleRead, archiveMail, markSpam, markHam, isJunk } =
-    useMailItemActions({
-      accountId: accountIdStr,
-      folder: folderStr,
-    })
+  const {
+    deleteMail,
+    toggleRead,
+    toggleFlag,
+    archiveMail,
+    markSpam,
+    markHam,
+    isJunk,
+  } = useMailItemActions({
+    accountId: accountIdStr,
+    folder: folderStr,
+  })
 
   const handleToggleRead = useCallback(
     (id: string) => {
@@ -62,6 +69,15 @@ const MessagesList: React.FC<MessagesListProps> = ({
       void toggleRead(id, item.seen)
     },
     [items, toggleRead]
+  )
+
+  const handleToggleFlag = useCallback(
+    (id: string) => {
+      const item = items.find((m) => String(m.id) === String(id))
+      if (!item) return
+      void toggleFlag(id, item.flagged)
+    },
+    [items, toggleFlag]
   )
 
   const handleDelete = useCallback(
@@ -143,6 +159,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     onHandleCheckboxClick={handleCheckboxClick}
                     isSelected={selectedIds.includes(String(item.id))}
                     onToggleRead={handleToggleRead}
+                    onToggleFlag={handleToggleFlag}
                   />
                 ) : (
                   <ListItem
@@ -150,6 +167,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     onHandleCheckboxClick={handleCheckboxClick}
                     isSelected={selectedIds.includes(String(item.id))}
                     onToggleRead={handleToggleRead}
+                    onToggleFlag={handleToggleFlag}
                     onDelete={handleDelete}
                     onArchive={handleArchive}
                     onSpam={isJunk ? undefined : handleSpam}

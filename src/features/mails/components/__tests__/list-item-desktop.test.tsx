@@ -46,7 +46,11 @@ jest.mock('@/components/ui/separator', () => ({
 }))
 
 jest.mock('@/components/ui/tooltip', () => ({
-  TooltipWrapper: ({ children }: any) => <>{children}</>,
+  TooltipWrapper: ({ children, content }: any) => (
+    <div data-testid="tooltip-wrapper" data-content={content}>
+      {children}
+    </div>
+  ),
 }))
 
 jest.mock('lucide-react', () => ({
@@ -210,5 +214,44 @@ describe('ListItemDesktop', () => {
   it('renders separator', () => {
     renderWithRedux(<ListItemDesktop {...defaultProps} />)
     expect(screen.getByTestId('separator')).toBeInTheDocument()
+  })
+
+  it('calls onToggleFlag when star icon is clicked without navigating', () => {
+    const onToggleFlag = jest.fn()
+    renderWithRedux(
+      <ListItemDesktop {...defaultProps} onToggleFlag={onToggleFlag} />
+    )
+    fireEvent.click(screen.getByTestId('star-icon'))
+    expect(onToggleFlag).toHaveBeenCalledWith('123')
+  })
+
+  it('shows a "highest priority" tooltip on the priority icon for priority 1', () => {
+    renderWithRedux(
+      <ListItemDesktop {...defaultProps} data={{ ...mockData, priority: 1 }} />
+    )
+    expect(screen.getByTestId('chevrons-up-icon')).toBeInTheDocument()
+    expect(
+      screen
+        .getByTestId('chevrons-up-icon')
+        .closest('[data-testid="tooltip-wrapper"]')
+    ).toHaveAttribute('data-content', 'priority.highest.string')
+  })
+
+  it('shows a "high priority" tooltip on the priority icon for priority 2', () => {
+    renderWithRedux(
+      <ListItemDesktop {...defaultProps} data={{ ...mockData, priority: 2 }} />
+    )
+    expect(
+      screen
+        .getByTestId('chevrons-up-icon')
+        .closest('[data-testid="tooltip-wrapper"]')
+    ).toHaveAttribute('data-content', 'priority.high.string')
+  })
+
+  it('hides the priority icon for normal priority', () => {
+    renderWithRedux(
+      <ListItemDesktop {...defaultProps} data={{ ...mockData, priority: 3 }} />
+    )
+    expect(screen.queryByTestId('chevrons-up-icon')).not.toBeInTheDocument()
   })
 })
