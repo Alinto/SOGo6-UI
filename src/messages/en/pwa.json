@@ -1,0 +1,106 @@
+{
+  "PWA": {
+    "offline_banner": {
+      "string": "You are offline. Some features are limited."
+    },
+    "install_prompt": {
+      "string": "Install SOGo for quicker access"
+    },
+    "install_ios_hint": {
+      "string": "Install SOGo: tap Share, then \"Add to Home Screen\""
+    },
+    "install_action": {
+      "string": "Install"
+    },
+    "install_dismiss": {
+      "string": "Not now"
+    },
+    "update_available": {
+      "string": "A new version of SOGo is available"
+    },
+    "update_reload": {
+      "string": "Reload"
+    },
+    "outbox_folder": {
+      "string": "Outbox"
+    },
+    "outbox_empty": {
+      "string": "No messages waiting to be sent."
+    },
+    "outbox_loading": {
+      "string": "Loading outbox…"
+    },
+    "outbox_refresh": {
+      "string": "Refresh"
+    },
+    "outbox_no_subject": {
+      "string": "(No subject)"
+    },
+    "outbox_status_pending": {
+      "string": "Waiting to send"
+    },
+    "outbox_status_sending": {
+      "string": "Sending…"
+    },
+    "outbox_status_failed": {
+      "string": "Failed — will retry"
+    },
+    "outbox_edit": {
+      "string": "Edit"
+    },
+    "outbox_delete": {
+      "string": "Delete"
+    },
+    "outbox_cancel": {
+      "string": "Cancel"
+    },
+    "outbox_delete_confirm_title": {
+      "string": "Delete from outbox?"
+    },
+    "outbox_delete_confirm_body": {
+      "string": "This message will be removed and will not be sent."
+    },
+    "outbox_queued": {
+      "string": "Message saved to Outbox. It will send when you are back online."
+    },
+    "outbox_flush_success": {
+      "string": "{count, plural, one {# message sent} other {# messages sent}}"
+    },
+    "outbox_flush_failed": {
+      "string": "Some messages could not be sent. Check your Outbox."
+    },
+    "outbox_auth_required": {
+      "string": "Sign in again to send messages waiting in your Outbox."
+    },
+    "cached_data_indicator": {
+      "string": "Showing cached data — may be out of date"
+    },
+    "offline_unavailable": {
+      "string": "This message is not available offline. It will load when you are back online."
+    },
+    "outbox_edit_restored": {
+      "string": "Message moved back to compose. Send it again to queue it."
+    },
+    "outbox_edit_limit": {
+      "string": "Close a compose window before editing this message."
+    },
+    "offline_send_error": {
+      "string": "Could not queue the message for offline sending."
+    },
+    "offline_fallback_title": {
+      "string": "You are offline"
+    },
+    "offline_fallback_body": {
+      "string": "Reconnect or reopen SOGo after you have visited it online at least once."
+    },
+    "offline_fallback_retry": {
+      "string": "Try again"
+    },
+    "attachment_quota": {
+      "string": "Attachment exceeds the offline size limit."
+    },
+    "attachment_too_many": {
+      "string": "Too many attachments for offline send."
+    }
+  }
+}

@@ -56,5 +56,6 @@ export const selectDraftData = (draftId: string) => (state: RootState) => {
     body: draft?.body ?? '',
     isDirty: draft?.isDirty ?? false,
     attachments: draft?.attachments ?? [],
+    selectedSignatureKey: draft?.selectedSignatureKey ?? null,
   }
 }

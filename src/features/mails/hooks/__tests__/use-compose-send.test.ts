@@ -20,6 +20,30 @@ jest.mock('../../utils/build-compose-mail-payload', () => ({
     mockBuildComposeMailPayload(...args),
 }))
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('sonner', () => ({
+  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() },
+}))
+
+jest.mock('@/features/offline/flags', () => ({
+  isPwaOutboxEnabled: () => false,
+}))
+
+jest.mock('@/features/offline/network/probe', () => ({
+  probeNetwork: jest.fn(async () => true),
+}))
+
+jest.mock('@/features/offline/auth/get-auth-token', () => ({
+  getAuthUserId: () => 'user@example.org',
+}))
+
+jest.mock('@/features/offline/outbox/outbox-coordinator', () => ({
+  enqueueOutbox: jest.fn(),
+}))
+
 import { useComposeSend } from '../use-compose-send'
 
 const baseFields = {
@@ -39,7 +63,10 @@ const baseFields = {
 
 describe('useComposeSend', () => {
   beforeEach(() => {
-    mockUseSendMailMutation.mockReturnValue([mockSendMail, { isLoading: false }])
+    mockUseSendMailMutation.mockReturnValue([
+      mockSendMail,
+      { isLoading: false },
+    ])
     mockSendMail.mockResolvedValue({ data: {} })
     mockBuildComposeMailPayload.mockReturnValue({ mocked: 'payload' })
   })
@@ -108,7 +135,9 @@ describe('useComposeSend', () => {
       mailKey: null,
       mail: { mocked: 'payload' },
     })
-    expect(mockDispatch).toHaveBeenCalledWith(closeDraft({ draftId: 'draft-1' }))
+    expect(mockDispatch).toHaveBeenCalledWith(
+      closeDraft({ draftId: 'draft-1' })
+    )
   })
 
   it('does nothing when there is no selected identity', async () => {
@@ -152,7 +181,9 @@ describe('useComposeSend', () => {
 
     expect(result.current.emptyContentAlert).toBeNull()
     expect(mockSendMail).toHaveBeenCalledTimes(1)
-    expect(mockDispatch).toHaveBeenCalledWith(closeDraft({ draftId: 'draft-1' }))
+    expect(mockDispatch).toHaveBeenCalledWith(
+      closeDraft({ draftId: 'draft-1' })
+    )
   })
 
   it('exposes isSending from the underlying mutation state', () => {

@@ -1,0 +1,62 @@
+'use client'
+
+import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
+import {
+  isPwaEnabled,
+  isPwaMailCacheEnabled,
+  isPwaOutboxEnabled,
+} from '@/features/offline/flags'
+import { flushOutbox } from '@/features/offline/outbox/outbox-flush-service'
+import { memo, type ReactNode, useEffect } from 'react'
+import { purgeExpiredCache } from '../db/mail-cache-store'
+import { useOfflineDraftHydration } from '../hooks/use-offline-draft-sync'
+import { useOutboxFlushTriggers } from '../hooks/use-outbox-flush-triggers'
+import InstallPwaPrompt from './install-pwa-prompt'
+import OfflineBanner from './offline-banner'
+import PwaUpdateToast from './pwa-update-toast'
+
+interface OfflineProviderProps {
+  children: ReactNode
+}
+
+function OfflineProviderInner({ children }: OfflineProviderProps) {
+  useOfflineDraftHydration()
+  useOutboxFlushTriggers(true)
+
+  useEffect(() => {
+    if (!isPwaMailCacheEnabled()) return
+    const userId = getAuthUserId()
+    if (!userId) return
+    void purgeExpiredCache(userId)
+  }, [])
+
+  useEffect(() => {
+    if (!isPwaOutboxEnabled()) return
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type !== 'OUTBOX_FLUSH') return
+      const userId = getAuthUserId()
+      if (!userId) return
+      void flushOutbox(userId)
+    }
+    navigator.serviceWorker?.addEventListener('message', onMessage)
+    return () => {
+      navigator.serviceWorker?.removeEventListener('message', onMessage)
+    }
+  }, [])
+
+  return (
+    <>
+      <OfflineBanner />
+      <InstallPwaPrompt />
+      <PwaUpdateToast />
+      {children}
+    </>
+  )
+}
+
+function OfflineProvider({ children }: OfflineProviderProps) {
+  if (!isPwaEnabled()) return <>{children}</>
+  return <OfflineProviderInner>{children}</OfflineProviderInner>
+}
+
+export default memo(OfflineProvider)

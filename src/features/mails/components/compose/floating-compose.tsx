@@ -16,8 +16,8 @@ import { setActiveDraft } from '../../store'
 import { selectDraftData } from '../../store/mail-compose-selectors'
 import { setPendingInsert } from '../../store/mail-compose-slice'
 import { resolveComposeAccountId } from '../../utils/resolve-compose-account-id'
-import ComposeAttachmentList from './compose-attachment-list'
 import CustomEditor from './compose'
+import ComposeAttachmentList from './compose-attachment-list'
 import ComposeHeader from './compose-header'
 import ComposeSendAlerts from './compose-send-alerts'
 import ComposeToolbar from './compose-toolbar'
@@ -49,6 +49,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     body,
     isDirty,
     attachments,
+    selectedSignatureKey,
   } = useAppSelector(selectDraftData(draftId))
 
   const activeDraftId = useAppSelector(
@@ -121,7 +122,14 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     setShowNoRecipientAlert,
     emptyContentAlert,
     setEmptyContentAlert,
-  } = useComposeSend({ draftId, accountId, mailKey, ...mailFields })
+  } = useComposeSend({
+    draftId,
+    accountId,
+    mailKey,
+    attachments,
+    selectedSignatureKey,
+    ...mailFields,
+  })
 
   const { handleClose, handleDiscardDraft } = useComposeDraftPersistence({
     draftId,
@@ -136,6 +144,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     autosaveIntervalMs: SOGO_D_MAIL_DRAFT_AUTOSAVE
       ? SOGO_D_MAIL_DRAFT_AUTOSAVE * 1000
       : 5000,
+    selectedSignatureKey,
     ...mailFields,
   })
 

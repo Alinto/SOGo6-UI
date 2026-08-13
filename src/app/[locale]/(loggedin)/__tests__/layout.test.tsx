@@ -1,6 +1,6 @@
-import '@testing-library/jest-dom'
 import authReducer from '@/features/auth/components/store/auth.slice'
 import { configureStore } from '@reduxjs/toolkit'
+import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import { Provider } from 'react-redux'
@@ -27,8 +27,11 @@ jest.mock('@/features/user-profile', () => ({
     isLoading: false,
     isError: false,
   })),
+  useProfile: jest.fn(() => ({
+    mainAccount: undefined,
+    identitiesEnabled: false,
+  })),
 }))
-
 
 jest.mock('@/components/sidebar/app-sidebar', () => ({
   AppSidebar: () => <div data-testid="app-sidebar">App Sidebar</div>,
@@ -57,15 +60,18 @@ jest.mock('@/components/mobile-create-fab', () => {
   }
 })
 
-jest.mock('@/features/mails/components/compose/floating-compose-container', () => {
-  return function MockFloatingComposeContainer() {
-    return (
-      <div data-testid="floating-compose-container">
-        Floating Compose Container
-      </div>
-    )
+jest.mock(
+  '@/features/mails/components/compose/floating-compose-container',
+  () => {
+    return function MockFloatingComposeContainer() {
+      return (
+        <div data-testid="floating-compose-container">
+          Floating Compose Container
+        </div>
+      )
+    }
   }
-})
+)
 
 jest.mock('@/features/address_books/components/contact-form-host', () => {
   return function MockContactFormHost() {
@@ -73,15 +79,18 @@ jest.mock('@/features/address_books/components/contact-form-host', () => {
   }
 })
 
-jest.mock('@/features/address_books/components/distribution-list-form-host', () => {
-  return function MockDistributionListFormHost() {
-    return (
-      <div data-testid="distribution-list-form-host">
-        Distribution List Form Host
-      </div>
-    )
+jest.mock(
+  '@/features/address_books/components/distribution-list-form-host',
+  () => {
+    return function MockDistributionListFormHost() {
+      return (
+        <div data-testid="distribution-list-form-host">
+          Distribution List Form Host
+        </div>
+      )
+    }
   }
-})
+)
 
 jest.mock('@/features/address_books/hooks/use-address-book-drag-end', () => ({
   useAddressBookDragEnd: () => jest.fn(),
@@ -192,7 +201,9 @@ describe('Layout Component', () => {
 
     expect(screen.getByTestId('notification-toaster')).toBeInTheDocument()
     expect(screen.getByTestId('notification-provider')).toBeInTheDocument()
-    expect(screen.getByTestId('sidebar-provider-left-global-sidebar')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('sidebar-provider-left-global-sidebar')
+    ).toBeInTheDocument()
     expect(screen.getByTestId('sidebar-inset')).toBeInTheDocument()
   })
 
@@ -298,7 +309,9 @@ describe('Layout Component', () => {
     it('should have proper flex container structure', () => {
       renderWithProvider(<div>Test</div>)
 
-      const provider = screen.getByTestId('sidebar-provider-left-global-sidebar')
+      const provider = screen.getByTestId(
+        'sidebar-provider-left-global-sidebar'
+      )
       expect(provider).toBeInTheDocument()
     })
 

@@ -18,8 +18,16 @@ import { useMailDetailNavigation } from '@/features/mails/hooks/use-mail-detail-
 import { useMailInvitation } from '@/features/mails/hooks/use-mail-invitation'
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
+import type { ImapMessages } from '@/features/mails/mails-types'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
+<<<<<<< HEAD
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+=======
+import { useMailCache } from '@/features/offline'
+import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
+import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
+import { useOfflineMailBody } from '@/features/offline/hooks/use-offline-mail-body'
+>>>>>>> e94eb5d (feat(pwa): add installable PWA with offline compose and outbox)
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
 
@@ -27,7 +35,7 @@ import { Action, ActionId } from '@/features/mails/components/mail/types'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React from 'react'
+import React, { useEffect } from 'react'
 
 const MailPage: React.FC = () => {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
@@ -39,6 +47,7 @@ const MailPage: React.FC = () => {
   const { account, mail_id } = params
   const folder = folderPathFromParams(params.folder)
   const isMobile = useIsMobile()
+  const { cacheBody } = useMailCache()
   const {
     canGoPrev,
     canGoNext,
@@ -47,12 +56,30 @@ const MailPage: React.FC = () => {
     navigation: mailNavigation,
   } = useMailDetailNavigation()
 
-  const { data, isLoading, isError } = useGetMailQuery({
+  const {
+    data: fetchedMail,
+    isLoading,
+    isError,
+  } = useGetMailQuery({
     folder,
     mailId: mail_id,
     accountId: account,
   })
 
+  // Offline fallback: serve the cached body of a previously opened mail
+  const { data: cachedMail, isLoading: isCacheLoading } =
+    useOfflineMailBody<ImapMessages>({
+      accountId: account,
+      folderPath: folder,
+      mailId: mail_id,
+      active: isError,
+    })
+  const data = fetchedMail ?? cachedMail ?? undefined
+
+  useEffect(() => {
+    if (!fetchedMail) return
+    void cacheBody(account, folder, mail_id, fetchedMail)
+  }, [account, cacheBody, fetchedMail, folder, mail_id])
   const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
   const invitation = useMailInvitation(data, currentUserEmail)
 
@@ -64,8 +91,11 @@ const MailPage: React.FC = () => {
     accountId: account,
   })
 
-  if (isLoading) return <MailDetailSkeleton />
-  if (isError || !data) return null
+  if (isLoading || (isError && isCacheLoading)) return <MailDetailSkeleton />
+  if (!data) {
+    // Mail never cached: show "unavailable offline" instead of a blank page
+    return isError ? <OfflineUnavailable className="pt-16" /> : null
+  }
 
   const {
     from: fromRaw,
@@ -139,6 +169,7 @@ const MailPage: React.FC = () => {
           )}
         </div>
       </div>
+<<<<<<< HEAD
       <MailSubject
         subject={subject}
         className="h-auto min-h-fit"
@@ -151,6 +182,10 @@ const MailPage: React.FC = () => {
           />
         }
       />
+=======
+      <MailSubject subject={subject} className="h-auto min-h-fit" />
+      <CachedDataIndicator className="px-1 pb-2" />
+>>>>>>> e94eb5d (feat(pwa): add installable PWA with offline compose and outbox)
       <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
         {isMobile ? (
           <MailHeaderMobile

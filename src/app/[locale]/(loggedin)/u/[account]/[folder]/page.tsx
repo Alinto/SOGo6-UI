@@ -5,11 +5,15 @@ import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { createDraft } from '@/features/mails/store/mail-compose-slice'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
+import { useOfflineMailList } from '@/features/offline/hooks/use-offline-mail-list'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
+import { createClientId } from '@/lib/utils/create-client-id'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -24,15 +28,41 @@ const Page = () => {
   const pathname = usePathname()
   const { replace } = useRouter()
   const activeFilter = searchParams.get('filter') ?? 'all'
-  const { data, isLoading, isFetching, error, refetch, currentPage, isVirtualFolder } =
-    useFolderMessages({
-      folder: folderPath,
-      accountId: accountString,
-    })
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    currentPage,
+    isVirtualFolder,
+  } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
+
+  // PWA: mirror fetched headers to IndexedDB; serve them back when offline
+  const { cachedMails, isShowingCache } = useOfflineMailList({
+    accountId: accountString,
+    folderPath,
+    mails: data?.mails,
+    hasError: !!error,
+  })
 
   useEffect(() => {
     dispatch(setSkipFolderFetch(false))
   }, [folderPath, dispatch])
+
+  // PWA manifest shortcut "New mail" lands on ?compose=1
+  // (createDraft itself enforces the open-windows cap)
+  useEffect(() => {
+    if (searchParams.get('compose') !== '1') return
+    const params = new URLSearchParams(searchParams.toString())
+    params.delete('compose')
+    const query = params.toString()
+    replace(query ? `${pathname}?${query}` : pathname)
+    dispatch(createDraft({ draftId: createClientId() }))
+  }, [searchParams, pathname, replace, dispatch])
 
   const clientFilterActive = activeFilter !== 'all'
 
@@ -74,6 +104,26 @@ const Page = () => {
 
   if (isLoading) return <ListSkeleton />
 
+  if (isShowingCache && cachedMails) {
+    const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
+    return (
+      <div className="flex h-full flex-col">
+        <CachedDataIndicator className="px-4 py-2" />
+        <MessagesList
+          items={offlineFiltered}
+          page={1}
+          total={offlineFiltered.length}
+          totalPages={1}
+          hasNextPage={false}
+          hasPreviousPage={false}
+          isLoading={false}
+          isFetching={false}
+          hideToolbar
+        />
+      </div>
+    )
+  }
+
   if (error) {
     return (
       <FolderMessagesErrorFallback
@@ -93,7 +143,9 @@ const Page = () => {
       total={clientFilterActive ? filteredMails.length : (data?.total ?? 0)}
       totalPages={clientFilterActive ? 1 : (data?.totalPages ?? 1)}
       hasNextPage={clientFilterActive ? false : (data?.hasNextPage ?? false)}
-      hasPreviousPage={clientFilterActive ? false : (data?.hasPreviousPage ?? false)}
+      hasPreviousPage={
+        clientFilterActive ? false : (data?.hasPreviousPage ?? false)
+      }
       isLoading={isLoading}
       isFetching={isFetching}
       hideToolbar

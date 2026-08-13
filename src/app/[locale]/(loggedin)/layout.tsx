@@ -1,10 +1,8 @@
 'use client'
 
 import AppHeader from '@/components/app-header'
-import MobileCreateFab from '@/components/mobile-create-fab'
-import { useAppSelector } from '@/lib/redux/hooks'
-import { useRouter } from 'next/navigation'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
+import MobileCreateFab from '@/components/mobile-create-fab'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import ContactFormHost from '@/features/address_books/components/contact-form-host'
@@ -15,8 +13,11 @@ import {
   NotificationProvider,
   NotificationToaster,
 } from '@/features/notifications'
-import { useGetUserProfileQuery } from '@/features/user-profile'
+import { cacheIdentities } from '@/features/offline'
+import OfflineProvider from '@/features/offline/components/offline-provider'
+import { useGetUserProfileQuery, useProfile } from '@/features/user-profile'
 import { fetchEnvVars } from '@/lib/env-service'
+import { useAppSelector } from '@/lib/redux/hooks'
 import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
@@ -31,10 +32,19 @@ import {
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Contact2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import React, { startTransition, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 
 function ProfilePrefetch() {
+  const { mainAccount, identitiesEnabled } = useProfile()
+  const userId = useAppSelector((s) => s.auth.user?.uid)
+
+  useEffect(() => {
+    if (!userId || !mainAccount?.identities) return
+    void cacheIdentities(userId, mainAccount.identities)
+  }, [userId, mainAccount?.identities, identitiesEnabled])
+
   useGetUserProfileQuery()
   return null
 }
@@ -94,7 +104,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   if (!isHydrated || !token) return null
 
   return (
-    <>
+    <OfflineProvider>
       <ProfilePrefetch />
       <DemoWarningToast />
       <NotificationToaster />
@@ -123,6 +133,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <FloatingComposeContainer />
       <ContactFormHost />
       <DistributionListFormHost />
-    </>
+    </OfflineProvider>
   )
 }
