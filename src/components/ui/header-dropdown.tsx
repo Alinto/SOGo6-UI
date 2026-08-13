@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
 import { logout } from '@/features/auth/components/store/auth.slice'
+import { wipeOnLogout } from '@/features/offline/hooks/use-offline-draft-sync'
 import { ProfileAvatar } from '@/features/user-profile/components/profile-avatar'
 import { useProfile } from '@/features/user-profile/hooks/use-profile'
 import { PP_DEFAULT } from '@/features/user-settings/store/user-preferences-api-types'
@@ -145,8 +146,10 @@ const HeaderDropdown: React.FC = () => {
         <DropdownMenuItem
           className="cursor-pointer"
           onClick={() => {
-            dispatch(logout())
-            push('/auth/login')
+            void wipeOnLogout(authUser?.uid).finally(() => {
+              dispatch(logout())
+              push('/auth/login')
+            })
           }}
         >
           <LogOut className="pr-2" />

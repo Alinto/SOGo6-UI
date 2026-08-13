@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useOfflineIdentities } from '@/features/offline/hooks/use-offline-identities'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
@@ -160,20 +161,43 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
     [draftId, dispatch]
   )
 
-  const defaultFrom = defaultIdentity?.mail || user?.email || ''
-  const [selectedFrom, setSelectedFrom] = React.useState(defaultFrom)
-
-  React.useEffect(() => {
-    if (defaultFrom) setSelectedFrom(defaultFrom)
-  }, [defaultFrom])
-
-  const memoizedIdentities = React.useMemo(
+  const profileIdentities = React.useMemo(
     () => [
       ...(mainAccount?.identities ?? []),
       ...externalAccounts.flatMap((acc) => acc.identities),
     ],
     [mainAccount?.identities, externalAccounts]
   )
+
+  // Offline cold start: profile query has no data — fall back to the
+  // identities cached in IndexedDB so compose/send keeps working.
+  const offlineIdentities = useOfflineIdentities(profileIdentities.length > 0)
+  const memoizedIdentities = React.useMemo(
+    () =>
+      profileIdentities.length > 0
+        ? profileIdentities
+        : (offlineIdentities ?? []),
+    [profileIdentities, offlineIdentities]
+  )
+
+  // Only when the profile is unavailable (offline) do we derive a default
+  // identity from the cached list; online behaviour is unchanged.
+  const offlineDefaultIdentity = React.useMemo(() => {
+    if (defaultIdentity || profileIdentities.length > 0) return null
+    return (
+      offlineIdentities?.find((id) => id.isDefault) ??
+      offlineIdentities?.[0] ??
+      null
+    )
+  }, [defaultIdentity, profileIdentities, offlineIdentities])
+
+  const defaultFrom =
+    defaultIdentity?.mail || offlineDefaultIdentity?.mail || user?.email || ''
+  const [selectedFrom, setSelectedFrom] = React.useState(defaultFrom)
+
+  React.useEffect(() => {
+    if (defaultFrom) setSelectedFrom(defaultFrom)
+  }, [defaultFrom])
 
   const currentIdentity = React.useMemo(
     () => memoizedIdentities.find((id) => id.mail === selectedFrom) ?? null,

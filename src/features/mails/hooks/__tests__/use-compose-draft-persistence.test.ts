@@ -35,6 +35,22 @@ jest.mock('../../utils/build-compose-mail-payload', () => ({
     mockBuildComposeMailPayload(...args),
 }))
 
+jest.mock('@/features/offline/flags', () => ({
+  isPwaOutboxEnabled: () => false,
+}))
+
+jest.mock('@/features/offline/network/probe', () => ({
+  probeNetwork: jest.fn(async () => true),
+}))
+
+jest.mock('@/features/offline', () => ({
+  persistLocalDraft: jest.fn(),
+}))
+
+jest.mock('@/features/offline/auth/get-auth-token', () => ({
+  getAuthUserId: () => 'user@example.org',
+}))
+
 import { useComposeDraftPersistence } from '../use-compose-draft-persistence'
 
 const baseOptions = {
@@ -123,7 +139,9 @@ describe('useComposeDraftPersistence', () => {
       })
 
       expect(mockDispatch).not.toHaveBeenCalledWith(
-        expect.objectContaining({ type: updateMailKey({ draftId: 'x', mailKey: 'x' }).type })
+        expect.objectContaining({
+          type: updateMailKey({ draftId: 'x', mailKey: 'x' }).type,
+        })
       )
     })
 
@@ -236,13 +254,13 @@ describe('useComposeDraftPersistence', () => {
       expect(mockSaveDraft).not.toHaveBeenCalled()
     })
 
-    it('saves (and closes on save) when the draft is dirty', () => {
+    it('saves (and closes on save) when the draft is dirty', async () => {
       const { result } = renderHook(() =>
         useComposeDraftPersistence({ ...baseOptions, isDirty: true })
       )
 
-      act(() => {
-        result.current.handleClose()
+      await act(async () => {
+        await result.current.handleClose()
       })
 
       expect(mockSaveDraft).toHaveBeenCalledWith(

@@ -62,6 +62,7 @@ import proxy, {
   isAdminPanelPath,
   isAuthPath,
   isLocaleRootPath,
+  isPwaAssetPath,
   normalizeHostname,
 } from '../proxy'
 
@@ -139,6 +140,15 @@ describe('proxy helpers', () => {
       expect(isAuthPath('/en/mails')).toBe(false)
     })
   })
+
+  describe('isPwaAssetPath', () => {
+    it('matches manifest, serwist and offline fallback paths', () => {
+      expect(isPwaAssetPath('/manifest.webmanifest')).toBe(true)
+      expect(isPwaAssetPath('/serwist/sw.js')).toBe(true)
+      expect(isPwaAssetPath('/~offline')).toBe(true)
+      expect(isPwaAssetPath('/en/u/0/INBOX')).toBe(false)
+    })
+  })
 })
 
 describe('proxy handler', () => {
@@ -164,6 +174,22 @@ describe('proxy handler', () => {
     expect(response.headers.get('location')).toBe(
       'http://mail.example.com/en/mails'
     )
+  })
+
+  it('does not locale-prefix the web app manifest', async () => {
+    const response = await proxy(createRequest('/manifest.webmanifest'))
+
+    expect(response.status).not.toBe(307)
+    expect(response.headers.get('location')).toBeNull()
+    expect(mockIntlMiddleware).not.toHaveBeenCalled()
+  })
+
+  it('does not locale-prefix serwist service worker paths', async () => {
+    const response = await proxy(createRequest('/serwist/sw.js'))
+
+    expect(response.status).not.toBe(307)
+    expect(response.headers.get('location')).toBeNull()
+    expect(mockIntlMiddleware).not.toHaveBeenCalled()
   })
 
   it('preserves query params when redirecting to default locale', async () => {

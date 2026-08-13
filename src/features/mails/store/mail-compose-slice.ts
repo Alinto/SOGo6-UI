@@ -111,14 +111,18 @@ const mailComposeSlice = createSlice({
         isDirty: false,
         createdAt: now,
         updatedAt: now,
-        // Default to first signature key from the initial identity if provided
+        selectedIdentity: initialData?.selectedIdentity,
+        // Explicit key wins (restored drafts / outbox edits); otherwise
+        // default to the first signature of the initial identity.
         selectedSignatureKey:
+          initialData?.selectedSignatureKey ??
           Object.keys(
             (initialData?.selectedIdentity?.signatures as Record<
               string,
               string
             >) ?? {}
-          )[0] ?? null,
+          )[0] ??
+          null,
       }
       state.openDraftIds.push(draftId)
       state.activeDraftId = draftId

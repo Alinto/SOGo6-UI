@@ -8,10 +8,13 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
+import { useMailCache } from '@/features/offline'
+import OutboxSidebarItem from '@/features/offline/components/outbox-sidebar-item'
+import { useOfflineFolders } from '@/features/offline/hooks/use-offline-folders'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
 import { folderPathFromParams } from '../../utils/folder-path-from-params'
@@ -144,10 +147,21 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
 
 export function MailSidebar() {
   const { account } = useParams()
+  const accountId = String(account ?? '0')
   const { data, isFetching } = useGetFoldersQuery({
-    accountId: String(account ?? '0'),
+    accountId,
   })
-  if (isFetching) return <SidebarSkeleton />
+  const { cacheFolders } = useMailCache()
+
+  useEffect(() => {
+    if (data) void cacheFolders(accountId, data)
+  }, [accountId, cacheFolders, data])
+
+  // Offline cold start: the folders query has no data — show the cached tree
+  const offlineFolders = useOfflineFolders(accountId, !!data)
+  const folders = data ?? offlineFolders ?? undefined
+
+  if (isFetching && !folders) return <SidebarSkeleton />
 
   return (
     <>
@@ -162,11 +176,12 @@ export function MailSidebar() {
           <SidebarMenuItem>
             <ComposeOpener />
           </SidebarMenuItem>
+          <OutboxSidebarItem />
         </SidebarMenu>
       </SidebarGroup>
       <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
-          {data?.map((folder) => (
+          {folders?.map((folder) => (
             <RecursiveFolderItem key={folder.path} folder={folder} />
           ))}
         </SidebarMenu>

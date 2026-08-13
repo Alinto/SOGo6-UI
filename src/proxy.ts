@@ -4,8 +4,8 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const config = {
   matcher: [
-    // Exclude api (proxied to SOGo back), fakeApi, env, and static assets
-    '/((?!_next|api|fakeApi|env|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$).*)',
+    // Exclude api, fakeApi, env, PWA assets (manifest / serwist / offline fallback), and static files
+    '/((?!_next|api|fakeApi|env|serwist|~offline|manifest\\.webmanifest|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot|webmanifest)$).*)',
   ],
 }
 
@@ -67,6 +67,17 @@ export function isAuthPath(pathname: string): boolean {
 
 const intlMiddleware = createMiddleware(routing)
 
+/** PWA / installability paths must stay un-prefixed (no /en/…). */
+export function isPwaAssetPath(pathname: string): boolean {
+  return (
+    pathname === '/manifest.webmanifest' ||
+    pathname.endsWith('.webmanifest') ||
+    pathname === '/~offline' ||
+    pathname.startsWith('/~offline/') ||
+    pathname.startsWith('/serwist/')
+  )
+}
+
 export default async function proxy(req: NextRequest) {
   const hostname = req.headers.get('host') || ''
   const pathname = req.nextUrl.pathname
@@ -78,6 +89,11 @@ export default async function proxy(req: NextRequest) {
   const isAdminPanelRoute = isAdminPanelPath(pathname)
   const isAuthRoute = isAuthPath(pathname)
   const isLocaleRoot = isLocaleRootPath(pathname)
+
+  // Never locale-prefix PWA assets (manifest 404 under /en/… breaks installability)
+  if (isPwaAssetPath(pathname)) {
+    return NextResponse.next()
+  }
 
   // Check if the pathname matches the locale regex
   if (!localeRegex.test(pathname)) {
