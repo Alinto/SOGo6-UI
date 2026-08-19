@@ -47,7 +47,7 @@ jest.mock('../../auth/get-auth-token', () => ({
       ).toString('base64url'),
       'sig',
     ].join('.'),
-  isJwtExpired: () => false,
+  isJwtExpired: jest.fn(() => false),
 }))
 
 const userId = 'user@example.org'
@@ -91,6 +91,10 @@ function okResponse() {
 describe('flushOutbox', () => {
   beforeEach(async () => {
     await wipeOfflineUserData(userId)
+    const { isJwtExpired } = jest.requireMock('../../auth/get-auth-token') as {
+      isJwtExpired: jest.Mock
+    }
+    isJwtExpired.mockReturnValue(false)
     global.fetch = jest
       .fn()
       .mockResolvedValue(okResponse()) as unknown as typeof fetch
@@ -147,6 +151,19 @@ describe('flushOutbox', () => {
   it('recovers items stuck in sending state', async () => {
     await upsertOutboxItem(makeItem({ status: 'sending' }))
     const result = await flushOutbox(userId)
+    expect(result.sent).toBe(1)
+    expect(await listOutbox(userId)).toHaveLength(0)
+  })
+
+  it('still sends on fakeApi when the stored JWT is expired', async () => {
+    const { isJwtExpired } = jest.requireMock('../../auth/get-auth-token') as {
+      isJwtExpired: jest.Mock
+    }
+    isJwtExpired.mockReturnValueOnce(true)
+
+    await upsertOutboxItem(makeItem())
+    const result = await flushOutbox(userId)
+    expect(result.pausedAuth).toBe(false)
     expect(result.sent).toBe(1)
     expect(await listOutbox(userId)).toHaveLength(0)
   })
