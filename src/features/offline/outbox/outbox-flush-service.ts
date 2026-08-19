@@ -115,6 +115,10 @@ async function sendOutboxItem(
   return { ok: false, status: res.status, message }
 }
 
+function isFakeApiBase(base: string): boolean {
+  return base === '/fakeApi' || base.endsWith('/fakeApi')
+}
+
 async function runFlush(userId: string): Promise<FlushResult> {
   const result: FlushResult = {
     sent: 0,
@@ -130,7 +134,7 @@ async function runFlush(userId: string): Promise<FlushResult> {
 
   const auth = readStoredAuth()
   const token = auth?.token ?? getAuthToken()
-  if (!token || isJwtExpired(token)) {
+  if (!token) {
     result.pausedAuth = true
     result.errors.push('auth_expired')
     return result
@@ -139,6 +143,14 @@ async function runFlush(userId: string): Promise<FlushResult> {
   const base = await resolveApiBase()
   if (!base) {
     result.errors.push('api_base_unresolved')
+    return result
+  }
+
+  // fakeApi login JWTs are unsigned fixtures; their `exp` is often stale.
+  // Do not block the outbox on expiry when we are not hitting a real API.
+  if (!isFakeApiBase(base) && isJwtExpired(token)) {
+    result.pausedAuth = true
+    result.errors.push('auth_expired')
     return result
   }
 

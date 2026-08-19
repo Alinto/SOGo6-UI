@@ -199,6 +199,14 @@
                 "string": "Add \"{email}\"",
                 "context": "Add a typed email address directly as recipient"
             }
+        },
+        "editor_unavailable": {
+            "string": "The rich editor could not load (offline). You can still type a plain-text message.",
+            "context": "Shown in compose when CKEditor chunks fail to load"
+        },
+        "editor_unavailable_input": {
+            "string": "Message body",
+            "context": "Accessible name of the plain-text fallback compose field"
         }
     }
 }

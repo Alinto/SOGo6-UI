@@ -2,6 +2,7 @@
 
 import { createLazyImport } from '@/components/lazy-components'
 import React from 'react'
+import ComposeEditorErrorBoundary from './compose-editor-error-boundary'
 
 // Loading component for the editor
 const EditorLoader = () => {
@@ -27,7 +28,11 @@ interface CustomEditorProps {
 }
 
 const CustomEditor = ({ draftId }: CustomEditorProps) => {
-  return <LazyComposeEditorCore draftId={draftId} />
+  return (
+    <ComposeEditorErrorBoundary draftId={draftId}>
+      <LazyComposeEditorCore draftId={draftId} />
+    </ComposeEditorErrorBoundary>
+  )
 }
 
 export default CustomEditor

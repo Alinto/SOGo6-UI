@@ -1,27 +1,34 @@
 /**
  * PWA / offline feature flags.
  * Master flag defaults to off until rollout (Epic 8).
+ *
+ * NEXT_PUBLIC_* keys MUST be written as static `process.env.NEXT_PUBLIC_…`
+ * member access so Next/Turbopack can inline them into the client bundle.
+ * Dynamic `process.env[name]` is always undefined in the browser.
  */
 
-function envFlag(name: string, defaultValue = false): boolean {
-  if (typeof process === 'undefined') return defaultValue
-  const raw = process.env[name]
-  if (raw === undefined || raw === '') return defaultValue
-  return raw === 'true' || raw === '1'
+function isOn(value: string | undefined): boolean {
+  return value === 'true' || value === '1'
+}
+
+function isExplicitlyOff(value: string | undefined): boolean {
+  return value === 'false' || value === '0'
 }
 
 export function isPwaEnabled(): boolean {
-  return envFlag('NEXT_PUBLIC_PWA_ENABLED', false)
+  return isOn(process.env.NEXT_PUBLIC_PWA_ENABLED)
 }
 
 export function isPwaOutboxEnabled(): boolean {
-  return isPwaEnabled() && envFlag('NEXT_PUBLIC_PWA_OUTBOX', true)
+  return isPwaEnabled() && !isExplicitlyOff(process.env.NEXT_PUBLIC_PWA_OUTBOX)
 }
 
 export function isPwaMailCacheEnabled(): boolean {
-  return isPwaEnabled() && envFlag('NEXT_PUBLIC_PWA_MAIL_CACHE', true)
+  return (
+    isPwaEnabled() && !isExplicitlyOff(process.env.NEXT_PUBLIC_PWA_MAIL_CACHE)
+  )
 }
 
 export function isPwaBgSyncEnabled(): boolean {
-  return isPwaEnabled() && envFlag('NEXT_PUBLIC_PWA_BG_SYNC', true)
+  return isPwaEnabled() && !isExplicitlyOff(process.env.NEXT_PUBLIC_PWA_BG_SYNC)
 }
