@@ -77,6 +77,16 @@ describe('MailSubjectLabels', () => {
     expect(screen.getByText('Important')).toBeInTheDocument()
   })
 
+  it('renders the translated name for a default category', () => {
+    mockUseGetUserPreferencesQuery.mockReturnValue(
+      buildPreferences([
+        { name: 'Important', color: '#ff0000', is_default: true },
+      ])
+    )
+    render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+    expect(screen.getByText('categories.Important')).toBeInTheDocument()
+  })
+
   it('calls mailAction to untag when the remove button is clicked', () => {
     render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
     fireEvent.click(

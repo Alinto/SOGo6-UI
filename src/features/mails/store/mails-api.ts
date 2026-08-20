@@ -15,18 +15,23 @@ import type {
   ImapFolder,
   ImapMessages,
   ImapMessagesBackendResponse,
+  MailActionType,
+  MailBatchActionType,
   UpdateFolderBody,
 } from '../mails-types'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
+import { getMailBatchActionNotificationKeys } from '../utils/get-mail-batch-action-notification-keys'
 import { sortImapFoldersTree } from '../utils/sort-folders'
 import {
   dispatchGetMailSeenPatch,
   dispatchSeenPatchOnAllFolderMessageCaches,
+  dispatchSeenPatchOnAllFolderMessageCachesBatch,
   findListItemInFolderCaches,
   folderMessagesCache,
   isFolderRemovingAction,
   isMailActionSeenFlagToggle,
   removeMailFromAllFolderCaches,
+  removeMailsFromAllFolderCaches,
 } from './mails-cache'
 import {
   extractBodyFromContents,
@@ -129,12 +134,30 @@ const mailActionQuery = ({
   accountId?: string
   folder: string
   mailId: string
-  action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+  action: MailActionType
   data?: string | string[] | null
 }) => ({
   url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}/action`,
   method: 'POST' as const,
   body: { action, data },
+})
+
+const mailBatchActionQuery = ({
+  accountId = '0',
+  folder,
+  uids,
+  action,
+  data,
+}: {
+  accountId?: string
+  folder: string
+  uids: string[]
+  action: MailBatchActionType
+  data?: string | string[] | null
+}) => ({
+  url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/batch-action`,
+  method: 'POST' as const,
+  body: { uids, action, data },
 })
 
 const injectedEndpoints = apiSlice.injectEndpoints({
@@ -285,7 +308,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         accountId?: string
         folder: string
         mailId: string
-        action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+        action: MailActionType
         data?: string | string[] | null
       }
     >({
@@ -369,6 +392,78 @@ const injectedEndpoints = apiSlice.injectEndpoints({
               { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
               MAILS_FOLDERS_SLICE,
               { type: MAIL_SLICE, id: arg.mailId },
+            ],
+    }),
+
+    mailBatchAction: builder.mutation<
+      void,
+      {
+        accountId?: string
+        folder: string
+        uids: string[]
+        action: MailBatchActionType
+        data?: string | string[] | null
+      }
+    >({
+      query: mailBatchActionQuery,
+      async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
+        const patchResults: Array<{ undo: () => void }> = []
+
+        if (isMailActionSeenFlagToggle(arg)) {
+          const seen = arg.action === 'tag'
+          patchResults.push(
+            ...dispatchSeenPatchOnAllFolderMessageCachesBatch(
+              dispatch,
+              getState() as RootState,
+              {
+                accountId: arg.accountId,
+                folder: arg.folder,
+                mailIds: arg.uids,
+                seen,
+              }
+            )
+          )
+          try {
+            await queryFulfilled
+          } catch {
+            patchResults.forEach((p) => p.undo())
+          }
+          return
+        }
+
+        if (isFolderRemovingAction(arg.action)) {
+          patchResults.push(
+            ...removeMailsFromAllFolderCaches(
+              dispatch,
+              getState() as RootState,
+              {
+                accountId: arg.accountId,
+                folder: arg.folder,
+                mailIds: arg.uids,
+              }
+            )
+          )
+          try {
+            await queryFulfilled
+          } catch {
+            patchResults.forEach((p) => p.undo())
+          }
+        }
+
+        const notifKeys = getMailBatchActionNotificationKeys(arg)
+        if (notifKeys) {
+          await createApiNotificationHandler(dispatch, notifKeys)(undefined, {
+            queryFulfilled,
+          })
+        }
+      },
+      invalidatesTags: (_result, _error, arg) =>
+        isMailActionSeenFlagToggle(arg)
+          ? [MAILS_FOLDERS_SLICE]
+          : [
+              { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
+              MAILS_FOLDERS_SLICE,
+              ...arg.uids.map((id) => ({ type: MAIL_SLICE, id })),
             ],
     }),
 
@@ -721,6 +816,7 @@ export const {
   useLazyGetReplyMessageQuery,
   useMoveToTrashMutation,
   useMailActionMutation,
+  useMailBatchActionMutation,
   useDownloadMailMutation,
   useLazyGetMailRawQuery,
   usePurgeFolderMutation,
@@ -742,5 +838,6 @@ export {
   getFoldersQuery,
   getMailQuery,
   mailActionQuery,
+  mailBatchActionQuery,
   moveToTrashQuery,
 }

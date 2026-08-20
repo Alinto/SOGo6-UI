@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
+import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import {
@@ -201,12 +202,13 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
                 )}
                 <span
                   className={cn(
-                    'min-w-0 flex-1 truncate',
+                    'min-w-0 shrink truncate',
                     data.deleted && 'line-through'
                   )}
                 >
                   {data.subject}
                 </span>
+                <MailListLabels flags={data.flags} />
               </div>
               {showSnippet && (
                 <p className="text-muted-foreground truncate text-sm">

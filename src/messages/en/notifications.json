@@ -134,6 +134,132 @@
                 "errorMessage": {
                     "string": "Could not remove the important flag."
                 }
+            },
+            "bulk_delete": {
+                "successTitle": {
+                    "string": "Messages deleted"
+                },
+                "successMessage": {
+                    "string": "The selected messages were deleted."
+                },
+                "errorTitle": {
+                    "string": "Delete failed"
+                },
+                "errorMessage": {
+                    "string": "Could not delete the selected messages."
+                }
+            },
+            "bulk_spam": {
+                "successTitle": {
+                    "string": "Marked as spam"
+                },
+                "successMessage": {
+                    "string": "The selected messages were moved to Junk."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not mark the selected messages as spam."
+                }
+            },
+            "bulk_ham": {
+                "successTitle": {
+                    "string": "Moved to Inbox"
+                },
+                "successMessage": {
+                    "string": "The selected messages were moved to your Inbox."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not restore the selected messages."
+                }
+            },
+            "bulk_move": {
+                "successTitle": {
+                    "string": "Messages moved"
+                },
+                "successMessage": {
+                    "string": "The selected messages were moved successfully."
+                },
+                "errorTitle": {
+                    "string": "Move failed"
+                },
+                "errorMessage": {
+                    "string": "Could not move the selected messages."
+                }
+            },
+            "bulk_copy": {
+                "successTitle": {
+                    "string": "Messages copied"
+                },
+                "successMessage": {
+                    "string": "The selected messages were copied successfully."
+                },
+                "errorTitle": {
+                    "string": "Copy failed"
+                },
+                "errorMessage": {
+                    "string": "Could not copy the selected messages."
+                }
+            },
+            "bulk_tag": {
+                "successTitle": {
+                    "string": "Labels applied"
+                },
+                "successMessage": {
+                    "string": "The labels were applied to the selected messages."
+                },
+                "errorTitle": {
+                    "string": "Label failed"
+                },
+                "errorMessage": {
+                    "string": "Could not apply the labels."
+                }
+            },
+            "bulk_untag": {
+                "successTitle": {
+                    "string": "Labels removed"
+                },
+                "successMessage": {
+                    "string": "The labels were removed from the selected messages."
+                },
+                "errorTitle": {
+                    "string": "Label failed"
+                },
+                "errorMessage": {
+                    "string": "Could not remove the labels."
+                }
+            },
+            "bulk_flag": {
+                "successTitle": {
+                    "string": "Marked as important"
+                },
+                "successMessage": {
+                    "string": "The selected messages were marked as important."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not mark the selected messages as important."
+                }
+            },
+            "bulk_unflag": {
+                "successTitle": {
+                    "string": "Important flag removed"
+                },
+                "successMessage": {
+                    "string": "The selected messages are no longer marked as important."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not remove the important flag."
+                }
             }
         },
         "mail_print": {
