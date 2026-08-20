@@ -62,7 +62,7 @@ export function useOfflineMailList({
   }, [accountId, folderPath, mails, cacheHeaders])
 
   const shouldFallback =
-    isPwaMailCacheEnabled() && !isOnline && (hasError || !mails)
+    isPwaMailCacheEnabled() && !mails && (hasError || !isOnline)
 
   useEffect(() => {
     if (!shouldFallback) return

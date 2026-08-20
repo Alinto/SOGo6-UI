@@ -8,15 +8,19 @@ import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
+import { useOfflineMailList } from '@/features/offline/hooks/use-offline-mail-list'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useEffect, useMemo } from 'react'
 
 const Page: React.FC = () => {
   const { folder, mail_id, account } = useParams()
-  const folderPath = folderPathFromParams(
-    folder as string | string[] | undefined
-  )
+  const { folderPathOverride } = useOfflineNav()
+  const folderPath =
+    folderPathOverride ??
+    folderPathFromParams(folder as string | string[] | undefined)
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
   const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
@@ -26,6 +30,13 @@ const Page: React.FC = () => {
       folder: folderPath,
       accountId: accountString,
     })
+
+  const { cachedMails, isShowingCache } = useOfflineMailList({
+    accountId: accountString,
+    folderPath,
+    mails: data?.mails,
+    hasError: !!error,
+  })
 
   useEffect(() => {
     dispatch(setSkipFolderFetch(false))
@@ -44,6 +55,27 @@ const Page: React.FC = () => {
     return (
       <div className={containerClassName}>
         <VirtualFolderEmptyState />
+      </div>
+    )
+  }
+
+  if (isShowingCache && cachedMails) {
+    const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
+    return (
+      <div className={`${containerClassName} min-h-0 flex-1 flex-col`}>
+        <CachedDataIndicator className="px-4 py-2" />
+        <MessagesList
+          type="classic"
+          items={offlineFiltered}
+          page={1}
+          total={offlineFiltered.length}
+          totalPages={1}
+          hasNextPage={false}
+          hasPreviousPage={false}
+          isLoading={false}
+          isFetching={false}
+          hideToolbar
+        />
       </div>
     )
   }
@@ -79,7 +111,9 @@ const Page: React.FC = () => {
         total={clientFilterActive ? filteredMails.length : (data?.total ?? 0)}
         totalPages={clientFilterActive ? 1 : (data?.totalPages ?? 1)}
         hasNextPage={clientFilterActive ? false : (data?.hasNextPage ?? false)}
-        hasPreviousPage={clientFilterActive ? false : (data?.hasPreviousPage ?? false)}
+        hasPreviousPage={
+          clientFilterActive ? false : (data?.hasPreviousPage ?? false)
+        }
         isLoading={false}
         isFetching={isFetching}
         hideToolbar

@@ -11,7 +11,7 @@ import {
 import { useMailCache } from '@/features/offline'
 import OutboxSidebarItem from '@/features/offline/components/outbox-sidebar-item'
 import { useOfflineFolders } from '@/features/offline/hooks/use-offline-folders'
-import { useRouter } from '@/lib/i18n/navigation'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -34,22 +34,23 @@ interface RecursiveFolderItemProps {
 }
 
 function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
-  const { push } = useRouter()
   const { account, folder: urlFolderParam } = useParams()
   const t = useTranslations('MAILS_COMMONS')
+  const { openFolder, folderPathOverride } = useOfflineNav()
 
   const urlFolder = folderPathFromParams(
     urlFolderParam as string | string[] | undefined
   )
 
-  const isActive = urlFolder === folder.path
+  const activeFolder = folderPathOverride ?? urlFolder
+  const isActive = activeFolder === folder.path
   const isVirtual = isVirtualFolder(folder)
 
   const hasSubfolders =
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0
 
   const descendantActive =
-    hasSubfolders && urlFolder.startsWith(folder.path + folder.delimiter)
+    hasSubfolders && activeFolder.startsWith(folder.path + folder.delimiter)
 
   const [open, setOpen] = useState(false)
   const effectiveOpen = descendantActive || open
@@ -60,7 +61,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
 
   const navigateToFolder = () => {
     if (isVirtual) return
-    push(`/u/${account}/${encodeURIComponent(folder.path)}`)
+    void openFolder(String(account ?? '0'), folder.path)
   }
 
   const toggleExpand = () => {

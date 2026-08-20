@@ -101,16 +101,45 @@ describe('useOfflineMailList', () => {
     expect(result.current.cachedMails![1]!.id).toBe('m1')
   })
 
-  it('does not fall back while online', () => {
+  it('does not fall back while online without an error', () => {
     const { result } = renderHook(() =>
       useOfflineMailList({
         accountId: '0',
         folderPath: 'INBOX',
         mails: undefined,
-        hasError: true,
+        hasError: false,
       })
     )
     expect(result.current.isShowingCache).toBe(false)
     expect(result.current.cachedMails).toBeNull()
+  })
+
+  it('falls back when the query failed even if still marked online', async () => {
+    const mails = [
+      makeMail('m1', '2026-08-01T10:00:00Z'),
+      makeMail('m2', '2026-08-02T10:00:00Z'),
+    ]
+
+    mockIsOnline = true
+    const { rerender, result } = renderHook(
+      (props: { mails: ImapMessagesList[] | undefined; hasError: boolean }) =>
+        useOfflineMailList({
+          accountId: '0',
+          folderPath: 'INBOX',
+          mails: props.mails,
+          hasError: props.hasError,
+        }),
+      { initialProps: { mails, hasError: false } }
+    )
+
+    await waitFor(() => {
+      mockIsOnline = true
+      rerender({ mails: undefined, hasError: true })
+    })
+
+    await waitFor(() => {
+      expect(result.current.isShowingCache).toBe(true)
+    })
+    expect(result.current.cachedMails).toHaveLength(2)
   })
 })

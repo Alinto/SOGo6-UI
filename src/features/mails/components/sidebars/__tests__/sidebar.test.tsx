@@ -64,6 +64,7 @@ jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({
     account: 'test@example.com',
   })),
+  usePathname: jest.fn(() => '/u/test@example.com/INBOX'),
 }))
 
 jest.mock('../account-switcher', () => ({

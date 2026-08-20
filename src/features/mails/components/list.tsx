@@ -4,6 +4,7 @@ import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
+import { useOpenMailFromList } from '@/features/offline/hooks/use-open-mail-from-list'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
@@ -108,6 +109,8 @@ const MessagesList: React.FC<MessagesListProps> = ({
     [markHam]
   )
 
+  const { openMail } = useOpenMailFromList()
+
   const selectedIds = useAppSelector(
     (state: RootState) => state.mailLayout.selectedMailIds
   )
@@ -132,7 +135,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded">
+      <div className="flex min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden rounded">
         {!hideToolbar && (
           <div className="text-foreground flex min-w-0 shrink-0 flex-row flex-wrap items-center justify-between gap-y-1">
             <span className="text-muted-foreground hidden text-sm md:inline-block" />
@@ -160,6 +163,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     isSelected={selectedIds.includes(String(item.id))}
                     onToggleRead={handleToggleRead}
                     onToggleFlag={handleToggleFlag}
+                    onOpenMail={openMail}
                   />
                 ) : (
                   <ListItem
@@ -172,6 +176,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     onArchive={handleArchive}
                     onSpam={isJunk ? undefined : handleSpam}
                     onMoveToInbox={isJunk ? handleMoveToInbox : undefined}
+                    onOpenMail={openMail}
                   />
                 )
               return (

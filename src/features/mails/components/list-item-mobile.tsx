@@ -31,12 +31,14 @@ interface ListItemMobileProps {
   data: ImapMessagesList
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
+  onOpenMail?: (id: string) => void | Promise<void>
 }
 
 const ListItemMobile: React.FC<ListItemMobileProps> = ({
   data,
   isSelected,
   onHandleCheckboxClick,
+  onOpenMail,
 }) => {
   const t = useTranslations('MAILS_LIST')
   const { push } = useRouter()
@@ -167,6 +169,10 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                 mailId: id,
               })
               if (openedDraft) return
+              if (onOpenMail) {
+                await onOpenMail(String(id))
+                return
+              }
 
               push(
                 `/u/${accountString}/${encodeURIComponent(folderString)}/${id}`

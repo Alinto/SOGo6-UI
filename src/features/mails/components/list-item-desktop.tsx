@@ -41,6 +41,7 @@ interface ListItemDesktopProps {
   onArchive?: (id: string) => void
   onSpam?: (id: string) => void
   onMoveToInbox?: (id: string) => void
+  onOpenMail?: (id: string) => void | Promise<void>
 }
 
 const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
@@ -53,6 +54,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   onArchive,
   onSpam,
   onMoveToInbox,
+  onOpenMail,
 }) => {
   const t = useTranslations('MAILS_LIST')
   const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
@@ -93,6 +95,10 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             mailId: id,
           })
           if (openedDraft) return
+          if (onOpenMail) {
+            await onOpenMail(String(id))
+            return
+          }
           push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
         }}
       >

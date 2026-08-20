@@ -19,6 +19,12 @@ jest.mock('next/navigation', () => ({
   useRouter: () => ({
     push: mockRouterPush,
   }),
+  useParams: () => ({}),
+}))
+
+jest.mock('@/features/offline/components/offline-provider', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
 }))
 
 jest.mock('@/features/user-profile', () => ({

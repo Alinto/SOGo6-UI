@@ -1,6 +1,13 @@
 'use client'
 
-import { Check, FolderPlus, Mail, MoreVertical, Plus, Users } from 'lucide-react'
+import {
+  Check,
+  FolderPlus,
+  Mail,
+  MoreVertical,
+  Plus,
+  Users,
+} from 'lucide-react'
 import * as React from 'react'
 
 import {
@@ -25,7 +32,13 @@ export function AccountSwitcher() {
   const t = useTranslations('MAILS_COMMONS')
   const { push } = useRouter()
   const { account } = useParams()
-  const { allMailboxes, defaultIdentity, canAddExternalAccount, isLoading } = useProfile()
+  const {
+    allMailboxes,
+    defaultIdentity,
+    canAddExternalAccount,
+    isLoading,
+    user,
+  } = useProfile()
   const [createFolderOpen, setCreateFolderOpen] = React.useState(false)
 
   // Index courant depuis l'URL (/u/0/INBOX → 0)
@@ -43,9 +56,11 @@ export function AccountSwitcher() {
   }
 
   const selectedMailbox = allMailboxes[currentIndex] ?? allMailboxes[0]
-  const selectedEmail = selectedMailbox ? getAccountEmail(selectedMailbox.id) : ''
+  const selectedEmail = selectedMailbox
+    ? getAccountEmail(selectedMailbox.id)
+    : user?.email || user?.cn || ''
 
-  if (isLoading) {
+  if (isLoading && !selectedEmail) {
     return (
       <SidebarMenu className="p-0">
         <SidebarMenuItem>
@@ -94,7 +109,9 @@ export function AccountSwitcher() {
                   key={mailbox.id}
                   onClick={() => push(`/u/${index}/INBOX`)}
                 >
-                  <span className="truncate">{getAccountEmail(mailbox.id)}</span>
+                  <span className="truncate">
+                    {getAccountEmail(mailbox.id)}
+                  </span>
                   {index === currentIndex && (
                     <Check className="ml-auto h-4 w-4 shrink-0" />
                   )}
@@ -116,7 +133,9 @@ export function AccountSwitcher() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer"
-                    onClick={() => push('/user_settings/mail/external_accounts')}
+                    onClick={() =>
+                      push('/user_settings/mail/external_accounts')
+                    }
                   >
                     <Plus className="mr-1.5 h-4 w-4" />
                     <span>{t('account_switcher.add_account.string')}</span>

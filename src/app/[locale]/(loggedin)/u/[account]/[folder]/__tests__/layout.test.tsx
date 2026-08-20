@@ -4,6 +4,10 @@ import { render, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import Layout from '../layout'
 
+const { useOfflineNav } = jest.requireMock(
+  '@/features/offline/offline-nav-context'
+) as { useOfflineNav: jest.Mock }
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }))
@@ -78,6 +82,28 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: (fn: (s: { mailLayout: { mode: string } }) => string) =>
     fn({ mailLayout: { mode: 'full' } }),
 }))
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: jest.fn(() => ({
+    view: { kind: 'route' },
+    folderPathOverride: null,
+    openFolder: jest.fn(),
+    openOutbox: jest.fn(),
+    openMail: jest.fn(),
+    closeOverlay: jest.fn(),
+    clearUnavailable: jest.fn(),
+  })),
+}))
+jest.mock('../[mail_id]/page', () => ({
+  MailDetailPage: () => <div data-testid="offline-mail-detail" />,
+}))
+jest.mock('@/features/offline/components/outbox-panel', () => ({
+  __esModule: true,
+  default: () => <div data-testid="outbox-panel" />,
+}))
+jest.mock('@/features/offline/components/offline-unavailable', () => ({
+  __esModule: true,
+  default: () => <div data-testid="offline-unavailable" />,
+}))
 
 describe('Mail Folder Layout', () => {
   const mockChildren = (
@@ -89,6 +115,15 @@ describe('Mail Folder Layout', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    useOfflineNav.mockReturnValue({
+      view: { kind: 'route' },
+      folderPathOverride: null,
+      openFolder: jest.fn(),
+      openOutbox: jest.fn(),
+      openMail: jest.fn(),
+      closeOverlay: jest.fn(),
+      clearUnavailable: jest.fn(),
+    })
     ;(useIsMobileModule.useIsMobile as jest.Mock).mockReturnValue(false)
     ;(userPreferencesApi.useGetPreferencesQuery as jest.Mock).mockReturnValue({
       data: { layoutType: 'modern' },
@@ -172,7 +207,9 @@ describe('Mail Folder Layout', () => {
   })
 
   it('should use full content height when toolbar is hidden on mail detail', () => {
-    const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+    const {
+      useListToolbarMode,
+    } = require('@/features/mails/hooks/use-list-toolbar-mode')
     useListToolbarMode.mockReturnValue('hidden')
 
     const { container } = render(
@@ -183,7 +220,9 @@ describe('Mail Folder Layout', () => {
   })
 
   it('should reserve toolbar height when list toolbar is visible', () => {
-    const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+    const {
+      useListToolbarMode,
+    } = require('@/features/mails/hooks/use-list-toolbar-mode')
     useListToolbarMode.mockReturnValue('list')
 
     const { container } = render(
@@ -199,5 +238,20 @@ describe('Mail Folder Layout', () => {
     )
     const inset = container.querySelector('[data-testid="sidebar-inset"]')
     expect(inset).toHaveClass('flex', 'flex-col')
+  })
+
+  it('should show a single offline unavailable banner above the folder list', () => {
+    useOfflineNav.mockReturnValue({
+      view: { kind: 'unavailable' },
+      folderPathOverride: null,
+      openFolder: jest.fn(),
+      openOutbox: jest.fn(),
+      openMail: jest.fn(),
+      closeOverlay: jest.fn(),
+      clearUnavailable: jest.fn(),
+    })
+    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
+    expect(screen.getAllByTestId('offline-unavailable')).toHaveLength(1)
+    expect(screen.getByTestId('modern-content')).toBeInTheDocument()
   })
 })

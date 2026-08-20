@@ -9,6 +9,7 @@ export { default as OfflineBanner } from './components/offline-banner'
 export { default as OfflineProvider } from './components/offline-provider'
 export { default as OfflineUnavailable } from './components/offline-unavailable'
 export { default as OutboxList } from './components/outbox-list'
+export { default as OutboxPanel } from './components/outbox-panel'
 export { default as OutboxSidebarItem } from './components/outbox-sidebar-item'
 export { wipeOfflineUserData } from './db/wipe'
 export {
@@ -28,8 +29,10 @@ export { useOfflineFolders } from './hooks/use-offline-folders'
 export { useOfflineIdentities } from './hooks/use-offline-identities'
 export { useOfflineMailBody } from './hooks/use-offline-mail-body'
 export { useOfflineMailList } from './hooks/use-offline-mail-list'
+export { useOpenMailFromList } from './hooks/use-open-mail-from-list'
 export { useOutboxList } from './hooks/use-outbox'
 export { useNetworkStatus } from './network/use-network-status'
+export { OfflineNavProvider, useOfflineNav } from './offline-nav-context'
 export {
   enqueueOutbox,
   registerBackgroundSync,

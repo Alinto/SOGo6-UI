@@ -1,8 +1,14 @@
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-import { defaultCache } from '@serwist/turbopack/worker'
 import type { PrecacheEntry, SerwistGlobalConfig } from 'serwist'
-import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist } from 'serwist'
+import {
+  CacheFirst,
+  ExpirationPlugin,
+  NetworkFirst,
+  NetworkOnly,
+  Serwist,
+} from 'serwist'
+import { filterPrecacheEntries, isNavigationRequest } from './sw-runtime'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -14,46 +20,82 @@ declare const self: ServiceWorkerGlobalScope
 
 const OUTBOX_FLUSH_SYNC_TAG = 'outbox-flush'
 
-const ckEditorCache = {
-  matcher: ({ url }: { url: URL }) =>
-    url.pathname.includes('ckeditor') ||
-    url.pathname.includes('ck-editor') ||
-    /ckeditor5/i.test(url.href),
-  handler: new CacheFirst({
-    cacheName: 'ckeditor-assets',
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 64,
-        maxAgeSeconds: 30 * 24 * 60 * 60,
-      }),
-    ],
-  }),
-}
+const expire = (maxEntries: number, maxAgeSeconds: number) =>
+  new ExpirationPlugin({ maxEntries, maxAgeSeconds })
 
 const serwist = new Serwist({
-  precacheEntries: self.__SW_MANIFEST,
-  // Updates wait for user confirmation (PwaUpdateToast posts SKIP_WAITING);
-  // immediate takeover would break lazy-loaded chunks of open pages.
-  skipWaiting: false,
+  precacheEntries: filterPrecacheEntries(self.__SW_MANIFEST),
+  skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
-    ckEditorCache,
     {
-      matcher: ({ request }) => request.destination === 'document',
+      matcher: /\/(?:api|fakeApi)\//i,
+      handler: new NetworkOnly(),
+    },
+    {
+      matcher: /ckeditor5|ck-editor|ckeditor/i,
+      handler: new CacheFirst({
+        cacheName: 'ckeditor-assets',
+        plugins: [expire(64, 30 * 24 * 60 * 60)],
+      }),
+    },
+    {
+      matcher: ({ request }) => isNavigationRequest(request),
       handler: new NetworkFirst({
         cacheName: 'pages',
         networkTimeoutSeconds: 3,
+        plugins: [expire(32, 24 * 60 * 60)],
       }),
     },
-    ...defaultCache,
+    {
+      matcher: /\/_next\/static\//,
+      handler: new CacheFirst({
+        cacheName: 'next-static',
+        plugins: [expire(128, 7 * 24 * 60 * 60)],
+      }),
+    },
+    {
+      matcher: /\/(?:icons|images)\//,
+      handler: new CacheFirst({
+        cacheName: 'static-images',
+        plugins: [expire(64, 30 * 24 * 60 * 60)],
+      }),
+    },
+    {
+      matcher: /\/manifest\.webmanifest/,
+      handler: new NetworkFirst({
+        cacheName: 'manifest',
+        networkTimeoutSeconds: 3,
+      }),
+    },
+    {
+      matcher: /\/env\?probe=/,
+      handler: new NetworkOnly(),
+    },
+    {
+      matcher: /\/env(?:\?|$)/,
+      handler: new NetworkFirst({
+        cacheName: 'env',
+        networkTimeoutSeconds: 3,
+      }),
+    },
+    {
+      matcher: /.*/i,
+      method: 'GET',
+      handler: new NetworkFirst({
+        cacheName: 'others',
+        networkTimeoutSeconds: 3,
+        plugins: [expire(64, 24 * 60 * 60)],
+      }),
+    },
   ],
   fallbacks: {
     entries: [
       {
         url: '/~offline',
         matcher({ request }) {
-          return request.destination === 'document'
+          return isNavigationRequest(request)
         },
       },
     ],

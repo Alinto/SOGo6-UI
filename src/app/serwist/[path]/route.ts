@@ -1,3 +1,4 @@
+import { isBrokenPrecacheUrl } from '@/app/sw-runtime'
 import { createSerwistRoute } from '@serwist/turbopack'
 import { spawnSync } from 'node:child_process'
 
@@ -14,4 +15,20 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
     ],
     swSrc: 'src/app/sw.ts',
     useNativeEsbuild: true,
+    globIgnores: ['**/robots.txt', '**/fonts/OpenDyslexic*'],
+    manifestTransforms: [
+      async (manifestEntries) => ({
+        manifest: manifestEntries.filter(
+          (entry) => !isBrokenPrecacheUrl(entry.url)
+        ),
+        warnings: [],
+      }),
+    ],
+    esbuildOptions: {
+      define: {
+        'process.env.NODE_ENV': JSON.stringify(
+          process.env.NODE_ENV ?? 'production'
+        ),
+      },
+    },
   })

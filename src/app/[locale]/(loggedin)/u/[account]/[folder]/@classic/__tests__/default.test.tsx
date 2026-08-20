@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import React from 'react'
 import ClassicMailFolderDefault from '../default'
 
 jest.mock('next/navigation', () => ({
@@ -20,6 +19,20 @@ jest.mock('@/features/mails/hooks/use-folder-messages', () => ({
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
+}))
+
+jest.mock('@/features/offline/hooks/use-offline-mail-list', () => ({
+  useOfflineMailList: () => ({ cachedMails: null, isShowingCache: false }),
+}))
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({
+    view: { kind: 'route' },
+    folderPathOverride: null,
+    openFolder: jest.fn(),
+    openOutbox: jest.fn(),
+    clearUnavailable: jest.fn(),
+  }),
 }))
 
 jest.mock('@/features/mails/components/skeletons/list-skeleton', () => ({
@@ -91,7 +104,14 @@ describe('@classic/default', () => {
   describe('configuration', () => {
     it('passes folder and account to useFolderMessages', () => {
       mockUseFolderMessages.mockReturnValue({
-        data: { mails: [], page: 1, total: 0, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+        data: {
+          mails: [],
+          page: 1,
+          total: 0,
+          totalPages: 1,
+          hasNextPage: false,
+          hasPreviousPage: false,
+        },
         isLoading: false,
         isFetching: false,
         error: undefined,
