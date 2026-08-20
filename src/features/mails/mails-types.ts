@@ -8,6 +8,10 @@ export type ImapFolderType =
   | 'TEMPLATE'
   | 'NORMAL'
 
+export type MailActionType = 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+
+export type MailBatchActionType = MailActionType | 'delete'
+
 export interface ImapFolder {
   name: string
   path: string
@@ -41,6 +45,8 @@ export interface ImapMessagesList {
   priority: number
   /** Ex. `"event"`, `"contact"` (API : `mail_type`) */
   mailType: string[]
+  /** IMAP keywords/flags, incl. custom mail category names (e.g. "Work"). */
+  flags?: string[]
 }
 
 export interface ImapAttachmentPart {

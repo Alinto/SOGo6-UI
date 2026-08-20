@@ -75,6 +75,13 @@ jest.mock('../list-item-utils', () => ({
   formatDate: jest.fn(() => 'Dec 18'),
 }))
 
+jest.mock('../mail/mail-list-labels', () => ({
+  __esModule: true,
+  default: ({ flags }: { flags?: string[] }) => (
+    <div data-testid="mail-list-labels">{(flags ?? []).join(',')}</div>
+  ),
+}))
+
 jest.mock('@/features/mails/hooks/use-current-folder', () => ({
   useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
 }))
@@ -155,6 +162,18 @@ describe('ListItemDesktop', () => {
   it('shows checkbox when isSelected is true', () => {
     renderWithRedux(<ListItemDesktop {...defaultProps} isSelected />)
     expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
+  })
+
+  it('passes mail flags to MailListLabels', () => {
+    renderWithRedux(
+      <ListItemDesktop
+        {...defaultProps}
+        data={{ ...mockData, flags: ['Work', 'Important'] }}
+      />
+    )
+    expect(screen.getByTestId('mail-list-labels')).toHaveTextContent(
+      'Work,Important'
+    )
   })
 
   it('shows action buttons on hover', () => {

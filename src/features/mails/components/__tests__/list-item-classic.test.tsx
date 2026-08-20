@@ -31,6 +31,13 @@ jest.mock('@/features/mails/hooks/use-open-draft-on-click', () => ({
   })),
 }))
 
+jest.mock('../mail/mail-list-labels', () => ({
+  __esModule: true,
+  default: ({ flags }: { flags?: string[] }) => (
+    <div data-testid="mail-list-labels">{(flags ?? []).join(',')}</div>
+  ),
+}))
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>
@@ -93,6 +100,19 @@ describe('ListItemClassic', () => {
     expect(screen.getByText('Test Subject')).toBeInTheDocument()
     expect(screen.getByText('Test snippet')).toBeInTheDocument()
     expect(screen.getByText('J')).toBeInTheDocument() // Avatar fallback
+  })
+
+  it('passes mail flags to MailListLabels', () => {
+    renderWithRedux(
+      <ListItemClassic
+        data={{ ...mockData, flags: ['Work', 'Friends'] }}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    expect(screen.getByTestId('mail-list-labels')).toHaveTextContent(
+      'Work,Friends'
+    )
   })
 
   it('should format date correctly', () => {

@@ -59,6 +59,13 @@ jest.mock('../list-item-utils', () => ({
   formatDate: jest.fn((date) => 'Dec 18'),
 }))
 
+jest.mock('../mail/mail-list-labels', () => ({
+  __esModule: true,
+  default: ({ flags }: { flags?: string[] }) => (
+    <div data-testid="mail-list-labels">{(flags ?? []).join(',')}</div>
+  ),
+}))
+
 jest.mock('@/features/mails/hooks/use-current-folder', () => ({
   useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
 }))
@@ -160,6 +167,17 @@ describe('ListItemMobile Component', () => {
       />
     )
     expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
+  })
+
+  it('passes mail flags to MailListLabels', () => {
+    renderWithRedux(
+      <ListItemMobile
+        data={{ ...mockData, flags: ['Work'] }}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    expect(screen.getByTestId('mail-list-labels')).toHaveTextContent('Work')
   })
 
   it('should show attachment icon when email has attachments', () => {

@@ -54,6 +54,7 @@ export const messagesByFolderSeed: Record<string, Partial<ImapMessagesList>[]> =
         hasAttachment: true,
         size: 12400,
         snippet: 'Nous accusons réception de votre virement.',
+        flags: ['Work'],
       },
       {
         id: 'inbox_003',
@@ -66,6 +67,7 @@ export const messagesByFolderSeed: Record<string, Partial<ImapMessagesList>[]> =
         hasAttachment: false,
         size: 5100,
         snippet: 'Merci de préparer vos points pour la réunion de jeudi.',
+        flags: ['Work', 'Friends'],
       },
       {
         id: 'inbox_004',

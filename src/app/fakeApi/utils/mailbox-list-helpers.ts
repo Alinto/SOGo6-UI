@@ -32,6 +32,7 @@ export type RawMailListItemSeed = {
   mail_type?: string | string[]
   mailType?: string[]
   hasAttachment?: boolean
+  flags?: string[]
 }
 
 function toRawMailListItem(m: Partial<ImapMessagesList>): RawMailListItemSeed {
@@ -51,6 +52,7 @@ function toRawMailListItem(m: Partial<ImapMessagesList>): RawMailListItemSeed {
     deleted: m.deleted,
     priority: m.priority,
     mailType: m.mailType,
+    flags: m.flags,
   }
 }
 
@@ -133,9 +135,7 @@ export function buildFolderMessagesListResponse(
     ? Math.max(1, Math.min(100, parseInt(pageSizeParam, 10) || 20))
     : 30
 
-  let messages: ImapMessagesList[] = (
-    messagesByFolderSeed[folder] || []
-  ).map(
+  let messages: ImapMessagesList[] = (messagesByFolderSeed[folder] || []).map(
     (m) =>
       ({
         ...listDefaults,

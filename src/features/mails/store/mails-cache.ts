@@ -5,6 +5,7 @@ import type {
   ImapMessages,
   ImapMessagesBackendResponse,
   ImapMessagesList,
+  MailActionType,
 } from '../mails-types'
 import type { MailListQueryParams } from './mails-api'
 import { recomputePagination } from './mails-normalizers'
@@ -19,7 +20,7 @@ export type MailActionInitiateArg = {
   accountId?: string
   folder: string
   mailId: string
-  action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+  action: MailActionType
   data?: string | string[] | null
 }
 
@@ -107,7 +108,7 @@ export function normalizeMailActionDataArray(
 }
 
 export function isMailActionSeenFlagToggle(arg: {
-  action: 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+  action: string
   data?: string | string[] | null
 }): boolean {
   if (arg.action !== 'tag' && arg.action !== 'untag') return false
@@ -116,7 +117,12 @@ export function isMailActionSeenFlagToggle(arg: {
 
 /** Mail actions that remove the message from its source folder. */
 export function isFolderRemovingAction(action: string): boolean {
-  return action === 'move' || action === 'spam' || action === 'ham'
+  return (
+    action === 'move' ||
+    action === 'spam' ||
+    action === 'ham' ||
+    action === 'delete'
+  )
 }
 
 export function findListItemInFolderCaches(
@@ -138,6 +144,41 @@ export function findListItemInFolderCaches(
   return undefined
 }
 
+/**
+ * Patches the seen flag for every mail in `mailIds` in one pass per cached
+ * folder page.
+ */
+export function dispatchSeenPatchOnAllFolderMessageCachesBatch(
+  dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
+  state: RootState,
+  arg: {
+    accountId?: string
+    folder: string
+    mailIds: string[]
+    seen: boolean
+  }
+): PatchResult[] {
+  const accountKey = arg.accountId ?? '0'
+  const idSet = new Set(arg.mailIds.map(String))
+  const patches: PatchResult[] = []
+  const cachedArgs = folderMessagesCache.selectCachedArgs(state)
+  for (const queryArg of cachedArgs) {
+    const qAccount = queryArg.accountId ?? '0'
+    if (qAccount !== accountKey || queryArg.folder !== arg.folder) continue
+    const action = folderMessagesCache.updateQueryData(queryArg, (draft) => {
+      draft.mails.forEach((m) => {
+        if (idSet.has(String(m.id))) m.seen = arg.seen
+      })
+    })
+    const patch = dispatch(action as UnknownAction) as unknown
+    if (patch && typeof (patch as { undo?: () => void }).undo === 'function') {
+      patches.push(patch as PatchResult)
+    }
+  }
+  return patches
+}
+
+/** Single-mail convenience wrapper around {@link dispatchSeenPatchOnAllFolderMessageCachesBatch}. */
 export function dispatchSeenPatchOnAllFolderMessageCaches(
   dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
   state: RootState,
@@ -148,56 +189,46 @@ export function dispatchSeenPatchOnAllFolderMessageCaches(
     seen: boolean
   }
 ): PatchResult[] {
-  const accountKey = arg.accountId ?? '0'
-  const patches: PatchResult[] = []
-  const cachedArgs = folderMessagesCache.selectCachedArgs(state)
-  for (const queryArg of cachedArgs) {
-    const qAccount = queryArg.accountId ?? '0'
-    if (qAccount !== accountKey || queryArg.folder !== arg.folder) continue
-    const action = folderMessagesCache.updateQueryData(queryArg, (draft) => {
-      const mail = draft.mails.find((m) => String(m.id) === String(arg.mailId))
-      if (mail) {
-        mail.seen = arg.seen
-      }
-    })
-    const patch = dispatch(action as UnknownAction) as unknown
-    if (patch && typeof (patch as { undo?: () => void }).undo === 'function') {
-      patches.push(patch as PatchResult)
-    }
-  }
-  return patches
+  return dispatchSeenPatchOnAllFolderMessageCachesBatch(dispatch, state, {
+    accountId: arg.accountId,
+    folder: arg.folder,
+    mailIds: [arg.mailId],
+    seen: arg.seen,
+  })
 }
 
 /**
- * Optimistically removes a mail from every cached page of a folder and adjusts
- * `total` / `totalPages` / pagination flags so the toolbar counter and the list
- * stay consistent instantly (before the invalidation-driven refetch reconciles).
- * Returns the patch results so the caller can roll back on failure.
+ * Optimistically removes every mail whose id is in `mailIds` from each cached
+ * folder page (in a single patch per page) and adjusts `total` / `totalPages`
+ * / pagination flags so the toolbar counter and the list stay consistent
+ * instantly (before the invalidation-driven refetch reconciles). Returns the
+ * patch results so the caller can roll back on failure.
  */
-export function removeMailFromAllFolderCaches(
+export function removeMailsFromAllFolderCaches(
   dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
   state: RootState,
   arg: {
     accountId?: string
     folder: string
-    mailId: string
+    mailIds: string[]
   }
 ): PatchResult[] {
   const accountKey = arg.accountId ?? '0'
+  const idSet = new Set(arg.mailIds.map(String))
   const patches: PatchResult[] = []
   const cachedArgs = folderMessagesCache.selectCachedArgs(state)
   for (const queryArg of cachedArgs) {
     const qAccount = queryArg.accountId ?? '0'
     if (qAccount !== accountKey || queryArg.folder !== arg.folder) continue
+    const data = folderMessagesCache.selectData(state, queryArg)
+    if (!data?.mails?.some((m) => idSet.has(String(m.id)))) continue
     const pageSize = pageSizeFromArg(queryArg)
     const action = folderMessagesCache.updateQueryData(queryArg, (draft) => {
-      const idx = draft.mails.findIndex(
-        (m) => String(m.id) === String(arg.mailId)
-      )
-      if (idx === -1) return
-      draft.mails.splice(idx, 1)
-      if (typeof draft.total === 'number' && draft.total > 0) {
-        draft.total -= 1
+      const before = draft.mails.length
+      draft.mails = draft.mails.filter((m) => !idSet.has(String(m.id)))
+      const removed = before - draft.mails.length
+      if (removed > 0 && typeof draft.total === 'number' && draft.total > 0) {
+        draft.total = Math.max(0, draft.total - removed)
       }
       recomputePagination(draft, pageSize)
     })
@@ -207,6 +238,23 @@ export function removeMailFromAllFolderCaches(
     }
   }
   return patches
+}
+
+/** Single-mail convenience wrapper around {@link removeMailsFromAllFolderCaches}. */
+export function removeMailFromAllFolderCaches(
+  dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
+  state: RootState,
+  arg: {
+    accountId?: string
+    folder: string
+    mailId: string
+  }
+): PatchResult[] {
+  return removeMailsFromAllFolderCaches(dispatch, state, {
+    accountId: arg.accountId,
+    folder: arg.folder,
+    mailIds: [arg.mailId],
+  })
 }
 
 export function dispatchGetMailSeenPatch(

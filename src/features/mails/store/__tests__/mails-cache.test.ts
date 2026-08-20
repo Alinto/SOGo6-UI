@@ -36,10 +36,12 @@ jest.mock('@/lib/redux/api/api-slice', () => ({
 }))
 
 import {
+  dispatchSeenPatchOnAllFolderMessageCachesBatch,
   isFolderRemovingAction,
   isMailActionSeenFlagToggle,
   normalizeMailActionDataArray,
   removeMailFromAllFolderCaches,
+  removeMailsFromAllFolderCaches,
 } from '../mails-cache'
 
 describe('mail action predicates', () => {
@@ -50,24 +52,25 @@ describe('mail action predicates', () => {
   })
 
   it('isMailActionSeenFlagToggle only matches tag/untag \\Seen', () => {
-    expect(isMailActionSeenFlagToggle({ action: 'tag', data: ['\\Seen'] })).toBe(
-      true
-    )
+    expect(
+      isMailActionSeenFlagToggle({ action: 'tag', data: ['\\Seen'] })
+    ).toBe(true)
     expect(
       isMailActionSeenFlagToggle({ action: 'untag', data: ['\\Seen'] })
     ).toBe(true)
     expect(isMailActionSeenFlagToggle({ action: 'tag', data: ['work'] })).toBe(
       false
     )
-    expect(isMailActionSeenFlagToggle({ action: 'move', data: 'Archive' })).toBe(
-      false
-    )
+    expect(
+      isMailActionSeenFlagToggle({ action: 'move', data: 'Archive' })
+    ).toBe(false)
   })
 
-  it('isFolderRemovingAction matches move/spam/ham only', () => {
+  it('isFolderRemovingAction matches move/spam/ham/delete only', () => {
     expect(isFolderRemovingAction('move')).toBe(true)
     expect(isFolderRemovingAction('spam')).toBe(true)
     expect(isFolderRemovingAction('ham')).toBe(true)
+    expect(isFolderRemovingAction('delete')).toBe(true)
     expect(isFolderRemovingAction('tag')).toBe(false)
     expect(isFolderRemovingAction('copy')).toBe(false)
   })
@@ -157,5 +160,106 @@ describe('removeMailFromAllFolderCaches', () => {
     const draft = cacheStore.get(JSON.stringify(page1))!
     expect(draft.mails).toHaveLength(1)
     expect(draft.total).toBe(1)
+  })
+})
+
+describe('removeMailsFromAllFolderCaches', () => {
+  const dispatch = jest.fn((action) => ({ ...action, undo: jest.fn() }))
+
+  beforeEach(() => {
+    cacheStore.clear()
+    dispatch.mockClear()
+  })
+
+  it('removes every id from every cached page in one patch and adjusts totals', () => {
+    const page1: QueryArg = {
+      accountId: '0',
+      folder: 'INBOX',
+      params: { page_size: 20 },
+    }
+    cacheStore.set(JSON.stringify(page1), {
+      mails: [
+        { id: '10' } as never,
+        { id: '11' } as never,
+        { id: '12' } as never,
+      ],
+      total: 41,
+      page: 1,
+      totalPages: 3,
+      hasNextPage: true,
+      hasPreviousPage: false,
+    })
+    cachedArgs = [page1]
+
+    const patches = removeMailsFromAllFolderCaches(
+      dispatch as never,
+      {} as never,
+      { accountId: '0', folder: 'INBOX', mailIds: ['10', '12'] }
+    )
+
+    const draft = cacheStore.get(JSON.stringify(page1))!
+    expect(draft.mails.map((m) => m.id)).toEqual(['11'])
+    expect(draft.total).toBe(39)
+    expect(patches).toHaveLength(1)
+  })
+
+  it('ignores caches for other folders/accounts', () => {
+    const otherFolder: QueryArg = { accountId: '0', folder: 'Sent' }
+    cacheStore.set(JSON.stringify(otherFolder), {
+      mails: [{ id: '99' } as never],
+      total: 1,
+      page: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    })
+    cachedArgs = [otherFolder]
+
+    const patches = removeMailsFromAllFolderCaches(
+      dispatch as never,
+      {} as never,
+      { accountId: '0', folder: 'INBOX', mailIds: ['99'] }
+    )
+
+    expect(cacheStore.get(JSON.stringify(otherFolder))!.mails).toHaveLength(1)
+    expect(patches).toHaveLength(0)
+  })
+})
+
+describe('dispatchSeenPatchOnAllFolderMessageCachesBatch', () => {
+  const dispatch = jest.fn((action) => ({ ...action, undo: jest.fn() }))
+
+  beforeEach(() => {
+    cacheStore.clear()
+    dispatch.mockClear()
+  })
+
+  it('marks every matching id as seen in a cached page', () => {
+    const page1: QueryArg = { accountId: '0', folder: 'INBOX' }
+    cacheStore.set(JSON.stringify(page1), {
+      mails: [
+        { id: '1', seen: false } as never,
+        { id: '2', seen: false } as never,
+        { id: '3', seen: false } as never,
+      ],
+      total: 3,
+      page: 1,
+      totalPages: 1,
+      hasNextPage: false,
+      hasPreviousPage: false,
+    })
+    cachedArgs = [page1]
+
+    const patches = dispatchSeenPatchOnAllFolderMessageCachesBatch(
+      dispatch as never,
+      {} as never,
+      { accountId: '0', folder: 'INBOX', mailIds: ['1', '3'], seen: true }
+    )
+
+    const draft = cacheStore.get(JSON.stringify(page1))!
+    expect(
+      draft.mails.map((m) => (m as never as { seen: boolean }).seen)
+    ).toEqual([true, false, true])
+    expect(patches).toHaveLength(1)
   })
 })
