@@ -1,7 +1,7 @@
 'use client'
 
+import { retryOfflineNavigation } from '@/features/offline/network/retry-offline-navigation'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 
 export default function OfflineFallbackPage() {
   const t = useTranslations('PWA')
@@ -13,9 +13,13 @@ export default function OfflineFallbackPage() {
       <p className="text-muted-foreground max-w-md text-sm">
         {t('offline_fallback_body.string')}
       </p>
-      <Link href="/" className="text-primary text-sm underline">
+      <button
+        type="button"
+        onClick={retryOfflineNavigation}
+        className="text-primary cursor-pointer text-sm underline"
+      >
         {t('offline_fallback_retry.string')}
-      </Link>
+      </button>
     </main>
   )
 }

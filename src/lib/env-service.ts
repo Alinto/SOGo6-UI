@@ -17,6 +17,28 @@ let isApiHealthy: boolean | null = null
 
 const HEALTH_CHECK_MS = 2000
 const ENV_FETCH_MS = 4000
+const ENV_SESSION_KEY = 'sogo-env-vars'
+
+const readSessionEnv = (): EnvVariables | null => {
+  if (typeof sessionStorage === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(ENV_SESSION_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as EnvVariables
+    return parsed.REACT_APP_API_BASE_URL ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+const writeSessionEnv = (data: EnvVariables): void => {
+  if (typeof sessionStorage === 'undefined') return
+  try {
+    sessionStorage.setItem(ENV_SESSION_KEY, JSON.stringify(data))
+  } catch {
+    // quota / private mode
+  }
+}
 
 /** Mock API fallback is allowed only outside production (dev + tests). */
 const allowFakeApiFallback = (): boolean =>
@@ -155,8 +177,15 @@ export const fetchEnvVars = async (): Promise<EnvVariables> => {
       }
 
       envCache = data
+      writeSessionEnv(data)
       return data
     } catch (error) {
+      const stored = readSessionEnv()
+      if (stored) {
+        envCache = stored
+        return stored
+      }
+
       if (!allowFakeApiFallback()) {
         throw error
       }
@@ -192,6 +221,13 @@ export const clearEnvCache = (): void => {
   envCache = null
   fetchPromise = null
   isApiHealthy = null
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      sessionStorage.removeItem(ENV_SESSION_KEY)
+    } catch {
+      // ignore
+    }
+  }
 }
 
 export const isEnvLoaded = (): boolean => {

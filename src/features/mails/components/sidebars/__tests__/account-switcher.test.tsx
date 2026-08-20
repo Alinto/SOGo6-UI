@@ -30,7 +30,9 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenu: ({ children }: any) => <ul>{children}</ul>,
   SidebarMenuItem: ({ children }: any) => <li>{children}</li>,
   SidebarMenuButton: ({ children, disabled, onClick }: any) => (
-    <button disabled={disabled} onClick={onClick}>{children}</button>
+    <button disabled={disabled} onClick={onClick}>
+      {children}
+    </button>
   ),
 }))
 
@@ -92,16 +94,34 @@ describe('AccountSwitcher', () => {
       expect(screen.getAllByText('jdoe@sogo.nu')).toHaveLength(2)
     })
 
+    it('falls back to auth user email when profile mailboxes are missing', () => {
+      mockProfile({
+        allMailboxes: [],
+        defaultIdentity: null,
+        user: {
+          uid: 'sogo-tests1@example.org',
+          cn: 'John Paul',
+          email: 'sogo-tests1@example.org',
+        },
+      })
+      render(<AccountSwitcher />)
+      expect(screen.getByText('sogo-tests1@example.org')).toBeInTheDocument()
+    })
+
     it('does not show add account button when canAddExternalAccount is false', () => {
       mockProfile()
       render(<AccountSwitcher />)
-      expect(screen.queryByText('account_switcher.add_account.string')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('account_switcher.add_account.string')
+      ).not.toBeInTheDocument()
     })
 
     it('shows add account button when canAddExternalAccount is true', () => {
       mockProfile({ canAddExternalAccount: true })
       render(<AccountSwitcher />)
-      expect(screen.getByText('account_switcher.add_account.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('account_switcher.add_account.string')
+      ).toBeInTheDocument()
     })
   })
 
@@ -126,10 +146,14 @@ describe('AccountSwitcher', () => {
       mockProfile({ canAddExternalAccount: true })
       render(<AccountSwitcher />)
 
-      const addBtn = screen.getByText('account_switcher.add_account.string').closest('button')!
+      const addBtn = screen
+        .getByText('account_switcher.add_account.string')
+        .closest('button')!
       await user.click(addBtn)
 
-      expect(mockPush).toHaveBeenCalledWith('/user_settings/mail/external_accounts')
+      expect(mockPush).toHaveBeenCalledWith(
+        '/user_settings/mail/external_accounts'
+      )
     })
   })
 
@@ -138,7 +162,11 @@ describe('AccountSwitcher', () => {
       mockProfile({
         allMailboxes: [
           { id: '0', name: '', identities: [{ mail: 'jdoe@sogo.nu' }] },
-          { id: '1', name: 'perso@gmail.com', identities: [{ mail: 'perso@gmail.com' }] },
+          {
+            id: '1',
+            name: 'perso@gmail.com',
+            identities: [{ mail: 'perso@gmail.com' }],
+          },
         ],
       })
       render(<AccountSwitcher />)

@@ -11,6 +11,7 @@ import { memo, type ReactNode, useEffect } from 'react'
 import { purgeExpiredCache } from '../db/mail-cache-store'
 import { useOfflineDraftHydration } from '../hooks/use-offline-draft-sync'
 import { useOutboxFlushTriggers } from '../hooks/use-outbox-flush-triggers'
+import { OfflineNavProvider } from '../offline-nav-context'
 import InstallPwaPrompt from './install-pwa-prompt'
 import OfflineBanner from './offline-banner'
 import PwaUpdateToast from './pwa-update-toast'
@@ -55,8 +56,12 @@ function OfflineProviderInner({ children }: OfflineProviderProps) {
 }
 
 function OfflineProvider({ children }: OfflineProviderProps) {
-  if (!isPwaEnabled()) return <>{children}</>
-  return <OfflineProviderInner>{children}</OfflineProviderInner>
+  const inner = isPwaEnabled() ? (
+    <OfflineProviderInner>{children}</OfflineProviderInner>
+  ) : (
+    children
+  )
+  return <OfflineNavProvider>{inner}</OfflineNavProvider>
 }
 
 export default memo(OfflineProvider)

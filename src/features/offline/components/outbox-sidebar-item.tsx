@@ -2,19 +2,22 @@
 
 import { Badge } from '@/components/ui/badge'
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
-import { useRouter } from '@/lib/i18n/navigation'
 import { SendHorizonal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useParams } from 'next/navigation'
+import { useParams, usePathname } from 'next/navigation'
 import { memo } from 'react'
 import { isPwaOutboxEnabled } from '../flags'
 import { useOutboxList } from '../hooks/use-outbox'
+import { useOfflineNav } from '../offline-nav-context'
 
 function OutboxSidebarItem() {
   const t = useTranslations('PWA')
-  const { push } = useRouter()
   const { account } = useParams()
+  const pathname = usePathname()
   const { pendingCount } = useOutboxList()
+  const { openOutbox, view } = useOfflineNav()
+  const accountId = String(account ?? '0')
+  const isActive = view.kind === 'outbox' || pathname.includes('/outbox')
 
   if (!isPwaOutboxEnabled()) return null
 
@@ -22,7 +25,8 @@ function OutboxSidebarItem() {
     <SidebarMenuItem>
       <SidebarMenuButton
         type="button"
-        onClick={() => push(`/u/${account}/outbox`)}
+        onClick={() => openOutbox(accountId)}
+        isActive={isActive}
         className="w-full"
       >
         <SendHorizonal className="size-4" aria-hidden />

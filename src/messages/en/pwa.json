@@ -76,7 +76,7 @@
       "string": "Showing cached data — may be out of date"
     },
     "offline_unavailable": {
-      "string": "This message is not available offline. It will load when you are back online."
+      "string": "This isn't available offline. It will load when you are back online."
     },
     "outbox_edit_restored": {
       "string": "Message moved back to compose. Send it again to queue it."

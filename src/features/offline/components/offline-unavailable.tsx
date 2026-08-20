@@ -9,14 +9,19 @@ import { useNetworkStatus } from '../network/use-network-status'
 
 interface OfflineUnavailableProps {
   className?: string
+  /** Show even if the network probe still reports online (e.g. failed RSC). */
+  force?: boolean
 }
 
 /** Shown in place of content that was never cached ("Indisponible hors ligne"). */
-function OfflineUnavailable({ className }: OfflineUnavailableProps) {
+function OfflineUnavailable({
+  className,
+  force = false,
+}: OfflineUnavailableProps) {
   const t = useTranslations('PWA')
   const { isOnline } = useNetworkStatus()
 
-  if (!isPwaMailCacheEnabled() || isOnline) return null
+  if (!isPwaMailCacheEnabled() || (!force && isOnline)) return null
 
   return (
     <div

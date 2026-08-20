@@ -1,4 +1,6 @@
-import Link from 'next/link'
+'use client'
+
+import { retryOfflineNavigation } from '@/features/offline/network/retry-offline-navigation'
 
 /**
  * Service-worker document fallback (no locale provider).
@@ -23,9 +25,20 @@ export default function OfflineFallbackRootPage() {
       <p style={{ maxWidth: '28rem', fontSize: '0.875rem', opacity: 0.75 }}>
         Reconnect or reopen SOGo after you have visited it online at least once.
       </p>
-      <Link href="/" style={{ fontSize: '0.875rem' }}>
+      <button
+        type="button"
+        onClick={retryOfflineNavigation}
+        style={{
+          fontSize: '0.875rem',
+          textDecoration: 'underline',
+          background: 'none',
+          border: 0,
+          cursor: 'pointer',
+          color: 'inherit',
+        }}
+      >
         Try again
-      </Link>
+      </button>
     </main>
   )
 }

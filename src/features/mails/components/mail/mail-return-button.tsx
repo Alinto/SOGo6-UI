@@ -10,14 +10,19 @@ export function MailReturnButton({
   folderPath,
   tooltip,
   className = '',
+  onBack,
 }: MailReturnButtonProps) {
   const { push } = useRouter()
   const { account } = useParams()
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
 
   const handleClick = React.useCallback(() => {
+    if (onBack) {
+      onBack()
+      return
+    }
     push(`/u/${account}/${encodeURIComponent(folderPath)}`)
-  }, [account, folderPath, push])
+  }, [account, folderPath, onBack, push])
 
   return (
     <TooltipButton

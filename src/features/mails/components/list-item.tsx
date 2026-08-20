@@ -14,6 +14,7 @@ interface ListItemProps {
   onArchive?: (id: string) => void
   onSpam?: (id: string) => void
   onMoveToInbox?: (id: string) => void
+  onOpenMail?: (id: string) => void | Promise<void>
 }
 
 const ListItem: React.FC<ListItemProps> = (props) => {

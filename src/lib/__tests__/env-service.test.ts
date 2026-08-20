@@ -1,5 +1,3 @@
-import '@testing-library/jest-dom'
-import { act, renderHook, waitFor } from '@testing-library/react'
 import {
   clearEnvCache,
   fetchEnvVars,
@@ -10,6 +8,8 @@ import {
   isUsingFakeApi,
   useEnvVars,
 } from '@/lib/env-service'
+import '@testing-library/jest-dom'
+import { act, renderHook, waitFor } from '@testing-library/react'
 
 const mockResponse = (body: Record<string, unknown>) =>
   ({
@@ -23,6 +23,7 @@ describe('env-service', () => {
   beforeEach(() => {
     process.env.NODE_ENV = 'test'
     clearEnvCache()
+    sessionStorage.clear()
     global.fetch = jest.fn()
     jest.clearAllMocks()
   })
@@ -74,7 +75,9 @@ describe('env-service', () => {
       expect(vars.REACT_APP_API_BASE_URL).toBe('https://api.example.test')
       expect(vars.SSE_ENABLED).toBe(true)
       expect(getCachedEnvVars()).toEqual(vars)
-      expect(getEnvVar('REACT_APP_API_BASE_URL')).toBe('https://api.example.test')
+      expect(getEnvVar('REACT_APP_API_BASE_URL')).toBe(
+        'https://api.example.test'
+      )
     })
 
     it('returns cached env without calling fetch again', async () => {
@@ -152,6 +155,19 @@ describe('env-service', () => {
 
       await expect(fetchEnvVars()).rejects.toThrow('network')
       expect(isUsingFakeApi()).toBe(false)
+    })
+
+    it('reuses the last session env when /env is unreachable', async () => {
+      sessionStorage.setItem(
+        'sogo-env-vars',
+        JSON.stringify({ REACT_APP_API_BASE_URL: 'https://api.example.test' })
+      )
+      ;(global.fetch as jest.Mock).mockRejectedValueOnce(new Error('offline'))
+
+      const vars = await fetchEnvVars()
+
+      expect(vars.REACT_APP_API_BASE_URL).toBe('https://api.example.test')
+      expect(isEnvLoaded()).toBe(true)
     })
   })
 

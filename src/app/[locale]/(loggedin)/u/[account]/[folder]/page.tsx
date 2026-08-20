@@ -11,6 +11,7 @@ import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
 import { useOfflineMailList } from '@/features/offline/hooks/use-offline-mail-list'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
@@ -19,9 +20,10 @@ import React, { useEffect } from 'react'
 
 const Page = () => {
   const { folder, account } = useParams()
-  const folderPath = folderPathFromParams(
-    folder as string | string[] | undefined
-  )
+  const { folderPathOverride } = useOfflineNav()
+  const folderPath =
+    folderPathOverride ??
+    folderPathFromParams(folder as string | string[] | undefined)
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
   const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
@@ -102,12 +104,10 @@ const Page = () => {
     return <VirtualFolderEmptyState />
   }
 
-  if (isLoading) return <ListSkeleton />
-
   if (isShowingCache && cachedMails) {
     const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
     return (
-      <div className="flex h-full flex-col">
+      <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
         <CachedDataIndicator className="px-4 py-2" />
         <MessagesList
           items={offlineFiltered}
@@ -123,6 +123,8 @@ const Page = () => {
       </div>
     )
   }
+
+  if (isLoading) return <ListSkeleton />
 
   if (error) {
     return (

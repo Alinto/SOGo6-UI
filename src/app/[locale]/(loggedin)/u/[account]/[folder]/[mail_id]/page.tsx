@@ -20,14 +20,11 @@ import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actio
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import type { ImapMessages } from '@/features/mails/mails-types'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
-<<<<<<< HEAD
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
-=======
 import { useMailCache } from '@/features/offline'
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
 import { useOfflineMailBody } from '@/features/offline/hooks/use-offline-mail-body'
->>>>>>> e94eb5d (feat(pwa): add installable PWA with offline compose and outbox)
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
 
@@ -37,34 +34,37 @@ import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 
-const MailPage: React.FC = () => {
+export interface MailDetailPageProps {
+  account: string
+  folder: string
+  mailId: string
+  onBack?: () => void
+}
+
+export function MailDetailPage({
+  account,
+  folder,
+  mailId: mail_id,
+  onBack,
+}: MailDetailPageProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
-  const params = useParams() as {
-    account: string
-    folder: string | string[]
-    mail_id: string
-  }
-  const { account, mail_id } = params
-  const folder = folderPathFromParams(params.folder)
+  const isOfflineOverlay = typeof onBack === 'function'
   const isMobile = useIsMobile()
   const { cacheBody } = useMailCache()
-  const {
-    canGoPrev,
-    canGoNext,
-    goPrev,
-    goNext,
-    navigation: mailNavigation,
-  } = useMailDetailNavigation()
+  const { canGoPrev, canGoNext, goPrev, goNext } = useMailDetailNavigation()
 
   const {
     data: fetchedMail,
     isLoading,
     isError,
-  } = useGetMailQuery({
-    folder,
-    mailId: mail_id,
-    accountId: account,
-  })
+  } = useGetMailQuery(
+    {
+      folder,
+      mailId: mail_id,
+      accountId: account,
+    },
+    { skip: isOfflineOverlay }
+  )
 
   // Offline fallback: serve the cached body of a previously opened mail
   const { data: cachedMail, isLoading: isCacheLoading } =
@@ -72,7 +72,7 @@ const MailPage: React.FC = () => {
       accountId: account,
       folderPath: folder,
       mailId: mail_id,
-      active: isError,
+      active: isOfflineOverlay || isError,
     })
   const data = fetchedMail ?? cachedMail ?? undefined
 
@@ -91,10 +91,16 @@ const MailPage: React.FC = () => {
     accountId: account,
   })
 
-  if (isLoading || (isError && isCacheLoading)) return <MailDetailSkeleton />
+  if (
+    (!isOfflineOverlay && isLoading) ||
+    ((isOfflineOverlay || isError) && isCacheLoading)
+  ) {
+    return <MailDetailSkeleton />
+  }
   if (!data) {
-    // Mail never cached: show "unavailable offline" instead of a blank page
-    return isError ? <OfflineUnavailable className="pt-16" /> : null
+    return isOfflineOverlay || isError ? (
+      <OfflineUnavailable force className="pt-16" />
+    ) : null
   }
 
   const {
@@ -130,24 +136,26 @@ const MailPage: React.FC = () => {
         id: ActionId.GO_BACK,
         icon: <ChevronLeft size={18} />,
         title: t('previous-mail.string'),
-        disabled: !canGoPrev,
+        disabled: isOfflineOverlay || !canGoPrev,
       },
       {
         id: ActionId.GO_NEXT,
         icon: <ChevronRight size={18} />,
         title: t('next-mail.string'),
-        disabled: !canGoNext,
+        disabled: isOfflineOverlay || !canGoNext,
       },
     ],
   }
 
+  const accountId = Array.isArray(account) ? account[0] : account
+
   return (
     <div className="flex w-full flex-col">
       <div className="mb-4 flex items-center gap-2">
-        <MailReturnButton folderPath={folder} />
+        <MailReturnButton folderPath={folder} onBack={onBack} />
         <MailDetailActionBar
-          accountId={Array.isArray(account) ? account[0] : account}
-          folder={folder}
+          accountId={accountId}
+          folder={Array.isArray(folder) ? folder.join('/') : folder}
           mailId={mail_id}
           seen={data.seen}
           flagged={data.flagged}
@@ -169,23 +177,19 @@ const MailPage: React.FC = () => {
           )}
         </div>
       </div>
-<<<<<<< HEAD
       <MailSubject
         subject={subject}
         className="h-auto min-h-fit"
         labels={
           <MailSubjectLabels
-            accountId={Array.isArray(account) ? account[0] : account}
+            accountId={accountId}
             folder={folder}
             mailId={mail_id}
             flags={data.flags}
           />
         }
       />
-=======
-      <MailSubject subject={subject} className="h-auto min-h-fit" />
       <CachedDataIndicator className="px-1 pb-2" />
->>>>>>> e94eb5d (feat(pwa): add installable PWA with offline compose and outbox)
       <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
         {isMobile ? (
           <MailHeaderMobile
@@ -224,6 +228,21 @@ const MailPage: React.FC = () => {
         ) : null}
       </div>
     </div>
+  )
+}
+
+const MailPage: React.FC = () => {
+  const params = useParams() as {
+    account: string
+    folder: string | string[]
+    mail_id: string
+  }
+  return (
+    <MailDetailPage
+      account={params.account}
+      folder={folderPathFromParams(params.folder)}
+      mailId={params.mail_id}
+    />
   )
 }
 

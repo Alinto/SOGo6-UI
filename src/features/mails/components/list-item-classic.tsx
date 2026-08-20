@@ -36,6 +36,7 @@ interface ListItemClassicProps {
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
   onToggleRead?: (id: string) => void
   onToggleFlag?: (id: string) => void
+  onOpenMail?: (id: string) => void | Promise<void>
 }
 
 const ListItemClassic: React.FC<ListItemClassicProps> = ({
@@ -44,6 +45,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   onHandleCheckboxClick,
   onToggleRead,
   onToggleFlag,
+  onOpenMail,
 }) => {
   const t = useTranslations('MAILS_LIST')
   const tMinutesAgo = (count: number) => t('time.minutes_ago.string', { count })
@@ -88,13 +90,18 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={async () => {
-          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
-          await openDraftIfNeeded({
+          const openedDraft = await openDraftIfNeeded({
             folderType,
             folderPath: folderString,
             accountId: accountString,
             mailId: id,
           })
+          if (openedDraft) return
+          if (onOpenMail) {
+            await onOpenMail(String(id))
+            return
+          }
+          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
         }}
       >
         {(isHovered || isSelected) && (
