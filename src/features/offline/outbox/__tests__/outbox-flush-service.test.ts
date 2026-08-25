@@ -8,7 +8,11 @@ if (typeof globalThis.structuredClone !== 'function') {
     JSON.parse(JSON.stringify(value)) as T
 }
 
-import { listOutbox, upsertOutboxItem } from '../../db/outbox-store'
+import {
+  listOutbox,
+  putOutboxWithAttachments,
+  upsertOutboxItem,
+} from '../../db/outbox-store'
 import { wipeOfflineUserData } from '../../db/wipe'
 import type { OutboxRecord } from '../../types'
 import { flushOutbox } from '../outbox-flush-service'
@@ -146,6 +150,48 @@ describe('flushOutbox', () => {
     await flushOutbox(userId)
     const [url] = (global.fetch as jest.Mock).mock.calls[0] as [string]
     expect(url).toBe('/fakeApi/mailboxes/0/mail/draft-42/send')
+  })
+
+  it('uploads attachments then sends with the tmp draft key', async () => {
+    await putOutboxWithAttachments(makeItem({ attachmentIds: ['a1'] }), [
+      {
+        id: 'a1',
+        outboxId: 'o1',
+        name: 'shot.png',
+        size: 4,
+        type: 'image/png',
+        blob: new Blob(['data'], { type: 'image/png' }),
+      },
+    ])
+
+    global.fetch = jest.fn().mockImplementation(async (url: string) => {
+      if (String(url).includes('/attachments')) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            error_code: 'S000000',
+            data: { key: 'tmp-key', filename: 'shot.png' },
+          }),
+        }
+      }
+      return okResponse()
+    }) as unknown as typeof fetch
+
+    const result = await flushOutbox(userId)
+    expect(result.sent).toBe(1)
+    expect(result.failed).toBe(0)
+
+    const calls = (global.fetch as jest.Mock).mock.calls as [
+      string,
+      RequestInit,
+    ][]
+    expect(calls[0]![0]).toBe('/fakeApi/mailboxes/0/mail/attachments')
+    expect(calls[0]![1].body).toBeInstanceOf(FormData)
+    expect(calls[1]![0]).toBe('/fakeApi/mailboxes/0/mail/tmp-key/send')
+    const sendBody = JSON.parse(calls[1]![1].body as string)
+    expect(sendBody.attachments).toBeUndefined()
+    expect(sendBody.subject).toBe('S')
   })
 
   it('recovers items stuck in sending state', async () => {

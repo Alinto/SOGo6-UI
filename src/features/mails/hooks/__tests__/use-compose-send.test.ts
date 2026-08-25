@@ -4,6 +4,7 @@ import { MAIL_PRIORITY_NORMAL } from '../../store/mail-compose-slice'
 
 const mockDispatch = jest.fn()
 const mockSendMail = jest.fn()
+const mockUploadAttachment = jest.fn()
 const mockUseSendMailMutation = jest.fn()
 const mockBuildComposeMailPayload = jest.fn()
 
@@ -13,6 +14,10 @@ jest.mock('@/lib/redux/hooks', () => ({
 
 jest.mock('../../store/mail-api', () => ({
   useSendMailMutation: () => mockUseSendMailMutation(),
+  useUploadAttachmentMutation: () => [
+    mockUploadAttachment,
+    { isLoading: false },
+  ],
 }))
 
 jest.mock('../../utils/build-compose-mail-payload', () => ({
@@ -68,6 +73,9 @@ describe('useComposeSend', () => {
       { isLoading: false },
     ])
     mockSendMail.mockResolvedValue({ data: {} })
+    mockUploadAttachment.mockResolvedValue({
+      data: { data: { key: 'tmp-key', filename: 'a.txt' } },
+    })
     mockBuildComposeMailPayload.mockReturnValue({ mocked: 'payload' })
   })
 
@@ -191,5 +199,39 @@ describe('useComposeSend', () => {
     const { result } = renderHook(() => useComposeSend(baseFields))
 
     expect(result.current.isSending).toBe(true)
+  })
+
+  it('uploads local files then sends with the tmp draft key', async () => {
+    const file = new File(['x'], 'a.txt', { type: 'text/plain' })
+    const { result } = renderHook(() =>
+      useComposeSend({
+        ...baseFields,
+        attachments: [
+          {
+            draftId: 'att-1',
+            name: 'a.txt',
+            size: 1,
+            type: 'text/plain',
+            file,
+            uploadStatus: 'pending',
+          },
+        ],
+      })
+    )
+
+    await act(async () => {
+      await result.current.handleSend()
+    })
+
+    expect(mockUploadAttachment).toHaveBeenCalledWith({
+      accountId: 'acc-1',
+      mailKey: null,
+      file,
+    })
+    expect(mockSendMail).toHaveBeenCalledWith({
+      accountId: 'acc-1',
+      mailKey: 'tmp-key',
+      mail: { mocked: 'payload' },
+    })
   })
 })

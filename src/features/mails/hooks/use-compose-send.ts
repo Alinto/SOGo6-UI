@@ -9,13 +9,15 @@ import {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_COUNT,
 } from '@/features/offline/types'
-import { blobToBase64 } from '@/features/offline/utils/blob-to-base64'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { toast } from 'sonner'
 import { closeDraft } from '../store'
-import { useSendMailMutation } from '../store/mail-api'
+import {
+  useSendMailMutation,
+  useUploadAttachmentMutation,
+} from '../store/mail-api'
 import type { MailComposeAttachment } from '../store/mail-compose-slice'
 import {
   buildComposeMailPayload,
@@ -46,6 +48,8 @@ export function useComposeSend({
   const dispatch = useAppDispatch()
   const t = useTranslations('PWA')
   const [sendMail, { isLoading: isSending }] = useSendMailMutation()
+  const [uploadAttachment, { isLoading: isUploading }] =
+    useUploadAttachmentMutation()
 
   const [showNoRecipientAlert, setShowNoRecipientAlert] = React.useState(false)
   const [emptyContentAlert, setEmptyContentAlert] =
@@ -104,31 +108,32 @@ export function useComposeSend({
       return
     }
 
-    // Local Files (offline pick, failed upload, or outbox restore). Server
-    // uploads drop `file` after success so they are not inlined twice.
-    const localOnlyAttachments = attachments.filter(
-      (a) => a.file instanceof File
+    // Real SOGo send rejects JSON `attachments`. Local Files must be uploaded
+    // as multipart first (same as the online picker) so we get a tmp draft key.
+    const localFiles = attachments.filter(
+      (a): a is MailComposeAttachment & { file: File } => a.file instanceof File
     )
-    const inlineAttachments = await Promise.all(
-      localOnlyAttachments.map(async (a) => ({
-        filename: a.name,
-        contentType: a.type,
-        content: await blobToBase64(a.file as Blob),
-      }))
-    )
+    let key = mailKey
+    for (const attachment of localFiles) {
+      const uploaded = await uploadAttachment({
+        accountId,
+        mailKey: key,
+        file: attachment.file,
+      })
+      if ('error' in uploaded) return
+      const nextKey = uploaded.data?.data?.key
+      if (nextKey) key = nextKey
+    }
 
     const result = await sendMail({
       accountId,
-      mailKey,
-      mail: {
-        ...buildComposeMailPayload({
-          toRecipients,
-          subject,
-          body,
-          ...mailFields,
-        }),
-        ...(inlineAttachments.length ? { attachments: inlineAttachments } : {}),
-      },
+      mailKey: key,
+      mail: buildComposeMailPayload({
+        toRecipients,
+        subject,
+        body,
+        ...mailFields,
+      }),
     })
 
     if (!('error' in result)) {
@@ -175,7 +180,7 @@ export function useComposeSend({
   }
 
   return {
-    isSending,
+    isSending: isSending || isUploading,
     handleSend,
     handleConfirmSendAnyway,
     showNoRecipientAlert,
