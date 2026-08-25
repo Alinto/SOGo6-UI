@@ -22,6 +22,25 @@ jest.mock('../../store/mail-api', () => ({
   useUploadAttachmentMutation: () => mockUseUploadAttachmentMutation(),
 }))
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('sonner', () => ({
+  toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() },
+}))
+
+const mockProbeNetwork = jest.fn(async () => true)
+let mockOutboxEnabled = false
+
+jest.mock('@/features/offline/flags', () => ({
+  isPwaOutboxEnabled: () => mockOutboxEnabled,
+}))
+
+jest.mock('@/features/offline/network/probe', () => ({
+  probeNetwork: (...args: unknown[]) => mockProbeNetwork(...args),
+}))
+
 import { useComposeAttachmentUpload } from '../use-compose-attachment-upload'
 
 const baseOptions = { draftId: 'draft-1', accountId: 'acc-1', mailKey: null }
@@ -45,6 +64,8 @@ const changeEvent = (files: File[] | null) =>
 
 describe('useComposeAttachmentUpload', () => {
   beforeEach(() => {
+    mockOutboxEnabled = false
+    mockProbeNetwork.mockResolvedValue(true)
     mockUseUploadAttachmentMutation.mockReturnValue([
       mockUploadAttachment,
       { isLoading: false },
@@ -106,6 +127,7 @@ describe('useComposeAttachmentUpload', () => {
             name: 'test.txt',
             size: file.size,
             type: 'text/plain',
+            file,
             uploadStatus: 'uploading',
             uploadProgress: 0,
           },
@@ -138,6 +160,7 @@ describe('useComposeAttachmentUpload', () => {
           attachmentId: 'temp-id',
           progress: 100,
           status: 'completed',
+          dropFile: true,
         })
       )
       expect(mockDispatch).toHaveBeenCalledWith(
@@ -193,6 +216,35 @@ describe('useComposeAttachmentUpload', () => {
           attachmentId: 'temp-id',
           progress: 0,
           status: 'error',
+        })
+      )
+    })
+
+    it('keeps the file locally and skips upload when offline', async () => {
+      mockOutboxEnabled = true
+      mockProbeNetwork.mockResolvedValue(false)
+      const { result } = renderHook(() =>
+        useComposeAttachmentUpload(baseOptions)
+      )
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+
+      await act(async () => {
+        await result.current.handleFileChange(changeEvent([file]))
+      })
+
+      expect(mockUploadAttachment).not.toHaveBeenCalled()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        addAttachment({
+          draftId: 'draft-1',
+          attachment: {
+            draftId: 'temp-id',
+            name: 'test.txt',
+            size: file.size,
+            type: 'text/plain',
+            file,
+            uploadStatus: 'pending',
+            uploadProgress: 100,
+          },
         })
       )
     })

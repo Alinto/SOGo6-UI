@@ -132,6 +132,30 @@ describe('ComposeAttachmentList', () => {
       )
     })
 
+    it('removes a local File from the store without calling the server', async () => {
+      const user = userEvent.setup()
+      const file = new File(['x'], 'local.txt', { type: 'text/plain' })
+      render(
+        <ComposeAttachmentList
+          {...baseProps}
+          attachments={[
+            attachment({
+              uploadStatus: 'completed',
+              file,
+            }),
+          ]}
+        />
+      )
+
+      const buttons = screen.getAllByRole('button')
+      await user.click(buttons[buttons.length - 1])
+
+      expect(mockDeleteAttachment).not.toHaveBeenCalled()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        removeAttachment({ draftId: 'draft-1', attachmentId: 'att-1' })
+      )
+    })
+
     it('removes it from the store directly when there is no mailKey', async () => {
       const user = userEvent.setup()
       render(

@@ -6,7 +6,8 @@ import {
   isPwaMailCacheEnabled,
   isPwaOutboxEnabled,
 } from '@/features/offline/flags'
-import { flushOutbox } from '@/features/offline/outbox/outbox-flush-service'
+import { flushOutboxWithToasts } from '@/features/offline/outbox/outbox-flush-feedback'
+import { useTranslations } from 'next-intl'
 import { memo, type ReactNode, useEffect } from 'react'
 import { purgeExpiredCache } from '../db/mail-cache-store'
 import { useOfflineDraftHydration } from '../hooks/use-offline-draft-sync'
@@ -21,6 +22,7 @@ interface OfflineProviderProps {
 }
 
 function OfflineProviderInner({ children }: OfflineProviderProps) {
+  const t = useTranslations('PWA')
   useOfflineDraftHydration()
   useOutboxFlushTriggers(true)
 
@@ -37,13 +39,13 @@ function OfflineProviderInner({ children }: OfflineProviderProps) {
       if (event.data?.type !== 'OUTBOX_FLUSH') return
       const userId = getAuthUserId()
       if (!userId) return
-      void flushOutbox(userId)
+      void flushOutboxWithToasts(userId, t)
     }
     navigator.serviceWorker?.addEventListener('message', onMessage)
     return () => {
       navigator.serviceWorker?.removeEventListener('message', onMessage)
     }
-  }, [])
+  }, [t])
 
   return (
     <>

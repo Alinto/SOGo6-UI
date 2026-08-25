@@ -104,10 +104,11 @@ export function useComposeSend({
       return
     }
 
-    // Attachments restored from the offline outbox live only as local Files
-    // (no server-side draft): send them inline, as the API contract allows.
-    const localOnlyAttachments =
-      mailKey == null ? attachments.filter((a) => a.file instanceof File) : []
+    // Local Files (offline pick, failed upload, or outbox restore). Server
+    // uploads drop `file` after success so they are not inlined twice.
+    const localOnlyAttachments = attachments.filter(
+      (a) => a.file instanceof File
+    )
     const inlineAttachments = await Promise.all(
       localOnlyAttachments.map(async (a) => ({
         filename: a.name,
