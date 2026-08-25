@@ -240,10 +240,15 @@ describe('Mail Folder Layout', () => {
     expect(inset).toHaveClass('flex', 'flex-col')
   })
 
-  it('should show a single offline unavailable banner above the folder list', () => {
+  it('should replace the folder list with an offline empty state', () => {
     useOfflineNav.mockReturnValue({
-      view: { kind: 'unavailable' },
-      folderPathOverride: null,
+      view: {
+        kind: 'unavailable',
+        target: 'folder',
+        path: 'Sent',
+        label: 'Sent',
+      },
+      folderPathOverride: 'Sent',
       openFolder: jest.fn(),
       openOutbox: jest.fn(),
       openMail: jest.fn(),
@@ -252,6 +257,9 @@ describe('Mail Folder Layout', () => {
     })
     render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
     expect(screen.getAllByTestId('offline-unavailable')).toHaveLength(1)
-    expect(screen.getByTestId('modern-content')).toBeInTheDocument()
+    expect(screen.queryByTestId('modern-content')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('list-toolbar')).not.toBeInTheDocument()
+    const contentDiv = document.querySelector('[class*="overflow-hidden"]')
+    expect(contentDiv).toHaveClass('h-[calc(100vh-var(--header-height))]')
   })
 })

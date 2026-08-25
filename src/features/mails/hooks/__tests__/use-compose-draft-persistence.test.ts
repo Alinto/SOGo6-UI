@@ -43,12 +43,16 @@ jest.mock('@/features/offline/network/probe', () => ({
   probeNetwork: jest.fn(async () => true),
 }))
 
-jest.mock('@/features/offline', () => ({
+jest.mock('@/features/offline/hooks/use-offline-draft-sync', () => ({
   persistLocalDraft: jest.fn(),
 }))
 
 jest.mock('@/features/offline/auth/get-auth-token', () => ({
   getAuthUserId: () => 'user@example.org',
+}))
+
+jest.mock('@/features/offline/outbox/outbox-edit-hold', () => ({
+  releaseOutboxForEdit: jest.fn(),
 }))
 
 import { useComposeDraftPersistence } from '../use-compose-draft-persistence'
@@ -265,6 +269,25 @@ describe('useComposeDraftPersistence', () => {
 
       expect(mockSaveDraft).toHaveBeenCalledWith(
         expect.objectContaining({ close: true })
+      )
+    })
+
+    it('closes an outbox edit without saving a server draft', async () => {
+      const { result } = renderHook(() =>
+        useComposeDraftPersistence({
+          ...baseOptions,
+          isDirty: true,
+          sourceOutboxId: 'ob-1',
+        })
+      )
+
+      await act(async () => {
+        await result.current.handleClose()
+      })
+
+      expect(mockSaveDraft).not.toHaveBeenCalled()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        closeDraft({ draftId: 'draft-1' })
       )
     })
   })

@@ -84,6 +84,11 @@ jest.mock('../mailbox-quota', () => ({
   MailboxQuota: () => <div data-testid="mailbox-quota">Mailbox Quota</div>,
 }))
 
+jest.mock('@/features/offline/components/outbox-sidebar-item', () => ({
+  __esModule: true,
+  default: () => <div data-testid="outbox-sidebar-item">Outbox</div>,
+}))
+
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
   default: ({ name, folderPath, handleClick, isActive }: any) => (
@@ -312,6 +317,103 @@ describe('MailSidebar Component', () => {
         '[data-testid="sidebar-group"][class*="overflow-y-auto"]'
       )
       expect(scrollableGroup).toBeInTheDocument()
+    })
+
+    it('should keep compose in the sticky group without Outbox', () => {
+      const { container } = render(<MailSidebar />)
+
+      const stickyGroup = container.querySelector(
+        '[data-testid="sidebar-group"][class*="sticky"]'
+      )
+      expect(stickyGroup).toBeInTheDocument()
+      expect(
+        stickyGroup?.querySelector('[data-testid="compose-opener"]')
+      ).toBeInTheDocument()
+      expect(
+        stickyGroup?.querySelector('[data-testid="outbox-sidebar-item"]')
+      ).not.toBeInTheDocument()
+    })
+
+    it('should insert Outbox in the folder list before Sent when Drafts is missing', () => {
+      const { container } = render(<MailSidebar />)
+      const scrollableGroup = container.querySelector(
+        '[data-testid="sidebar-group"][class*="overflow-y-auto"]'
+      )
+      const order = Array.from(
+        scrollableGroup?.querySelectorAll(
+          '[data-testid^="sidebar-item-"], [data-testid="outbox-sidebar-item"]'
+        ) ?? []
+      ).map((el) => el.getAttribute('data-testid'))
+
+      expect(order).toEqual([
+        'sidebar-item-INBOX',
+        'outbox-sidebar-item',
+        'sidebar-item-Sent',
+        'sidebar-item-Work',
+        'sidebar-item-Work/Projects',
+      ])
+    })
+
+    it('should insert Outbox after Drafts when present', () => {
+      const foldersWithDrafts: ImapFolder[] = [
+        {
+          name: 'INBOX',
+          path: 'INBOX',
+          type: 'INBOX',
+          unseen_count: 0,
+          messages: 0,
+          flags: [],
+          delimiter: '/',
+          readOnly: false,
+          selectable: true,
+          default: true,
+        },
+        {
+          name: 'Drafts',
+          path: 'Drafts',
+          type: 'DRAFT',
+          unseen_count: 0,
+          messages: 0,
+          flags: [],
+          delimiter: '/',
+          readOnly: false,
+          selectable: true,
+          default: false,
+        },
+        {
+          name: 'Sent',
+          path: 'Sent',
+          type: 'SENT',
+          unseen_count: 0,
+          messages: 0,
+          flags: [],
+          delimiter: '/',
+          readOnly: false,
+          selectable: true,
+          default: false,
+        },
+      ]
+      ;(useGetFoldersQuery as jest.Mock).mockReturnValue({
+        data: foldersWithDrafts,
+        isFetching: false,
+      })
+
+      const { container } = render(<MailSidebar />)
+      const scrollableGroup = container.querySelector(
+        '[data-testid="sidebar-group"][class*="overflow-y-auto"]'
+      )
+      const order = Array.from(
+        scrollableGroup?.querySelectorAll(
+          '[data-testid^="sidebar-item-"], [data-testid="outbox-sidebar-item"]'
+        ) ?? []
+      ).map((el) => el.getAttribute('data-testid'))
+
+      expect(order).toEqual([
+        'sidebar-item-INBOX',
+        'sidebar-item-Drafts',
+        'outbox-sidebar-item',
+        'sidebar-item-Sent',
+      ])
     })
 
     it('should render all folders', () => {

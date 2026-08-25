@@ -13,6 +13,7 @@ import {
 import { isPwaOutboxEnabled } from '../flags'
 import { probeNetwork } from '../network/probe'
 import type { OutboxAttachmentRecord, OutboxRecord } from '../types'
+import { isOutboxHeldForEdit } from './outbox-edit-hold'
 import { notifyOutboxChanged } from './outbox-events'
 
 export type FlushResult = {
@@ -219,7 +220,9 @@ async function runFlush(userId: string): Promise<FlushResult> {
   }
 
   const items = all.filter(
-    (i) => i.status === 'pending' || i.status === 'failed'
+    (i) =>
+      (i.status === 'pending' || i.status === 'failed') &&
+      !isOutboxHeldForEdit(i.id)
   )
 
   for (const item of items) {

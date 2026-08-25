@@ -77,6 +77,9 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
   const displayName = getListDisplayContact(data, folderType)
+  const hasHoverActions = Boolean(
+    onToggleRead || onDelete || onArchive || onSpam || onMoveToInbox
+  )
 
   return (
     <>
@@ -194,82 +197,95 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
           )}
         </div>
 
-        <span className="text-muted-foreground w-1/5 text-right group-hover:hidden">
+        <span
+          className={cn(
+            'text-muted-foreground w-1/5 text-right',
+            hasHoverActions && 'group-hover:hidden'
+          )}
+        >
           {hasAttachment && <Paperclip className="mr-2 inline h-4 w-4" />}
           {formatDate(data.date)}
         </span>
 
-        <div className="hidden w-1/5 items-center justify-end gap-1 group-hover:flex">
-          <TooltipWrapper
-            content={
-              data.seen
-                ? t('actions.mark_as_unread.string')
-                : t('actions.mark_as_read.string')
-            }
-            side="top"
-          >
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onToggleRead?.(data.id)
-              }}
-              className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-            >
-              {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
-            </button>
-          </TooltipWrapper>
-
-          <TooltipWrapper content={t('actions.delete.string')} side="top">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onDelete?.(data.id)
-              }}
-              className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-            >
-              <Trash2 size={16} />
-            </button>
-          </TooltipWrapper>
-
-          <TooltipWrapper content={t('actions.archive.string')} side="top">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onArchive?.(data.id)
-              }}
-              className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-            >
-              <Archive size={16} />
-            </button>
-          </TooltipWrapper>
-
-          {onMoveToInbox ? (
-            <TooltipWrapper content={tBar('report_not_spam.string')} side="top">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onMoveToInbox(data.id)
-                }}
-                className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+        {hasHoverActions ? (
+          <div className="hidden w-1/5 items-center justify-end gap-1 group-hover:flex">
+            {onToggleRead ? (
+              <TooltipWrapper
+                content={
+                  data.seen
+                    ? t('actions.mark_as_unread.string')
+                    : t('actions.mark_as_read.string')
+                }
+                side="top"
               >
-                <Inbox size={16} />
-              </button>
-            </TooltipWrapper>
-          ) : null}
-          {onSpam ? (
-            <TooltipWrapper content={tBar('report_spam.string')} side="top">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onSpam(data.id)
-                }}
-                className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-              >
-                <Flame size={16} />
-              </button>
-            </TooltipWrapper>
-          ) : null}
-        </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onToggleRead(data.id)
+                  }}
+                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                >
+                  {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
+                </button>
+              </TooltipWrapper>
+            ) : null}
+
+            {onDelete ? (
+              <TooltipWrapper content={t('actions.delete.string')} side="top">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onDelete(data.id)
+                  }}
+                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </TooltipWrapper>
+            ) : null}
+
+            {onArchive ? (
+              <TooltipWrapper content={t('actions.archive.string')} side="top">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onArchive(data.id)
+                  }}
+                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                >
+                  <Archive size={16} />
+                </button>
+              </TooltipWrapper>
+            ) : null}
+
+            {onMoveToInbox ? (
+              <TooltipWrapper content={tBar('report_not_spam.string')} side="top">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onMoveToInbox(data.id)
+                  }}
+                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                >
+                  <Inbox size={16} />
+                </button>
+              </TooltipWrapper>
+            ) : null}
+            {onSpam ? (
+              <TooltipWrapper content={tBar('report_spam.string')} side="top">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onSpam(data.id)
+                  }}
+                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                >
+                  <Flame size={16} />
+                </button>
+              </TooltipWrapper>
+            ) : null}
+          </div>
+        ) : null}
       </div>
       <Separator className="m-0" />
     </>

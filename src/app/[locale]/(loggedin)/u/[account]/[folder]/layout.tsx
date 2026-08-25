@@ -45,8 +45,11 @@ function MailLayoutInner({
 
   const isSplitMode = mailLayoutMode === 'split' && !isMobile
   const isClassicLayout = layoutType === 'classic' || isSplitMode
-  const effectiveToolbarMode =
-    view.kind === 'outbox' || view.kind === 'mail' ? 'hidden' : toolbarMode
+  const isFullPaneOverlay =
+    view.kind === 'outbox' ||
+    view.kind === 'mail' ||
+    view.kind === 'unavailable'
+  const effectiveToolbarMode = isFullPaneOverlay ? 'hidden' : toolbarMode
 
   const folderContent = isClassicLayout ? classic : children
   const content =
@@ -62,13 +65,11 @@ function MailLayoutInner({
         />
       </div>
     ) : view.kind === 'unavailable' ? (
-      <div className="relative flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
-        <OfflineUnavailable
-          force
-          className="border-border shrink-0 border-b px-4 py-3"
-        />
-        {folderContent}
-      </div>
+      <OfflineUnavailable
+        force
+        target={view.target}
+        label={view.label ?? view.path}
+      />
     ) : (
       folderContent
     )
@@ -89,7 +90,7 @@ function MailLayoutInner({
         className="min-w-0 flex-1"
       >
         <SidebarInset className="flex min-w-0 flex-col overflow-x-hidden">
-          {view.kind !== 'outbox' && view.kind !== 'mail' && <ListToolbar />}
+          {!isFullPaneOverlay && <ListToolbar />}
           <div
             className={cn(
               'flex w-full min-w-0 overflow-hidden p-1',
