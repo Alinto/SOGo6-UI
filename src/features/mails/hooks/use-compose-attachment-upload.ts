@@ -1,14 +1,22 @@
 'use client'
 
+import { isPwaOutboxEnabled } from '@/features/offline/flags'
+import { probeNetwork } from '@/features/offline/network/probe'
+import {
+  ATTACHMENT_MAX_BYTES,
+  ATTACHMENT_MAX_COUNT,
+} from '@/features/offline/types'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
+import { useTranslations } from 'next-intl'
 import React from 'react'
+import { toast } from 'sonner'
 import { useUploadAttachmentMutation } from '../store/mail-api'
 import {
   addAttachment,
+  renameAttachment,
   updateAttachmentProgress,
   updateMailKey,
-  renameAttachment,
 } from '../store/mail-compose-slice'
 
 interface UseComposeAttachmentUploadOptions {
@@ -23,6 +31,7 @@ export function useComposeAttachmentUpload({
   mailKey,
 }: UseComposeAttachmentUploadOptions) {
   const dispatch = useAppDispatch()
+  const t = useTranslations('PWA')
   const [uploadAttachment, { isLoading: isUploading }] =
     useUploadAttachmentMutation()
 
@@ -46,7 +55,20 @@ export function useComposeAttachmentUpload({
   }, [])
 
   const processFiles = async (files: FileList | File[]) => {
-    for (const file of Array.from(files)) {
+    const incoming = Array.from(files)
+    if (incoming.length > ATTACHMENT_MAX_COUNT) {
+      toast.error(t('attachment_too_many.string'))
+      return
+    }
+
+    const online = !isPwaOutboxEnabled() || (await probeNetwork())
+
+    for (const file of incoming) {
+      if (file.size > ATTACHMENT_MAX_BYTES) {
+        toast.error(t('attachment_quota.string'))
+        continue
+      }
+
       const tempId = createClientId()
 
       dispatch(
@@ -57,11 +79,14 @@ export function useComposeAttachmentUpload({
             name: file.name,
             size: file.size,
             type: file.type,
-            uploadStatus: 'uploading',
-            uploadProgress: 0,
+            file,
+            uploadStatus: online ? 'uploading' : 'pending',
+            uploadProgress: online ? 0 : 100,
           },
         })
       )
+
+      if (!online) continue
 
       try {
         const result = await uploadAttachment({
@@ -79,6 +104,7 @@ export function useComposeAttachmentUpload({
               attachmentId: tempId,
               progress: 100,
               status: 'completed',
+              dropFile: true,
             })
           )
 

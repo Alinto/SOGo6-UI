@@ -2,17 +2,10 @@ import { act, renderHook } from '@testing-library/react'
 
 const mockFlushOutbox = jest.fn()
 let mockIsOnline = true
+let mockIsProbing = false
 
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
-}))
-
-jest.mock('sonner', () => ({
-  toast: Object.assign(jest.fn(), {
-    success: jest.fn(),
-    error: jest.fn(),
-    warning: jest.fn(),
-  }),
 }))
 
 jest.mock('../../flags', () => ({
@@ -23,18 +16,22 @@ jest.mock('../../auth/get-auth-token', () => ({
   getAuthUserId: () => 'user@example.org',
 }))
 
-jest.mock('../../outbox/outbox-flush-service', () => ({
-  flushOutbox: (...args: unknown[]) => mockFlushOutbox(...args),
+jest.mock('../../outbox/outbox-flush-feedback', () => ({
+  flushOutboxWithToasts: (...args: unknown[]) => mockFlushOutbox(...args),
 }))
 
 jest.mock('../../network/use-network-status', () => ({
-  useNetworkStatus: () => ({ isOnline: mockIsOnline, isProbing: false }),
+  useNetworkStatus: () => ({
+    isOnline: mockIsOnline,
+    isProbing: mockIsProbing,
+  }),
 }))
 
 import { useOutboxFlushTriggers } from '../use-outbox-flush-triggers'
 
 describe('useOutboxFlushTriggers', () => {
   beforeEach(() => {
+    mockIsProbing = false
     mockFlushOutbox.mockReset()
     mockFlushOutbox.mockResolvedValue({
       sent: 0,
@@ -48,13 +45,36 @@ describe('useOutboxFlushTriggers', () => {
     mockIsOnline = true
     renderHook(() => useOutboxFlushTriggers(true))
     expect(mockFlushOutbox).toHaveBeenCalledTimes(1)
-    expect(mockFlushOutbox).toHaveBeenCalledWith('user@example.org')
+    expect(mockFlushOutbox).toHaveBeenCalledWith(
+      'user@example.org',
+      expect.any(Function)
+    )
   })
 
   it('does not flush on cold start when offline', () => {
     mockIsOnline = false
     renderHook(() => useOutboxFlushTriggers(true))
     expect(mockFlushOutbox).not.toHaveBeenCalled()
+  })
+
+  it('does not flush while a probe is in flight', () => {
+    mockIsOnline = true
+    mockIsProbing = true
+    renderHook(() => useOutboxFlushTriggers(true))
+    expect(mockFlushOutbox).not.toHaveBeenCalled()
+  })
+
+  it('flushes after the probe settles online', async () => {
+    mockIsOnline = true
+    mockIsProbing = true
+    const { rerender } = renderHook(() => useOutboxFlushTriggers(true))
+    expect(mockFlushOutbox).not.toHaveBeenCalled()
+
+    mockIsProbing = false
+    await act(async () => {
+      rerender()
+    })
+    expect(mockFlushOutbox).toHaveBeenCalledTimes(1)
   })
 
   it('flushes when connectivity comes back (offline → online)', async () => {

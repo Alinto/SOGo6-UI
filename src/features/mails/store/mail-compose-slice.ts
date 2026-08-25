@@ -219,9 +219,12 @@ const mailComposeSlice = createSlice({
         attachmentId: string
         progress: number
         status: MailComposeAttachment['uploadStatus']
+        /** Drop the local blob after a successful server upload. */
+        dropFile?: boolean
       }>
     ) => {
-      const { draftId, attachmentId, progress, status } = action.payload
+      const { draftId, attachmentId, progress, status, dropFile } =
+        action.payload
       const draft = state.drafts[draftId]
       if (draft) {
         const attachment = draft.attachments.find(
@@ -230,6 +233,7 @@ const mailComposeSlice = createSlice({
         if (attachment) {
           attachment.uploadProgress = progress
           attachment.uploadStatus = status
+          if (dropFile) delete attachment.file
         }
       }
     },
