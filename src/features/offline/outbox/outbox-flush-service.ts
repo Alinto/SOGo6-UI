@@ -12,8 +12,7 @@ import {
 } from '../db/outbox-store'
 import { isPwaOutboxEnabled } from '../flags'
 import { probeNetwork } from '../network/probe'
-import type { OutboxRecord } from '../types'
-import { blobToBase64 } from '../utils/blob-to-base64'
+import type { OutboxAttachmentRecord, OutboxRecord } from '../types'
 import { notifyOutboxChanged } from './outbox-events'
 
 export type FlushResult = {
@@ -24,6 +23,19 @@ export type FlushResult = {
 }
 
 const flushLocks = new Map<string, Promise<FlushResult>>()
+
+type ApiJson = {
+  error_code?: string | number
+  error_msg?: string
+  data?: { key?: string; filename?: string }
+}
+
+type SendResult = {
+  ok: boolean
+  status: number
+  message?: string
+  key?: string
+}
 
 /**
  * Resolve the API base URL exactly like RTK's dynamicBaseQuery does
@@ -40,25 +52,88 @@ async function resolveApiBase(): Promise<string | null> {
   return process.env.NODE_ENV === 'production' ? null : '/fakeApi'
 }
 
+async function readApiJson(res: Response): Promise<ApiJson | null> {
+  try {
+    return (await res.json()) as ApiJson
+  } catch {
+    return null
+  }
+}
+
+function apiErrorMessage(json: ApiJson | null, fallback: string): string {
+  return json?.error_msg || fallback
+}
+
+function isApiError(json: ApiJson | null): boolean {
+  if (!json?.error_code && json?.error_code !== 0) return false
+  return json.error_code !== 'S000000' && json.error_code !== 0
+}
+
+function toSendFile(attachment: OutboxAttachmentRecord): File {
+  return new File([attachment.blob], attachment.name, {
+    type: attachment.type || 'application/octet-stream',
+  })
+}
+
+async function uploadDraftAttachment(
+  base: string,
+  token: string,
+  accountId: string,
+  mailKey: string | null,
+  file: File
+): Promise<SendResult> {
+  const url =
+    mailKey != null
+      ? `${base}/mailboxes/${accountId}/mail/${encodeURIComponent(mailKey)}/attachments`
+      : `${base}/mailboxes/${accountId}/mail/attachments`
+  const form = new FormData()
+  form.append('file', file)
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}` },
+    body: form,
+  })
+  const json = await readApiJson(res)
+  if (!res.ok || isApiError(json)) {
+    return {
+      ok: false,
+      status: res.status,
+      message: apiErrorMessage(json, `HTTP ${res.status}`),
+    }
+  }
+  return { ok: true, status: res.status, key: json?.data?.key }
+}
+
 async function sendOutboxItem(
   item: OutboxRecord,
   token: string,
   base: string
-): Promise<{ ok: boolean; status: number; message?: string }> {
+): Promise<SendResult> {
   const attachments = await getOutboxAttachments(item.userId, item.id)
-  const attachmentPayload = await Promise.all(
-    attachments.map(async (a) => ({
-      filename: a.name,
-      contentType: a.type,
-      content: await blobToBase64(a.blob),
-    }))
-  )
+  let mailKey = item.mailKey
 
-  // Same URL scheme and body contract as the online sendMail mutation
-  // (SendMailBody in mail-api-types.ts) so backend behaviour is identical.
+  for (const attachment of attachments) {
+    const uploaded = await uploadDraftAttachment(
+      base,
+      token,
+      item.accountId,
+      mailKey,
+      toSendFile(attachment)
+    )
+    if (!uploaded.ok) return uploaded
+    if (uploaded.key) mailKey = uploaded.key
+    else if (mailKey == null) {
+      return {
+        ok: false,
+        status: 500,
+        message: 'attachment_upload_no_key',
+      }
+    }
+  }
+
   const url =
-    item.mailKey != null
-      ? `${base}/mailboxes/${item.accountId}/mail/${encodeURIComponent(item.mailKey)}/send`
+    mailKey != null
+      ? `${base}/mailboxes/${item.accountId}/mail/${encodeURIComponent(mailKey)}/send`
       : `${base}/mailboxes/${item.accountId}/mail/send`
 
   const body = {
@@ -72,7 +147,6 @@ async function sendOutboxItem(
     priority: item.priority,
     is_html: !item.isPlainText,
     reply_to: item.replyTo ?? null,
-    attachments: attachmentPayload.length ? attachmentPayload : undefined,
   }
 
   const res = await fetch(url, {
@@ -83,36 +157,15 @@ async function sendOutboxItem(
     },
     body: JSON.stringify(body),
   })
-
-  if (res.ok) {
-    // Backend wraps responses in BackendResponse — an HTTP 200 can still
-    // carry an application-level error code.
-    try {
-      const json = (await res.json()) as {
-        error_code?: string
-        error_msg?: string
-      }
-      if (json.error_code && json.error_code !== 'S000000') {
-        return {
-          ok: false,
-          status: res.status,
-          message: json.error_msg ?? json.error_code,
-        }
-      }
-    } catch {
-      // No JSON body — treat HTTP 2xx as success
+  const json = await readApiJson(res)
+  if (!res.ok || isApiError(json)) {
+    return {
+      ok: false,
+      status: res.status,
+      message: apiErrorMessage(json, `HTTP ${res.status}`),
     }
-    return { ok: true, status: res.status }
   }
-
-  let message = `HTTP ${res.status}`
-  try {
-    const json = (await res.json()) as { error_msg?: string }
-    if (json.error_msg) message = json.error_msg
-  } catch {
-    // ignore
-  }
-  return { ok: false, status: res.status, message }
+  return { ok: true, status: res.status }
 }
 
 function isFakeApiBase(base: string): boolean {
