@@ -50,6 +50,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     isDirty,
     attachments,
     selectedSignatureKey,
+    sourceOutboxId,
   } = useAppSelector(selectDraftData(draftId))
 
   const activeDraftId = useAppSelector(
@@ -128,6 +129,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     mailKey,
     attachments,
     selectedSignatureKey,
+    sourceOutboxId,
     ...mailFields,
   })
 
@@ -145,6 +147,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       ? SOGO_D_MAIL_DRAFT_AUTOSAVE * 1000
       : 5000,
     selectedSignatureKey,
+    sourceOutboxId,
     ...mailFields,
   })
 

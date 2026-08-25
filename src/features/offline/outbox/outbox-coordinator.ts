@@ -1,5 +1,9 @@
 import { deleteLocalDraft } from '../db/drafts-store'
-import { putOutboxWithAttachments } from '../db/outbox-store'
+import {
+  deleteOutboxItem,
+  getOutboxItem,
+  putOutboxWithAttachments,
+} from '../db/outbox-store'
 import { isPwaBgSyncEnabled, isPwaOutboxEnabled } from '../flags'
 import type {
   LocalDraftRecord,
@@ -32,6 +36,8 @@ export interface EnqueueOutboxInput {
     blob: Blob
   }[]
   localDraftId?: string
+  /** Update this Outbox row in place instead of creating a second queued message. */
+  replaceOutboxId?: string
 }
 
 function newId(): string {
@@ -46,7 +52,13 @@ export async function enqueueOutbox(
   }
 
   const now = Date.now()
-  const id = newId()
+  const existing = input.replaceOutboxId
+    ? await getOutboxItem(input.userId, input.replaceOutboxId)
+    : undefined
+  if (input.replaceOutboxId) {
+    await deleteOutboxItem(input.userId, input.replaceOutboxId)
+  }
+  const id = input.replaceOutboxId ?? newId()
   const attachmentRecords: OutboxAttachmentRecord[] = (
     input.attachments ?? []
   ).map((att) => ({
@@ -79,7 +91,7 @@ export async function enqueueOutbox(
     status: 'pending',
     retryCount: 0,
     lastError: null,
-    createdAt: now,
+    createdAt: existing?.createdAt ?? now,
     updatedAt: now,
   }
 

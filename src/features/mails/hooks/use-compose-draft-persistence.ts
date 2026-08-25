@@ -1,10 +1,11 @@
 'use client'
 
-import { persistLocalDraft } from '@/features/offline'
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import { deleteLocalDraft } from '@/features/offline/db/drafts-store'
 import { isPwaOutboxEnabled } from '@/features/offline/flags'
+import { persistLocalDraft } from '@/features/offline/hooks/use-offline-draft-sync'
 import { probeNetwork } from '@/features/offline/network/probe'
+import { releaseOutboxForEdit } from '@/features/offline/outbox/outbox-edit-hold'
 import { useInterval } from '@/hooks/use-interval'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { closeDraft } from '../store'
@@ -27,6 +28,7 @@ interface UseComposeDraftPersistenceOptions extends ComposeMailFields {
   isUploading: boolean
   autosaveIntervalMs: number
   selectedSignatureKey?: string | null
+  sourceOutboxId?: string | null
 }
 
 export function useComposeDraftPersistence({
@@ -41,6 +43,7 @@ export function useComposeDraftPersistence({
   isUploading,
   autosaveIntervalMs,
   selectedSignatureKey = null,
+  sourceOutboxId = null,
   ...mailFields
 }: UseComposeDraftPersistenceOptions) {
   const dispatch = useAppDispatch()
@@ -48,6 +51,7 @@ export function useComposeDraftPersistence({
   const [deleteMail] = useDeleteMailMutation()
 
   const persistLocal = async () => {
+    if (sourceOutboxId) return
     if (!isPwaOutboxEnabled()) return
     const userId = getAuthUserId()
     if (!userId) return
@@ -75,6 +79,14 @@ export function useComposeDraftPersistence({
     displayNotificationOnError: boolean,
     closeOnSave: boolean
   ): Promise<void> => {
+    if (sourceOutboxId) {
+      if (closeOnSave) {
+        releaseOutboxForEdit(sourceOutboxId)
+        dispatch(closeDraft({ draftId }))
+      }
+      return
+    }
+
     await persistLocal()
 
     const online = !isPwaOutboxEnabled() || (await probeNetwork())
@@ -138,6 +150,11 @@ export function useComposeDraftPersistence({
   )
 
   const handleClose = () => {
+    if (sourceOutboxId) {
+      releaseOutboxForEdit(sourceOutboxId)
+      dispatch(closeDraft({ draftId }))
+      return Promise.resolve()
+    }
     if (!isDirty) {
       dispatch(closeDraft({ draftId }))
       return Promise.resolve()
@@ -146,6 +163,12 @@ export function useComposeDraftPersistence({
   }
 
   const handleDiscardDraft = async () => {
+    if (sourceOutboxId) {
+      releaseOutboxForEdit(sourceOutboxId)
+      dispatch(closeDraft({ draftId }))
+      return
+    }
+
     if (mailKey != null) {
       await deleteMail({ accountId, mailKey })
     }

@@ -2,9 +2,12 @@
 
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import { deleteLocalDraft } from '@/features/offline/db/drafts-store'
+import { deleteOutboxItem } from '@/features/offline/db/outbox-store'
 import { isPwaOutboxEnabled } from '@/features/offline/flags'
 import { probeNetwork } from '@/features/offline/network/probe'
 import { enqueueOutbox } from '@/features/offline/outbox/outbox-coordinator'
+import { releaseOutboxForEdit } from '@/features/offline/outbox/outbox-edit-hold'
+import { notifyOutboxChanged } from '@/features/offline/outbox/outbox-events'
 import {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_COUNT,
@@ -32,6 +35,7 @@ interface UseComposeSendOptions extends ComposeMailFields {
   mailKey: string | null
   attachments?: MailComposeAttachment[]
   selectedSignatureKey?: string | null
+  sourceOutboxId?: string | null
 }
 
 export function useComposeSend({
@@ -43,6 +47,7 @@ export function useComposeSend({
   body,
   attachments = [],
   selectedSignatureKey = null,
+  sourceOutboxId = null,
   ...mailFields
 }: UseComposeSendOptions) {
   const dispatch = useAppDispatch()
@@ -101,8 +106,10 @@ export function useComposeSend({
           blob: a.file as Blob,
         })),
         localDraftId: draftId,
+        replaceOutboxId: sourceOutboxId ?? undefined,
       })
 
+      if (sourceOutboxId) releaseOutboxForEdit(sourceOutboxId)
       toast.success(t('outbox_queued.string'))
       dispatch(closeDraft({ draftId }))
       return
@@ -142,6 +149,11 @@ export function useComposeSend({
         // The message reached the server — drop the local mirror so it is
         // not rehydrated as a ghost draft on next boot.
         if (userId) void deleteLocalDraft(userId, draftId)
+        if (userId && sourceOutboxId) {
+          await deleteOutboxItem(userId, sourceOutboxId)
+          releaseOutboxForEdit(sourceOutboxId)
+          notifyOutboxChanged()
+        }
       }
       dispatch(closeDraft({ draftId }))
     }

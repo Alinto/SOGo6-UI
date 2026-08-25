@@ -17,11 +17,18 @@ import { useMailCache } from './hooks/use-mail-cache'
 import { shouldSkipDocumentNav } from './network/skip-document-nav'
 import { useNetworkStatus } from './network/use-network-status'
 
+export type OfflineUnavailableTarget = 'mail' | 'folder'
+
 export type OfflineNavView =
   | { kind: 'route' }
   | { kind: 'outbox' }
   | { kind: 'folder'; path: string }
-  | { kind: 'unavailable' }
+  | {
+      kind: 'unavailable'
+      target: OfflineUnavailableTarget
+      path: string
+      label?: string
+    }
   | {
       kind: 'mail'
       accountId: string
@@ -29,10 +36,16 @@ export type OfflineNavView =
       mailId: string
     }
 
+function folderPathOverrideFromView(view: OfflineNavView): string | null {
+  if (view.kind === 'folder' || view.kind === 'unavailable') return view.path
+  if (view.kind === 'mail') return view.folderPath
+  return null
+}
+
 interface OfflineNavApi {
   view: OfflineNavView
   folderPathOverride: string | null
-  openFolder: (accountId: string, path: string) => Promise<void>
+  openFolder: (accountId: string, path: string, label?: string) => Promise<void>
   openOutbox: (accountId: string) => void
   openMail: (
     accountId: string,
@@ -51,7 +64,7 @@ function useRouteFallback(): OfflineNavApi {
     () => ({
       view: { kind: 'route' },
       folderPathOverride: null,
-      openFolder: async (accountId: string, path: string) => {
+      openFolder: async (accountId: string, path: string, _label?: string) => {
         push(`/u/${accountId}/${encodeURIComponent(path)}`)
       },
       openOutbox: (accountId: string) => {
@@ -83,7 +96,7 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<OfflineNavView>({ kind: 'route' })
 
   const openFolder = useCallback(
-    async (accountIdArg: string, path: string) => {
+    async (accountIdArg: string, path: string, label?: string) => {
       if (!isPwaMailCacheEnabled() || !skipNav) {
         setView({ kind: 'route' })
         push(`/u/${accountIdArg}/${encodeURIComponent(path)}`)
@@ -94,7 +107,12 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
         setView({ kind: 'folder', path })
         return
       }
-      setView({ kind: 'unavailable' })
+      setView({
+        kind: 'unavailable',
+        target: 'folder',
+        path,
+        label,
+      })
     },
     [push, readHeaders, skipNav]
   )
@@ -123,7 +141,11 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
         ? await readBody(accountIdArg, folderPath, String(mailId))
         : null
       if (!body) {
-        setView({ kind: 'unavailable' })
+        setView({
+          kind: 'unavailable',
+          target: 'mail',
+          path: folderPath,
+        })
         return
       }
       setView({
@@ -160,7 +182,7 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
   const value = useMemo<OfflineNavApi>(
     () => ({
       view,
-      folderPathOverride: view.kind === 'folder' ? view.path : null,
+      folderPathOverride: folderPathOverrideFromView(view),
       openFolder,
       openOutbox,
       openMail,

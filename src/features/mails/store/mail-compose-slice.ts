@@ -49,6 +49,8 @@ export interface MailComposeDraft {
   updatedAt: number
   selectedIdentity?: Identity
   selectedSignatureKey: string | null
+  /** When set, this compose window edits an Outbox item; closing it must not drop the queue entry. */
+  sourceOutboxId?: string | null
 }
 
 export interface MailComposeState {
@@ -123,6 +125,7 @@ const mailComposeSlice = createSlice({
             >) ?? {}
           )[0] ??
           null,
+        sourceOutboxId: initialData?.sourceOutboxId ?? null,
       }
       state.openDraftIds.push(draftId)
       state.activeDraftId = draftId

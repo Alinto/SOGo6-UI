@@ -177,7 +177,13 @@ describe('ListItemDesktop', () => {
   })
 
   it('shows action buttons on hover', () => {
-    renderWithRedux(<ListItemDesktop {...defaultProps} />)
+    renderWithRedux(
+      <ListItemDesktop
+        {...defaultProps}
+        onDelete={jest.fn()}
+        onArchive={jest.fn()}
+      />
+    )
     const container = screen.getByText('John Doe').closest('div')!
     fireEvent.mouseEnter(container)
     expect(screen.getByTestId('trash-icon')).toBeInTheDocument()

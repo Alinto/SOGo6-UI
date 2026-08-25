@@ -49,6 +49,18 @@ jest.mock('@/features/offline/outbox/outbox-coordinator', () => ({
   enqueueOutbox: jest.fn(),
 }))
 
+jest.mock('@/features/offline/db/outbox-store', () => ({
+  deleteOutboxItem: jest.fn(),
+}))
+
+jest.mock('@/features/offline/outbox/outbox-events', () => ({
+  notifyOutboxChanged: jest.fn(),
+}))
+
+jest.mock('@/features/offline/outbox/outbox-edit-hold', () => ({
+  releaseOutboxForEdit: jest.fn(),
+}))
+
 import { useComposeSend } from '../use-compose-send'
 
 const baseFields = {

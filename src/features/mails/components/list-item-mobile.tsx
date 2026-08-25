@@ -32,6 +32,7 @@ interface ListItemMobileProps {
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
   onOpenMail?: (id: string) => void | Promise<void>
+  onDelete?: (id: string) => void
 }
 
 const ListItemMobile: React.FC<ListItemMobileProps> = ({
@@ -39,6 +40,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   isSelected,
   onHandleCheckboxClick,
   onOpenMail,
+  onDelete: onDeleteOverride,
 }) => {
   const t = useTranslations('MAILS_LIST')
   const { push } = useRouter()
@@ -109,15 +111,19 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   }, [])
 
   const handleDelete = useCallback(() => {
+    if (onDeleteOverride) {
+      onDeleteOverride(id)
+      return
+    }
     onDelete({
       folder: folderString,
       mailId: id,
       accountId: accountString || '0',
     })
-  }, [id, onDelete, folderString, accountString])
+  }, [id, onDelete, onDeleteOverride, folderString, accountString])
 
   const handleMarkAsSeen = useCallback(() => {
-    if (data.seen) return
+    if (onDeleteOverride || data.seen) return
     mailAction({
       accountId: accountString || '0',
       folder: folderString,
@@ -125,7 +131,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
       action: 'tag',
       data: ['\\Seen'],
     })
-  }, [data.seen, mailAction, accountString, folderString, id])
+  }, [data.seen, mailAction, accountString, folderString, id, onDeleteOverride])
 
   const handleToggleFlag = useCallback(() => {
     mailAction({
@@ -144,7 +150,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
         onMarkAsSeen={handleMarkAsSeen}
         onSwipeStart={handleSwipeStart}
         onSwipeEnd={handleSwipeEnd}
-        disabled={isSelected}
+        disabled={isSelected || !onDeleteOverride}
       >
         <div className="relative overflow-hidden rounded">
           {/* Mobile content */}

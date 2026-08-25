@@ -21,7 +21,13 @@ const ListItem: React.FC<ListItemProps> = (props) => {
   const isMobile = useIsMobile()
 
   return isMobile ? (
-    <ListItemMobile {...props} />
+    <ListItemMobile
+      data={props.data}
+      isSelected={props.isSelected}
+      onHandleCheckboxClick={props.onHandleCheckboxClick}
+      onOpenMail={props.onOpenMail}
+      onDelete={props.onDelete}
+    />
   ) : (
     <ListItemDesktop {...props} />
   )

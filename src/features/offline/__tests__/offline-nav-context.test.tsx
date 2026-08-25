@@ -41,12 +41,27 @@ jest.mock('../auth/get-auth-token', () => ({
 }))
 
 function Probe() {
-  const { view, openFolder, openOutbox, openMail } = useOfflineNav()
+  const { view, openFolder, openOutbox, openMail, folderPathOverride } =
+    useOfflineNav()
+  const target = view.kind === 'unavailable' ? view.target : ''
+  const label = view.kind === 'unavailable' ? (view.label ?? '') : ''
   return (
     <div>
       <span data-testid="kind">{view.kind}</span>
-      <button type="button" onClick={() => void openFolder('0', 'Sent')}>
+      <span data-testid="target">{target}</span>
+      <span data-testid="label">{label}</span>
+      <span data-testid="override">{folderPathOverride ?? ''}</span>
+      <button
+        type="button"
+        onClick={() => void openFolder('0', 'Sent', 'Sent')}
+      >
         folder
+      </button>
+      <button
+        type="button"
+        onClick={() => void openFolder('0', 'INBOX', 'Inbox')}
+      >
+        inbox-miss
       </button>
       <button type="button" onClick={() => openOutbox('0')}>
         outbox
@@ -99,6 +114,9 @@ describe('OfflineNavProvider', () => {
 
     expect(mockPush).not.toHaveBeenCalled()
     expect(screen.getByTestId('kind')).toHaveTextContent('unavailable')
+    expect(screen.getByTestId('target')).toHaveTextContent('folder')
+    expect(screen.getByTestId('label')).toHaveTextContent('Sent')
+    expect(screen.getByTestId('override')).toHaveTextContent('Sent')
   })
 
   it('opens a cached folder without a Next.js navigation', async () => {
@@ -115,6 +133,7 @@ describe('OfflineNavProvider', () => {
 
     expect(mockPush).not.toHaveBeenCalled()
     expect(screen.getByTestId('kind')).toHaveTextContent('folder')
+    expect(screen.getByTestId('override')).toHaveTextContent('Sent')
   })
 
   it('opens the outbox panel without a Next.js navigation when offline', async () => {
@@ -146,6 +165,7 @@ describe('OfflineNavProvider', () => {
 
     expect(mockPush).not.toHaveBeenCalled()
     expect(screen.getByTestId('kind')).toHaveTextContent('mail')
+    expect(screen.getByTestId('override')).toHaveTextContent('INBOX')
   })
 
   it('does not navigate to an uncached mail when offline', async () => {
@@ -162,5 +182,26 @@ describe('OfflineNavProvider', () => {
 
     expect(mockPush).not.toHaveBeenCalled()
     expect(screen.getByTestId('kind')).toHaveTextContent('unavailable')
+    expect(screen.getByTestId('target')).toHaveTextContent('mail')
+    expect(screen.getByTestId('override')).toHaveTextContent('INBOX')
+  })
+
+  it('replaces the empty state when another uncached folder is opened', async () => {
+    mockIsOnline = false
+    mockReadHeaders.mockResolvedValue([])
+    const user = userEvent.setup()
+    render(
+      <OfflineNavProvider>
+        <Probe />
+      </OfflineNavProvider>
+    )
+
+    await user.click(screen.getByRole('button', { name: 'folder' }))
+    await user.click(screen.getByRole('button', { name: 'inbox-miss' }))
+
+    expect(screen.getByTestId('kind')).toHaveTextContent('unavailable')
+    expect(screen.getByTestId('target')).toHaveTextContent('folder')
+    expect(screen.getByTestId('label')).toHaveTextContent('Inbox')
+    expect(screen.getByTestId('override')).toHaveTextContent('INBOX')
   })
 })

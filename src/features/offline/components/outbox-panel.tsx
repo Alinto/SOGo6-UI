@@ -1,44 +1,83 @@
 'use client'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
+import {
+  selectAllDrafts,
+  selectOpenDraftIds,
+} from '@/features/mails/store/mail-compose-selectors'
 import type { MailComposeAttachment } from '@/features/mails/store/mail-compose-slice'
 import {
   createDraft,
   MAX_OPEN_DRAFTS,
+  setActiveDraft,
 } from '@/features/mails/store/mail-compose-slice'
-import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
+import { clearSelectedMails } from '@/features/mails/store/mail-layout-slice'
+import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import OutboxList from '@/features/offline/components/outbox-list'
+import OutboxMailView from '@/features/offline/components/outbox-mail-view'
+import { getOutboxAttachments } from '@/features/offline/db/outbox-store'
+import { holdOutboxForEdit } from '@/features/offline/outbox/outbox-edit-hold'
 import type {
   OutboxAttachmentRecord,
   OutboxRecord,
 } from '@/features/offline/types'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useTranslations } from 'next-intl'
-import { memo, useCallback } from 'react'
+import { memo, useCallback, useState } from 'react'
 import { toast } from 'sonner'
+import { useOutboxList } from '../hooks/use-outbox'
 
 function OutboxPanel() {
   const t = useTranslations('PWA')
   const dispatch = useAppDispatch()
-  const openDraftIds = useAppSelector((s) => s.mailCompose.openDraftIds)
+  const openDraftIds = useAppSelector(selectOpenDraftIds)
+  const allDrafts = useAppSelector(selectAllDrafts)
+  const { items, remove } = useOutboxList()
+  const [openId, setOpenId] = useState<string | null>(null)
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<string[] | null>(
+    null
+  )
 
   const handleEdit = useCallback(
-    (item: OutboxRecord, attachments: OutboxAttachmentRecord[]): boolean => {
+    async (item: OutboxRecord, attachments: OutboxAttachmentRecord[]) => {
+      if (item.status === 'sending') return
+
+      const existingDraftId = openDraftIds.find(
+        (draftId) => allDrafts[draftId]?.sourceOutboxId === item.id
+      )
+      if (existingDraftId) {
+        dispatch(setActiveDraft(existingDraftId))
+        return
+      }
+
       if (openDraftIds.length >= MAX_OPEN_DRAFTS) {
         toast.error(t('outbox_edit_limit.string'))
-        return false
+        return
       }
 
       const restoredAttachments: MailComposeAttachment[] = attachments.map(
-        (a) => ({
+        (attachment) => ({
           draftId: `outbox-${item.id}`,
-          name: a.name,
-          size: a.size,
-          type: a.type,
-          file: new File([a.blob], a.name, { type: a.type }),
+          name: attachment.name,
+          size: attachment.size,
+          type: attachment.type,
+          file: new File([attachment.blob], attachment.name, {
+            type: attachment.type,
+          }),
           uploadStatus: 'completed',
         })
       )
 
+      holdOutboxForEdit(item.id)
       dispatch(
         createDraft({
           draftId: `outbox-${item.id}`,
@@ -54,24 +93,79 @@ function OutboxPanel() {
             requestReadReceipt: item.requestReadReceipt,
             selectedSignatureKey: item.signatureKey,
             attachments: restoredAttachments,
+            sourceOutboxId: item.id,
           },
         })
       )
-      toast.success(t('outbox_edit_restored.string'))
-      return true
     },
-    [dispatch, openDraftIds, t]
+    [allDrafts, dispatch, openDraftIds, t]
   )
+
+  const runDelete = async () => {
+    if (!pendingDeleteIds) return
+    for (const id of pendingDeleteIds) {
+      await remove(id)
+    }
+    dispatch(clearSelectedMails())
+    if (openId && pendingDeleteIds.includes(openId)) setOpenId(null)
+    setPendingDeleteIds(null)
+  }
+
+  const openItem = items.find((row) => row.id === openId) ?? null
+
+  const deleteDialog = (
+    <AlertDialog
+      open={!!pendingDeleteIds}
+      onOpenChange={(open) => !open && setPendingDeleteIds(null)}
+    >
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {t('outbox_delete_confirm_title.string')}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {t('outbox_delete_confirm_body.string')}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('outbox_cancel.string')}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => void runDelete()}>
+            {t('outbox_delete.string')}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  )
+
+  if (openItem) {
+    return (
+      <>
+        <OutboxMailView
+          item={openItem}
+          onBack={() => setOpenId(null)}
+          onEdit={() => {
+            const userId = getAuthUserId()
+            if (!userId) return
+            void getOutboxAttachments(userId, openItem.id).then(
+              (attachments) => {
+                void handleEdit(openItem, attachments)
+              }
+            )
+          }}
+          onDelete={() => setPendingDeleteIds([openItem.id])}
+        />
+        {deleteDialog}
+      </>
+    )
+  }
 
   return (
     <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
-      <header className="border-b px-4 py-3">
-        <h1 className="text-lg font-semibold">{t('outbox_folder.string')}</h1>
-        <CachedDataIndicator className="mt-1" />
-      </header>
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        <OutboxList onEdit={handleEdit} />
-      </div>
+      <OutboxList
+        onOpen={(id) => setOpenId(id)}
+        onRequestDelete={setPendingDeleteIds}
+      />
+      {deleteDialog}
     </div>
   )
 }

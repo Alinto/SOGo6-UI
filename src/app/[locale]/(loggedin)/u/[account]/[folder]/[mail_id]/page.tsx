@@ -21,9 +21,9 @@ import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import type { ImapMessages } from '@/features/mails/mails-types'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
-import { useMailCache } from '@/features/offline'
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
+import { useMailCache } from '@/features/offline/hooks/use-mail-cache'
 import { useOfflineMailBody } from '@/features/offline/hooks/use-offline-mail-body'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -99,7 +99,7 @@ export function MailDetailPage({
   }
   if (!data) {
     return isOfflineOverlay || isError ? (
-      <OfflineUnavailable force className="pt-16" />
+      <OfflineUnavailable force target="mail" />
     ) : null
   }
 

@@ -4,13 +4,6 @@ export {
   isJwtExpired,
   readStoredAuth,
 } from './auth/get-auth-token'
-export { default as CachedDataIndicator } from './components/cached-data-indicator'
-export { default as OfflineBanner } from './components/offline-banner'
-export { default as OfflineProvider } from './components/offline-provider'
-export { default as OfflineUnavailable } from './components/offline-unavailable'
-export { default as OutboxList } from './components/outbox-list'
-export { default as OutboxPanel } from './components/outbox-panel'
-export { default as OutboxSidebarItem } from './components/outbox-sidebar-item'
 export { wipeOfflineUserData } from './db/wipe'
 export {
   isPwaBgSyncEnabled,

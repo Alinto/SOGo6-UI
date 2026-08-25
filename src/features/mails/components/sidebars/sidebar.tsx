@@ -8,8 +8,8 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import { useMailCache } from '@/features/offline'
 import OutboxSidebarItem from '@/features/offline/components/outbox-sidebar-item'
+import { useMailCache } from '@/features/offline/hooks/use-mail-cache'
 import { useOfflineFolders } from '@/features/offline/hooks/use-offline-folders'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useTranslations } from 'next-intl'
@@ -22,6 +22,10 @@ import {
   getFolderTranslationKey,
   isVirtualFolder,
 } from '../../utils/folder-type-helpers'
+import {
+  insertOutboxInFolderList,
+  isOutboxListSentinel,
+} from '../../utils/insert-outbox-in-folder-list'
 import { iconSelectorByType, nameSelectorByType } from '../utils'
 import { AccountSwitcher } from './account-switcher'
 import ComposeOpener from './compose-opener'
@@ -61,7 +65,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
 
   const navigateToFolder = () => {
     if (isVirtual) return
-    void openFolder(String(account ?? '0'), folder.path)
+    void openFolder(String(account ?? '0'), folder.path, displayName)
   }
 
   const toggleExpand = () => {
@@ -177,14 +181,17 @@ export function MailSidebar() {
           <SidebarMenuItem>
             <ComposeOpener />
           </SidebarMenuItem>
-          <OutboxSidebarItem />
         </SidebarMenu>
       </SidebarGroup>
       <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
-          {folders?.map((folder) => (
-            <RecursiveFolderItem key={folder.path} folder={folder} />
-          ))}
+          {insertOutboxInFolderList(folders ?? []).map((node) =>
+            isOutboxListSentinel(node) ? (
+              <OutboxSidebarItem key="outbox" />
+            ) : (
+              <RecursiveFolderItem key={node.path} folder={node} />
+            )
+          )}
         </SidebarMenu>
       </SidebarGroup>
     </>

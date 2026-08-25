@@ -13,8 +13,8 @@ import {
   NotificationProvider,
   NotificationToaster,
 } from '@/features/notifications'
-import { cacheIdentities } from '@/features/offline'
 import OfflineProvider from '@/features/offline/components/offline-provider'
+import { cacheIdentities } from '@/features/offline/hooks/use-offline-draft-sync'
 import { useGetUserProfileQuery, useProfile } from '@/features/user-profile'
 import { fetchEnvVars } from '@/lib/env-service'
 import { useAppSelector } from '@/lib/redux/hooks'

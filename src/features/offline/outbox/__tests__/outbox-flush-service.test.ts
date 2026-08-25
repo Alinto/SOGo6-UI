@@ -253,4 +253,17 @@ describe('flushOutbox', () => {
     expect(a.sent).toBe(1)
     expect(global.fetch).toHaveBeenCalledTimes(1)
   })
+
+  it('skips items held for edit', async () => {
+    const { holdOutboxForEdit, resetOutboxEditHolds } =
+      await import('../outbox-edit-hold')
+    resetOutboxEditHolds()
+    holdOutboxForEdit('o1')
+    await upsertOutboxItem(makeItem())
+    const result = await flushOutbox(userId)
+    expect(result.sent).toBe(0)
+    expect(await listOutbox(userId)).toHaveLength(1)
+    expect(global.fetch).not.toHaveBeenCalled()
+    resetOutboxEditHolds()
+  })
 })
