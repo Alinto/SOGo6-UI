@@ -14,6 +14,7 @@ jest.mock('next-intl', () => ({
 
 jest.mock('../../flags', () => ({
   isPwaMailCacheEnabled: () => mockMailCache,
+  isPwaEnabled: () => mockMailCache,
 }))
 
 jest.mock('../../network/use-network-status', () => ({
@@ -61,6 +62,30 @@ describe('OfflineUnavailable', () => {
 
     expect(
       screen.getByText('offline_unavailable_folder_unnamed_title.string')
+    ).toBeInTheDocument()
+  })
+
+  it('renders a calendar empty state', () => {
+    render(<OfflineUnavailable force target="calendar" />)
+
+    expect(screen.getByTestId('offline-unavailable')).toHaveAttribute(
+      'data-target',
+      'calendar'
+    )
+    expect(
+      screen.getByText('offline_unavailable_calendar_title.string')
+    ).toBeInTheDocument()
+  })
+
+  it('renders a settings empty state', () => {
+    render(<OfflineUnavailable force target="settings" />)
+
+    expect(screen.getByTestId('offline-unavailable')).toHaveAttribute(
+      'data-target',
+      'settings'
+    )
+    expect(
+      screen.getByText('offline_unavailable_settings_title.string')
     ).toBeInTheDocument()
   })
 })

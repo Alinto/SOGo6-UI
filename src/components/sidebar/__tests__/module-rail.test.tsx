@@ -18,6 +18,12 @@ jest.mock('@/features/mails/components/sidebars/fast-access/context', () => ({
   useFastAccess: (...args: unknown[]) => mockUseFastAccess(...args),
 }))
 
+const mockNavigateApp = jest.fn()
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({ navigateApp: mockNavigateApp }),
+}))
+
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: mockRouterPush }),
 }))
@@ -235,18 +241,21 @@ describe('ModuleRail', () => {
       { label: 'Notes', id: 'notes' },
     ]
 
-    it.each(cases)('calls toggleModule with $id when context is available', async ({ label, id }) => {
-      const user = userEvent.setup()
+    it.each(cases)(
+      'calls toggleModule with $id when context is available',
+      async ({ label, id }) => {
+        const user = userEvent.setup()
 
-      render(<ModuleRail />)
-      await user.click(screen.getByRole('button', { name: label }))
+        render(<ModuleRail />)
+        await user.click(screen.getByRole('button', { name: label }))
 
-      await waitFor(() => {
-        expect(mockToggleModule).toHaveBeenCalledWith(id)
-      })
-    })
+        await waitFor(() => {
+          expect(mockToggleModule).toHaveBeenCalledWith(id)
+        })
+      }
+    )
 
-    it('calls router.push when no fast access context is available', async () => {
+    it('calls navigateApp when no fast access context is available', async () => {
       mockUseFastAccess.mockReturnValueOnce(null)
 
       const user = userEvent.setup()
@@ -255,7 +264,7 @@ describe('ModuleRail', () => {
       await user.click(screen.getByRole('button', { name: 'Calendar' }))
 
       await waitFor(() => {
-        expect(mockRouterPush).toHaveBeenCalledWith('/calendars')
+        expect(mockNavigateApp).toHaveBeenCalledWith('/calendars')
       })
     })
   })

@@ -10,7 +10,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useGetSystemQuery, useLazyGetAuthModeQuery } from '@/features/auth/components/store/auth.api'
+import {
+  useGetSystemQuery,
+  useLazyGetAuthModeQuery,
+} from '@/features/auth/components/store/auth.api'
 import { useEnvVars } from '@/lib/env-service'
 import { getLocales } from '@/lib/i18n/config'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
@@ -126,7 +129,9 @@ export function LoginForm({
           push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}`)
           break
         case 'ldap':
-          push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}&mode=ldap`)
+          push(
+            `/auth/login/pwd?email=${encodeURIComponent(data.email)}&mode=ldap`
+          )
           break
         case 'sso':
           window.location.href = location
@@ -146,8 +151,10 @@ export function LoginForm({
     void refetchSystem()
   }
 
+  const isOffline =
+    typeof navigator !== 'undefined' && navigator.onLine === false
   const isSystemBlocked =
-    systemLoading && !systemTimedOut && !systemError
+    !isOffline && systemLoading && !systemTimedOut && !systemError
 
   if (isSystemBlocked) {
     return (
@@ -157,7 +164,7 @@ export function LoginForm({
     )
   }
 
-  if (systemTimedOut || systemError) {
+  if (systemTimedOut || (systemError && !isOffline)) {
     return (
       <div className="mx-auto flex w-full max-w-xs flex-col gap-4 py-4">
         <div className="border-destructive/50 bg-destructive/10 text-destructive flex items-start gap-2 rounded-lg border p-3 text-sm">

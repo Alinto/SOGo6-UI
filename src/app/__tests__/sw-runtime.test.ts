@@ -1,8 +1,10 @@
 import {
   filterPrecacheEntries,
+  isAuthLoginPath,
   isBrokenPrecacheUrl,
   isNavigationRequest,
   offlineFallbackPath,
+  offlineLoginPath,
 } from '../sw-runtime'
 
 describe('isNavigationRequest', () => {
@@ -76,5 +78,32 @@ describe('offlineFallbackPath', () => {
       '/~offline'
     )
     expect(offlineFallbackPath('not a url')).toBe('/~offline')
+  })
+})
+
+describe('isAuthLoginPath', () => {
+  it('matches locale-prefixed login documents', () => {
+    expect(isAuthLoginPath('/en/auth/login')).toBe(true)
+    expect(isAuthLoginPath('/fr/auth/login/')).toBe(true)
+    expect(isAuthLoginPath('/en/auth/login/pwd')).toBe(false)
+    expect(isAuthLoginPath('/en/~offline')).toBe(false)
+  })
+})
+
+describe('offlineLoginPath', () => {
+  it('uses the locale-prefixed login page', () => {
+    expect(offlineLoginPath('https://sogo.example/fr/u/0/INBOX')).toBe(
+      '/fr/auth/login'
+    )
+    expect(offlineLoginPath('https://sogo.example/de/calendars')).toBe(
+      '/de/auth/login'
+    )
+  })
+
+  it('defaults to English when the path has no locale', () => {
+    expect(offlineLoginPath('https://sogo.example/u/0/INBOX')).toBe(
+      '/en/auth/login'
+    )
+    expect(offlineLoginPath('not a url')).toBe('/en/auth/login')
   })
 })

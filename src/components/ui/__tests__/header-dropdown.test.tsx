@@ -1,5 +1,8 @@
+import { wipeOnLogout } from '@/features/offline/hooks/use-offline-draft-sync'
+import { useRouter } from '@/lib/i18n/navigation'
+import { useAppDispatch } from '@/lib/redux/hooks'
 import '@testing-library/jest-dom'
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { useTranslations } from 'next-intl'
 import type { ReactElement } from 'react'
 import React from 'react'
@@ -25,11 +28,92 @@ jest.mock('@/hooks/use-mobile', () => ({
   useIsMobile: jest.fn(() => false),
 }))
 
-// Mock the navigation router
+const mockPush = jest.fn()
+const mockDispatch = jest.fn()
+let mockPendingCount = 0
+
 jest.mock('@/lib/i18n/navigation', () => ({
-  useRouter: jest.fn(() => ({
-    push: jest.fn(),
-  })),
+  useRouter: jest.fn(),
+}))
+
+jest.mock('@/features/offline/hooks/use-outbox', () => ({
+  useOutboxList: () => ({ pendingCount: mockPendingCount }),
+}))
+
+jest.mock('@/features/offline/db/outbox-store', () => ({
+  countPendingOutbox: jest.fn(async () => mockPendingCount),
+}))
+
+jest.mock('@/features/offline/flags', () => ({
+  isPwaOutboxEnabled: () => true,
+}))
+
+jest.mock('@/features/offline/auth/get-auth-token', () => ({
+  getAuthUserId: () => 'jdoe@sogo.nu',
+}))
+
+jest.mock('@/features/offline/auth/redirect-after-logout', () => ({
+  redirectAfterLogout: (push: (href: string) => void) => push('/auth/login'),
+}))
+
+jest.mock('@/features/offline/hooks/use-offline-draft-sync', () => ({
+  wipeOnLogout: jest.fn(() => Promise.resolve()),
+}))
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({
+    navigateApp: jest.fn(),
+    view: { kind: 'route' },
+    closeOverlay: jest.fn(),
+  }),
+}))
+
+jest.mock('@/components/ui/alert-dialog', () => ({
+  AlertDialog: ({
+    children,
+    open,
+  }: {
+    children?: React.ReactNode
+    open?: boolean
+  }) =>
+    open ? <div data-testid="logout-outbox-dialog">{children}</div> : null,
+  AlertDialogContent: ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogHeader: ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogFooter: ({ children }: { children?: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  AlertDialogTitle: ({ children }: { children?: React.ReactNode }) => (
+    <h2>{children}</h2>
+  ),
+  AlertDialogDescription: ({ children }: { children?: React.ReactNode }) => (
+    <p>{children}</p>
+  ),
+  AlertDialogCancel: ({
+    children,
+    onClick,
+  }: {
+    children?: React.ReactNode
+    onClick?: () => void
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
+  ),
+  AlertDialogAction: ({
+    children,
+    onClick,
+  }: {
+    children?: React.ReactNode
+    onClick?: () => void
+  }) => (
+    <button type="button" onClick={onClick}>
+      {children}
+    </button>
+  ),
 }))
 
 // Mock the theme switcher component
@@ -100,6 +184,7 @@ jest.mock('@radix-ui/react-dropdown-menu', () => {
 
   interface ItemProps extends React.HTMLAttributes<HTMLElement> {
     children?: React.ReactNode
+    onSelect?: (event: Event) => void
     ref?: React.Ref<HTMLElement>
   }
 
@@ -152,8 +237,16 @@ jest.mock('@radix-ui/react-dropdown-menu', () => {
   Content.displayName = 'DropdownMenuContent'
 
   const Item = React.forwardRef<HTMLElement, ItemProps>(
-    ({ children, ...props }, ref) => (
-      <div {...props} ref={ref as React.Ref<HTMLDivElement>} role="menuitem">
+    ({ children, onClick, onSelect, ...props }, ref) => (
+      <div
+        {...props}
+        ref={ref as React.Ref<HTMLDivElement>}
+        role="menuitem"
+        onClick={(event) => {
+          onSelect?.(event as unknown as Event)
+          onClick?.(event)
+        }}
+      >
         {children}
       </div>
     )
@@ -309,7 +402,7 @@ jest.mock('@/lib/redux/hooks', () => ({
     cn: 'John Doe',
     email: 'jdoe@sogo.nu',
   })),
-  useAppDispatch: jest.fn(() => jest.fn()),
+  useAppDispatch: jest.fn(),
   useAppStore: jest.fn(),
 }))
 
@@ -322,7 +415,13 @@ jest.mock('@/components/ui/skeleton', () => ({
 
 describe('HeaderDropdown component', () => {
   beforeEach(() => {
+    mockPendingCount = 0
+    mockPush.mockReset()
+    mockDispatch.mockReset()
+    ;(wipeOnLogout as jest.Mock).mockClear()
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
+    ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
+    ;(useAppDispatch as jest.Mock).mockReturnValue(mockDispatch)
   })
 
   it('matches snapshot', () => {
@@ -362,5 +461,46 @@ describe('HeaderDropdown component', () => {
     expect(screen.getByTestId('book-a-icon')).toBeInTheDocument()
     expect(screen.getByTestId('mail-icon')).toBeInTheDocument()
     expect(screen.getByTestId('log-out-icon')).toBeInTheDocument()
+  })
+
+  it('logs out immediately when the outbox is empty', async () => {
+    render(<HeaderDropdown />)
+    fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
+    fireEvent.click(screen.getByText('logout.string'))
+
+    expect(screen.queryByTestId('logout-outbox-dialog')).not.toBeInTheDocument()
+    await waitFor(() => {
+      expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
+      expect(mockDispatch).toHaveBeenCalled()
+      expect(mockPush).toHaveBeenCalledWith('/auth/login')
+    })
+  })
+
+  it('warns before logout when the outbox has pending messages', async () => {
+    mockPendingCount = 2
+    render(<HeaderDropdown />)
+    fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
+    fireEvent.click(screen.getByText('logout.string'))
+
+    await waitFor(() => {
+      expect(screen.getByTestId('logout-outbox-dialog')).toBeInTheDocument()
+    })
+    expect(
+      screen.getByText('logout_outbox_confirm_title.string')
+    ).toBeInTheDocument()
+    expect(wipeOnLogout).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByText('outbox_cancel.string'))
+    expect(wipeOnLogout).not.toHaveBeenCalled()
+
+    fireEvent.click(screen.getByText('logout.string'))
+    await waitFor(() => {
+      expect(screen.getByTestId('logout-outbox-dialog')).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByText('logout_outbox_confirm_action.string'))
+    expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/auth/login')
+    })
   })
 })

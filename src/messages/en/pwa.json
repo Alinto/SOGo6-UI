@@ -54,6 +54,15 @@
     "outbox_delete_confirm_body": {
       "string": "This message will be removed and will not be sent."
     },
+    "logout_outbox_confirm_title": {
+      "string": "Unsent messages in Outbox"
+    },
+    "logout_outbox_confirm_body": {
+      "string": "Logging out deletes queued messages from this device. They will not be sent."
+    },
+    "logout_outbox_confirm_action": {
+      "string": "Log out anyway"
+    },
     "outbox_queued": {
       "string": "Message saved to Outbox. It will send when you are back online."
     },
@@ -83,6 +92,30 @@
     },
     "offline_unavailable_folder_body": {
       "string": "Open this folder once while you are online to browse it offline later."
+    },
+    "offline_unavailable_calendar_title": {
+      "string": "Calendar is not available offline"
+    },
+    "offline_unavailable_calendar_body": {
+      "string": "Reconnect to open your calendars."
+    },
+    "offline_unavailable_contacts_title": {
+      "string": "Contacts are not available offline"
+    },
+    "offline_unavailable_contacts_body": {
+      "string": "Reconnect to open your address books."
+    },
+    "offline_unavailable_tasks_title": {
+      "string": "Tasks are not available offline"
+    },
+    "offline_unavailable_tasks_body": {
+      "string": "Reconnect to open your tasks."
+    },
+    "offline_unavailable_settings_title": {
+      "string": "Settings are not available offline"
+    },
+    "offline_unavailable_settings_body": {
+      "string": "Reconnect to open your profile and preferences."
     },
     "outbox_edit_limit": {
       "string": "Close a compose window before editing this message."

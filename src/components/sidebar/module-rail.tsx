@@ -13,6 +13,7 @@ import {
   useFastAccess,
   type FastAccessModuleId,
 } from '@/features/mails/components/sidebars/fast-access/context'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { ModuleNavIcon } from '@/lib/icons/module-nav-icons'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
@@ -29,17 +30,20 @@ const FALLBACK_ROUTES: Record<FastAccessModuleId, string> = {
 const ModuleRail: React.FC = () => {
   const t = useTranslations('NAVIGATION')
   const router = useRouter()
+  const { navigateApp } = useOfflineNav()
   const fastAccess = useFastAccess()
 
   const handleSelect = useCallback(
     (id: FastAccessModuleId) => {
       if (fastAccess) {
         fastAccess.toggleModule(id)
-      } else {
+      } else if (id === 'notes') {
         router.push(FALLBACK_ROUTES[id])
+      } else {
+        navigateApp(FALLBACK_ROUTES[id])
       }
     },
-    [fastAccess, router]
+    [fastAccess, navigateApp, router]
   )
 
   const items: {
@@ -88,8 +92,7 @@ const ModuleRail: React.FC = () => {
                     )}
                     onClick={() => handleSelect(item.id)}
                     data-active={
-                      fastAccess?.isOpen &&
-                      fastAccess.activeModule === item.id
+                      fastAccess?.isOpen && fastAccess.activeModule === item.id
                     }
                   >
                     <item.icon />

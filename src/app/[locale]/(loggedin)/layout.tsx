@@ -8,13 +8,17 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import ContactFormHost from '@/features/address_books/components/contact-form-host'
 import DistributionListFormHost from '@/features/address_books/components/distribution-list-form-host'
 import { useAddressBookDragEnd } from '@/features/address_books/hooks/use-address-book-drag-end'
+import { LoginForm } from '@/features/auth/components/login-form'
+import LoginShell from '@/features/auth/components/login-shell'
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import {
   NotificationProvider,
   NotificationToaster,
 } from '@/features/notifications'
+import { redirectAfterLogout } from '@/features/offline/auth/redirect-after-logout'
 import OfflineProvider from '@/features/offline/components/offline-provider'
 import { cacheIdentities } from '@/features/offline/hooks/use-offline-draft-sync'
+import { shouldSkipDocumentNav } from '@/features/offline/network/skip-document-nav'
 import { useGetUserProfileQuery, useProfile } from '@/features/user-profile'
 import { fetchEnvVars } from '@/lib/env-service'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -61,9 +65,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    if (isHydrated && !token) {
-      router.push('/auth/login')
-    }
+    if (!isHydrated || token) return
+    if (shouldSkipDocumentNav(navigator.onLine, false)) return
+    redirectAfterLogout((href) => router.push(href))
   }, [isHydrated, token, router])
 
   const mouseSensor = useSensor(MouseSensor, {
@@ -101,7 +105,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     }
   }, [connect])
 
-  if (!isHydrated || !token) return null
+  if (!isHydrated) return null
+  if (!token) {
+    if (shouldSkipDocumentNav(navigator.onLine, false)) {
+      return (
+        <LoginShell>
+          <LoginForm />
+        </LoginShell>
+      )
+    }
+    return null
+  }
 
   return (
     <OfflineProvider>

@@ -20,7 +20,8 @@
         "no_events": "No events today",
         "all_day": "All day",
         "loading": "Loading events…",
-        "error": "Could not load events"
+        "error": "Could not load events",
+        "error_offline": "Today's events aren't on this device. Reconnect to load them."
       },
       "tasks": {
         "title": "Tasks",
@@ -33,7 +34,8 @@
         "empty": "You're all caught up",
         "no_results": "No matches",
         "loading": "Loading tasks…",
-        "error": "Could not load tasks"
+        "error": "Could not load tasks",
+        "error_offline": "Tasks aren't on this device. Reconnect to load them."
       },
       "address_book": {
         "title": "Contacts",
@@ -45,6 +47,7 @@
         "compose": "Write message",
         "loading": "Loading contacts…",
         "error": "Could not load contacts",
+        "error_offline": "Contacts aren't on this device. Reconnect to load them.",
         "empty": "No address book available",
         "no_entries": "No contacts or lists yet",
         "no_results": "No matches",

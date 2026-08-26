@@ -23,6 +23,7 @@ jest.mock('next/navigation', () => ({
 jest.mock('../flags', () => ({
   isPwaMailCacheEnabled: () => mockMailCache,
   isPwaOutboxEnabled: () => mockOutbox,
+  isPwaEnabled: () => mockMailCache,
 }))
 
 jest.mock('../network/use-network-status', () => ({
@@ -41,8 +42,14 @@ jest.mock('../auth/get-auth-token', () => ({
 }))
 
 function Probe() {
-  const { view, openFolder, openOutbox, openMail, folderPathOverride } =
-    useOfflineNav()
+  const {
+    view,
+    openFolder,
+    openOutbox,
+    openMail,
+    navigateApp,
+    folderPathOverride,
+  } = useOfflineNav()
   const target = view.kind === 'unavailable' ? view.target : ''
   const label = view.kind === 'unavailable' ? (view.label ?? '') : ''
   return (
@@ -71,6 +78,15 @@ function Probe() {
         onClick={() => void openMail('0', 'INBOX', 'inbox_003')}
       >
         mail
+      </button>
+      <button type="button" onClick={() => navigateApp('/calendars')}>
+        calendars
+      </button>
+      <button
+        type="button"
+        onClick={() => navigateApp('/user_settings/profile')}
+      >
+        settings
       </button>
     </div>
   )
@@ -203,5 +219,37 @@ describe('OfflineNavProvider', () => {
     expect(screen.getByTestId('target')).toHaveTextContent('folder')
     expect(screen.getByTestId('label')).toHaveTextContent('Inbox')
     expect(screen.getByTestId('override')).toHaveTextContent('INBOX')
+  })
+
+  it('opens an in-app overlay for calendar instead of navigating when offline', async () => {
+    mockIsOnline = false
+    const user = userEvent.setup()
+    render(
+      <OfflineNavProvider>
+        <Probe />
+      </OfflineNavProvider>
+    )
+
+    await user.click(screen.getByRole('button', { name: 'calendars' }))
+
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(screen.getByTestId('kind')).toHaveTextContent('unavailable')
+    expect(screen.getByTestId('target')).toHaveTextContent('calendar')
+    expect(screen.getByTestId('override')).toHaveTextContent('')
+  })
+
+  it('opens an in-app overlay for settings instead of navigating when offline', async () => {
+    mockIsOnline = false
+    const user = userEvent.setup()
+    render(
+      <OfflineNavProvider>
+        <Probe />
+      </OfflineNavProvider>
+    )
+
+    await user.click(screen.getByRole('button', { name: 'settings' }))
+
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(screen.getByTestId('target')).toHaveTextContent('settings')
   })
 })

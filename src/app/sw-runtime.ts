@@ -5,27 +5,52 @@ export function isNavigationRequest(
   return request.mode === 'navigate' || request.destination === 'document'
 }
 
-/** Keep in sync with `getLocales()` — do not import next-intl into the SW. */
+/** Keep in sync with `getLocales()` / `getDefaultLocale()` — do not import next-intl into the SW. */
 export const OFFLINE_FALLBACK_LOCALES = ['en', 'de', 'fr', 'es'] as const
+export const DEFAULT_OFFLINE_LOCALE = 'en'
+
+function localeFromRequestUrl(requestUrl: string): string | undefined {
+  try {
+    const first = new URL(requestUrl, 'http://localhost').pathname
+      .split('/')
+      .filter(Boolean)[0]
+    if (
+      first &&
+      (OFFLINE_FALLBACK_LOCALES as readonly string[]).includes(first)
+    ) {
+      return first
+    }
+  } catch {
+    // Invalid URL.
+  }
+  return undefined
+}
+
+export function pathnameFromRequestUrl(requestUrl: string): string {
+  try {
+    return new URL(requestUrl, 'http://localhost').pathname
+  } catch {
+    return ''
+  }
+}
+
+/** `/{locale}/auth/login` — precached so logout can land here while offline. */
+export function isAuthLoginPath(pathname: string): boolean {
+  return /^\/(?:en|de|fr|es)\/auth\/login\/?$/.test(pathname)
+}
+
+export function offlineLoginPath(requestUrl: string): string {
+  const locale = localeFromRequestUrl(requestUrl) ?? DEFAULT_OFFLINE_LOCALE
+  return `/${locale}/auth/login`
+}
 
 /**
  * Document fallback for a failed navigation: `/{locale}/~offline` when the
  * request path starts with a known locale, otherwise the locale-less page.
  */
 export function offlineFallbackPath(requestUrl: string): string {
-  try {
-    const path = new URL(requestUrl, 'http://localhost').pathname
-    const first = path.split('/').filter(Boolean)[0]
-    if (
-      first &&
-      (OFFLINE_FALLBACK_LOCALES as readonly string[]).includes(first)
-    ) {
-      return `/${first}/~offline`
-    }
-  } catch {
-    // Invalid URL — use the unlocalized fallback.
-  }
-  return '/~offline'
+  const locale = localeFromRequestUrl(requestUrl)
+  return locale ? `/${locale}/~offline` : '/~offline'
 }
 
 /**
