@@ -12,12 +12,21 @@ import {
   type ReactNode,
 } from 'react'
 import { getAuthUserId } from './auth/get-auth-token'
-import { isPwaMailCacheEnabled, isPwaOutboxEnabled } from './flags'
+import {
+  isPwaEnabled,
+  isPwaMailCacheEnabled,
+  isPwaOutboxEnabled,
+} from './flags'
 import { useMailCache } from './hooks/use-mail-cache'
 import { shouldSkipDocumentNav } from './network/skip-document-nav'
 import { useNetworkStatus } from './network/use-network-status'
+import {
+  isMailFolderUnavailableTarget,
+  moduleTargetFromHref,
+  type OfflineUnavailableTarget,
+} from './offline-modules'
 
-export type OfflineUnavailableTarget = 'mail' | 'folder'
+export type { OfflineUnavailableTarget }
 
 export type OfflineNavView =
   | { kind: 'route' }
@@ -37,7 +46,13 @@ export type OfflineNavView =
     }
 
 function folderPathOverrideFromView(view: OfflineNavView): string | null {
-  if (view.kind === 'folder' || view.kind === 'unavailable') return view.path
+  if (view.kind === 'folder') return view.path
+  if (
+    view.kind === 'unavailable' &&
+    isMailFolderUnavailableTarget(view.target)
+  ) {
+    return view.path
+  }
   if (view.kind === 'mail') return view.folderPath
   return null
 }
@@ -52,6 +67,7 @@ interface OfflineNavApi {
     folderPath: string,
     mailId: string
   ) => Promise<void>
+  navigateApp: (href: string) => void
   closeOverlay: () => void
   clearUnavailable: () => void
 }
@@ -76,6 +92,9 @@ function useRouteFallback(): OfflineNavApi {
         mailId: string
       ) => {
         push(`/u/${accountId}/${encodeURIComponent(folderPath)}/${mailId}`)
+      },
+      navigateApp: (href: string) => {
+        push(href)
       },
       closeOverlay: () => {},
       clearUnavailable: () => {},
@@ -158,6 +177,19 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
     [push, readBody, skipNav]
   )
 
+  const navigateApp = useCallback(
+    (href: string) => {
+      const target = moduleTargetFromHref(href)
+      if (!target || !isPwaEnabled() || !skipNav) {
+        setView({ kind: 'route' })
+        push(href)
+        return
+      }
+      setView({ kind: 'unavailable', target, path: href })
+    },
+    [push, skipNav]
+  )
+
   const closeOverlay = useCallback(() => {
     setView((current) => {
       if (current.kind === 'mail') {
@@ -186,10 +218,19 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
       openFolder,
       openOutbox,
       openMail,
+      navigateApp,
       closeOverlay,
       clearUnavailable,
     }),
-    [clearUnavailable, closeOverlay, openFolder, openMail, openOutbox, view]
+    [
+      clearUnavailable,
+      closeOverlay,
+      navigateApp,
+      openFolder,
+      openMail,
+      openOutbox,
+      view,
+    ]
   )
 
   return (

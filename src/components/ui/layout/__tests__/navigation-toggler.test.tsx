@@ -7,6 +7,18 @@ jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(),
 }))
 
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({
+    view: { kind: 'route' },
+    navigateApp: jest.fn(),
+    closeOverlay: jest.fn(),
+  }),
+}))
+
+jest.mock('@/features/offline/network/use-network-status', () => ({
+  useNetworkStatus: () => ({ isOnline: true, isProbing: false }),
+}))
+
 // Mock the tabs component - using a simplified version for testing
 jest.mock('../../tabs', () => ({
   Tabs: ({ children, value, onValueChange, className }: any) => (

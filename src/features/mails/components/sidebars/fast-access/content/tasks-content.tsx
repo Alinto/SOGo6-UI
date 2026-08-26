@@ -2,22 +2,21 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import TaskOverdueCountBadge from '@/features/tasks/components/task-overdue-count-badge'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
+import { CALENDAR_TEXT_SEARCH_MAX_LENGTH } from '@/features/calendars/calendar-constants'
 import { useGetCalendarsQuery } from '@/features/calendars/store/calendars-api'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
+import { useGetTasksQuery, useUpdateTaskMutation } from '@/features/tasks'
 import TaskCompleteCheckbox from '@/features/tasks/components/task-complete-checkbox'
+import TaskOverdueCountBadge from '@/features/tasks/components/task-overdue-count-badge'
 import TaskProgressBar from '@/features/tasks/components/task-progress-bar'
-import {
-  useGetTasksQuery,
-  useUpdateTaskMutation,
-} from '@/features/tasks'
 import type { Task } from '@/features/tasks/tasks-types'
-import { isActiveTask } from '@/features/tasks/utils/task-list-filter'
 import {
   isTaskDueToday,
   isTaskOverdue,
   isTaskUpcoming,
 } from '@/features/tasks/utils/task-due'
+import { isActiveTask } from '@/features/tasks/utils/task-list-filter'
 import {
   getPriorityBadgeClassName,
   getPriorityLevel,
@@ -27,9 +26,8 @@ import { cn } from '@/lib/utils'
 import { format, parseISO } from 'date-fns'
 import { Search } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import { memo, useCallback, useEffect, useMemo, useState, type FC } from 'react'
-import { CALENDAR_TEXT_SEARCH_MAX_LENGTH } from '@/features/calendars/calendar-constants'
+import FastAccessError from './fast-access-error'
 
 const DEFAULT_COLOR = '#3b82f6'
 const SECTION_LIMIT = 5
@@ -61,6 +59,7 @@ function TaskRow({
   dueClassName?: string
   onToggleComplete: (task: Task) => Promise<void>
 }) {
+  const { navigateApp } = useOfflineNav()
   const tPriority = useTranslations('TASKS')
   const priorityLevel = getPriorityLevel(task.priority)
   const progressPercent = getDisplayTaskProgress(task)
@@ -73,14 +72,18 @@ function TaskRow({
   return (
     <div
       data-testid="task-row"
-      className="flex items-start gap-2 rounded-md px-1 py-1 transition-colors hover:bg-sidebar-accent/50"
+      className="hover:bg-sidebar-accent/50 flex items-start gap-2 rounded-md px-1 py-1 transition-colors"
     >
       <TaskCompleteCheckbox
         completed={false}
         label={task.title}
         onToggle={handleToggle}
       />
-      <Link href="/tasks" className="min-w-0 flex-1 py-0.5">
+      <button
+        type="button"
+        className="min-w-0 flex-1 py-0.5 text-left"
+        onClick={() => navigateApp('/tasks')}
+      >
         <div className="flex items-start gap-1.5">
           <span
             className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
@@ -88,7 +91,7 @@ function TaskRow({
             aria-hidden
           />
           <div className="min-w-0">
-            <p className="text-foreground line-clamp-2 text-sm font-medium leading-snug">
+            <p className="text-foreground line-clamp-2 text-sm leading-snug font-medium">
               {task.title}
             </p>
             {(dueLabel ||
@@ -124,7 +127,7 @@ function TaskRow({
             )}
           </div>
         </div>
-      </Link>
+      </button>
     </div>
   )
 }
@@ -140,7 +143,7 @@ function SectionHeader({
 }) {
   return (
     <div className="mb-1 flex items-center justify-between px-2">
-      <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+      <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
         {title}
       </p>
       {count > 0 &&
@@ -205,6 +208,7 @@ function TaskSection({
 const TasksContent: FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.tasks')
   const tTasks = useTranslations('TASKS')
+  const { navigateApp } = useOfflineNav()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
 
@@ -215,13 +219,14 @@ const TasksContent: FC = () => {
     return () => window.clearTimeout(timer)
   }, [searchInput])
 
-  const searchParam =
-    debouncedSearch.length >= 2 ? debouncedSearch : undefined
+  const searchParam = debouncedSearch.length >= 2 ? debouncedSearch : undefined
 
   const { data: calendars = [] } = useGetCalendarsQuery()
-  const { data: tasks = [], isLoading, isError } = useGetTasksQuery(
-    searchParam ? { search: searchParam } : undefined
-  )
+  const {
+    data: tasks = [],
+    isLoading,
+    isError,
+  } = useGetTasksQuery(searchParam ? { search: searchParam } : undefined)
   const [updateTask] = useUpdateTaskMutation()
 
   const calendarColors = useMemo(() => {
@@ -258,10 +263,7 @@ const TasksContent: FC = () => {
     [updateTask]
   )
 
-  const activeTasks = useMemo(
-    () => tasks.filter(isActiveTask),
-    [tasks]
-  )
+  const activeTasks = useMemo(() => tasks.filter(isActiveTask), [tasks])
 
   const isSearching = debouncedSearch.length >= 2
   const sectionLimit = isSearching ? Number.POSITIVE_INFINITY : SECTION_LIMIT
@@ -331,8 +333,13 @@ const TasksContent: FC = () => {
       <div className="flex shrink-0 flex-col gap-2 px-1">
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium">{t('title')}</span>
-          <Button variant="link" size="sm" className="h-auto shrink-0 p-0" asChild>
-            <Link href="/tasks">{t('view_all')}</Link>
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto shrink-0 p-0"
+            onClick={() => navigateApp('/tasks')}
+          >
+            {t('view_all')}
           </Button>
         </div>
 
@@ -358,11 +365,13 @@ const TasksContent: FC = () => {
 
       <div className="scrollbar-thin-gray flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2">
         {isLoading && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('loading')}</p>
+          <p className="text-muted-foreground px-2 py-3 text-xs">
+            {t('loading')}
+          </p>
         )}
 
         {!isLoading && isError && (
-          <p className="text-destructive px-2 py-3 text-xs">{t('error')}</p>
+          <FastAccessError online={t('error')} offline={t('error_offline')} />
         )}
 
         {!isLoading && !isError && !hasAnyTask && (
@@ -372,7 +381,9 @@ const TasksContent: FC = () => {
         )}
 
         {!isLoading && !isError && hasAnyTask && !hasVisibleTask && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('no_results')}</p>
+          <p className="text-muted-foreground px-2 py-3 text-xs">
+            {t('no_results')}
+          </p>
         )}
 
         {!isLoading && !isError && hasVisibleTask && (

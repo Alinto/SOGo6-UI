@@ -1,9 +1,14 @@
+'use client'
+
+import OfflineModuleGate from '@/features/offline/components/offline-module-gate'
 import React from 'react'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="h-[calc(100vh-var(--header-height))] overflow-y-auto p-2">
-      {children}
-    </div>
+    <OfflineModuleGate target="settings">
+      <div className="h-[calc(100vh-var(--header-height))] overflow-y-auto p-2">
+        {children}
+      </div>
+    </OfflineModuleGate>
   )
 }

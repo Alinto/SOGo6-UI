@@ -89,6 +89,7 @@ jest.mock('@/features/offline/offline-nav-context', () => ({
     openFolder: jest.fn(),
     openOutbox: jest.fn(),
     openMail: jest.fn(),
+    navigateApp: jest.fn(),
     closeOverlay: jest.fn(),
     clearUnavailable: jest.fn(),
   })),
@@ -121,6 +122,7 @@ describe('Mail Folder Layout', () => {
       openFolder: jest.fn(),
       openOutbox: jest.fn(),
       openMail: jest.fn(),
+      navigateApp: jest.fn(),
       closeOverlay: jest.fn(),
       clearUnavailable: jest.fn(),
     })
@@ -252,6 +254,7 @@ describe('Mail Folder Layout', () => {
       openFolder: jest.fn(),
       openOutbox: jest.fn(),
       openMail: jest.fn(),
+      navigateApp: jest.fn(),
       closeOverlay: jest.fn(),
       clearUnavailable: jest.fn(),
     })

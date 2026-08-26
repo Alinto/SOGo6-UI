@@ -1,0 +1,17 @@
+/**
+ * @jest-environment jsdom
+ */
+import { moduleTargetFromHref } from '../offline-modules'
+
+describe('moduleTargetFromHref', () => {
+  it('maps app paths to overlay targets', () => {
+    expect(moduleTargetFromHref('/calendars')).toBe('calendar')
+    expect(moduleTargetFromHref('/address_books/abc')).toBe('contacts')
+    expect(moduleTargetFromHref('/tasks')).toBe('tasks')
+    expect(moduleTargetFromHref('/user_settings/profile')).toBe('settings')
+  })
+
+  it('ignores mail routes', () => {
+    expect(moduleTargetFromHref('/u/0/INBOX')).toBeNull()
+  })
+})

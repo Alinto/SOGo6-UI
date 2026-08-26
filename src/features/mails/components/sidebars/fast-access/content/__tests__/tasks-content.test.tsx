@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { act, render, screen, within, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import TasksContent from '../tasks-content'
@@ -13,7 +13,8 @@ jest.mock('@/features/calendars/store/calendars-api', () => ({
 }))
 
 jest.mock('@/features/tasks', () => ({
-  useGetTasksQuery: (params?: { search?: string }) => mockUseGetTasksQuery(params),
+  useGetTasksQuery: (params?: { search?: string }) =>
+    mockUseGetTasksQuery(params),
   useUpdateTaskMutation: () => [mockUpdateTask],
 }))
 
@@ -51,10 +52,27 @@ jest.mock('@/components/ui/button', () => ({
   Button: ({
     children,
     asChild,
+    onClick,
   }: {
     children: ReactNode
     asChild?: boolean
-  }) => (asChild ? children : <button type="button">{children}</button>),
+    onClick?: () => void
+  }) =>
+    asChild ? (
+      children
+    ) : (
+      <button type="button" onClick={onClick}>
+        {children}
+      </button>
+    ),
+}))
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({ navigateApp: jest.fn() }),
+}))
+
+jest.mock('@/features/offline/network/use-network-status', () => ({
+  useNetworkStatus: () => ({ isOnline: true, isProbing: false }),
 }))
 
 jest.mock('@/components/ui/input', () => ({
@@ -104,6 +122,7 @@ jest.mock('next-intl', () => ({
       search_placeholder: 'Search tasks',
       loading: 'Loading tasks…',
       error: 'Could not load tasks',
+      error_offline: "Tasks aren't on this device. Reconnect to load them.",
     }
     return map[key] ?? key
   },
@@ -135,13 +154,12 @@ describe('TasksContent', () => {
   })
 
   describe('basic rendering', () => {
-    it('renders panel header and view all link', () => {
+    it('renders panel header and view all action', () => {
       render(<TasksContent />)
       expect(screen.getByTestId('tasks-panel')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'View all tasks' })).toHaveAttribute(
-        'href',
-        '/tasks'
-      )
+      expect(
+        screen.getByRole('button', { name: 'View all tasks' })
+      ).toBeInTheDocument()
     })
 
     it('does not render calendar widget', () => {
@@ -283,19 +301,23 @@ describe('TasksContent', () => {
 
     beforeEach(() => {
       jest.useFakeTimers()
-      mockUseGetTasksQuery.mockImplementation((params?: { search?: string }) => {
-        const query = params?.search?.toLowerCase()
-        const data =
-          query && query.length >= 2
-            ? allTasks.filter((task) => task.title.toLowerCase().includes(query))
-            : allTasks
+      mockUseGetTasksQuery.mockImplementation(
+        (params?: { search?: string }) => {
+          const query = params?.search?.toLowerCase()
+          const data =
+            query && query.length >= 2
+              ? allTasks.filter((task) =>
+                  task.title.toLowerCase().includes(query)
+                )
+              : allTasks
 
-        return {
-          data,
-          isLoading: false,
-          isError: false,
+          return {
+            data,
+            isLoading: false,
+            isError: false,
+          }
         }
-      })
+      )
     })
 
     afterEach(() => {

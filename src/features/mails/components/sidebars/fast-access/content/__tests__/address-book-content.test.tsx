@@ -8,9 +8,12 @@ const mockUseGetAddressBooksQuery = jest.fn()
 const mockUseGetAddressBookVCardsQuery = jest.fn()
 const mockDispatch = jest.fn()
 
-jest.mock('@/features/address_books/hooks/use-contact-search-min-length', () => ({
-  useContactSearchMinLength: () => 2,
-}))
+jest.mock(
+  '@/features/address_books/hooks/use-contact-search-min-length',
+  () => ({
+    useContactSearchMinLength: () => 2,
+  })
+)
 
 jest.mock('@/features/address_books', () => ({
   getContactDisplayName: (contact: {
@@ -26,7 +29,12 @@ jest.mock('@/features/address_books', () => ({
   getDistributionListMemberCount: (contact: { members?: unknown[] }) =>
     contact.members?.length ?? 0,
   partitionAddressBookEntries: (
-    items: Array<{ id: string; kind?: string; firstName: string; lastName: string }>,
+    items: Array<{
+      id: string
+      kind?: string
+      firstName: string
+      lastName: string
+    }>,
     searchQuery: string,
     _sortOrder?: string,
     options?: { serverSide?: boolean }
@@ -68,13 +76,18 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
 }))
 
+const mockNavigateApp = jest.fn()
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({ navigateApp: mockNavigateApp }),
+}))
+
+jest.mock('@/features/offline/network/use-network-status', () => ({
+  useNetworkStatus: () => ({ isOnline: true, isProbing: false }),
+}))
+
 jest.mock('@/components/ui/sidebar', () => ({
-  SidebarGroupContent: ({
-    children,
-    ...props
-  }: {
-    children: ReactNode
-  }) => (
+  SidebarGroupContent: ({ children, ...props }: { children: ReactNode }) => (
     <div data-testid="sidebar-group-content" {...props}>
       {children}
     </div>
@@ -110,7 +123,9 @@ jest.mock('@/components/ui/input', () => ({
 
 jest.mock('@/components/ui/avatar', () => ({
   Avatar: ({ children }: { children: ReactNode }) => <span>{children}</span>,
-  AvatarFallback: ({ children }: { children: ReactNode }) => <span>{children}</span>,
+  AvatarFallback: ({ children }: { children: ReactNode }) => (
+    <span>{children}</span>
+  ),
 }))
 
 jest.mock('next/link', () => ({
@@ -145,10 +160,7 @@ describe('AddressBookContent', () => {
       kind: 'group' as const,
       firstName: 'Sales Team',
       lastName: '',
-      members: [
-        { email: 'sales@example.com' },
-        { email: 'team@example.com' },
-      ],
+      members: [{ email: 'sales@example.com' }, { email: 'team@example.com' }],
     },
     {
       id: 'contact-1',
@@ -172,10 +184,7 @@ describe('AddressBookContent', () => {
     })
     mockUseGetAddressBookVCardsQuery.mockImplementation((arg) => {
       const search = arg?.params?.search
-      const items =
-        search === 'Jane'
-          ? [fullItems[1]]
-          : fullItems
+      const items = search === 'Jane' ? [fullItems[1]] : fullItems
 
       return {
         data: {
@@ -196,22 +205,25 @@ describe('AddressBookContent', () => {
 
     expect(screen.getByTestId('address-book-panel')).toBeInTheDocument()
     expect(screen.getByTestId('fast-access-section-lists')).toBeInTheDocument()
-    expect(screen.getByTestId('fast-access-section-contacts')).toBeInTheDocument()
+    expect(
+      screen.getByTestId('fast-access-section-contacts')
+    ).toBeInTheDocument()
     expect(screen.getByText('Sales Team')).toBeInTheDocument()
     expect(screen.getByText('Jane Doe')).toBeInTheDocument()
     expect(screen.getByText('2 members')).toBeInTheDocument()
     expect(screen.getByText('Personal')).toBeInTheDocument()
   })
 
-  it('links entries to the address book detail page', () => {
+  it('opens the address book via navigateApp', () => {
     render(<AddressBookContent />)
 
-    expect(screen.getByRole('link', { name: /Jane Doe/i })).toHaveAttribute(
-      'href',
+    screen.getByRole('button', { name: /Jane Doe/i }).click()
+    expect(mockNavigateApp).toHaveBeenCalledWith(
       '/address_books/personal-1/contact-1'
     )
-    expect(screen.getByRole('link', { name: /Sales Team/i })).toHaveAttribute(
-      'href',
+
+    screen.getByRole('button', { name: /Sales Team/i }).click()
+    expect(mockNavigateApp).toHaveBeenCalledWith(
       '/address_books/personal-1/list-1'
     )
   })

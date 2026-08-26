@@ -12,17 +12,18 @@ import {
   useGetAddressBooksQuery,
   useGetAddressBookVCardsQuery,
 } from '@/features/address_books'
+import type { VCard } from '@/features/address_books/address-books-types'
 import { useContactSearchMinLength } from '@/features/address_books/hooks/use-contact-search-min-length'
 import { resolveDefaultBookId } from '@/features/address_books/utils/resolve-default-book'
-import type { VCard } from '@/features/address_books/address-books-types'
 import { createDraft } from '@/features/mails/store'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
+import { skipToken } from '@reduxjs/toolkit/query'
 import { Mail, Search, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { skipToken } from '@reduxjs/toolkit/query'
-import Link from 'next/link'
 import React, { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import FastAccessError from './fast-access-error'
 
 const LIST_SECTION_LIMIT = 4
 const CONTACT_SECTION_LIMIT = 6
@@ -31,11 +32,13 @@ const SEARCH_DEBOUNCE_MS = 300
 function SectionHeader({ title, count }: { title: string; count: number }) {
   return (
     <div className="mb-1 flex items-center justify-between px-2">
-      <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+      <p className="text-muted-foreground text-xs font-semibold tracking-wide uppercase">
         {title}
       </p>
       {count > 0 && (
-        <span className="text-muted-foreground text-xs tabular-nums">{count}</span>
+        <span className="text-muted-foreground text-xs tabular-nums">
+          {count}
+        </span>
       )}
     </div>
   )
@@ -58,14 +61,16 @@ function EntryRow({
   onCompose?: () => void
   testId: string
 }) {
+  const { navigateApp } = useOfflineNav()
   return (
     <div
-      className="group flex items-center gap-0.5 rounded-md transition-colors hover:bg-sidebar-accent/50"
+      className="group hover:bg-sidebar-accent/50 flex items-center gap-0.5 rounded-md transition-colors"
       data-testid={testId}
     >
-      <Link
-        href={href}
-        className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-sm"
+      <button
+        type="button"
+        className="flex min-w-0 flex-1 items-center gap-2 px-2 py-1.5 text-left text-sm"
+        onClick={() => navigateApp(href)}
       >
         {leading}
         <div className="min-w-0">
@@ -74,13 +79,13 @@ function EntryRow({
             <p className="text-muted-foreground truncate text-xs">{subtitle}</p>
           )}
         </div>
-      </Link>
+      </button>
       {onCompose && (
         <Button
           type="button"
           variant="ghost"
           size="icon"
-          className="text-muted-foreground hover:text-foreground mr-0.5 h-7 w-7 shrink-0 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+          className="text-muted-foreground hover:text-foreground mr-0.5 h-7 w-7 shrink-0 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
           aria-label={composeLabel}
           onClick={(event) => {
             event.preventDefault()
@@ -96,7 +101,8 @@ function EntryRow({
 }
 
 function ContactLeading({ contact }: { contact: VCard }) {
-  const initials = `${contact.firstName[0] ?? ''}${contact.lastName[0] ?? ''}`.toUpperCase()
+  const initials =
+    `${contact.firstName[0] ?? ''}${contact.lastName[0] ?? ''}`.toUpperCase()
 
   return (
     <Avatar className="h-7 w-7 shrink-0">
@@ -189,6 +195,7 @@ function AddressBookSection({
 const AddressBookContent: React.FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.address_book')
   const dispatch = useAppDispatch()
+  const { navigateApp } = useOfflineNav()
   const minSearchLength = useContactSearchMinLength()
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -201,8 +208,11 @@ const AddressBookContent: React.FC = () => {
     return () => window.clearTimeout(timer)
   }, [searchQuery])
 
-  const { data: addressBooks, isLoading: booksLoading, isError } =
-    useGetAddressBooksQuery()
+  const {
+    data: addressBooks,
+    isLoading: booksLoading,
+    isError,
+  } = useGetAddressBooksQuery()
 
   const defaultBook = useMemo(() => {
     const personals = addressBooks?.personals ?? []
@@ -320,8 +330,13 @@ const AddressBookContent: React.FC = () => {
               </p>
             )}
           </div>
-          <Button variant="link" size="sm" className="h-auto shrink-0 p-0" asChild>
-            <Link href={bookHref}>{t('view_all')}</Link>
+          <Button
+            variant="link"
+            size="sm"
+            className="h-auto shrink-0 p-0"
+            onClick={() => navigateApp(bookHref)}
+          >
+            {t('view_all')}
           </Button>
         </div>
 
@@ -346,15 +361,19 @@ const AddressBookContent: React.FC = () => {
 
       <div className="scrollbar-thin-gray flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-2">
         {isLoading && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('loading')}</p>
+          <p className="text-muted-foreground px-2 py-3 text-xs">
+            {t('loading')}
+          </p>
         )}
 
         {!isLoading && isError && (
-          <p className="text-destructive px-2 py-3 text-xs">{t('error')}</p>
+          <FastAccessError online={t('error')} offline={t('error_offline')} />
         )}
 
         {!isLoading && !isError && !defaultBook && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('empty')}</p>
+          <p className="text-muted-foreground px-2 py-3 text-xs">
+            {t('empty')}
+          </p>
         )}
 
         {!isLoading && !isError && defaultBook && searchTooShort && (
@@ -363,9 +382,15 @@ const AddressBookContent: React.FC = () => {
           </p>
         )}
 
-        {!isLoading && !isError && defaultBook && !hasAnyEntry && !searchTooShort && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('no_entries')}</p>
-        )}
+        {!isLoading &&
+          !isError &&
+          defaultBook &&
+          !hasAnyEntry &&
+          !searchTooShort && (
+            <p className="text-muted-foreground px-2 py-3 text-xs">
+              {t('no_entries')}
+            </p>
+          )}
 
         {!isLoading &&
           !isError &&
@@ -373,37 +398,43 @@ const AddressBookContent: React.FC = () => {
           hasAnyEntry &&
           !hasVisibleEntry &&
           !searchTooShort && (
-          <p className="text-muted-foreground px-2 py-3 text-xs">{t('no_results')}</p>
-        )}
+            <p className="text-muted-foreground px-2 py-3 text-xs">
+              {t('no_results')}
+            </p>
+          )}
 
-        {!isLoading && !isError && defaultBook && hasVisibleEntry && !searchTooShort && (
-          <>
-            <AddressBookSection
-              sectionId="lists"
-              title={t('distribution_lists')}
-              items={visibleLists}
-              totalCount={listTotal}
-              bookId={defaultBook.id}
-              composeLabel={t('compose')}
-              onComposeContact={handleComposeContact}
-              onComposeList={handleComposeList}
-              renderLeading={() => <DistributionListLeading />}
-              getSubtitle={listSubtitle}
-            />
-            <AddressBookSection
-              sectionId="contacts"
-              title={t('contacts')}
-              items={visibleContacts}
-              totalCount={contactTotal}
-              bookId={defaultBook.id}
-              composeLabel={t('compose')}
-              onComposeContact={handleComposeContact}
-              onComposeList={handleComposeList}
-              renderLeading={(item) => <ContactLeading contact={item} />}
-              getSubtitle={getContactSubtitle}
-            />
-          </>
-        )}
+        {!isLoading &&
+          !isError &&
+          defaultBook &&
+          hasVisibleEntry &&
+          !searchTooShort && (
+            <>
+              <AddressBookSection
+                sectionId="lists"
+                title={t('distribution_lists')}
+                items={visibleLists}
+                totalCount={listTotal}
+                bookId={defaultBook.id}
+                composeLabel={t('compose')}
+                onComposeContact={handleComposeContact}
+                onComposeList={handleComposeList}
+                renderLeading={() => <DistributionListLeading />}
+                getSubtitle={listSubtitle}
+              />
+              <AddressBookSection
+                sectionId="contacts"
+                title={t('contacts')}
+                items={visibleContacts}
+                totalCount={contactTotal}
+                bookId={defaultBook.id}
+                composeLabel={t('compose')}
+                onComposeContact={handleComposeContact}
+                onComposeList={handleComposeList}
+                renderLeading={(item) => <ContactLeading contact={item} />}
+                getSubtitle={getContactSubtitle}
+              />
+            </>
+          )}
       </div>
     </SidebarGroupContent>
   )

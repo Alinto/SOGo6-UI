@@ -1,17 +1,18 @@
 'use client'
 
-import { Calendar } from '@/components/ui/calendar-lazy'
 import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar-lazy'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import {
   useGetCalendarsQuery,
   useGetEventsQuery,
 } from '@/features/calendars/store/calendars-api'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
 import React, { memo, useMemo, useState } from 'react'
+import FastAccessError from './fast-access-error'
 
 function startOfDay(date: Date): Date {
   const d = new Date(date)
@@ -94,10 +95,7 @@ function EventList({
     data: events,
     isLoading,
     isError,
-  } = useGetEventsQuery(
-    { startDate, endDate },
-    { skip: !hasCalendars }
-  )
+  } = useGetEventsQuery({ startDate, endDate }, { skip: !hasCalendars })
 
   const sorted = useMemo(() => {
     if (!events) return []
@@ -115,7 +113,7 @@ function EventList({
   }
 
   if (isError) {
-    return <p className="text-destructive px-2 py-3 text-xs">{t('error')}</p>
+    return <FastAccessError online={t('error')} offline={t('error_offline')} />
   }
 
   if (sorted.length === 0) {
@@ -141,6 +139,7 @@ function EventList({
 
 const CalendarContent: React.FC = () => {
   const t = useTranslations('NAVIGATION.fast_access.calendar')
+  const { navigateApp } = useOfflineNav()
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [displayMonth, setDisplayMonth] = useState<Date>(new Date())
 
@@ -188,11 +187,19 @@ const CalendarContent: React.FC = () => {
   const isToday = isSameDay(selectedDate, new Date())
 
   return (
-    <SidebarGroupContent className="flex flex-col gap-2" data-testid="calendar-panel">
+    <SidebarGroupContent
+      className="flex flex-col gap-2"
+      data-testid="calendar-panel"
+    >
       <div className="flex items-center justify-between gap-2 px-3 pt-2">
         <span className="text-sm font-medium">{t('title')}</span>
-        <Button variant="link" size="sm" className="h-auto shrink-0 p-0" asChild>
-          <Link href="/calendars">{t('view_all')}</Link>
+        <Button
+          variant="link"
+          size="sm"
+          className="h-auto shrink-0 p-0"
+          onClick={() => navigateApp('/calendars')}
+        >
+          {t('view_all')}
         </Button>
       </div>
 

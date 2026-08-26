@@ -20,11 +20,11 @@ jest.mock('@/components/ui/calendar-lazy', () => ({
     onSelect?: (d: Date | undefined) => void
     modifiers?: { hasEvents?: Date[] }
   }) => (
-    <div data-testid="mock-calendar" data-has-events={modifiers?.hasEvents?.length ?? 0}>
-      <button
-        type="button"
-        onClick={() => onSelect?.(new Date(2025, 5, 15))}
-      >
+    <div
+      data-testid="mock-calendar"
+      data-has-events={modifiers?.hasEvents?.length ?? 0}
+    >
+      <button type="button" onClick={() => onSelect?.(new Date(2025, 5, 15))}>
         pick-day
       </button>
     </div>
@@ -35,10 +35,27 @@ jest.mock('@/components/ui/button', () => ({
   Button: ({
     children,
     asChild,
+    onClick,
   }: {
     children: ReactNode
     asChild?: boolean
-  }) => (asChild ? children : <button type="button">{children}</button>),
+    onClick?: () => void
+  }) =>
+    asChild ? (
+      children
+    ) : (
+      <button type="button" onClick={onClick}>
+        {children}
+      </button>
+    ),
+}))
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({ navigateApp: jest.fn() }),
+}))
+
+jest.mock('@/features/offline/network/use-network-status', () => ({
+  useNetworkStatus: () => ({ isOnline: true, isProbing: false }),
 }))
 
 jest.mock('next/link', () => ({
@@ -82,6 +99,8 @@ jest.mock('next-intl', () => ({
       all_day: 'All day',
       loading: 'Loading events…',
       error: 'Could not load events',
+      error_offline:
+        "Today's events aren't on this device. Reconnect to load them.",
     }
     return map[key] ?? key
   },
@@ -105,10 +124,9 @@ describe('CalendarContent', () => {
       render(<CalendarContent />)
       expect(screen.getByTestId('calendar-panel')).toBeInTheDocument()
       expect(screen.getByText('Calendar')).toBeInTheDocument()
-      expect(screen.getByRole('link', { name: 'View all' })).toHaveAttribute(
-        'href',
-        '/calendars'
-      )
+      expect(
+        screen.getByRole('button', { name: 'View all' })
+      ).toBeInTheDocument()
       expect(screen.getByTestId('mock-calendar')).toBeInTheDocument()
     })
 
@@ -117,9 +135,14 @@ describe('CalendarContent', () => {
       expect(screen.getByText('Today')).toBeInTheDocument()
     })
 
-    it('shows no events message when list is empty', () => {
+    it('shows an offline-aware error when events fail to load', () => {
+      mockUseGetEventsQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+      })
       render(<CalendarContent />)
-      expect(screen.getByText('No events today')).toBeInTheDocument()
+      expect(screen.getByText('Could not load events')).toBeInTheDocument()
     })
   })
 

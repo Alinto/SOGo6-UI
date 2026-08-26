@@ -10,9 +10,11 @@ import {
 } from 'serwist'
 import {
   filterPrecacheEntries,
+  isAuthLoginPath,
   isNavigationRequest,
   OFFLINE_FALLBACK_LOCALES,
   offlineFallbackPath,
+  pathnameFromRequestUrl,
 } from './sw-runtime'
 
 declare global {
@@ -43,6 +45,17 @@ const serwist = new Serwist({
       handler: new CacheFirst({
         cacheName: 'ckeditor-assets',
         plugins: [expire(64, 30 * 24 * 60 * 60)],
+      }),
+    },
+    {
+      matcher: ({ request }) => {
+        if (!isNavigationRequest(request)) return false
+        const path = pathnameFromRequestUrl(request.url)
+        return /\/~offline\/?$/.test(path) || isAuthLoginPath(path)
+      },
+      handler: new CacheFirst({
+        cacheName: 'pages',
+        plugins: [expire(16, 7 * 24 * 60 * 60)],
       }),
     },
     {
@@ -97,6 +110,14 @@ const serwist = new Serwist({
   ],
   fallbacks: {
     entries: [
+      ...OFFLINE_FALLBACK_LOCALES.map((locale) => ({
+        url: `/${locale}/auth/login`,
+        matcher({ request }: { request: Request }) {
+          if (!isNavigationRequest(request)) return false
+          const path = pathnameFromRequestUrl(request.url).replace(/\/$/, '')
+          return path === `/${locale}/auth/login`
+        },
+      })),
       ...OFFLINE_FALLBACK_LOCALES.map((locale) => ({
         url: `/${locale}/~offline`,
         matcher({ request }: { request: Request }) {

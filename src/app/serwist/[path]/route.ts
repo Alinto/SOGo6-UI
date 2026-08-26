@@ -12,10 +12,10 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
     additionalPrecacheEntries: [
       { url: '/~offline', revision },
-      ...getLocales().map((locale) => ({
-        url: `/${locale}/~offline`,
-        revision,
-      })),
+      ...getLocales().flatMap((locale) => [
+        { url: `/${locale}/~offline`, revision },
+        { url: `/${locale}/auth/login`, revision },
+      ]),
     ],
     swSrc: 'src/app/sw.ts',
     useNativeEsbuild: true,
