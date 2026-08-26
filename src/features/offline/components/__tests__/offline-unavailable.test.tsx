@@ -88,4 +88,19 @@ describe('OfflineUnavailable', () => {
       screen.getByText('offline_unavailable_settings_title.string')
     ).toBeInTheDocument()
   })
+
+  it('renders a notes empty state', () => {
+    render(<OfflineUnavailable force target="notes" />)
+
+    expect(screen.getByTestId('offline-unavailable')).toHaveAttribute(
+      'data-target',
+      'notes'
+    )
+    expect(
+      screen.getByText('offline_unavailable_notes_title.string')
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('offline_unavailable_notes_body.string')
+    ).toBeInTheDocument()
+  })
 })

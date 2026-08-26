@@ -9,6 +9,8 @@ describe('moduleTargetFromHref', () => {
     expect(moduleTargetFromHref('/address_books/abc')).toBe('contacts')
     expect(moduleTargetFromHref('/tasks')).toBe('tasks')
     expect(moduleTargetFromHref('/user_settings/profile')).toBe('settings')
+    expect(moduleTargetFromHref('/notes')).toBe('notes')
+    expect(moduleTargetFromHref('/notes/foo')).toBe('notes')
   })
 
   it('ignores mail routes', () => {

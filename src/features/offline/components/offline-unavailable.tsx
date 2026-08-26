@@ -56,6 +56,12 @@ function copyForTarget(
       body: t('offline_unavailable_settings_body.string'),
     }
   }
+  if (target === 'notes') {
+    return {
+      title: t('offline_unavailable_notes_title.string'),
+      body: t('offline_unavailable_notes_body.string'),
+    }
+  }
   return {
     title: t('offline_unavailable_mail_title.string'),
     body: t('offline_unavailable_mail_body.string'),

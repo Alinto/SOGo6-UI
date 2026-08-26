@@ -32,7 +32,7 @@ const expire = (maxEntries: number, maxAgeSeconds: number) =>
 
 const serwist = new Serwist({
   precacheEntries: filterPrecacheEntries(self.__SW_MANIFEST),
-  skipWaiting: true,
+  skipWaiting: false,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [

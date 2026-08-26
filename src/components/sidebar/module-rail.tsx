@@ -17,7 +17,6 @@ import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { ModuleNavIcon } from '@/lib/icons/module-nav-icons'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
-import { useRouter } from 'next/navigation'
 import React, { memo, useCallback } from 'react'
 
 const FALLBACK_ROUTES: Record<FastAccessModuleId, string> = {
@@ -29,7 +28,6 @@ const FALLBACK_ROUTES: Record<FastAccessModuleId, string> = {
 
 const ModuleRail: React.FC = () => {
   const t = useTranslations('NAVIGATION')
-  const router = useRouter()
   const { navigateApp } = useOfflineNav()
   const fastAccess = useFastAccess()
 
@@ -37,13 +35,11 @@ const ModuleRail: React.FC = () => {
     (id: FastAccessModuleId) => {
       if (fastAccess) {
         fastAccess.toggleModule(id)
-      } else if (id === 'notes') {
-        router.push(FALLBACK_ROUTES[id])
       } else {
         navigateApp(FALLBACK_ROUTES[id])
       }
     },
-    [fastAccess, navigateApp, router]
+    [fastAccess, navigateApp]
   )
 
   const items: {
