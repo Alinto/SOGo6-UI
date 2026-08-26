@@ -267,6 +267,20 @@ describe('ModuleRail', () => {
         expect(mockNavigateApp).toHaveBeenCalledWith('/calendars')
       })
     })
+
+    it('calls navigateApp for Notes when no fast access context is available', async () => {
+      mockUseFastAccess.mockReturnValueOnce(null)
+
+      const user = userEvent.setup()
+      render(<ModuleRail />)
+
+      await user.click(screen.getByRole('button', { name: 'Notes' }))
+
+      await waitFor(() => {
+        expect(mockNavigateApp).toHaveBeenCalledWith('/notes')
+      })
+      expect(mockRouterPush).not.toHaveBeenCalled()
+    })
   })
 
   describe('component stability', () => {

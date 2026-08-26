@@ -88,6 +88,9 @@ function Probe() {
       >
         settings
       </button>
+      <button type="button" onClick={() => navigateApp('/notes')}>
+        notes
+      </button>
     </div>
   )
 }
@@ -251,5 +254,21 @@ describe('OfflineNavProvider', () => {
 
     expect(mockPush).not.toHaveBeenCalled()
     expect(screen.getByTestId('target')).toHaveTextContent('settings')
+  })
+
+  it('opens an in-app overlay for notes instead of navigating when offline', async () => {
+    mockIsOnline = false
+    const user = userEvent.setup()
+    render(
+      <OfflineNavProvider>
+        <Probe />
+      </OfflineNavProvider>
+    )
+
+    await user.click(screen.getByRole('button', { name: 'notes' }))
+
+    expect(mockPush).not.toHaveBeenCalled()
+    expect(screen.getByTestId('kind')).toHaveTextContent('unavailable')
+    expect(screen.getByTestId('target')).toHaveTextContent('notes')
   })
 })

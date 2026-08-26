@@ -1,11 +1,16 @@
+import { pwaStartUrl } from '@/features/offline/pwa-start-url'
 import type { MetadataRoute } from 'next'
 
 export default function manifest(): MetadataRoute.Manifest {
+  const startUrl = pwaStartUrl()
+
   return {
     name: 'SOGo',
     short_name: 'SOGo',
     description: 'SOGo Webmail',
-    start_url: '/',
+    // Already-installed PWAs keep their original start_url until reinstall.
+    // Locale prefix avoids the `/` → `/en` redirect, which fails offline.
+    start_url: startUrl,
     scope: '/',
     display: 'standalone',
     background_color: '#ffffff',
@@ -33,13 +38,13 @@ export default function manifest(): MetadataRoute.Manifest {
       {
         name: 'Inbox',
         short_name: 'Inbox',
-        url: '/u/0/INBOX',
+        url: startUrl,
         icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
       },
       {
         name: 'New mail',
         short_name: 'Compose',
-        url: '/u/0/INBOX?compose=1',
+        url: `${startUrl}?compose=1`,
         icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
       },
     ],

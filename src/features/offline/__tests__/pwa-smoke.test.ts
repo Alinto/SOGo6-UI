@@ -23,3 +23,21 @@ describe('PWA smoke assets', () => {
     expect(fs.existsSync(path.join(process.cwd(), 'src/app/sw.ts'))).toBe(true)
   })
 })
+
+describe('PWA manifest start_url', () => {
+  it('prefixes start_url and shortcuts with the default locale', async () => {
+    const { default: manifest } = await import('@/app/manifest')
+    const { pwaStartUrl } = await import('../pwa-start-url')
+
+    const m = manifest()
+    const startUrl = pwaStartUrl()
+
+    expect(startUrl).toBe('/en/u/0/INBOX')
+    expect(m.start_url).toBe(startUrl)
+    expect(m.start_url).not.toBe('/')
+    expect(m.shortcuts?.map((s) => s.url)).toEqual([
+      '/en/u/0/INBOX',
+      '/en/u/0/INBOX?compose=1',
+    ])
+  })
+})

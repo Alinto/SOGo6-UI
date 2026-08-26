@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { memo, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 import { isPwaEnabled } from '../flags'
+import { reloadWindow } from './pwa-update-reload'
 
 /**
  * Shows a persistent toast when a new service worker is waiting.
@@ -21,7 +22,7 @@ function PwaUpdateToast() {
     const onControllerChange = () => {
       if (!reloadRequested.current) return
       reloadRequested.current = false
-      window.location.reload()
+      reloadWindow()
     }
 
     navigator.serviceWorker.addEventListener(
@@ -39,7 +40,7 @@ function PwaUpdateToast() {
             sw.postMessage({ type: 'SKIP_WAITING' })
             // Safety net if controllerchange never fires (e.g. SW redundant)
             setTimeout(() => {
-              if (reloadRequested.current) window.location.reload()
+              if (reloadRequested.current) reloadWindow()
             }, 3000)
           },
         },

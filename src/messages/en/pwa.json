@@ -117,6 +117,12 @@
     "offline_unavailable_settings_body": {
       "string": "Reconnect to open your profile and preferences."
     },
+    "offline_unavailable_notes_title": {
+      "string": "Notes are not available offline"
+    },
+    "offline_unavailable_notes_body": {
+      "string": "Reconnect to open notes."
+    },
     "outbox_edit_limit": {
       "string": "Close a compose window before editing this message."
     },
