@@ -56,6 +56,12 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   const selectedSignatureKey = useAppSelector(
     (state) => state.mailCompose.drafts[draftId]?.selectedSignatureKey ?? null
   )
+  const draftIdentityMail = useAppSelector(
+    (state) => state.mailCompose.drafts[draftId]?.selectedIdentity?.mail ?? null
+  )
+  const sourceOutboxId = useAppSelector(
+    (state) => state.mailCompose.drafts[draftId]?.sourceOutboxId ?? null
+  )
 
   const {
     mainAccount,
@@ -193,11 +199,23 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
 
   const defaultFrom =
     defaultIdentity?.mail || offlineDefaultIdentity?.mail || user?.email || ''
-  const [selectedFrom, setSelectedFrom] = React.useState(defaultFrom)
+  const [selectedFrom, setSelectedFrom] = React.useState(
+    draftIdentityMail || defaultFrom
+  )
+  const restoredFromRef = useRef(Boolean(draftIdentityMail))
 
   React.useEffect(() => {
-    if (defaultFrom) setSelectedFrom(defaultFrom)
-  }, [defaultFrom])
+    if (draftIdentityMail) {
+      if (!restoredFromRef.current) {
+        restoredFromRef.current = true
+        setSelectedFrom(draftIdentityMail)
+      }
+      return
+    }
+    if (defaultFrom && !restoredFromRef.current) {
+      setSelectedFrom(defaultFrom)
+    }
+  }, [draftIdentityMail, defaultFrom])
 
   const currentIdentity = React.useMemo(
     () => memoizedIdentities.find((id) => id.mail === selectedFrom) ?? null,
@@ -225,7 +243,13 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
     //  Only reset signature key when the identity actually changes,
     // not on every render triggered by memoizedIdentities reference change
     if (prevSelectedFromRef.current !== selectedFrom) {
+      const isFirstBind = prevSelectedFromRef.current === null
       prevSelectedFromRef.current = selectedFrom
+      // Restored Outbox drafts already have the queued From/signature.
+      // Do not replace them with the identity's first signature on mount.
+      if (isFirstBind && (sourceOutboxId || selectedSignatureKey)) {
+        return
+      }
       const keys = Object.keys(
         (selectedIdentity.signatures as Record<string, string>) ?? {}
       )
@@ -233,7 +257,14 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
         dispatch(updateSelectedSignatureKey({ draftId, key: keys[0] }))
       }
     }
-  }, [selectedFrom, draftId, memoizedIdentities, dispatch])
+  }, [
+    selectedFrom,
+    draftId,
+    memoizedIdentities,
+    dispatch,
+    sourceOutboxId,
+    selectedSignatureKey,
+  ])
 
   const handleSignatureSelect = useCallback(
     (key: string | null) => {
@@ -293,17 +324,18 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   }
 
   const renderFromField = () => {
+    const displayedFrom = selectedFrom || defaultFrom
     if (!identitiesEnabled || memoizedIdentities.length <= 1) {
-      return <Input value={defaultFrom} readOnly className="min-w-3xl" />
+      return <Input value={displayedFrom} readOnly className="min-w-3xl" />
     }
     if (!customFromEnabled) {
       return (
-        <Select value={defaultFrom} disabled>
+        <Select value={displayedFrom} disabled>
           <SelectTrigger className="min-w-3xl">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="z-[9999]">
-            <SelectItem value={defaultFrom}>{defaultFrom}</SelectItem>
+            <SelectItem value={displayedFrom}>{displayedFrom}</SelectItem>
           </SelectContent>
         </Select>
       )

@@ -2,7 +2,7 @@
 
 import { SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar'
 import { cn } from '@/lib/utils'
-import { DynamicIcon } from 'lucide-react/dynamic'
+import { Clock } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams, usePathname } from 'next/navigation'
 import { memo } from 'react'
@@ -36,7 +36,7 @@ function OutboxSidebarItem() {
         )}
       >
         <div className="z-50 mr-2 h-5 w-5 shrink-0 p-0 group-data-[collapsible=icon]:visible group-data-[collapsible=icon]:pl-1">
-          <DynamicIcon className="h-5 w-5" name="clock" />
+          <Clock className="h-5 w-5" />
         </div>
         <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
           <span className="min-w-0 shrink truncate leading-none">{name}</span>

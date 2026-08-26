@@ -1,4 +1,5 @@
 import { isBrokenPrecacheUrl } from '@/app/sw-runtime'
+import { getLocales } from '@/lib/i18n/config'
 import { createSerwistRoute } from '@serwist/turbopack'
 import { spawnSync } from 'node:child_process'
 
@@ -11,7 +12,10 @@ export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({
     additionalPrecacheEntries: [
       { url: '/~offline', revision },
-      { url: '/en/~offline', revision },
+      ...getLocales().map((locale) => ({
+        url: `/${locale}/~offline`,
+        revision,
+      })),
     ],
     swSrc: 'src/app/sw.ts',
     useNativeEsbuild: true,

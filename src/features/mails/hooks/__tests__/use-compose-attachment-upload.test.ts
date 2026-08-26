@@ -175,6 +175,56 @@ describe('useComposeAttachmentUpload', () => {
       )
     })
 
+    it('keeps the File after upload when the outbox is enabled', async () => {
+      mockOutboxEnabled = true
+      mockUploadAttachment.mockResolvedValue({
+        data: { data: { filename: 'server.txt', key: 'srv-key' } },
+      })
+      const { result } = renderHook(() =>
+        useComposeAttachmentUpload(baseOptions)
+      )
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+
+      await act(async () => {
+        await result.current.handleFileChange(changeEvent([file]))
+      })
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        updateAttachmentProgress({
+          draftId: 'draft-1',
+          attachmentId: 'temp-id',
+          progress: 100,
+          status: 'completed',
+          dropFile: false,
+        })
+      )
+    })
+
+    it('keeps the local File after upload when the PWA outbox is enabled', async () => {
+      mockOutboxEnabled = true
+      mockUploadAttachment.mockResolvedValue({
+        data: { data: { filename: 'server.txt', key: 'srv-key' } },
+      })
+      const { result } = renderHook(() =>
+        useComposeAttachmentUpload(baseOptions)
+      )
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+
+      await act(async () => {
+        await result.current.handleFileChange(changeEvent([file]))
+      })
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        updateAttachmentProgress({
+          draftId: 'draft-1',
+          attachmentId: 'temp-id',
+          progress: 100,
+          status: 'completed',
+          dropFile: false,
+        })
+      )
+    })
+
     it('marks the attachment as errored when the upload returns an error', async () => {
       mockUploadAttachment.mockResolvedValue({ error: { status: 500 } })
       const { result } = renderHook(() =>

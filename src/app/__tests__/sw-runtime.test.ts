@@ -2,6 +2,7 @@ import {
   filterPrecacheEntries,
   isBrokenPrecacheUrl,
   isNavigationRequest,
+  offlineFallbackPath,
 } from '../sw-runtime'
 
 describe('isNavigationRequest', () => {
@@ -56,5 +57,24 @@ describe('filterPrecacheEntries', () => {
         { url: '/en/~offline' },
       ])
     ).toEqual([{ url: '/~offline' }, { url: '/en/~offline' }])
+  })
+})
+
+describe('offlineFallbackPath', () => {
+  it('uses the locale-prefixed fallback for known locales', () => {
+    expect(offlineFallbackPath('https://sogo.example/fr/u/0/INBOX')).toBe(
+      '/fr/~offline'
+    )
+    expect(offlineFallbackPath('https://sogo.example/de/calendars')).toBe(
+      '/de/~offline'
+    )
+    expect(offlineFallbackPath('/es/~offline')).toBe('/es/~offline')
+  })
+
+  it('falls back to the unlocalized page for unknown paths', () => {
+    expect(offlineFallbackPath('https://sogo.example/u/0/INBOX')).toBe(
+      '/~offline'
+    )
+    expect(offlineFallbackPath('not a url')).toBe('/~offline')
   })
 })

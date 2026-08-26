@@ -19,7 +19,7 @@ export function outboxRecordToListItem(
     })),
     date: new Date(item.createdAt).toISOString(),
     seen: item.status !== 'failed',
-    flagged: item.status === 'failed',
+    flagged: false,
     hasAttachment: item.attachmentIds.length > 0,
     snippet: options.snippet,
     answered: false,

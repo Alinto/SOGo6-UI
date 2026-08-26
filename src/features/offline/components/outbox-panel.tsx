@@ -30,11 +30,22 @@ import type {
   OutboxAttachmentRecord,
   OutboxRecord,
 } from '@/features/offline/types'
+import type { Identity } from '@/features/user-profile/profile-types'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useState } from 'react'
 import { toast } from 'sonner'
 import { useOutboxList } from '../hooks/use-outbox'
+
+function identityStubFromOutbox(item: OutboxRecord): Identity {
+  return {
+    mail: item.identityMail,
+    name: '',
+    replyTo: item.replyTo ?? '',
+    isDefault: false,
+    signatures: {},
+  }
+}
 
 function OutboxPanel() {
   const t = useTranslations('PWA')
@@ -92,6 +103,7 @@ function OutboxPanel() {
             priority: item.priority as 0 | 1 | 2 | 3 | 4,
             requestReadReceipt: item.requestReadReceipt,
             selectedSignatureKey: item.signatureKey,
+            selectedIdentity: identityStubFromOutbox(item),
             attachments: restoredAttachments,
             sourceOutboxId: item.id,
           },

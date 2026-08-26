@@ -1,9 +1,5 @@
 import { deleteLocalDraft } from '../db/drafts-store'
-import {
-  deleteOutboxItem,
-  getOutboxItem,
-  putOutboxWithAttachments,
-} from '../db/outbox-store'
+import { getOutboxItem, putOutboxWithAttachments } from '../db/outbox-store'
 import { isPwaBgSyncEnabled, isPwaOutboxEnabled } from '../flags'
 import type {
   LocalDraftRecord,
@@ -55,9 +51,6 @@ export async function enqueueOutbox(
   const existing = input.replaceOutboxId
     ? await getOutboxItem(input.userId, input.replaceOutboxId)
     : undefined
-  if (input.replaceOutboxId) {
-    await deleteOutboxItem(input.userId, input.replaceOutboxId)
-  }
   const id = input.replaceOutboxId ?? newId()
   const attachmentRecords: OutboxAttachmentRecord[] = (
     input.attachments ?? []

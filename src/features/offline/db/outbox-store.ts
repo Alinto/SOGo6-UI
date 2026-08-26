@@ -19,6 +19,14 @@ export async function putOutboxWithAttachments(
 ): Promise<void> {
   const db = getOfflineDb(record.userId)
   await db.transaction('rw', db.outbox, db.outboxAttachments, async () => {
+    const existing = await db.outbox.get(record.id)
+    const keepIds = new Set(attachments.map((attachment) => attachment.id))
+    const staleIds = (existing?.attachmentIds ?? []).filter(
+      (id) => !keepIds.has(id)
+    )
+    if (staleIds.length) {
+      await db.outboxAttachments.bulkDelete(staleIds)
+    }
     if (attachments.length) {
       await db.outboxAttachments.bulkPut(attachments)
     }

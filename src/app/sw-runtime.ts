@@ -5,6 +5,29 @@ export function isNavigationRequest(
   return request.mode === 'navigate' || request.destination === 'document'
 }
 
+/** Keep in sync with `getLocales()` — do not import next-intl into the SW. */
+export const OFFLINE_FALLBACK_LOCALES = ['en', 'de', 'fr', 'es'] as const
+
+/**
+ * Document fallback for a failed navigation: `/{locale}/~offline` when the
+ * request path starts with a known locale, otherwise the locale-less page.
+ */
+export function offlineFallbackPath(requestUrl: string): string {
+  try {
+    const path = new URL(requestUrl, 'http://localhost').pathname
+    const first = path.split('/').filter(Boolean)[0]
+    if (
+      first &&
+      (OFFLINE_FALLBACK_LOCALES as readonly string[]).includes(first)
+    ) {
+      return `/${first}/~offline`
+    }
+  } catch {
+    // Invalid URL — use the unlocalized fallback.
+  }
+  return '/~offline'
+}
+
 /**
  * URLs Serwist may add to the precache manifest that 404 at install
  * (next/font serves hashed `/_next/static/media/*`, no public/robots.txt).
