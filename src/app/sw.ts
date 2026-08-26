@@ -8,7 +8,12 @@ import {
   NetworkOnly,
   Serwist,
 } from 'serwist'
-import { filterPrecacheEntries, isNavigationRequest } from './sw-runtime'
+import {
+  filterPrecacheEntries,
+  isNavigationRequest,
+  OFFLINE_FALLBACK_LOCALES,
+  offlineFallbackPath,
+} from './sw-runtime'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -92,9 +97,18 @@ const serwist = new Serwist({
   ],
   fallbacks: {
     entries: [
+      ...OFFLINE_FALLBACK_LOCALES.map((locale) => ({
+        url: `/${locale}/~offline`,
+        matcher({ request }: { request: Request }) {
+          return (
+            isNavigationRequest(request) &&
+            offlineFallbackPath(request.url) === `/${locale}/~offline`
+          )
+        },
+      })),
       {
         url: '/~offline',
-        matcher({ request }) {
+        matcher({ request }: { request: Request }) {
           return isNavigationRequest(request)
         },
       },

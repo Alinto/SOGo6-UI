@@ -42,9 +42,7 @@ function OutboxList({ onOpen, onRequestDelete }: OutboxListProps) {
       items.map((item) =>
         outboxRecordToListItem(item, {
           subject: item.subject || t('outbox_no_subject.string'),
-          snippet: item.lastError
-            ? `${t(statusKey(item.status))} — ${item.lastError}`
-            : t(statusKey(item.status)),
+          snippet: t(statusKey(item.status)),
         })
       ),
     [items, t]

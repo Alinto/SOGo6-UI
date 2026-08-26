@@ -27,12 +27,6 @@
     "outbox_empty": {
       "string": "No messages waiting to be sent."
     },
-    "outbox_loading": {
-      "string": "Loading outbox…"
-    },
-    "outbox_refresh": {
-      "string": "Refresh"
-    },
     "outbox_no_subject": {
       "string": "(No subject)"
     },
@@ -75,9 +69,6 @@
     "cached_data_indicator": {
       "string": "Showing cached data - may be out of date"
     },
-    "offline_unavailable": {
-      "string": "This is not available offline. It will load when you are back online."
-    },
     "offline_unavailable_mail_title": {
       "string": "This message is not on this device"
     },
@@ -92,9 +83,6 @@
     },
     "offline_unavailable_folder_body": {
       "string": "Open this folder once while you are online to browse it offline later."
-    },
-    "outbox_edit_restored": {
-      "string": "Opened in compose. The original stays in Outbox until you send."
     },
     "outbox_edit_limit": {
       "string": "Close a compose window before editing this message."

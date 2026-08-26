@@ -104,7 +104,7 @@ export function useComposeAttachmentUpload({
               attachmentId: tempId,
               progress: 100,
               status: 'completed',
-              dropFile: true,
+              dropFile: !isPwaOutboxEnabled(),
             })
           )
 

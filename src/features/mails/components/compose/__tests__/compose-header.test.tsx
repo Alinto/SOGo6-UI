@@ -62,13 +62,15 @@ jest.mock('@/features/mails/store/mail-compose-selectors', () => ({
   })),
 }))
 
+const mockDraft: Record<string, unknown> = { subject: '' }
+
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
   useAppSelector: jest.fn((selector) =>
     selector({
       mailCompose: {
         drafts: {
-          'draft-1': { subject: '' },
+          'draft-1': mockDraft,
         },
       },
     })
@@ -87,8 +89,13 @@ jest.mock('@/features/user-profile', () => ({
   useProfile: jest.fn(),
 }))
 
+jest.mock('@/features/offline/hooks/use-offline-identities', () => ({
+  useOfflineIdentities: () => null,
+}))
+
 // --- Imports après les mocks ---
 
+import { updateSelectedSignatureKey } from '@/features/mails/store/mail-compose-slice'
 import { useProfile } from '@/features/user-profile'
 
 // --- Helper ---
@@ -117,6 +124,10 @@ const renderHeader = () => render(<ComposeHeader draftId="draft-1" />)
 describe('ComposeHeader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    Object.keys(mockDraft).forEach((key) => {
+      delete mockDraft[key]
+    })
+    mockDraft.subject = ''
   })
 
   describe('Render de base', () => {
@@ -199,6 +210,41 @@ describe('ComposeHeader', () => {
       })
       renderHeader()
       expect(screen.getByDisplayValue('fallback@sogo.nu')).toBeInTheDocument()
+    })
+
+    it('keeps the restored outbox From instead of the default identity', () => {
+      mockDraft.selectedIdentity = { mail: 'alias@sogo.nu' }
+      mockDraft.sourceOutboxId = 'ob-1'
+      mockDraft.selectedSignatureKey = 'work'
+      mockProfile({
+        identitiesEnabled: false,
+        defaultIdentity: { mail: 'jdoe@sogo.nu' },
+      })
+      renderHeader()
+      expect(screen.getByDisplayValue('alias@sogo.nu')).toBeInTheDocument()
+    })
+
+    it('does not reset a restored outbox signature on first identity bind', () => {
+      mockDraft.selectedIdentity = { mail: 'jdoe@sogo.nu' }
+      mockDraft.sourceOutboxId = 'ob-1'
+      mockDraft.selectedSignatureKey = 'work'
+      mockProfile({
+        identitiesEnabled: true,
+        customFromEnabled: true,
+        defaultIdentity: { mail: 'jdoe@sogo.nu' },
+        mainAccount: {
+          identities: [
+            {
+              mail: 'jdoe@sogo.nu',
+              name: 'John',
+              signatures: { work: '<p>Work</p>', home: '<p>Home</p>' },
+            },
+            { mail: 'alias@sogo.nu', name: 'Alias', signatures: {} },
+          ],
+        },
+      })
+      renderHeader()
+      expect(updateSelectedSignatureKey).not.toHaveBeenCalled()
     })
   })
 

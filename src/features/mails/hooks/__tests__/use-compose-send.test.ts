@@ -33,12 +33,16 @@ jest.mock('sonner', () => ({
   toast: { success: jest.fn(), error: jest.fn(), warning: jest.fn() },
 }))
 
+const mockEnqueueOutbox = jest.fn()
+let mockOutboxEnabled = false
+const mockProbeNetwork = jest.fn(async () => true)
+
 jest.mock('@/features/offline/flags', () => ({
-  isPwaOutboxEnabled: () => false,
+  isPwaOutboxEnabled: () => mockOutboxEnabled,
 }))
 
 jest.mock('@/features/offline/network/probe', () => ({
-  probeNetwork: jest.fn(async () => true),
+  probeNetwork: (...args: unknown[]) => mockProbeNetwork(...args),
 }))
 
 jest.mock('@/features/offline/auth/get-auth-token', () => ({
@@ -46,7 +50,7 @@ jest.mock('@/features/offline/auth/get-auth-token', () => ({
 }))
 
 jest.mock('@/features/offline/outbox/outbox-coordinator', () => ({
-  enqueueOutbox: jest.fn(),
+  enqueueOutbox: (...args: unknown[]) => mockEnqueueOutbox(...args),
 }))
 
 jest.mock('@/features/offline/db/outbox-store', () => ({
@@ -61,6 +65,7 @@ jest.mock('@/features/offline/outbox/outbox-edit-hold', () => ({
   releaseOutboxForEdit: jest.fn(),
 }))
 
+import { toast } from 'sonner'
 import { useComposeSend } from '../use-compose-send'
 
 const baseFields = {
@@ -80,6 +85,10 @@ const baseFields = {
 
 describe('useComposeSend', () => {
   beforeEach(() => {
+    mockOutboxEnabled = false
+    mockProbeNetwork.mockResolvedValue(true)
+    mockEnqueueOutbox.mockReset()
+    mockDispatch.mockReset()
     mockUseSendMailMutation.mockReturnValue([
       mockSendMail,
       { isLoading: false },
@@ -245,5 +254,22 @@ describe('useComposeSend', () => {
       mailKey: 'tmp-key',
       mail: { mocked: 'payload' },
     })
+  })
+
+  it('toasts and keeps the draft open when enqueueing to the outbox fails', async () => {
+    mockOutboxEnabled = true
+    mockProbeNetwork.mockResolvedValue(false)
+    mockEnqueueOutbox.mockRejectedValue(new Error('QuotaExceeded'))
+
+    const { result } = renderHook(() => useComposeSend(baseFields))
+
+    await act(async () => {
+      await result.current.handleSend()
+    })
+
+    expect(toast.error).toHaveBeenCalledWith('offline_send_error.string')
+    expect(mockDispatch).not.toHaveBeenCalledWith(
+      closeDraft({ draftId: 'draft-1' })
+    )
   })
 })

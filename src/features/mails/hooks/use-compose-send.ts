@@ -83,31 +83,36 @@ export function useComposeSend({
         return
       }
 
-      await enqueueOutbox({
-        userId,
-        accountId,
-        mailKey,
-        identityMail: mailFields.selectedIdentity.mail,
-        replyTo: mailFields.selectedIdentity.replyTo || null,
-        signatureKey: selectedSignatureKey,
-        to: toRecipients,
-        cc: mailFields.ccRecipients,
-        bcc: mailFields.bccRecipients,
-        subject,
-        body,
-        isPlainText: mailFields.isPlainText,
-        priority: mailFields.selectedPriority,
-        requestReadReceipt: mailFields.requestReadReceipt,
-        attachments: fileAttachments.map((a) => ({
-          id: crypto.randomUUID(),
-          name: a.name,
-          size: a.size,
-          type: a.type,
-          blob: a.file as Blob,
-        })),
-        localDraftId: draftId,
-        replaceOutboxId: sourceOutboxId ?? undefined,
-      })
+      try {
+        await enqueueOutbox({
+          userId,
+          accountId,
+          mailKey,
+          identityMail: mailFields.selectedIdentity.mail,
+          replyTo: mailFields.selectedIdentity.replyTo || null,
+          signatureKey: selectedSignatureKey,
+          to: toRecipients,
+          cc: mailFields.ccRecipients,
+          bcc: mailFields.bccRecipients,
+          subject,
+          body,
+          isPlainText: mailFields.isPlainText,
+          priority: mailFields.selectedPriority,
+          requestReadReceipt: mailFields.requestReadReceipt,
+          attachments: fileAttachments.map((a) => ({
+            id: crypto.randomUUID(),
+            name: a.name,
+            size: a.size,
+            type: a.type,
+            blob: a.file as Blob,
+          })),
+          localDraftId: draftId,
+          replaceOutboxId: sourceOutboxId ?? undefined,
+        })
+      } catch {
+        toast.error(t('offline_send_error.string'))
+        return
+      }
 
       if (sourceOutboxId) releaseOutboxForEdit(sourceOutboxId)
       toast.success(t('outbox_queued.string'))

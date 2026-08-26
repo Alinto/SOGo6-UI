@@ -21,10 +21,8 @@ jest.mock('next/navigation', () => ({
   usePathname: () => mockPathname,
 }))
 
-jest.mock('lucide-react/dynamic', () => ({
-  DynamicIcon: ({ name }: { name: string }) => (
-    <span data-testid={`icon-${name}`} />
-  ),
+jest.mock('lucide-react', () => ({
+  Clock: () => <span data-testid="icon-clock" />,
 }))
 
 jest.mock('@/components/ui/sidebar', () => ({

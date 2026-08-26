@@ -41,14 +41,14 @@ describe('outboxRecordToListItem', () => {
     expect(row.flagged).toBe(false)
   })
 
-  it('marks failed items as unread and flagged', () => {
+  it('marks failed items as unread without starring them', () => {
     const row = outboxRecordToListItem(
       { ...base, status: 'failed', attachmentIds: [] },
       { subject: '(No subject)', snippet: 'Failed' }
     )
 
     expect(row.seen).toBe(false)
-    expect(row.flagged).toBe(true)
+    expect(row.flagged).toBe(false)
     expect(row.hasAttachment).toBe(false)
     expect(row.subject).toBe('(No subject)')
   })

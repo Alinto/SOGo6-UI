@@ -17,7 +17,9 @@ import {
 import {
   countPendingOutbox,
   deleteOutboxItem,
+  getOutboxAttachments,
   listOutbox,
+  putOutboxWithAttachments,
   upsertOutboxItem,
 } from '../outbox-store'
 import { wipeOfflineUserData } from '../wipe'
@@ -104,5 +106,38 @@ describe('offline-db stores', () => {
     await wipeOfflineUserData(userId)
     expect(await listLocalDrafts(userId)).toHaveLength(0)
     expect(await listOutbox(userId)).toHaveLength(0)
+  })
+
+  it('replaces outbox attachments in one transaction without dropping the row', async () => {
+    await putOutboxWithAttachments(outbox({ attachmentIds: ['old'] }), [
+      {
+        id: 'old',
+        outboxId: 'out-1',
+        name: 'old.txt',
+        size: 1,
+        type: 'text/plain',
+        blob: new Blob(['old']),
+      },
+    ])
+
+    await putOutboxWithAttachments(
+      outbox({ attachmentIds: ['new'], subject: 'Updated' }),
+      [
+        {
+          id: 'new',
+          outboxId: 'out-1',
+          name: 'new.txt',
+          size: 1,
+          type: 'text/plain',
+          blob: new Blob(['new']),
+        },
+      ]
+    )
+
+    const items = await listOutbox(userId)
+    expect(items).toHaveLength(1)
+    expect(items[0]?.subject).toBe('Updated')
+    const attachments = await getOutboxAttachments(userId, 'out-1')
+    expect(attachments.map((attachment) => attachment.id)).toEqual(['new'])
   })
 })

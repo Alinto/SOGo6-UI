@@ -1,6 +1,7 @@
 'use client'
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
+import { ContactBadge } from '@/features/mails/components/mail/mail-contact-badge'
 import MailContent from '@/features/mails/components/mail/mail-content'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
@@ -34,6 +35,7 @@ function OutboxMailView({
   onDelete,
 }: OutboxMailViewProps) {
   const t = useTranslations('PWA')
+  const tMail = useTranslations('MAILS_COMMONS')
   const [attachments, setAttachments] = useState<OutboxAttachmentRecord[]>([])
 
   useEffect(() => {
@@ -76,6 +78,10 @@ function OutboxMailView({
     name: recipient.name ?? '',
     email: recipient.email,
   }))
+  const bcc = item.bcc.map((recipient) => ({
+    name: recipient.name ?? '',
+    email: recipient.email,
+  }))
   const sending = item.status === 'sending'
 
   return (
@@ -115,10 +121,17 @@ function OutboxMailView({
           : item.status === 'sending'
             ? t('outbox_status_sending.string')
             : t('outbox_status_pending.string')}
-        {item.lastError ? ` — ${item.lastError}` : ''}
       </p>
       <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
         <MailHeaderMobile from={from} to={to} cc={cc} date={item.createdAt} />
+        {bcc.length > 0 ? (
+          <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+            <span className="text-xs font-bold">{tMail('bcc.string')}</span>
+            {bcc.map((contact, idx) => (
+              <ContactBadge contact={contact} key={`${contact.email}-${idx}`} />
+            ))}
+          </div>
+        ) : null}
         {blobUrls.length > 0 ? (
           <div className="mb-2 flex flex-row flex-wrap items-center gap-2">
             {blobUrls.map((attachment) => (
