@@ -99,6 +99,7 @@ describe('useOfflineMailList', () => {
     // Sorted by date desc
     expect(result.current.cachedMails![0]!.id).toBe('m2')
     expect(result.current.cachedMails![1]!.id).toBe('m1')
+    expect(result.current.cachedAt).toEqual(expect.any(Number))
   })
 
   it('does not fall back while online without an error', () => {

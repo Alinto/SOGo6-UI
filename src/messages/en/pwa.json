@@ -76,7 +76,34 @@
       "string": "Sign in again to send messages waiting in your Outbox."
     },
     "cached_data_indicator": {
-      "string": "Showing cached data - may be out of date"
+      "string": "Showing cached data, may be out of date"
+    },
+    "cached_data_as_of": {
+      "string": "{folder} as of {time}"
+    },
+    "cached_data_as_of_no_folder": {
+      "string": "Cached as of {time}"
+    },
+    "offline_module_calendar": {
+      "string": "Calendar — offline"
+    },
+    "offline_module_contacts": {
+      "string": "Contacts — offline"
+    },
+    "offline_module_tasks": {
+      "string": "Tasks — offline"
+    },
+    "offline_module_settings": {
+      "string": "Settings — offline"
+    },
+    "offline_module_notes": {
+      "string": "Notes — offline"
+    },
+    "login_offline_banner": {
+      "string": "You can compose to Outbox after signing in while online."
+    },
+    "outbox_send_all": {
+      "string": "Send all"
     },
     "offline_unavailable_mail_title": {
       "string": "This message is not on this device"

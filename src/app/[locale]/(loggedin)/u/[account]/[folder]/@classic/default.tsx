@@ -11,6 +11,7 @@ import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-pa
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
 import { useOfflineMailList } from '@/features/offline/hooks/use-offline-mail-list'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
+import { folderLabelFromPath } from '@/features/offline/utils/cache-clock'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useEffect, useMemo } from 'react'
@@ -31,7 +32,7 @@ const Page: React.FC = () => {
       accountId: accountString,
     })
 
-  const { cachedMails, isShowingCache } = useOfflineMailList({
+  const { cachedMails, cachedAt, isShowingCache } = useOfflineMailList({
     accountId: accountString,
     folderPath,
     mails: data?.mails,
@@ -63,7 +64,11 @@ const Page: React.FC = () => {
     const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
     return (
       <div className={`${containerClassName} min-h-0 flex-1 flex-col`}>
-        <CachedDataIndicator className="px-4 py-2" />
+        <CachedDataIndicator
+          className="px-4 py-2"
+          asOf={cachedAt}
+          folder={folderLabelFromPath(folderPath)}
+        />
         <MessagesList
           type="classic"
           items={offlineFiltered}

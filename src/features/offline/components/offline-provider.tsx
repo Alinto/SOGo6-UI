@@ -13,8 +13,7 @@ import { purgeExpiredCache } from '../db/mail-cache-store'
 import { useOfflineDraftHydration } from '../hooks/use-offline-draft-sync'
 import { useOutboxFlushTriggers } from '../hooks/use-outbox-flush-triggers'
 import { OfflineNavProvider } from '../offline-nav-context'
-import InstallPwaPrompt from './install-pwa-prompt'
-import OfflineBanner from './offline-banner'
+import PwaStatusBar from './pwa-status-bar'
 import PwaUpdateToast from './pwa-update-toast'
 
 interface OfflineProviderProps {
@@ -49,8 +48,7 @@ function OfflineProviderInner({ children }: OfflineProviderProps) {
 
   return (
     <>
-      <OfflineBanner />
-      <InstallPwaPrompt />
+      <PwaStatusBar />
       <PwaUpdateToast />
       {children}
     </>

@@ -4,6 +4,7 @@ import AppHeader from '../app-header'
 // Mock the hooks and components used by AppHeader
 const mockUseIsMobile = jest.fn()
 const mockUsePathname = jest.fn()
+let mockOfflineView: { kind: string; target?: string } = { kind: 'route' }
 
 jest.mock('@/hooks/use-mobile', () => ({
   useIsMobile: () => mockUseIsMobile(),
@@ -38,6 +39,16 @@ jest.mock('../ui/header-dropdown', () => {
   }
 })
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: () => ({
+    view: mockOfflineView,
+  }),
+}))
+
 jest.mock('../ui/sidebar', () => ({
   SidebarTrigger: () => (
     <div data-testid="sidebar-trigger">Sidebar Trigger</div>
@@ -48,6 +59,7 @@ describe('AppHeader', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUsePathname.mockReturnValue('/u/inbox')
+    mockOfflineView = { kind: 'route' }
   })
 
   it('should render the header with basic structure', () => {
@@ -216,5 +228,17 @@ describe('AppHeader', () => {
       const header = screen.getByRole('banner')
       expect(header).toHaveClass('transition-[width,height]', 'ease-linear')
     })
+  })
+
+  it('shows the module overlay title instead of mail search', () => {
+    mockUseIsMobile.mockReturnValue(false)
+    mockOfflineView = { kind: 'unavailable', target: 'calendar' }
+
+    render(<AppHeader />)
+
+    expect(
+      screen.getByText('offline_module_calendar.string')
+    ).toBeInTheDocument()
+    expect(screen.queryByTestId('mails-search')).not.toBeInTheDocument()
   })
 })

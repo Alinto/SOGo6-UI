@@ -1,14 +1,17 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
+import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
+import { flushOutboxWithToasts } from '@/features/offline/outbox/outbox-flush-feedback'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
-import { Trash2 } from 'lucide-react'
+import { Send, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo } from 'react'
 
@@ -19,7 +22,7 @@ interface OutboxToolbarProps {
 
 function OutboxToolbar({ itemIds, onBulkDelete }: OutboxToolbarProps) {
   const t = useTranslations('PWA')
-  const tList = useTranslations('MAILS_LIST')
+  const listT = useTranslations('MAILS_LIST')
   const dispatch = useAppDispatch()
   const selectedIds = useAppSelector(
     (state: RootState) => state.mailLayout.selectedMailIds
@@ -78,11 +81,26 @@ function OutboxToolbar({ itemIds, onBulkDelete }: OutboxToolbarProps) {
                 {t('outbox_folder.string')}
               </span>
               <span className="text-muted-foreground hidden text-sm leading-none md:inline">
-                {tList('messages_number.string', { number: itemIds.length })}
+                {listT('messages_number.string', { number: itemIds.length })}
               </span>
             </div>
           )}
         </div>
+        {selectedInList.length === 0 && itemIds.length > 0 ? (
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const userId = getAuthUserId()
+              if (!userId) return
+              void flushOutboxWithToasts(userId, t)
+            }}
+          >
+            <Send className="mr-1 size-4" aria-hidden />
+            {t('outbox_send_all.string')}
+          </Button>
+        ) : null}
       </div>
     </div>
   )

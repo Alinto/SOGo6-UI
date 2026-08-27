@@ -5,13 +5,17 @@ import { Download, Share, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useState } from 'react'
 import { isPwaEnabled } from '../flags'
+import {
+  installSnoozeUntil,
+  isInstallSnoozed,
+  readInstallSnoozeUntil,
+  writeInstallSnoozeUntil,
+} from '../install-snooze'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
 }
-
-const DISMISS_KEY = 'sogo_pwa_install_dismissed'
 
 function isStandalone(): boolean {
   if (typeof window === 'undefined') return false
@@ -30,18 +34,10 @@ function isIos(): boolean {
   return /iPad|iPhone|iPod/.test(ua) || iPadOs
 }
 
-function readDismissed(): boolean {
-  try {
-    return localStorage.getItem(DISMISS_KEY) === '1'
-  } catch {
-    return false
-  }
-}
-
 /**
  * Install banner. Chromium: native beforeinstallprompt flow.
  * iOS Safari (no prompt API): manual "Share → Add to Home Screen" hint.
- * Dismissal is persisted so the banner does not nag on every visit.
+ * "Not now" snoozes for 14 days instead of dismissing forever.
  */
 function InstallPwaPrompt() {
   const t = useTranslations('PWA')
@@ -59,7 +55,7 @@ function InstallPwaPrompt() {
     // (dismissed=true → nothing rendered), avoiding hydration mismatches.
     queueMicrotask(() => {
       if (cancelled) return
-      setDismissed(readDismissed())
+      setDismissed(isInstallSnoozed(Date.now(), readInstallSnoozeUntil()))
       if (isIos()) setShowIosHint(true)
     })
 
@@ -82,11 +78,7 @@ function InstallPwaPrompt() {
 
   const dismiss = () => {
     setDismissed(true)
-    try {
-      localStorage.setItem(DISMISS_KEY, '1')
-    } catch {
-      // storage unavailable — session-only dismissal
-    }
+    writeInstallSnoozeUntil(installSnoozeUntil(Date.now()))
   }
 
   if (!isPwaEnabled() || dismissed) return null

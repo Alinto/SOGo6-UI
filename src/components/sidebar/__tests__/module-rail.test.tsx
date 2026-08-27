@@ -19,9 +19,10 @@ jest.mock('@/features/mails/components/sidebars/fast-access/context', () => ({
 }))
 
 const mockNavigateApp = jest.fn()
+let mockView: { kind: string; target?: string } = { kind: 'route' }
 
 jest.mock('@/features/offline/offline-nav-context', () => ({
-  useOfflineNav: () => ({ navigateApp: mockNavigateApp }),
+  useOfflineNav: () => ({ navigateApp: mockNavigateApp, view: mockView }),
 }))
 
 jest.mock('next/navigation', () => ({
@@ -73,11 +74,17 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuButton: ({
     children,
     onClick,
+    ...rest
   }: {
     children: ReactNode
     onClick?: () => void
+    'data-active'?: boolean
   }) => (
-    <button type="button" onClick={onClick}>
+    <button
+      type="button"
+      onClick={onClick}
+      data-active={String(!!rest['data-active'])}
+    >
       {children}
     </button>
   ),
@@ -119,6 +126,7 @@ jest.mock('next-intl', () => ({
 describe('ModuleRail', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockView = { kind: 'route' }
   })
 
   describe('basic rendering', () => {
@@ -280,6 +288,19 @@ describe('ModuleRail', () => {
         expect(mockNavigateApp).toHaveBeenCalledWith('/notes')
       })
       expect(mockRouterPush).not.toHaveBeenCalled()
+    })
+
+    it('marks Calendar active when the overlay target is calendar', () => {
+      mockView = { kind: 'unavailable', target: 'calendar' }
+      render(<ModuleRail />)
+      expect(screen.getByRole('button', { name: 'Calendar' })).toHaveAttribute(
+        'data-active',
+        'true'
+      )
+      expect(screen.getByRole('button', { name: 'Tasks' })).toHaveAttribute(
+        'data-active',
+        'false'
+      )
     })
   })
 

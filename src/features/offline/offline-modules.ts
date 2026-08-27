@@ -28,3 +28,12 @@ export function isMailFolderUnavailableTarget(
 ): boolean {
   return target === 'mail' || target === 'folder'
 }
+
+export function isNonMailModuleOverlay(
+  kind: string,
+  target?: OfflineUnavailableTarget
+): boolean {
+  return (
+    kind === 'unavailable' && !!target && !isMailFolderUnavailableTarget(target)
+  )
+}
