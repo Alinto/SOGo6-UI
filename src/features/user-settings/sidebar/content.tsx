@@ -65,9 +65,16 @@ export function useNavItems(): NavItem[] {
             collapsedIcon: UserCog,
           },
           {
-            title: 'US_SIDEBAR.settings.address_books.string',
-            url: '/user_settings/address_books',
+            title: 'US_SIDEBAR.settings.address_books.title.string',
             icon: Contact,
+            collapsedIcon: Contact,
+            isActive: true,
+            items: [
+              {
+                title: 'US_SIDEBAR.settings.address_books.general.string',
+                url: '/user_settings/address_books',
+              },
+            ],
           },
           {
             title: 'US_SIDEBAR.settings.calendars.title.string',

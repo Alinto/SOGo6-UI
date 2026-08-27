@@ -24,8 +24,14 @@
                 "context": "Link to the general settings in the settings sidebar"
             },
             "address_books": {
-                "string": "Address books",
-                "context": "Link to the settings address books in the settings sidebar"
+                "title": {
+                    "string": "Address books",
+                    "context": "Section title for the settings sidebar"
+                },
+                "general": {
+                    "string": "General",
+                    "context": "Link to the general address books settings in the settings sidebar"
+                }
             },
             "calendars": {
                 "title": {

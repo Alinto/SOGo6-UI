@@ -1,8 +1,11 @@
+import { ANY_AUTHENTICATED_UID } from '@/features/calendars/utils/calendar-permission-mapping'
 import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
+import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
 import {
   CALENDARS_SLICE,
   CALENDAR_EVENTS_SLICE,
+  CALENDAR_SHARE_SLICE,
   CALENDAR_SYNC_SLICE,
   USER_SEARCH_SLICE,
   apiSlice,
@@ -22,6 +25,8 @@ import type {
   CalendarEventCreateBody,
   CalendarEventUpdateBody,
   CalendarEventsResponse,
+  CalendarShareData,
+  CalendarShareUser,
   CalendarSyncResult,
   CalendarSyncStatus,
   CalendarUpdateBody,
@@ -39,6 +44,7 @@ import { patchEventInCachedTimeRangeQueries } from './calendars-events-cache'
 const userSearchUrl = () => 'users/search'
 
 const calendarUrl = (key: string) => `calendars/${encodeURIComponent(key)}`
+const calendarShareUrl = (key: string) => `${calendarUrl(key)}/share`
 const externalCalendarUrl = (key: string) =>
   `external-calendars/${encodeURIComponent(key)}`
 const externalCalendarSyncUrl = (key: string) =>
@@ -82,6 +88,77 @@ const notifyDeleteCalendar = createCalendarNotifyMutation({
   successMessage: 'calendar_delete.success.message.string',
   errorTitle: 'calendar_delete.error.title.string',
   errorMessage: 'calendar_delete.error.message.string',
+})
+
+const notifyShareCalendar = createCalendarNotifyMutation({
+  successTitle: 'calendar_share.success.title.string',
+  successMessage: 'calendar_share.success.message.string',
+  errorTitle: 'calendar_share.error.title.string',
+  errorMessage: 'calendar_share.error.message.string',
+})
+
+function toWireCalendarShareUserClass(
+  userClass: CalendarShareUser['userClass']
+): string {
+  return userClass === 'any-authenticated-user'
+    ? USER_CLASS_ANY
+    : USER_CLASS_USER
+}
+
+/**
+ * The real backend sends the wire shape (`user_class`); the fakeApi mock
+ * returns the already-normalized app shape (`userClass`) since it stores
+ * what its own PUT handler built. Accept either.
+ */
+interface RawCalendarShareUser {
+  uid: string
+  c_email?: string
+  userClass?: CalendarShareUser['userClass']
+  user_class?: string
+  rights: CalendarShareUser['rights']
+}
+
+function fromWireCalendarShareUserClass(
+  userClass?: string
+): CalendarShareUser['userClass'] {
+  return userClass === USER_CLASS_ANY ? 'any-authenticated-user' : 'normal-user'
+}
+
+function normalizeCalendarShareUser(
+  raw: RawCalendarShareUser
+): CalendarShareUser {
+  const userClass =
+    raw.userClass ?? fromWireCalendarShareUserClass(raw.user_class)
+  return {
+    // The backend sends an empty uid/c_email for the "any authenticated
+    // user" pseudo-entry; user_class is what actually identifies it, so
+    // always key it by the sentinel uid rather than trusting the wire uid.
+    uid:
+      userClass === 'any-authenticated-user' ? ANY_AUTHENTICATED_UID : raw.uid,
+    c_email: raw.c_email,
+    userClass,
+    rights: raw.rights,
+  }
+}
+
+const setCalendarShareQuery = ({
+  calendarKey,
+  users,
+}: {
+  calendarKey: string
+  users: CalendarShareUser[]
+}) => ({
+  url: calendarShareUrl(calendarKey),
+  method: 'PUT' as const,
+  body: users.map((u) => {
+    const user_class = toWireCalendarShareUserClass(u.userClass)
+    return {
+      c_email: u.c_email,
+      ...(user_class === USER_CLASS_ANY ? {} : { uid: u.uid }),
+      user_class,
+      rights: u.rights,
+    }
+  }),
 })
 
 const notifyCreateCalendarEvent = createCalendarNotifyMutation({
@@ -131,6 +208,30 @@ function unwrapApiData<T>(response: ApiDataResponse<T> | T): T {
     return (response as ApiDataResponse<T>).data
   }
   return response as T
+}
+
+// The real backend returns `data` as a bare array of share entries; the
+// fakeApi mock returns `data.users` as a Record keyed by uid. Normalize both
+// into the Record shape the rest of the app expects.
+function normalizeCalendarShareData(data: unknown): CalendarShareData {
+  if (Array.isArray(data)) {
+    const users: CalendarShareData['users'] = {}
+    for (const u of data as RawCalendarShareUser[]) {
+      const normalized = normalizeCalendarShareUser(u)
+      users[normalized.uid] = normalized
+    }
+    return { users }
+  }
+  if (data && typeof data === 'object' && 'users' in data) {
+    const users: CalendarShareData['users'] = {}
+    for (const [uid, u] of Object.entries(
+      (data as { users: Record<string, RawCalendarShareUser> }).users
+    )) {
+      users[uid] = normalizeCalendarShareUser(u)
+    }
+    return { users }
+  }
+  return { users: {} }
 }
 
 const attendanceSuccessKeys: Record<
@@ -307,6 +408,36 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       invalidatesTags: [CALENDARS_SLICE],
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         await notifyDeleteCalendar(dispatch, queryFulfilled)
+      },
+    }),
+
+    getCalendarShare: builder.query<CalendarShareData, { calendarKey: string }>(
+      {
+        query: ({ calendarKey }) => ({
+          url: calendarShareUrl(calendarKey),
+          method: 'GET',
+        }),
+        transformResponse: (response: ApiDataResponse<unknown> | unknown) =>
+          normalizeCalendarShareData(unwrapApiData(response)),
+        providesTags: (_result, _error, { calendarKey }) => [
+          { type: CALENDAR_SHARE_SLICE, id: calendarKey },
+        ],
+      }
+    ),
+
+    setCalendarShare: builder.mutation<
+      CalendarShareData,
+      { calendarKey: string; users: CalendarShareUser[] }
+    >({
+      query: setCalendarShareQuery,
+      transformResponse: (response: ApiDataResponse<unknown> | unknown) =>
+        normalizeCalendarShareData(unwrapApiData(response)),
+      invalidatesTags: (_result, _error, { calendarKey }) => [
+        { type: CALENDAR_SHARE_SLICE, id: calendarKey },
+        CALENDAR_SHARE_SLICE,
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await notifyShareCalendar(dispatch, queryFulfilled)
       },
     }),
 
@@ -775,6 +906,9 @@ export const {
   useDeleteCalendarEventMutation,
   usePostEventAttendanceMutation,
   useDeleteCalendarMutation,
+  useGetCalendarShareQuery,
+  useLazyGetCalendarShareQuery,
+  useSetCalendarShareMutation,
   useGetEventsQuery,
   useGetEventsInTimeRangeQuery,
   useSearchEventsQuery,
@@ -790,3 +924,5 @@ export const {
 } = injectedEndpoints
 
 export const calendarsApiEndpoints = injectedEndpoints
+
+export { setCalendarShareQuery }
