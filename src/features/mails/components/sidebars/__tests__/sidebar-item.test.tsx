@@ -113,6 +113,24 @@ describe('SidebarItem', () => {
     })
   })
 
+  describe('Sharing menu item', () => {
+    it('should show the Sharing item by default', () => {
+      mockProfile()
+      render(<SidebarItem {...defaultProps} />)
+      expect(
+        screen.getByText('folders.actions.sharing.string')
+      ).toBeInTheDocument()
+    })
+
+    it('should hide the Sharing item when folderSharingDisabled includes "mail"', () => {
+      mockProfile({ folderSharingDisabled: ['mail'] })
+      render(<SidebarItem {...defaultProps} />)
+      expect(
+        screen.queryByText('folders.actions.sharing.string')
+      ).not.toBeInTheDocument()
+    })
+  })
+
   describe('Actions disabled', () => {
     it('should not render dropdown when disableActions is true', () => {
       mockProfile()

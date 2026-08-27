@@ -16,6 +16,12 @@ export const addressBookContactsPath = (key: string) =>
 export const addressBookContactPath = (bookKey: string, contactKey: string) =>
   `${addressBookContactsPath(bookKey)}/${encodeURIComponent(contactKey)}`
 
+export const addressBookShareUrl = (key: string) =>
+  `${addressBookPath(key)}/share`
+
+export const addressBookShareSubscribeUrl = (key: string, uid: string) =>
+  `${addressBookShareUrl(key)}/${encodeURIComponent(uid)}/subscribe`
+
 export const addressBookListsPath = (key: string) =>
   `${addressBookPath(key)}/lists`
 
@@ -26,7 +32,8 @@ export const contactsAutocompletePath = () => 'contacts/autocomplete'
 
 export const allContactsPath = () => 'contacts'
 
-export const addressBookImportPath = () => `${addressBooksCollectionPath()}/import`
+export const addressBookImportPath = () =>
+  `${addressBooksCollectionPath()}/import`
 
 export const addressBookExportPath = (key: string) =>
   `${addressBookPath(key)}/export`
@@ -51,7 +58,10 @@ export const legacyAddressBookEntriesPath = (bookId: string) =>
 export const legacyVCardPath = (bookId: string, entryId: string) =>
   `address_books/${encodeURIComponent(bookId)}/${encodeURIComponent(entryId)}`
 
-import type { ContactSortField, ListSortField } from '../address-books-api-types'
+import type {
+  ContactSortField,
+  ListSortField,
+} from '../address-books-api-types'
 
 export function mapContactSortToListSort(
   sortBy?: ContactSortField | string

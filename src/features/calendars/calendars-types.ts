@@ -220,7 +220,11 @@ export type ApiCalendarResponse = {
  * Values returned by the backend (FreeBusyType.py).
  * Includes `no_info` for slots with no data on the frontend.
  */
-export type FreeBusyPeriodType = 'busy' | 'tentative' | 'unavailable' | 'no_info'
+export type FreeBusyPeriodType =
+  | 'busy'
+  | 'tentative'
+  | 'unavailable'
+  | 'no_info'
 
 export interface FreeBusyPeriod {
   /** Compact UTC backend format: "YYYYMMDDTHHmmSSZ", e.g. "20260511T090000Z" */
@@ -275,7 +279,11 @@ export interface UserSearchResult {
   avatar_url?: string
 }
 
-export type AttendanceStatus = 'accepted' | 'declined' | 'tentative' | 'delegated'
+export type AttendanceStatus =
+  | 'accepted'
+  | 'declined'
+  | 'tentative'
+  | 'delegated'
 
 export interface AttendanceBody {
   status: AttendanceStatus
@@ -315,6 +323,58 @@ export interface ApiDataResponse<T> {
   data: T
   error_code?: string | null
   error_msg?: string | null
+}
+
+/**
+ * SOGo classic calendar ACL permission level for one event classification.
+ * Distinct from CalendarEvent['visibility'] (an event's own classification) —
+ * this is the *right* an ACL grantee has for events of a given classification.
+ */
+export type CalendarShareLevel =
+  | 'none'
+  | 'view-date-time'
+  | 'view-all'
+  | 'respond-to'
+  | 'modify'
+
+/**
+ * Per-classification rights map + the two standalone (non-classification)
+ * booleans.
+ */
+export interface CalendarShareRights {
+  public: CalendarShareLevel
+  confidential: CalendarShareLevel
+  private: CalendarShareLevel
+  can_create_objects: boolean
+  can_erase_objects: boolean
+}
+
+/**
+ * 'any-authenticated-user' is the pseudo-entry granting access to anyone
+ * logged in (gated by SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH), mirroring
+ * FolderShareUserClass from the mail feature. No 'public-user' class exists
+ * for calendars (no anonymous/public sharing concept here).
+ */
+export type CalendarShareUserClass = 'normal-user' | 'any-authenticated-user'
+
+export interface CalendarShareUser {
+  uid: string
+  c_email?: string
+  userClass: CalendarShareUserClass
+  isGroup?: number
+  rights: CalendarShareRights
+}
+
+export interface CalendarShareData {
+  users: Record<
+    string,
+    {
+      uid: string
+      c_email?: string
+      userClass: CalendarShareUserClass
+      rights: CalendarShareRights
+    }
+  >
 }
 
 /** Default calendar color used across the calendar feature. */

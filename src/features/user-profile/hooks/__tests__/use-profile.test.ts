@@ -243,11 +243,22 @@ describe('useProfile hook', () => {
       expect(fileContent).toMatch(/jitsiBaseUrl[\s\S]*?\?\?\s*null/)
     })
 
-    it('should derive folder sharing and export from module lists', () => {
+    ;(it('should derive folder sharing and export from module lists', () => {
       expect(fileContent).toContain('moduleDisabled')
       expect(fileContent).toContain('SOGO_D_FOLDER_DISABLE_SHARING')
       expect(fileContent).toContain('SOGO_D_FOLDER_DISABLE_EXPORT')
       expect(fileContent).toContain('folderExportDisabled')
+    }),
+      it('should return folderSharingDisabled with empty array default', () => {
+        expect(fileContent).toContain('SOGO_D_FOLDER_DISABLE_SHARING')
+        expect(fileContent).toMatch(/folderSharingDisabled[\s\S]*?\|\|\s*\[\]/)
+      }))
+
+    it('should return folderSharingDisabledAnyAuth with empty array default', () => {
+      expect(fileContent).toContain('SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH')
+      expect(fileContent).toMatch(
+        /folderSharingDisabledAnyAuth[\s\S]*?\|\|\s*\[\]/
+      )
     })
 
     it('should return draftAutosaveTimer with 5 default', () => {
