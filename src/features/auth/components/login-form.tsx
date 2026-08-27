@@ -14,6 +14,7 @@ import {
   useGetSystemQuery,
   useLazyGetAuthModeQuery,
 } from '@/features/auth/components/store/auth.api'
+import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useEnvVars } from '@/lib/env-service'
 import { getLocales } from '@/lib/i18n/config'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
@@ -117,6 +118,7 @@ export function LoginForm({
   }
 
   const onSubmit = async (data: LoginFormData) => {
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return
     setIsLoading(true)
     setServerError(null)
 
@@ -184,6 +186,7 @@ export function LoginForm({
       {...props}
       onSubmit={handleSubmit(onSubmit)}
     >
+      {isOffline && <LoginOfflineBanner />}
       {serverError && (
         <div className="border-destructive/50 bg-destructive/10 text-destructive mb-4 flex items-start gap-2 rounded-lg border p-3 text-sm">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -251,7 +254,7 @@ export function LoginForm({
         type="submit"
         size="lg"
         variant="outline"
-        disabled={isLoading}
+        disabled={isLoading || isOffline}
         className="bg-background border-primary-foreground/20 text-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/40 focus-visible:ring-ring w-full border-2 shadow-md transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2"
       >
         {isLoading ? t('next.loading.string') : t('next.string')}

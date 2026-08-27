@@ -49,6 +49,7 @@ jest.mock('@/lib/i18n/navigation', () => ({
 
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => key),
+  useLocale: () => 'en',
 }))
 
 // Mock du hook useIsMobile

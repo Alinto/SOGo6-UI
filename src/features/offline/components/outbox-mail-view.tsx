@@ -13,6 +13,7 @@ import type {
   OutboxAttachmentRecord,
   OutboxRecord,
 } from '@/features/offline/types'
+import { outboxLastErrorSnippet } from '@/features/offline/utils/outbox-last-error-snippet'
 import { FilePen, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useEffect, useMemo, useState } from 'react'
@@ -82,6 +83,8 @@ function OutboxMailView({
     name: recipient.name ?? '',
     email: recipient.email,
   }))
+  const errorSnippet =
+    item.status === 'failed' ? outboxLastErrorSnippet(item.lastError) : null
   const sending = item.status === 'sending'
 
   return (
@@ -122,6 +125,11 @@ function OutboxMailView({
             ? t('outbox_status_sending.string')
             : t('outbox_status_pending.string')}
       </p>
+      {errorSnippet ? (
+        <p className="text-destructive px-2 pb-2 text-xs sm:px-6">
+          {errorSnippet}
+        </p>
+      ) : null}
       <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
         <MailHeaderMobile from={from} to={to} cc={cc} date={item.createdAt} />
         {bcc.length > 0 ? (

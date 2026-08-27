@@ -12,6 +12,7 @@ import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-pa
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
 import { useOfflineMailList } from '@/features/offline/hooks/use-offline-mail-list'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
+import { folderLabelFromPath } from '@/features/offline/utils/cache-clock'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
@@ -44,7 +45,7 @@ const Page = () => {
   })
 
   // PWA: mirror fetched headers to IndexedDB; serve them back when offline
-  const { cachedMails, isShowingCache } = useOfflineMailList({
+  const { cachedMails, cachedAt, isShowingCache } = useOfflineMailList({
     accountId: accountString,
     folderPath,
     mails: data?.mails,
@@ -108,7 +109,11 @@ const Page = () => {
     const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
     return (
       <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
-        <CachedDataIndicator className="px-4 py-2" />
+        <CachedDataIndicator
+          className="px-4 py-2"
+          asOf={cachedAt}
+          folder={folderLabelFromPath(folderPath)}
+        />
         <MessagesList
           items={offlineFiltered}
           page={1}

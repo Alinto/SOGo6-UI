@@ -32,8 +32,21 @@ jest.mock('@/features/auth/components/store/auth.api', () => ({
 }))
 
 describe('LoginForm - Step 1 (Email + Language)', () => {
+  const originalOnLine = navigator.onLine
+
   beforeEach(() => {
     jest.clearAllMocks()
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: true,
+    })
+  })
+
+  afterEach(() => {
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: originalOnLine,
+    })
   })
 
   it('renders email input field', () => {
@@ -83,5 +96,15 @@ describe('LoginForm - Step 1 (Email + Language)', () => {
     render(<LoginForm />)
     const languageLabel = screen.getByText(/language.label.string/i)
     expect(languageLabel).toBeInTheDocument()
+  })
+
+  it('shows an offline banner and disables submit while offline', () => {
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: false,
+    })
+    render(<LoginForm />)
+    expect(screen.getByTestId('login-offline-banner')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /next.string/i })).toBeDisabled()
   })
 })

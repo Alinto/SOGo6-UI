@@ -1,8 +1,8 @@
+import StoreProvider from '@/lib/redux/store-provider'
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import { LoginAuthForm } from '../login-auth-form'
-import StoreProvider from '@/lib/redux/store-provider'
 
 // Mock next-intl
 const mockTranslate = jest.fn((key: string) => key)
@@ -29,9 +29,22 @@ const renderWithProvider = (ui: React.ReactElement) => {
 }
 
 describe('LoginAuthForm - Step 2 (Password)', () => {
+  const originalOnLine = navigator.onLine
+
   beforeEach(() => {
     jest.clearAllMocks()
     mockSearchParams.set('email', 'test@example.com')
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: true,
+    })
+  })
+
+  afterEach(() => {
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: originalOnLine,
+    })
   })
 
   it('renders email from searchParams as read-only', () => {
@@ -92,5 +105,15 @@ describe('LoginAuthForm - Step 2 (Password)', () => {
     expect(passwordInput).toHaveAttribute('autoComplete', 'current-password')
     // autoFocus is handled by React, not visible as HTML attribute
     // expect(passwordInput).toHaveAttribute('autoFocus')
+  })
+
+  it('shows an offline banner and disables submit while offline', () => {
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: false,
+    })
+    renderWithProvider(<LoginAuthForm />)
+    expect(screen.getByTestId('login-offline-banner')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /login.string/i })).toBeDisabled()
   })
 })

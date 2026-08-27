@@ -1,7 +1,10 @@
 /**
  * @jest-environment jsdom
  */
-import { moduleTargetFromHref } from '../offline-modules'
+import {
+  isNonMailModuleOverlay,
+  moduleTargetFromHref,
+} from '../offline-modules'
 
 describe('moduleTargetFromHref', () => {
   it('maps app paths to overlay targets', () => {
@@ -15,5 +18,13 @@ describe('moduleTargetFromHref', () => {
 
   it('ignores mail routes', () => {
     expect(moduleTargetFromHref('/u/0/INBOX')).toBeNull()
+  })
+})
+
+describe('isNonMailModuleOverlay', () => {
+  it('detects calendar overlays and ignores mail folders', () => {
+    expect(isNonMailModuleOverlay('unavailable', 'calendar')).toBe(true)
+    expect(isNonMailModuleOverlay('unavailable', 'folder')).toBe(false)
+    expect(isNonMailModuleOverlay('route')).toBe(false)
   })
 })

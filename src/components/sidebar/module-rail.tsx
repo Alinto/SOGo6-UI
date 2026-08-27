@@ -13,6 +13,10 @@ import {
   useFastAccess,
   type FastAccessModuleId,
 } from '@/features/mails/components/sidebars/fast-access/context'
+import {
+  isNonMailModuleOverlay,
+  type OfflineUnavailableTarget,
+} from '@/features/offline/offline-modules'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { ModuleNavIcon } from '@/lib/icons/module-nav-icons'
 import { cn } from '@/lib/utils'
@@ -26,10 +30,27 @@ const FALLBACK_ROUTES: Record<FastAccessModuleId, string> = {
   notes: '/notes',
 }
 
+const OVERLAY_RAIL_ID: Partial<
+  Record<OfflineUnavailableTarget, FastAccessModuleId>
+> = {
+  calendar: 'calendar',
+  contacts: 'address-book',
+  tasks: 'tasks',
+  notes: 'notes',
+}
+
 const ModuleRail: React.FC = () => {
   const t = useTranslations('NAVIGATION')
-  const { navigateApp } = useOfflineNav()
+  const { navigateApp, view } = useOfflineNav()
   const fastAccess = useFastAccess()
+
+  const overlayRailId =
+    isNonMailModuleOverlay(
+      view.kind,
+      view.kind === 'unavailable' ? view.target : undefined
+    ) && view.kind === 'unavailable'
+      ? (OVERLAY_RAIL_ID[view.target] ?? null)
+      : null
 
   const handleSelect = useCallback(
     (id: FastAccessModuleId) => {
@@ -88,7 +109,9 @@ const ModuleRail: React.FC = () => {
                     )}
                     onClick={() => handleSelect(item.id)}
                     data-active={
-                      fastAccess?.isOpen && fastAccess.activeModule === item.id
+                      (fastAccess?.isOpen &&
+                        fastAccess.activeModule === item.id) ||
+                      overlayRailId === item.id
                     }
                   >
                     <item.icon />

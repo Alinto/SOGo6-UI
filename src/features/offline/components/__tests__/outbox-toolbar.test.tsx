@@ -49,12 +49,22 @@ jest.mock('@/features/mails/components/mail/mail-action-bar', () => ({
   ),
 }))
 
+const mockFlush = jest.fn()
+jest.mock('../../outbox/outbox-flush-feedback', () => ({
+  flushOutboxWithToasts: (...args: unknown[]) => mockFlush(...args),
+}))
+
+jest.mock('../../auth/get-auth-token', () => ({
+  getAuthUserId: () => 'user@example.org',
+}))
+
 describe('OutboxToolbar', () => {
   const onBulkDelete = jest.fn()
 
   beforeEach(() => {
     mockDispatch.mockReset()
     onBulkDelete.mockReset()
+    mockFlush.mockReset()
     mockSelectedIds = []
   })
 
@@ -65,6 +75,19 @@ describe('OutboxToolbar', () => {
     expect(screen.getByTestId('checkbox')).toBeInTheDocument()
   })
 
+  it('shows Send all and flushes the outbox', async () => {
+    const user = userEvent.setup()
+    render(<OutboxToolbar itemIds={['a', 'b']} onBulkDelete={onBulkDelete} />)
+
+    await user.click(
+      screen.getByRole('button', { name: 'outbox_send_all.string' })
+    )
+    expect(mockFlush).toHaveBeenCalledWith(
+      'user@example.org',
+      expect.any(Function)
+    )
+  })
+
   it('shows bulk delete when messages are selected', async () => {
     mockSelectedIds = ['a']
     const user = userEvent.setup()
@@ -72,6 +95,9 @@ describe('OutboxToolbar', () => {
 
     expect(screen.getByTestId('mail-actions-bar')).toBeInTheDocument()
     expect(screen.queryByText('outbox_folder.string')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'outbox_send_all.string' })
+    ).not.toBeInTheDocument()
 
     await user.click(screen.getByTestId('mail-actions-bar'))
     expect(onBulkDelete).toHaveBeenCalledWith(['a'])

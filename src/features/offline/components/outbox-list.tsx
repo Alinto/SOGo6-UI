@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl'
 import { memo, useMemo, type MouseEvent } from 'react'
 import { useOutboxList } from '../hooks/use-outbox'
 import type { OutboxRecord } from '../types'
+import { outboxLastErrorSnippet } from '../utils/outbox-last-error-snippet'
 import { outboxRecordToListItem } from '../utils/outbox-to-list-item'
 import CachedDataIndicator from './cached-data-indicator'
 import OutboxToolbar from './outbox-toolbar'
@@ -39,12 +40,17 @@ function OutboxList({ onOpen, onRequestDelete }: OutboxListProps) {
 
   const listItems = useMemo(
     () =>
-      items.map((item) =>
-        outboxRecordToListItem(item, {
+      items.map((item) => {
+        const status = t(statusKey(item.status))
+        const errorSnippet =
+          item.status === 'failed'
+            ? outboxLastErrorSnippet(item.lastError)
+            : null
+        return outboxRecordToListItem(item, {
           subject: item.subject || t('outbox_no_subject.string'),
-          snippet: t(statusKey(item.status)),
+          snippet: errorSnippet ? `${status} · ${errorSnippet}` : status,
         })
-      ),
+      }),
     [items, t]
   )
 

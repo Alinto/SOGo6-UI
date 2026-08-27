@@ -122,7 +122,7 @@ describe('OutboxMailView', () => {
     expect(onDelete).toHaveBeenCalled()
   })
 
-  it('does not show technical lastError text', () => {
+  it('shows a lastError snippet when send failed', () => {
     render(
       <OutboxMailView
         item={{ ...item, status: 'failed', lastError: 'HTTP 500' }}
@@ -132,7 +132,7 @@ describe('OutboxMailView', () => {
       />
     )
     expect(screen.getByText('outbox_status_failed.string')).toBeInTheDocument()
-    expect(screen.queryByText(/HTTP 500/)).not.toBeInTheDocument()
+    expect(screen.getByText('HTTP 500')).toBeInTheDocument()
   })
 
   it('shows bcc recipients when present', () => {

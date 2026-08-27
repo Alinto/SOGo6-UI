@@ -6,9 +6,10 @@ import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
 import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
-import { useRouter } from '@/lib/i18n/navigation'
 import { useEnvVars } from '@/lib/env-service'
+import { useRouter } from '@/lib/i18n/navigation'
 import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
@@ -60,6 +61,8 @@ export function LoginAuthForm({
 
   const [isLoading, setIsLoading] = React.useState(false)
   const [serverError, setServerError] = React.useState<string | null>(null)
+  const isOffline =
+    typeof navigator !== 'undefined' && navigator.onLine === false
 
   const passwordSchema = React.useMemo(() => createPasswordSchema(t), [t])
 
@@ -96,6 +99,7 @@ export function LoginAuthForm({
 
   const onSubmit = async (data: PasswordFormData) => {
     if (!email) return
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) return
 
     setIsLoading(true)
     setServerError(null)
@@ -150,6 +154,7 @@ export function LoginAuthForm({
       {...props}
       onSubmit={handleSubmit(onSubmit)}
     >
+      {isOffline && <LoginOfflineBanner />}
       {serverError && (
         <div className="border-destructive/50 bg-destructive/10 text-destructive mb-4 flex items-start gap-2 rounded-lg border p-3 text-sm">
           <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -220,7 +225,7 @@ export function LoginAuthForm({
           type="submit"
           size="lg"
           variant="outline"
-          disabled={isLoading}
+          disabled={isLoading || isOffline}
           className="bg-background border-primary-foreground/20 text-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/40 focus-visible:ring-ring w-full border-2 shadow-md transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2"
         >
           {isLoading ? t('login.loading.string') : t('login.string')}

@@ -1,12 +1,16 @@
 'use client'
 
+import OfflineFallbackShell from '@/features/offline/components/offline-fallback-shell'
 import { retryOfflineNavigation } from '@/features/offline/network/retry-offline-navigation'
-import { useTranslations } from 'next-intl'
+import { pwaStartUrl } from '@/features/offline/pwa-start-url'
+import { useLocale, useTranslations } from 'next-intl'
 
 export default function OfflineFallbackPage() {
   const t = useTranslations('PWA')
+  const locale = useLocale()
+
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-4 p-6 text-center">
+    <OfflineFallbackShell showThemeSwitcher>
       <h1 className="text-xl font-semibold">
         {t('offline_fallback_title.string')}
       </h1>
@@ -15,11 +19,11 @@ export default function OfflineFallbackPage() {
       </p>
       <button
         type="button"
-        onClick={retryOfflineNavigation}
+        onClick={() => retryOfflineNavigation(pwaStartUrl(locale))}
         className="text-primary cursor-pointer text-sm underline"
       >
         {t('offline_fallback_retry.string')}
       </button>
-    </main>
+    </OfflineFallbackShell>
   )
 }

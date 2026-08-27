@@ -46,8 +46,15 @@ jest.mock('../cached-data-indicator', () => ({
 
 jest.mock('@/features/mails/components/list-item', () => ({
   __esModule: true,
-  default: ({ data }: { data: { id: string; subject: string } }) => (
-    <div data-testid={`list-item-${data.id}`}>{data.subject}</div>
+  default: ({
+    data,
+  }: {
+    data: { id: string; subject: string; snippet: string }
+  }) => (
+    <div data-testid={`list-item-${data.id}`}>
+      {data.subject}
+      <span>{data.snippet}</span>
+    </div>
   ),
 }))
 
@@ -114,5 +121,13 @@ describe('OutboxList', () => {
   it('renders the empty folder state', () => {
     render(<OutboxList onOpen={jest.fn()} onRequestDelete={jest.fn()} />)
     expect(screen.getByText('outbox_empty.string')).toBeInTheDocument()
+  })
+
+  it('shows a lastError snippet under failed status', () => {
+    mockItems = [{ ...item, status: 'failed', lastError: 'HTTP 500' }]
+    render(<OutboxList onOpen={jest.fn()} onRequestDelete={jest.fn()} />)
+    expect(screen.getByTestId('list-item-ob-1')).toHaveTextContent(
+      'outbox_status_failed.string · HTTP 500'
+    )
   })
 })

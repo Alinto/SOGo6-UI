@@ -40,6 +40,7 @@ export function useOfflineMailList({
   const [cached, setCached] = useState<{
     key: string
     mails: ImapMessagesList[]
+    cachedAt: number | null
   } | null>(null)
 
   useEffect(() => {
@@ -70,16 +71,21 @@ export function useOfflineMailList({
     void readHeaders(accountId, folderPath).then((rows) => {
       if (cancelled) return
       const parsed: ImapMessagesList[] = []
+      let cachedAt: number | null = null
       for (const row of rows) {
         try {
           parsed.push(JSON.parse(row.payloadJson) as ImapMessagesList)
         } catch {
           // Corrupted row — skip it
         }
+        if (cachedAt === null || row.updatedAt > cachedAt) {
+          cachedAt = row.updatedAt
+        }
       }
       setCached({
         key: `${accountId}:${folderPath}`,
         mails: sortByDateDesc(parsed),
+        cachedAt,
       })
     })
     return () => {
@@ -92,6 +98,7 @@ export function useOfflineMailList({
 
   return {
     cachedMails,
+    cachedAt: cachedMails !== null ? (cached?.cachedAt ?? null) : null,
     isShowingCache: cachedMails !== null,
   }
 }
