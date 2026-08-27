@@ -1,0 +1,893 @@
+{
+    "MAILS_COMMONS": {
+        "mail_display": {
+            "action-bar": {
+                "reply": {
+                    "string": "Répondre",
+                    "description": "Reply to the current message"
+                },
+                "reply_all": {
+                    "string": "Répondre à tous",
+                    "description": "Reply to all recipients of the current message"
+                },
+                "forward": {
+                    "string": "Transférer",
+                    "description": "Forward the current message to another recipient"
+                },
+                "edit_draft": {
+                    "string": "Modifier",
+                    "description": "Open the draft in the composer"
+                },
+                "use_template": {
+                    "string": "Utiliser le modèle",
+                    "description": "Create a new draft from this template without modifying it"
+                },
+                "return": {
+                    "string": "Retour aux résultats de recherche",
+                    "description": "Return to search results"
+                },
+                "delete": {
+                    "string": "Supprimer",
+                    "description": "Delete the current message"
+                },
+                "report_spam": {
+                    "string": "Signaler comme indésirable",
+                    "description": "Mark as spam"
+                },
+                "mark_unread": {
+                    "string": "Marquer comme non lu",
+                    "description": "Mark as unread"
+                },
+                "mark_important": {
+                    "string": "Marquer comme important",
+                    "description": "Flag the message as important"
+                },
+                "unmark_important": {
+                    "string": "Retirer le marqueur important",
+                    "description": "Remove the important flag from the message"
+                },
+                "label": {
+                    "string": "Étiquette",
+                    "description": "Label",
+                    "coming_soon": {
+                        "string": "Étiquettes bientôt disponibles",
+                        "description": "Tooltip when label picker is not yet available"
+                    }
+                },
+                "label_dialog": {
+                    "empty": {
+                        "string": "Aucune catégorie pour le moment"
+                    },
+                    "apply": {
+                        "string": "Appliquer"
+                    },
+                    "new_tag": {
+                        "string": "Nouvelle étiquette"
+                    },
+                    "new_tag_placeholder": {
+                        "string": "Nom de l'étiquette"
+                    },
+                    "duplicate_name": {
+                        "string": "Une étiquette avec ce nom existe déjà"
+                    },
+                    "remove_tag": {
+                        "string": "Retirer l'étiquette {name}"
+                    },
+                    "create": {
+                        "string": "Créer"
+                    },
+                    "configure": {
+                        "string": "Gérer les catégories"
+                    }
+                },
+                "report_not_spam": {
+                    "string": "Marquer comme non indésirable",
+                    "description": "Move message from Junk back to the Inbox"
+                },
+                "archive": {
+                    "string": "Archiver",
+                    "description": "Move message to archive folder"
+                },
+                "download": {
+                    "string": "Télécharger",
+                    "description": "Download message as .eml file"
+                },
+                "move": {
+                    "string": "Déplacer vers un dossier",
+                    "description": "Move message to another folder"
+                },
+                "move_dialog": {
+                    "cancel": {
+                        "string": "Annuler"
+                    },
+                    "new_folder": {
+                        "string": "Nouveau dossier"
+                    },
+                    "new_folder_placeholder": {
+                        "string": "Nom du dossier"
+                    },
+                    "parent_placeholder": {
+                        "string": "Dossier parent (facultatif)"
+                    },
+                    "create_and_move": {
+                        "string": "Créer et déplacer"
+                    }
+                },
+                "copy": {
+                    "string": "Copier vers un dossier",
+                    "description": "Copy message to another folder"
+                },
+                "copy_dialog": {
+                    "create_and_copy": {
+                        "string": "Créer et copier"
+                    }
+                },
+                "print": {
+                    "string": "Imprimer",
+                    "description": "Print the current message"
+                },
+                "print_labels": {
+                    "from": {
+                        "string": "De",
+                        "description": "From label in print view"
+                    },
+                    "to": {
+                        "string": "À",
+                        "description": "To label in print view"
+                    },
+                    "cc": {
+                        "string": "Cc",
+                        "description": "Cc label in print view"
+                    },
+                    "date": {
+                        "string": "Date",
+                        "description": "Date label in print view"
+                    },
+                    "attachments": {
+                        "string": "Pièces jointes",
+                        "description": "Attachments label in print view"
+                    }
+                },
+                "view_source": {
+                    "string": "Voir la source",
+                    "description": "View raw message source"
+                },
+                "report_phishing": {
+                    "string": "Signaler comme hameçonnage",
+                    "description": "Report the message as a phishing attempt"
+                },
+                "report_illegal": {
+                    "string": "Signaler comme illégal",
+                    "description": "Report the message as illegal content"
+                },
+                "delete_confirm": {
+                    "title": {
+                        "string": "Supprimer le message"
+                    },
+                    "message": {
+                        "string": "Ce message sera déplacé vers la Corbeille."
+                    },
+                    "confirm": {
+                        "string": "Supprimer"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    }
+                },
+                "spam_confirm": {
+                    "title": {
+                        "string": "Marquer comme indésirable"
+                    },
+                    "message": {
+                        "string": "Ce message sera déplacé vers le dossier Indésirables."
+                    },
+                    "confirm": {
+                        "string": "Déplacer vers Indésirables"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    }
+                },
+                "ham_confirm": {
+                    "title": {
+                        "string": "Marquer comme non indésirable"
+                    },
+                    "message": {
+                        "string": "Ce message sera déplacé vers votre boîte de réception."
+                    },
+                    "confirm": {
+                        "string": "Déplacer vers la boîte de réception"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    }
+                },
+                "more": {
+                    "string": "Plus d'actions",
+                    "description": "More actions"
+                },
+                "next-mail": {
+                    "string": "Message suivant",
+                    "description": "Next mail"
+                },
+                "previous-mail": {
+                    "string": "Message précédent",
+                    "description": "Previous mail"
+                }
+            },
+            "content": {
+                "external_images_warning": {
+                    "string": "Ce message contient des images externes. Cliquez pour les afficher.",
+                    "description": "Warning: This message contains external images"
+                },
+                "download_attachment": {
+                    "string": "Télécharger la pièce jointe",
+                    "description": "ARIA label for the download attachment link"
+                },
+                "download_all_attachments": {
+                    "string": "Télécharger toutes les pièces jointes",
+                    "description": "ARIA label for the download all attachments link"
+                },
+                "download_error": {
+                    "title": {
+                        "string": "Échec du téléchargement",
+                        "description": "Title of the error toast shown when an attachment fails to download"
+                    },
+                    "message": {
+                        "string": "La pièce jointe n'a pas pu être téléchargée. Veuillez réessayer.",
+                        "description": "Message of the error toast shown when an attachment fails to download"
+                    }
+                },
+                "more_attachments_count": {
+                    "string": "+{count}",
+                    "description": "Compact label to reveal additional hidden attachments (e.g. +3)"
+                }
+            },
+            "header": {
+                "from": {
+                    "string": "De",
+                    "description": "From"
+                },
+                "to": {
+                    "string": "À",
+                    "description": "To"
+                },
+                "cc": {
+                    "string": "Cc",
+                    "description": "Cc"
+                },
+                "unsubscribe": {
+                    "string": "Se désinscrire",
+                    "description": "Unsubscribe from the mailing list"
+                },
+                "unsubscribe-dialog": {
+                    "message": {
+                        "string": "Voulez-vous vous désinscrire de cette liste de diffusion ?",
+                        "description": "Message in the unsubscribe dialog"
+                    },
+                    "confirm": {
+                        "string": "Se désinscrire",
+                        "description": "Confirm the unsubscription"
+                    },
+                    "cancel": {
+                        "string": "Annuler",
+                        "description": "Cancel the unsubscription"
+                    }
+                },
+                "contacts-badge": {
+                    "popover-view-contact": {
+                        "string": "Voir le contact",
+                        "description": "Open the matching contact in the address book"
+                    },
+                    "popover-add-to-addressbook": {
+                        "string": "Ajouter au carnet d'adresses",
+                        "description": "Add the contact to the address book"
+                    },
+                    "popover-write-new-message": {
+                        "string": "Écrire un nouveau message",
+                        "description": "Write a new message to the contact"
+                    }
+                }
+            }
+        },
+        "error": {
+            "string": "Erreur",
+            "description": "Generic error title used when mails fail to load"
+        },
+        "search": {
+            "placeholder": {
+                "string": "Rechercher des emails",
+                "description": "Placeholder text for the email search input field"
+            },
+            "more_options": {
+                "string": "Plus d'options",
+                "description": "Button to open more search options"
+            },
+            "folders": {
+                "string": "Dossiers",
+                "description": "Label for the folders section in the search options"
+            },
+            "confirm": {
+                "string": "Rechercher",
+                "description": "Button to confirm and execute the email search"
+            },
+            "in_message_content": {
+                "string": "Dans le contenu du message",
+                "description": "Option to search within the content of messages"
+            },
+            "with_attachments": {
+                "string": "Avec pièces jointes",
+                "description": "Option to filter emails that have attachments"
+            },
+            "in_favorites": {
+                "string": "Dans les favoris",
+                "description": "Option to filter emails that are marked as favorites"
+            },
+            "unseen_only": {
+                "string": "Non lus uniquement",
+                "description": "Option to filter emails that are unseen"
+            },
+            "body": {
+                "string": "Corps du message",
+                "description": "Label for the 'Body' field in email search options"
+            },
+            "date_from": {
+                "string": "Date de début",
+                "description": "Label for the 'Date from' field in email search options"
+            },
+            "date_to": {
+                "string": "Date de fin",
+                "description": "Label for the 'Date to' field in email search options"
+            },
+            "others": {
+                "string": "Autres",
+                "description": "Label for the 'Others' section in email search options"
+            }
+        },
+        "from": {
+            "string": "De",
+            "description": "Label for the 'From' field in email search options"
+        },
+        "account_switcher": {
+            "add_account": {
+                "string": "Ajouter un compte",
+                "description": "Button to add an external mail account in the sidebar account switcher"
+            },
+            "new_folder": {
+                "string": "Nouveau dossier",
+                "description": "Label for the new folder action in the account switcher menu"
+            },
+            "delegate": {
+                "string": "Déléguer",
+                "description": "Label for the delegate action in the account switcher menu (not yet implemented)"
+            },
+            "quota": {
+                "string": "{percent}% utilisé sur {total} Mo",
+                "description": "Storage quota usage summary shown below the account switcher",
+                "warning": {
+                    "string": "Espace de stockage presque plein",
+                    "description": "Tooltip for the warning icon shown when the quota is close to the limit"
+                }
+            }
+        },
+        "to": {
+            "string": "À",
+            "description": "Label for the 'To' field in email search options"
+        },
+        "bcc": {
+            "string": "Cci",
+            "description": "Label for the 'Bcc' field in email search options"
+        },
+        "subject": {
+            "string": "Objet",
+            "description": "Label for the 'Subject' field in email search options"
+        },
+        "folders": {
+            "actions": {
+                "new_subfolder": {
+                    "string": "Nouveau sous-dossier",
+                    "description": "Button to create a new subfolder in the current folder"
+                },
+                "rename": {
+                    "string": "Renommer",
+                    "description": "Button to rename the current folder"
+                },
+                "rename_dialog": {
+                    "title": {
+                        "string": "Renommer le dossier",
+                        "description": "Title of the rename folder dialog"
+                    },
+                    "label": {
+                        "string": "Nom du dossier",
+                        "description": "Label for the folder name input"
+                    },
+                    "placeholder": {
+                        "string": "ex. Travail, Archives…",
+                        "description": "Placeholder for the folder name input"
+                    },
+                    "submit": {
+                        "string": "Renommer",
+                        "description": "Submit button label in the rename folder dialog"
+                    },
+                    "cancel": {
+                        "string": "Annuler",
+                        "description": "Cancel button label in the rename folder dialog"
+                    },
+                    "error_required": {
+                        "string": "Le nom du dossier est requis",
+                        "description": "Validation error when folder name is empty"
+                    },
+                    "error_dot": {
+                        "string": "Le nom du dossier ne peut pas contenir de point",
+                        "description": "Validation error when folder name contains a dot character"
+                    },
+                    "error_max": {
+                        "string": "Le nom du dossier doit contenir au maximum 100 caractères",
+                        "description": "Validation error when folder name exceeds max length"
+                    }
+                },
+                "mark_as_read": {
+                    "string": "Marquer comme lu",
+                    "description": "Button to mark the current folder as read"
+                },
+                "export": {
+                    "string": "Exporter",
+                    "description": "Button to export all messages in the current folder"
+                },
+                "move_to": {
+                    "string": "Déplacer vers",
+                    "description": "Button to move the current folder under another parent"
+                },
+                "set_as": {
+                    "string": "Définir comme",
+                    "description": "Button to assign a semantic folder type to a normal folder"
+                },
+                "empty_folder": {
+                    "string": "Vider le dossier",
+                    "description": "Button to permanently empty trash or junk folder"
+                },
+                "action_unavailable": {
+                    "string": "Cette action n'est pas encore disponible",
+                    "description": "Tooltip shown when a folder action is disabled because the backend is not ready"
+                },
+                "empty_folder_dialog": {
+                    "title": {
+                        "string": "Vider le dossier"
+                    },
+                    "description": {
+                        "string": "Supprimer définitivement tous les messages de \"{folder}\" ? Cette action est irréversible."
+                    },
+                    "confirm": {
+                        "string": "Vider le dossier"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    }
+                },
+                "set_as_dialog": {
+                    "title": {
+                        "string": "Définir le type de dossier"
+                    },
+                    "description": {
+                        "string": "Choisissez le type sémantique pour \"{folder}\"."
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    },
+                    "types": {
+                        "DRAFT": {
+                            "string": "Brouillons"
+                        },
+                        "SENT": {
+                            "string": "Envoyés"
+                        },
+                        "TRASH": {
+                            "string": "Corbeille"
+                        },
+                        "JUNK": {
+                            "string": "Indésirables"
+                        },
+                        "TEMPLATE": {
+                            "string": "Modèles"
+                        }
+                    }
+                },
+                "move_to_dialog": {
+                    "title": {
+                        "string": "Déplacer le dossier"
+                    },
+                    "description": {
+                        "string": "Choisissez un nouveau parent pour \"{folder}\"."
+                    },
+                    "placeholder": {
+                        "string": "Sélectionner une destination"
+                    },
+                    "root": {
+                        "string": "Niveau racine"
+                    },
+                    "confirm": {
+                        "string": "Déplacer"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    }
+                },
+                "sharing": {
+                    "string": "Partage",
+                    "title": {
+                        "string": "Partager le dossier"
+                    },
+                    "description": {
+                        "string": "Gérez qui a accès à \"{folder}\" et leurs permissions."
+                    },
+                    "noUsers": {
+                        "string": "Aucun utilisateur n'a encore accès."
+                    },
+                    "addUser": {
+                        "label": {
+                            "string": "Ajouter un utilisateur"
+                        },
+                        "placeholder": {
+                            "string": "email@domaine.com"
+                        },
+                        "button": {
+                            "string": "Ajouter"
+                        },
+                        "searchPlaceholder": {
+                            "string": "Rechercher par nom ou email…"
+                        },
+                        "addDirect": {
+                            "string": "Ajouter \"{email}\""
+                        },
+                        "error": {
+                            "invalid": {
+                                "string": "Veuillez saisir une adresse email valide."
+                            },
+                            "duplicate": {
+                                "string": "Cet utilisateur a déjà accès."
+                            }
+                        }
+                    },
+                    "simplified": {
+                        "read": {
+                            "label": {
+                                "string": "Lecture"
+                            },
+                            "detail": {
+                                "string": "Voir le dossier et voir les mails, ainsi que les actions SMTP sur le mail comme répondre, transférer, etc."
+                            }
+                        },
+                        "modify": {
+                            "label": {
+                                "string": "Modification de mail"
+                            },
+                            "detail": {
+                                "string": "Actions sur le mail reçu sauf suppression : important, étiquette, etc."
+                            }
+                        },
+                        "delete": {
+                            "label": {
+                                "string": "Supprimer un mail"
+                            },
+                            "detail": {
+                                "string": "Supprimer un mail"
+                            }
+                        },
+                        "move": {
+                            "label": {
+                                "string": "Déplacer un mail"
+                            },
+                            "detail": {
+                                "string": "Action déplacer/copier"
+                            }
+                        },
+                        "administerRights": {
+                            "label": {
+                                "string": "Administration des droits sur le dossier"
+                            },
+                            "detail": {
+                                "string": "Ajouter/modifier les droits de partage"
+                            }
+                        },
+                        "administerSubfolders": {
+                            "label": {
+                                "string": "Administration des sous-dossiers"
+                            },
+                            "detail": {
+                                "string": "Créer et supprimer des sous-dossiers"
+                            }
+                        }
+                    },
+                    "viewToggle": {
+                        "toAdvanced": {
+                            "string": "Passer en vue avancée"
+                        },
+                        "toStandard": {
+                            "string": "Passer en vue standard"
+                        }
+                    },
+                    "advanced": {
+                        "userCanViewFolder": {
+                            "string": "Voir le dossier"
+                        },
+                        "userCanReadMails": {
+                            "string": "Lire les mails"
+                        },
+                        "userCanMarkMailsRead": {
+                            "string": "Marquer comme lu/non lu"
+                        },
+                        "userCanWriteMails": {
+                            "string": "Modifier les indicateurs des mails"
+                        },
+                        "userCanInsertMails": {
+                            "string": "Insérer, copier et déplacer des mails"
+                        },
+                        "userCanPostMails": {
+                            "string": "Envoyer des mails"
+                        },
+                        "userCanCreateSubfolders": {
+                            "string": "Créer des sous-dossiers"
+                        },
+                        "userCanRemoveFolder": {
+                            "string": "Supprimer le dossier"
+                        },
+                        "userCanEraseMails": {
+                            "string": "Effacer les mails"
+                        },
+                        "userCanExpungeFolder": {
+                            "string": "Purger le dossier"
+                        },
+                        "userIsAdministrator": {
+                            "string": "Administrer les droits du dossier"
+                        }
+                    },
+                    "applyToSubfolders": {
+                        "string": "Appliquer ces permissions sur les sous-dossiers"
+                    },
+                    "applyToSubfoldersHint": {
+                        "string": "Ces permissions seront immédiatement ajoutées aux sous-dossiers, dès l'enregistrement."
+                    },
+                    "summary": {
+                        "none": {
+                            "string": "Aucune permission"
+                        }
+                    },
+                    "save": {
+                        "string": "Enregistrer"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    },
+                    "badge": {
+                        "you": {
+                            "string": "Vous"
+                        },
+                        "public": {
+                            "string": "Public"
+                        }
+                    },
+                    "anyAuthenticatedUser": {
+                        "label": {
+                            "string": "Tous les utilisateurs authentifiés"
+                        }
+                    },
+                    "removeUser": {
+                        "tooltip": {
+                            "string": "Impossible de vous retirer vous-même"
+                        }
+                    }
+                },
+                "purge": {
+                    "string": "Purger",
+                    "description": "Button to permanently delete all messages in the current folder",
+                    "confirmTitle": {
+                        "string": "Purger le dossier"
+                    },
+                    "confirmDesc": {
+                        "string": "Voulez-vous vraiment purger \"{folder}\" ? Tous les messages supprimés seront définitivement effacés. Cette action est irréversible."
+                    },
+                    "confirm": {
+                        "string": "Purger"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    },
+                    "olderThan": {
+                        "string": "Supprimer les mails plus anciens que"
+                    },
+                    "customDate": {
+                        "string": "Date personnalisée"
+                    },
+                    "pickDate": {
+                        "string": "Choisir une date"
+                    },
+                    "applyToSubfolders": {
+                        "string": "Appliquer aux sous-dossiers"
+                    },
+                    "permanentlyDelete": {
+                        "string": "Supprimer définitivement (irréversible)"
+                    },
+                    "confirmPermanent": {
+                        "string": "Je comprends que cela supprimera définitivement les mails sélectionnés et qu'ils ne pourront pas être récupérés"
+                    },
+                    "datePresets": {
+                        "3months": {
+                            "string": "3 mois"
+                        },
+                        "6months": {
+                            "string": "6 mois"
+                        },
+                        "1year": {
+                            "string": "1 an"
+                        },
+                        "custom": {
+                            "string": "Date personnalisée"
+                        },
+                        "all": {
+                            "string": "Tous les mails"
+                        }
+                    },
+                    "successTitle": {
+                        "string": "Dossier purgé"
+                    },
+                    "successMessage": {
+                        "string": "Tous les messages supprimés ont été définitivement effacés."
+                    },
+                    "errorTitle": {
+                        "string": "Échec de la purge"
+                    },
+                    "errorMessage": {
+                        "string": "Une erreur est survenue lors de la purge du dossier. Veuillez réessayer."
+                    }
+                },
+                "expunge": {
+                    "string": "Purger (expunge)",
+                    "confirmTitle": {
+                        "string": "Purger le dossier"
+                    },
+                    "confirmDesc": {
+                        "string": "Voulez-vous vraiment purger \"{folder}\" ? Tous les messages marqués comme supprimés seront définitivement effacés. Cette action est irréversible."
+                    },
+                    "confirm": {
+                        "string": "Purger"
+                    },
+                    "cancel": {
+                        "string": "Annuler"
+                    }
+                },
+                "delete": {
+                    "string": "Supprimer le dossier",
+                    "description": "Label for the delete folder action in the folder context menu",
+                    "confirmTitle": {
+                        "string": "Supprimer le dossier",
+                        "description": "Title of the delete folder confirmation dialog"
+                    },
+                    "confirmDesc": {
+                        "string": "Voulez-vous vraiment supprimer \"{folder}\" ? Il sera déplacé vers la Corbeille. S'il s'y trouve déjà, il sera définitivement supprimé.",
+                        "description": "Description of the delete folder confirmation dialog"
+                    },
+                    "confirm": {
+                        "string": "Supprimer",
+                        "description": "Confirm button label in the delete folder dialog"
+                    },
+                    "cancel": {
+                        "string": "Annuler",
+                        "description": "Cancel button label in the delete folder dialog"
+                    }
+                },
+                "new_subfolder_dialog": {
+                    "title": {
+                        "string": "Nouveau sous-dossier",
+                        "description": "Title of the create subfolder dialog"
+                    },
+                    "label": {
+                        "string": "Nom du dossier",
+                        "description": "Label for the folder name input"
+                    },
+                    "placeholder": {
+                        "string": "ex. Travail, Archives…",
+                        "description": "Placeholder for the folder name input"
+                    },
+                    "submit": {
+                        "string": "Créer",
+                        "description": "Submit button label in the create subfolder dialog"
+                    },
+                    "cancel": {
+                        "string": "Annuler",
+                        "description": "Cancel button label in the create subfolder dialog"
+                    },
+                    "error_required": {
+                        "string": "Le nom du dossier est requis",
+                        "description": "Validation error when folder name is empty"
+                    },
+                    "error_dot": {
+                        "string": "Le nom du dossier ne peut pas contenir de point",
+                        "description": "Validation error when folder name contains a dot character"
+                    },
+                    "error_max": {
+                        "string": "Le nom du dossier doit contenir au maximum 100 caractères",
+                        "description": "Validation error when folder name exceeds max length"
+                    }
+                }
+            },
+            "inbox": {
+                "string": "Boîte de réception",
+                "description": "Your inbox where you receive new messages"
+            },
+            "sent": {
+                "string": "Envoyés",
+                "description": "Messages you have sent"
+            },
+            "drafts": {
+                "string": "Brouillons",
+                "description": "Messages you have saved as drafts"
+            },
+            "trash": {
+                "string": "Corbeille",
+                "description": "Deleted messages that can be restored or permanently deleted"
+            },
+            "junk": {
+                "string": "Indésirables",
+                "description": "Messages identified as spam"
+            },
+            "template": {
+                "string": "Modèles",
+                "description": "Message templates"
+            },
+            "virtual_folder": {
+                "string": "Dossier virtuel — développez pour parcourir les sous-dossiers",
+                "description": "Tooltip for non-selectable IMAP folders"
+            },
+            "virtual_empty": {
+                "title": {
+                    "string": "Dossier virtuel"
+                },
+                "description": {
+                    "string": "Ce dossier ne peut pas contenir de messages. Développez-le dans la barre latérale pour parcourir les sous-dossiers."
+                }
+            }
+        },
+        "sse": {
+            "defaultSubject": {
+                "string": "Nouveau message"
+            },
+            "defaultSender": {
+                "string": "Expéditeur inconnu"
+            }
+        },
+        "invitation": {
+            "label": {
+                "string": "Invitation calendrier",
+                "description": "Heading for an iMIP calendar invitation in mail view"
+            },
+            "synced_to_calendar": {
+                "string": "Cet événement a été ajouté à votre calendrier.",
+                "description": "Info banner after inbound iMIP sync"
+            },
+            "event_cancelled": {
+                "string": "Cet événement a été annulé.",
+                "description": "Message for iMIP CANCEL mails"
+            },
+            "reply_from_attendee": {
+                "string": "{name} a répondu : {status}",
+                "description": "Message when an attendee sends an iMIP REPLY"
+            },
+            "sync_pending": {
+                "string": "Synchronisation avec votre calendrier…",
+                "description": "Event not found yet after opening invitation mail"
+            },
+            "retry": {
+                "string": "Réessayer",
+                "description": "Retry loading calendar event for invitation"
+            },
+            "view_in_calendar": {
+                "string": "Voir dans le calendrier",
+                "description": "Link to open the event in the calendar module"
+            },
+            "recurring_badge": {
+                "string": "Événement récurrent",
+                "description": "Badge for recurring invitations"
+            }
+        }
+    }
+}

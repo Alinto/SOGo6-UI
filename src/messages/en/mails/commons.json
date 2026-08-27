@@ -533,6 +533,12 @@
                         "button": {
                             "string": "Add"
                         },
+                        "searchPlaceholder": {
+                            "string": "Search by name or email…"
+                        },
+                        "addDirect": {
+                            "string": "Add \"{email}\""
+                        },
                         "error": {
                             "invalid": {
                                 "string": "Please enter a valid email address."
@@ -542,15 +548,108 @@
                             }
                         }
                     },
-                    "presets": {
+                    "simplified": {
                         "read": {
-                            "string": "Read"
+                            "label": {
+                                "string": "Read"
+                            },
+                            "detail": {
+                                "string": "View the folder and view mail, plus mail actions such as reply, forward, etc."
+                            }
                         },
-                        "write": {
-                            "string": "Write"
+                        "modify": {
+                            "label": {
+                                "string": "Modify mail"
+                            },
+                            "detail": {
+                                "string": "Actions on received mail except deletion: mark important, mark as read, apply labels, etc."
+                            }
                         },
-                        "admin": {
-                            "string": "Admin"
+                        "delete": {
+                            "label": {
+                                "string": "Delete mail"
+                            },
+                            "detail": {
+                                "string": "Delete mail"
+                            }
+                        },
+                        "move": {
+                            "label": {
+                                "string": "Move mail"
+                            },
+                            "detail": {
+                                "string": "Move/copy actions"
+                            }
+                        },
+                        "administerRights": {
+                            "label": {
+                                "string": "Administer folder rights"
+                            },
+                            "detail": {
+                                "string": "Add/modify sharing rights"
+                            }
+                        },
+                        "administerSubfolders": {
+                            "label": {
+                                "string": "Administer subfolders"
+                            },
+                            "detail": {
+                                "string": "Create and delete subfolders"
+                            }
+                        }
+                    },
+                    "viewToggle": {
+                        "toAdvanced": {
+                            "string": "Switch to advanced view"
+                        },
+                        "toStandard": {
+                            "string": "Switch to standard view"
+                        }
+                    },
+                    "advanced": {
+                        "userCanViewFolder": {
+                            "string": "View folder"
+                        },
+                        "userCanReadMails": {
+                            "string": "Read mail"
+                        },
+                        "userCanMarkMailsRead": {
+                            "string": "Mark as read/unread"
+                        },
+                        "userCanWriteMails": {
+                            "string": "Modify mail flags"
+                        },
+                        "userCanInsertMails": {
+                            "string": "Insert, copy and move mail"
+                        },
+                        "userCanPostMails": {
+                            "string": "Post mail"
+                        },
+                        "userCanCreateSubfolders": {
+                            "string": "Create subfolders"
+                        },
+                        "userCanRemoveFolder": {
+                            "string": "Remove folder"
+                        },
+                        "userCanEraseMails": {
+                            "string": "Erase mail"
+                        },
+                        "userCanExpungeFolder": {
+                            "string": "Expunge folder"
+                        },
+                        "userIsAdministrator": {
+                            "string": "Administer folder ACL"
+                        }
+                    },
+                    "applyToSubfolders": {
+                        "string": "Apply the same permissions to subfolders"
+                    },
+                    "applyToSubfoldersHint": {
+                        "string": "These permissions will be applied to subfolders immediately upon saving."
+                    },
+                    "summary": {
+                        "none": {
+                            "string": "No permissions"
                         }
                     },
                     "save": {
@@ -565,6 +664,11 @@
                         },
                         "public": {
                             "string": "Public"
+                        }
+                    },
+                    "anyAuthenticatedUser": {
+                        "label": {
+                            "string": "Any authenticated user"
                         }
                     },
                     "removeUser": {

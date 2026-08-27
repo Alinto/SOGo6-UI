@@ -6,6 +6,7 @@ import CalendarsSidebar from '@/features/calendars/components/sidebar/sidebar'
 import MailSidebar from '@/features/mails/components/sidebars/sidebar'
 import { TasksSidebar } from '@/features/tasks'
 import { useProfile } from '@/features/user-profile'
+import type { SogoModule } from '@/features/user-profile/profile-types'
 import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 import { usePathname } from '@/lib/i18n/navigation'
 
@@ -22,7 +23,7 @@ const SidebarsContent = () => {
   const isMailSidebar = firstSection === 'u'
 
   // Fallback permissif : si loading ou liste vide, tout est autorisé
-  const hasModuleAccess = (module: string): boolean => {
+  const hasModuleAccess = (module: SogoModule): boolean => {
     if (isLoading || moduleAccess.length === 0) return true
     return moduleAccess.includes(module)
   }

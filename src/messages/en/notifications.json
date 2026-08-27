@@ -350,6 +350,24 @@
                 }
             }
         },
+        "calendar_share": {
+            "success": {
+                "title": {
+                    "string": "Sharing updated"
+                },
+                "message": {
+                    "string": "Calendar sharing settings have been saved."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Sharing failed"
+                },
+                "message": {
+                    "string": "An error occurred while updating sharing settings. Please try again."
+                }
+            }
+        },
         "external_calendar_create": {
             "success": {
                 "title": {
@@ -635,6 +653,42 @@
                 },
                 "message": {
                     "string": "Could not delete the address book. Please try again."
+                }
+            }
+        },
+        "address_book_share": {
+            "success": {
+                "title": {
+                    "string": "Sharing updated"
+                },
+                "message": {
+                    "string": "The address book's sharing settings have been saved."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Sharing update failed"
+                },
+                "message": {
+                    "string": "Could not update the sharing settings. Please try again."
+                }
+            }
+        },
+        "address_book_subscribe_user": {
+            "success": {
+                "title": {
+                    "string": "User subscribed"
+                },
+                "message": {
+                    "string": "This address book was added directly to that user's list."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Could not subscribe user"
+                },
+                "message": {
+                    "string": "Please try again."
                 }
             }
         },

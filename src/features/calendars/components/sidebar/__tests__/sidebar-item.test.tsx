@@ -19,6 +19,12 @@ jest.mock('../../../hooks/useCalendarVisibility', () => ({
   }),
 }))
 
+// Mock useProfile hook
+const mockUseProfile = jest.fn(() => ({ folderSharingDisabled: [] as string[] }))
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => mockUseProfile(),
+}))
+
 // Mock UI components
 jest.mock('@/components/ui/checkbox', () => ({
   Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
@@ -99,6 +105,13 @@ jest.mock('../actions/link', () => ({
   ),
 }))
 
+jest.mock('../actions/share', () => ({
+  __esModule: true,
+  default: ({ id }: any) => (
+    <div data-testid="share-action">Share Action for {id}</div>
+  ),
+}))
+
 describe('SidebarItem', () => {
   const defaultProps = {
     name: 'Test Calendar',
@@ -112,6 +125,7 @@ describe('SidebarItem', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockIsCalendarVisible.mockReturnValue(true)
+    mockUseProfile.mockReturnValue({ folderSharingDisabled: [] })
   })
 
   it('should render the calendar name', () => {
@@ -245,5 +259,60 @@ describe('SidebarItem', () => {
 
     const checkbox = screen.getByTestId('calendar-checkbox')
     expect(checkbox).toBeInTheDocument()
+  })
+
+  describe('sharing action gating', () => {
+    it('should show the Sharing menu item for a personal calendar when not disabled', () => {
+      render(<SidebarItem {...defaultProps} sourceType={undefined} />)
+
+      const menuItems = screen.getAllByTestId('dropdown-menu-item')
+      const sharingItem = menuItems.find((item) =>
+        item.textContent?.includes('sidebar.sharing.string')
+      )
+      expect(sharingItem).toBeDefined()
+    })
+
+    it('should hide the Sharing menu item for a shared calendar', () => {
+      render(<SidebarItem {...defaultProps} sourceType="shared" />)
+
+      const menuItems = screen.getAllByTestId('dropdown-menu-item')
+      const sharingItem = menuItems.find((item) =>
+        item.textContent?.includes('sidebar.sharing.string')
+      )
+      expect(sharingItem).toBeUndefined()
+    })
+
+    it('should hide the Sharing menu item for a subscription calendar', () => {
+      render(<SidebarItem {...defaultProps} sourceType="subscription" />)
+
+      const menuItems = screen.getAllByTestId('dropdown-menu-item')
+      const sharingItem = menuItems.find((item) =>
+        item.textContent?.includes('sidebar.sharing.string')
+      )
+      expect(sharingItem).toBeUndefined()
+    })
+
+    it('should hide the Sharing menu item when folderSharingDisabled includes "calendar"', () => {
+      mockUseProfile.mockReturnValue({ folderSharingDisabled: ['calendar'] })
+      render(<SidebarItem {...defaultProps} />)
+
+      const menuItems = screen.getAllByTestId('dropdown-menu-item')
+      const sharingItem = menuItems.find((item) =>
+        item.textContent?.includes('sidebar.sharing.string')
+      )
+      expect(sharingItem).toBeUndefined()
+    })
+
+    it('should render ShareCalendarAction when the sharing action is triggered', () => {
+      render(<SidebarItem {...defaultProps} />)
+
+      const menuItems = screen.getAllByTestId('dropdown-menu-item')
+      const sharingItem = menuItems.find((item) =>
+        item.textContent?.includes('sidebar.sharing.string')
+      )
+      fireEvent.click(sharingItem!)
+
+      expect(screen.getByTestId('share-action')).toBeInTheDocument()
+    })
   })
 })

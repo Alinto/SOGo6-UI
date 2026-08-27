@@ -1,4 +1,5 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
+import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
 import {
   apiSlice,
   FOLDER_MESSAGES_SLICE,
@@ -18,6 +19,10 @@ import type {
   UpdateFolderBody,
 } from '../mails-types'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
+import {
+  buildRightsFromPermissions,
+  getActiveAdvancedCodes,
+} from '../utils/permission-mapping'
 import { sortImapFoldersTree } from '../utils/sort-folders'
 import {
   dispatchGetMailSeenPatch,
@@ -135,6 +140,104 @@ const mailActionQuery = ({
   url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/${encodeURIComponent(mailId)}/action`,
   method: 'POST' as const,
   body: { action, data },
+})
+
+interface ShareUserPayload {
+  c_email?: string
+  uid?: string
+  user_class: string
+  permissions: string[]
+  do_subfolders: boolean
+}
+
+function toWireUserClass(userClass: FolderShareUser['userClass']): string {
+  if (userClass === 'public-user') return 'public'
+  if (userClass === 'any-authenticated-user') return USER_CLASS_ANY
+  return USER_CLASS_USER
+}
+
+/**
+ * The real backend sends the wire shape (`user_class`, `do_subfolders`, no
+ * `rights`) documented in the fakeApi mock's WireShareUser; the fakeApi mock
+ * itself returns the already-normalized app shape (`userClass`,
+ * `applyToSubfolders`, `rights`) since it stores what its own PUT handler
+ * built. Accept either.
+ */
+interface RawFolderShareUser {
+  uid: string
+  c_email?: string
+  userClass?: FolderShareUser['userClass']
+  user_class?: string
+  rights?: FolderShareUser['rights']
+  permissions?: string[]
+  applyToSubfolders?: boolean
+  do_subfolders?: boolean
+}
+
+function fromWireUserClass(userClass?: string): FolderShareUser['userClass'] {
+  if (userClass === 'public') return 'public-user'
+  if (userClass === USER_CLASS_ANY) return 'any-authenticated-user'
+  return 'normal-user'
+}
+
+function normalizeFolderShareUser(raw: RawFolderShareUser): FolderShareUser {
+  const permissions = raw.permissions ?? []
+  return {
+    uid: raw.uid,
+    c_email: raw.c_email,
+    userClass: raw.userClass ?? fromWireUserClass(raw.user_class),
+    rights: raw.rights ?? buildRightsFromPermissions(permissions),
+    permissions,
+    applyToSubfolders: raw.applyToSubfolders ?? raw.do_subfolders ?? false,
+  }
+}
+
+// The real backend may return `data` as a bare array of share entries (as
+// confirmed for the analogous calendars/address_books endpoints); the
+// fakeApi mock returns `data.users` as a Record keyed by uid. Normalize both
+// into the Record shape the rest of the app expects.
+function normalizeFolderShareData(data: unknown): FolderShareData {
+  if (Array.isArray(data)) {
+    const users: FolderShareData['users'] = {}
+    for (const u of data as RawFolderShareUser[]) {
+      const normalized = normalizeFolderShareUser(u)
+      users[normalized.uid] = normalized
+    }
+    return { users }
+  }
+  if (data && typeof data === 'object' && 'users' in data) {
+    const users: FolderShareData['users'] = {}
+    for (const [uid, u] of Object.entries(
+      (data as { users: Record<string, RawFolderShareUser> }).users
+    )) {
+      users[uid] = normalizeFolderShareUser(u)
+    }
+    return { users }
+  }
+  return { users: {} }
+}
+
+const setFolderShareQuery = ({
+  accountId,
+  folderPath,
+  users,
+}: {
+  accountId: string
+  folderPath: string
+  users: FolderShareUser[]
+}) => ({
+  url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
+  method: 'PUT' as const,
+  body: users.map((u): ShareUserPayload => {
+    const user_class = toWireUserClass(u.userClass)
+    return {
+      c_email: u.c_email,
+      ...(user_class === USER_CLASS_ANY ? {} : { uid: u.uid }),
+      user_class,
+      permissions: getActiveAdvancedCodes(u.rights),
+      do_subfolders: u.applyToSubfolders ?? false,
+    }
+  }),
 })
 
 const injectedEndpoints = apiSlice.injectEndpoints({
@@ -473,8 +576,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
         method: 'GET',
       }),
-      transformResponse: (response: BackendResponse<FolderShareData>) =>
-        response.data ?? { users: {} },
+      transformResponse: (response: BackendResponse<unknown>) =>
+        normalizeFolderShareData(response.data),
       providesTags: (_result, _error, { folderPath }) => [
         { type: FOLDER_SHARE_SLICE, folder: folderPath },
       ],
@@ -482,16 +585,17 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
     setFolderShare: builder.mutation<
       FolderShareData,
-      { accountId: string; folderPath: string; users: FolderShareUser[] }
+      {
+        accountId: string
+        folderPath: string
+        users: FolderShareUser[]
+      }
     >({
-      query: ({ accountId, folderPath, users }) => ({
-        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/share`,
-        method: 'POST',
-        body: users,
-      }),
+      query: setFolderShareQuery,
       invalidatesTags: (_result, _error, { folderPath }) => [
         'mails/folders',
         { type: FOLDER_SHARE_SLICE, folder: folderPath },
+        FOLDER_SHARE_SLICE,
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         await createApiNotificationHandler(dispatch, {
@@ -726,6 +830,7 @@ export const {
   usePurgeFolderMutation,
   useExpungeFolderMutation,
   useGetFolderShareQuery,
+  useLazyGetFolderShareQuery,
   useSetFolderShareMutation,
   useCreateFolderMutation,
   useDeleteFolderMutation,
@@ -743,4 +848,5 @@ export {
   getMailQuery,
   mailActionQuery,
   moveToTrashQuery,
+  setFolderShareQuery,
 }

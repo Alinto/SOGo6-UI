@@ -15,8 +15,8 @@ let envCache: EnvVariables | null = null
 let fetchPromise: Promise<EnvVariables> | null = null
 let isApiHealthy: boolean | null = null
 
-const HEALTH_CHECK_MS = 2000
-const ENV_FETCH_MS = 4000
+const HEALTH_CHECK_MS = 12000
+const ENV_FETCH_MS = 14000
 
 /** Mock API fallback is allowed only outside production (dev + tests). */
 const allowFakeApiFallback = (): boolean =>

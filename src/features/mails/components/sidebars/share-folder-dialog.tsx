@@ -3,24 +3,16 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Tooltip,
@@ -29,12 +21,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useProfile } from '@/features/user-profile'
-import { Loader2, Plus, Trash2, Users } from 'lucide-react'
+import { ChevronDown, Loader2, Mail, Plus, Trash2, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import type { FolderShareUser, ShareRightPreset } from '../../mails-types'
+import type { FolderShareUser } from '../../mails-types'
 import { useGetFolderShareQuery, useSetFolderShareMutation } from '../../store/mails-api'
-import { detectPreset, SHARE_PRESETS } from '../../utils/share-presets'
+import { ANY_AUTHENTICATED_UID } from '../../utils/permission-mapping'
+import type { UserPermissionsChange } from './user-permissions-editor'
+import { UserPermissionsEditor } from './user-permissions-editor'
 
 interface ShareFolderDialogProps {
   open: boolean
@@ -42,32 +36,13 @@ interface ShareFolderDialogProps {
   accountId: string
   folderPath: string
   folderName: string
+  /** Hides the "add user" input/button — used when only editing/removing existing grants is allowed. */
+  allowAddUsers?: boolean
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const PRESET_OPTIONS: ShareRightPreset[] = ['read', 'write', 'admin']
-
-type PresetLabelKey =
-  | 'folders.actions.sharing.presets.read.string'
-  | 'folders.actions.sharing.presets.write.string'
-  | 'folders.actions.sharing.presets.admin.string'
-
-const PRESET_LABEL_KEYS: Record<ShareRightPreset, PresetLabelKey> = {
-  read: 'folders.actions.sharing.presets.read.string',
-  write: 'folders.actions.sharing.presets.write.string',
-  admin: 'folders.actions.sharing.presets.admin.string',
-  none: 'folders.actions.sharing.presets.read.string',
-}
-
-function getInitials(cn?: string, email?: string): string {
-  if (cn) {
-    const parts = cn.trim().split(' ')
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    }
-    return cn.slice(0, 2).toUpperCase()
-  }
+function getInitials(email?: string): string {
   if (email) {
     return email.slice(0, 2).toUpperCase()
   }
@@ -80,13 +55,17 @@ export function ShareFolderDialog({
   accountId,
   folderPath,
   folderName,
+  allowAddUsers = true,
 }: ShareFolderDialogProps) {
   const t = useTranslations('MAILS_COMMONS')
-  const { mainAccount } = useProfile()
+  const { mainAccount, folderSharingDisabledAnyAuth } = useProfile()
+  const anyAuthenticatedSharingDisabled =
+    folderSharingDisabledAnyAuth.includes('mail')
 
   const [localUsers, setLocalUsers] = React.useState<FolderShareUser[]>([])
+  const [expandedUid, setExpandedUid] = React.useState<string | null>(null)
+
   const [newUserEmail, setNewUserEmail] = React.useState('')
-  const [newUserPreset, setNewUserPreset] = React.useState<ShareRightPreset>('read')
   const [emailError, setEmailError] = React.useState<string | null>(null)
 
   const { data, isLoading } = useGetFolderShareQuery(
@@ -98,21 +77,36 @@ export function ShareFolderDialog({
 
   React.useEffect(() => {
     if (data?.users) {
-      const users = Object.values(data.users).map((u) => ({
+      const users: FolderShareUser[] = Object.values(data.users).map((u) => ({
         uid: u.uid,
         c_email: u.c_email,
-        cn: u.cn,
         userClass: u.userClass,
         rights: u.rights,
+        permissions: u.permissions,
+        applyToSubfolders: u.applyToSubfolders ?? false,
       }))
+
+      const hasAnyAuthenticatedUser = users.some(
+        (u) => u.uid === ANY_AUTHENTICATED_UID
+      )
+      if (!hasAnyAuthenticatedUser && !anyAuthenticatedSharingDisabled) {
+        users.push({
+          uid: ANY_AUTHENTICATED_UID,
+          userClass: 'any-authenticated-user',
+          rights: {},
+          permissions: [],
+          applyToSubfolders: false,
+        })
+      }
+
       setLocalUsers(users)
     }
-  }, [data])
+  }, [data, anyAuthenticatedSharingDisabled])
 
   React.useEffect(() => {
     if (!open) {
+      setExpandedUid(null)
       setNewUserEmail('')
-      setNewUserPreset('read')
       setEmailError(null)
     }
   }, [open])
@@ -128,7 +122,9 @@ export function ShareFolderDialog({
     }
 
     const alreadyExists = localUsers.some(
-      (u) => u.uid === trimmed || u.c_email === trimmed
+      (u) =>
+        u.uid.toLowerCase() === trimmed.toLowerCase() ||
+        u.c_email?.toLowerCase() === trimmed.toLowerCase()
     )
     if (alreadyExists) {
       setEmailError(t('folders.actions.sharing.addUser.error.duplicate.string'))
@@ -139,30 +135,47 @@ export function ShareFolderDialog({
       uid: trimmed,
       c_email: trimmed,
       userClass: 'normal-user',
-      rights: SHARE_PRESETS[newUserPreset],
+      rights: {},
+      permissions: [],
+      applyToSubfolders: false,
     }
 
     setLocalUsers((prev) => [...prev, newUser])
+    setExpandedUid(trimmed)
     setNewUserEmail('')
-    setNewUserPreset('read')
     setEmailError(null)
   }
 
   const handleRemoveUser = (uid: string): void => {
     setLocalUsers((prev) => prev.filter((u) => u.uid !== uid))
+    setExpandedUid((prev) => (prev === uid ? null : prev))
   }
 
-  const handlePresetChange = (uid: string, preset: ShareRightPreset): void => {
+  const handlePermissionsChange = (
+    uid: string,
+    next: UserPermissionsChange
+  ): void => {
     setLocalUsers((prev) =>
-      prev.map((u) =>
-        u.uid === uid ? { ...u, rights: SHARE_PRESETS[preset] } : u
-      )
+      prev.map((u) => (u.uid === uid ? { ...u, ...next } : u))
+    )
+  }
+
+  const handleApplyToSubfoldersChange = (
+    uid: string,
+    applyToSubfolders: boolean
+  ): void => {
+    setLocalUsers((prev) =>
+      prev.map((u) => (u.uid === uid ? { ...u, applyToSubfolders } : u))
     )
   }
 
   const handleSave = async (): Promise<void> => {
     try {
-      await setFolderShare({ accountId, folderPath, users: localUsers }).unwrap()
+      await setFolderShare({
+        accountId,
+        folderPath,
+        users: localUsers,
+      }).unwrap()
       onOpenChange(false)
     } catch {
       // Error handled by createApiNotificationHandler
@@ -177,28 +190,26 @@ export function ShareFolderDialog({
   }
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent
-        side="right"
-        className="flex w-full flex-col sm:max-w-[480px]"
-      >
-        <SheetHeader className="shrink-0">
-          <SheetTitle>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="flex min-h-125 max-h-[90vh] max-w-[calc(100vw-2rem)] flex-col overflow-hidden sm:max-w-2xl">
+        <DialogHeader className="shrink-0">
+          <DialogTitle className="flex items-center gap-2">
+            <Mail className="h-4 w-4 shrink-0" />
             {t('folders.actions.sharing.title.string')}{' '}
             <span className="text-muted-foreground font-normal">
               {folderName}
             </span>
-          </SheetTitle>
-          <SheetDescription>
+          </DialogTitle>
+          <DialogDescription>
             {t('folders.actions.sharing.description.string', {
               folder: folderName,
             })}
-          </SheetDescription>
-        </SheetHeader>
+          </DialogDescription>
+        </DialogHeader>
 
         <div className="mt-4 flex min-h-0 flex-1 flex-col gap-4">
           {/* User list */}
-          <ScrollArea className="max-h-[340px] flex-1 pr-1">
+          <div className="min-h-50 flex-1 overflow-y-auto pr-1">
             {isLoading ? (
               <div className="space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -208,7 +219,6 @@ export function ShareFolderDialog({
                       <Skeleton className="h-3.5 w-32" />
                       <Skeleton className="h-3 w-48" />
                     </div>
-                    <Skeleton className="h-8 w-[110px]" />
                     <Skeleton className="h-8 w-8" />
                   </div>
                 ))}
@@ -221,151 +231,165 @@ export function ShareFolderDialog({
                 </p>
               </div>
             ) : (
-              <div className="space-y-3">
-                {localUsers.map((user) => {
+              <div className="space-y-1">
+                {[...localUsers]
+                  .sort((a, b) =>
+                    (a.uid === ANY_AUTHENTICATED_UID ? 1 : 0) -
+                    (b.uid === ANY_AUTHENTICATED_UID ? 1 : 0)
+                  )
+                  .map((user) => {
                   const isCurrentUser =
                     currentUserEmail !== undefined &&
                     (user.uid === currentUserEmail ||
                       user.c_email === currentUserEmail)
                   const isPublic = user.userClass === 'public-user'
-                  const preset = detectPreset(user.rights)
-                  const displayPreset: ShareRightPreset = preset === 'none' ? 'read' : preset
+                  const isAnyAuthenticated = user.uid === ANY_AUTHENTICATED_UID
+                  const isExpanded = expandedUid === user.uid
 
                   return (
-                    <div
-                      key={user.uid}
-                      className="flex items-center gap-3"
-                    >
-                      <Avatar className="h-9 w-9 shrink-0">
-                        <AvatarFallback className="text-xs">
-                          {getInitials(user.cn, user.c_email ?? user.uid)}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5">
-                          <span className="truncate text-sm font-medium leading-none">
-                            {user.cn ?? user.uid}
-                          </span>
-                          {isCurrentUser && (
-                            <Badge variant="secondary" className="shrink-0 text-xs">
-                              {t('folders.actions.sharing.badge.you.string')}
-                            </Badge>
-                          )}
-                          {isPublic && (
-                            <Badge variant="outline" className="shrink-0 text-xs">
-                              {t('folders.actions.sharing.badge.public.string')}
-                            </Badge>
-                          )}
-                        </div>
-                        {user.c_email && user.cn && (
-                          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                            {user.c_email}
-                          </p>
-                        )}
-                      </div>
-
-                      <Select
-                        value={displayPreset}
-                        onValueChange={(value) =>
-                          handlePresetChange(user.uid, value as ShareRightPreset)
+                    <div key={user.uid} className="border-b last:border-b-0">
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-3 py-2.5 text-left"
+                        onClick={() =>
+                          setExpandedUid((prev) =>
+                            prev === user.uid ? null : user.uid
+                          )
                         }
-                        disabled={isCurrentUser}
                       >
-                        <SelectTrigger className="h-8 w-[110px] shrink-0 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {PRESET_OPTIONS.map((p) => (
-                            <SelectItem key={p} value={p} className="text-xs">
-                              {t(PRESET_LABEL_KEYS[p])}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        <Avatar className="h-9 w-9 shrink-0">
+                          <AvatarFallback className="text-xs">
+                            {isAnyAuthenticated ? (
+                              <Users className="h-4 w-4" />
+                            ) : (
+                              getInitials(user.c_email ?? user.uid)
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
 
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
-                                disabled={isCurrentUser}
-                                onClick={() => handleRemoveUser(user.uid)}
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="truncate text-sm font-medium leading-none">
+                              {isAnyAuthenticated
+                                ? t(
+                                    'folders.actions.sharing.anyAuthenticatedUser.label.string'
+                                  )
+                                : (user.c_email ?? user.uid)}
                             </span>
-                          </TooltipTrigger>
-                          {isCurrentUser && (
-                            <TooltipContent>
-                              {t('folders.actions.sharing.removeUser.tooltip.string')}
-                            </TooltipContent>
-                          )}
-                        </Tooltip>
-                      </TooltipProvider>
+                            {isCurrentUser && (
+                              <Badge variant="secondary" className="shrink-0 text-xs">
+                                {t('folders.actions.sharing.badge.you.string')}
+                              </Badge>
+                            )}
+                            {isPublic && (
+                              <Badge variant="outline" className="shrink-0 text-xs">
+                                {t('folders.actions.sharing.badge.public.string')}
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <ChevronDown
+                          className={`text-muted-foreground h-4 w-4 shrink-0 transition-transform ${
+                            isExpanded ? 'rotate-180' : ''
+                          }`}
+                        />
+
+                        {!isAnyAuthenticated && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-destructive hover:text-destructive h-8 w-8 shrink-0"
+                                    disabled={isCurrentUser}
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleRemoveUser(user.uid)
+                                    }}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </span>
+                              </TooltipTrigger>
+                              {isCurrentUser && (
+                                <TooltipContent>
+                                  {t('folders.actions.sharing.removeUser.tooltip.string')}
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                      </button>
+
+                      {isExpanded && (
+                        <div className="max-h-150 overflow-y-auto pr-3">
+                          <UserPermissionsEditor
+                            rights={user.rights}
+                            onChange={(next) =>
+                              handlePermissionsChange(user.uid, next)
+                            }
+                            applyToSubfolders={user.applyToSubfolders ?? false}
+                            onApplyToSubfoldersChange={(checked) =>
+                              handleApplyToSubfoldersChange(user.uid, checked)
+                            }
+                            disabled={isCurrentUser}
+                          />
+                        </div>
+                      )}
                     </div>
                   )
                 })}
               </div>
             )}
-          </ScrollArea>
-
-          <Separator />
-
-          {/* Add user section */}
-          <div className="shrink-0 space-y-2">
-            <p className="text-sm font-medium">
-              {t('folders.actions.sharing.addUser.label.string')}
-            </p>
-            <div className="flex gap-2">
-              <Input
-                value={newUserEmail}
-                onChange={(e) => {
-                  setNewUserEmail(e.target.value)
-                  if (emailError) setEmailError(null)
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder={t('folders.actions.sharing.addUser.placeholder.string')}
-                className="h-8 flex-1 text-sm"
-              />
-              <Select
-                value={newUserPreset}
-                onValueChange={(value) => setNewUserPreset(value as ShareRightPreset)}
-              >
-                <SelectTrigger className="h-8 w-[110px] shrink-0 text-xs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PRESET_OPTIONS.map((p) => (
-                    <SelectItem key={p} value={p} className="text-xs">
-                      {t(PRESET_LABEL_KEYS[p])}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                size="sm"
-                className="h-8 shrink-0"
-                onClick={handleAddUser}
-              >
-                <Plus className="h-4 w-4" />
-                <span className="sr-only">
-                  {t('folders.actions.sharing.addUser.button.string')}
-                </span>
-              </Button>
-            </div>
-            {emailError && (
-              <p className="text-destructive text-xs">{emailError}</p>
-            )}
           </div>
+
+          {allowAddUsers && (
+            <>
+              <Separator />
+
+              {/* Add user section */}
+              <div className="shrink-0 space-y-2">
+                <p className="text-sm font-medium">
+                  {t('folders.actions.sharing.addUser.label.string')}
+                </p>
+                <div className="flex gap-2">
+                  <Input
+                    value={newUserEmail}
+                    onChange={(e) => {
+                      setNewUserEmail(e.target.value)
+                      if (emailError) setEmailError(null)
+                    }}
+                    onKeyDown={handleKeyDown}
+                    placeholder={t(
+                      'folders.actions.sharing.addUser.placeholder.string'
+                    )}
+                    className="h-8 flex-1 text-sm"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-8 shrink-0"
+                    onClick={handleAddUser}
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="sr-only">
+                      {t('folders.actions.sharing.addUser.button.string')}
+                    </span>
+                  </Button>
+                </div>
+                {emailError && (
+                  <p className="text-destructive text-xs">{emailError}</p>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
-        <SheetFooter className="mt-4 shrink-0">
+        <DialogFooter className="mt-4 shrink-0">
           <Button
             type="button"
             variant="outline"
@@ -385,8 +409,8 @@ export function ShareFolderDialog({
               t('folders.actions.sharing.save.string')
             )}
           </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

@@ -136,26 +136,39 @@ export interface ImapMessagesBackendResponse {
 }
 
 export interface FolderShareRights {
-  userCanViewFolder?: number
-  userCanReadMails?: number
-  userCanMarkMailsRead?: number
-  userCanWriteMails?: number
-  userCanInsertMails?: number
-  userCanPostMails?: number
-  userCanCreateSubfolders?: number
-  userCanRemoveFolder?: number
-  userCanEraseMails?: number
-  userCanExpungeFolder?: number
-  userIsAdministrator?: number
+  userCanViewFolder?: 0 | 1
+  userCanReadMails?: 0 | 1
+  userCanMarkMailsRead?: 0 | 1
+  userCanWriteMails?: 0 | 1
+  userCanInsertMails?: 0 | 1
+  userCanPostMails?: 0 | 1
+  userCanCreateSubfolders?: 0 | 1
+  userCanRemoveFolder?: 0 | 1
+  userCanEraseMails?: 0 | 1
+  userCanExpungeFolder?: 0 | 1
+  userIsAdministrator?: 0 | 1
 }
+
+/**
+ * 'any-authenticated-user' is the pseudo-entry granting access to anyone
+ * logged in (gated by the SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH admin
+ * setting), distinct from 'public-user' (anonymous/public access).
+ */
+export type FolderShareUserClass =
+  | 'normal-user'
+  | 'public-user'
+  | 'any-authenticated-user'
 
 export interface FolderShareUser {
   uid: string
   c_email?: string
-  cn?: string
-  userClass: 'normal-user' | 'public-user'
+  userClass: FolderShareUserClass
   isGroup?: number
   rights: FolderShareRights
+  /** Active advanced permission codes for this user (e.g. ['l','r','s']). */
+  permissions?: string[]
+  /** Whether this user's permissions should also be applied to subfolders. */
+  applyToSubfolders?: boolean
 }
 
 export interface FolderShareData {
@@ -164,14 +177,21 @@ export interface FolderShareData {
     {
       uid: string
       c_email?: string
-      cn?: string
-      userClass: 'normal-user' | 'public-user'
+      userClass: FolderShareUserClass
       rights: FolderShareRights
+      permissions?: string[]
+      applyToSubfolders?: boolean
     }
   >
 }
 
-export type ShareRightPreset = 'read' | 'write' | 'admin' | 'none'
+export type SimplifiedPermissionKey =
+  | 'read'
+  | 'modify'
+  | 'delete'
+  | 'move'
+  | 'administerRights'
+  | 'administerSubfolders'
 
 export interface CreateFolderBody {
   name: string

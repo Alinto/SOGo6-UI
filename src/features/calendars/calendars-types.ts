@@ -317,5 +317,57 @@ export interface ApiDataResponse<T> {
   error_msg?: string | null
 }
 
+/**
+ * SOGo classic calendar ACL permission level for one event classification.
+ * Distinct from CalendarEvent['visibility'] (an event's own classification) —
+ * this is the *right* an ACL grantee has for events of a given classification.
+ */
+export type CalendarShareLevel =
+  | 'none'
+  | 'view-date-time'
+  | 'view-all'
+  | 'respond-to'
+  | 'modify'
+
+/**
+ * Per-classification rights map + the two standalone (non-classification)
+ * booleans.
+ */
+export interface CalendarShareRights {
+  public: CalendarShareLevel
+  confidential: CalendarShareLevel
+  private: CalendarShareLevel
+  can_create_objects: boolean
+  can_erase_objects: boolean
+}
+
+/**
+ * 'any-authenticated-user' is the pseudo-entry granting access to anyone
+ * logged in (gated by SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH), mirroring
+ * FolderShareUserClass from the mail feature. No 'public-user' class exists
+ * for calendars (no anonymous/public sharing concept here).
+ */
+export type CalendarShareUserClass = 'normal-user' | 'any-authenticated-user'
+
+export interface CalendarShareUser {
+  uid: string
+  c_email?: string
+  userClass: CalendarShareUserClass
+  isGroup?: number
+  rights: CalendarShareRights
+}
+
+export interface CalendarShareData {
+  users: Record<
+    string,
+    {
+      uid: string
+      c_email?: string
+      userClass: CalendarShareUserClass
+      rights: CalendarShareRights
+    }
+  >
+}
+
 /** Default calendar color used across the calendar feature. */
 export const DEFAULT_CALENDAR_COLOR = '#3B82F6'

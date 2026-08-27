@@ -107,6 +107,9 @@ export interface UserPreferences {
   USER_EXTRA_SETTINGS?: Record<string, unknown>
 }
 
+// Modules a domain/user can be granted access to or restricted on
+export type SogoModule = 'mail' | 'calendar' | 'contact'
+
 // Domain settings (for UI feature toggles)
 export interface DomainUISettings {
   // Auth
@@ -117,10 +120,10 @@ export interface DomainUISettings {
   SOGO_D_LOGIN_MFA_METHOD?: string[]
 
   // User Module
-  SOGO_D_MODULE_ACCESS?: string[]
-  SOGO_D_FOLDER_DISABLE_EXPORT?: boolean | null
-  SOGO_D_FOLDER_DISABLE_SHARING?: boolean | null
-  SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH?: boolean | null
+  SOGO_D_MODULE_ACCESS?: SogoModule[]
+  SOGO_D_FOLDER_DISABLE_EXPORT?: SogoModule[] | null
+  SOGO_D_FOLDER_DISABLE_SHARING?: SogoModule[] | null
+  SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH?: SogoModule[] | null
   SOGO_D_AUTOCOMPLETION_MIN_LEN?: number
   SOGO_D_IDENTITIES_ENABLED?: boolean
   SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED?: boolean

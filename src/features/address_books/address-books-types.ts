@@ -30,6 +30,34 @@ export interface ContactMember {
   displayName?: string
 }
 
+/** Booleans a share grantee can hold on an address book's cards. */
+export interface AddressBookShareRights {
+  can_view: boolean
+  can_create_objects: boolean
+  can_edit_objects: boolean
+  can_erase_objects: boolean
+}
+
+/**
+ * 'any-authenticated-user' is the pseudo-entry granting access to anyone
+ * logged in, mirroring CalendarShareUserClass/FolderShareUserClass from the
+ * calendar/mail features.
+ */
+export type AddressBookShareUserClass = 'normal-user' | 'any-authenticated-user'
+
+export interface AddressBookShareUser {
+  uid: string
+  c_email?: string
+  userClass: AddressBookShareUserClass
+  rights: AddressBookShareRights
+  /** Whether the owner has force-subscribed this user (added to their list directly). */
+  subscribed?: boolean
+}
+
+export interface AddressBookShareData {
+  users: Record<string, AddressBookShareUser>
+}
+
 export interface VCard {
   id: string
   version: string

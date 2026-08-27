@@ -74,6 +74,91 @@
             "string": "All contacts",
             "context": "Sidebar entry for cross-address-book contact listing"
         },
+        "sharing": {
+            "title": {
+                "string": "Share address book"
+            },
+            "description": {
+                "string": "Manage who has access to \"{addressBook}\" and their permissions."
+            },
+            "noUsers": {
+                "string": "No users have access yet."
+            },
+            "loadError": {
+                "string": "Couldn't load the list of people this address book is shared with."
+            },
+            "retry": {
+                "string": "Retry"
+            },
+            "addUser": {
+                "label": {
+                    "string": "Add a user"
+                },
+                "placeholder": {
+                    "string": "email@domain.com"
+                },
+                "button": {
+                    "string": "Add"
+                },
+                "error": {
+                    "invalid": {
+                        "string": "Please enter a valid email address."
+                    },
+                    "duplicate": {
+                        "string": "This user already has access."
+                    }
+                }
+            },
+            "permissions": {
+                "canView": {
+                    "label": {
+                        "string": "This person can read the cards of this address book"
+                    }
+                },
+                "canCreateObjects": {
+                    "label": {
+                        "string": "This person can add cards to this address book"
+                    }
+                },
+                "canEditObjects": {
+                    "label": {
+                        "string": "This person can edit the cards of this address book"
+                    }
+                },
+                "canEraseObjects": {
+                    "label": {
+                        "string": "This person can erase cards of this address book"
+                    }
+                }
+            },
+            "anyAuthenticatedUser": {
+                "label": {
+                    "string": "Any authenticated user"
+                }
+            },
+            "badge": {
+                "you": {
+                    "string": "You"
+                }
+            },
+            "subscribeUser": {
+                "button": {
+                    "string": "Subscribe this user"
+                },
+                "tooltip": {
+                    "string": "Add this address book directly to this user's list, without waiting for them to subscribe themselves."
+                },
+                "subscribed": {
+                    "string": "Subscribed"
+                }
+            },
+            "save": {
+                "string": "Save"
+            },
+            "cancel": {
+                "string": "Cancel"
+            }
+        },
         "import": {
             "description": {
                 "string": "Upload a contacts or distribution list file to import."

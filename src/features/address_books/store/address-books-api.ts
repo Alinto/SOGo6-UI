@@ -2,10 +2,12 @@ import type { ContactJobEnqueueResponse } from '@/features/jobs/jobs-api-types'
 import { unwrapJobId } from '@/features/jobs/utils/unwrap-job-data'
 import {
   ADDRESS_BOOKS_SLICE,
+  ADDRESS_BOOK_SHARE_SLICE,
   apiSlice,
   CONTACTS_AUTOCOMPLETE_SLICE,
   VCARD_SLICE,
 } from '@/lib/redux/api/api-slice'
+import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
 import type { AppDispatch } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { EndpointBuilder } from '@reduxjs/toolkit/query'
@@ -18,6 +20,8 @@ import type {
 import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import type {
   AddressBook,
+  AddressBookShareData,
+  AddressBookShareUser,
   AddressBooks,
   ContactKind,
   VCard,
@@ -41,6 +45,8 @@ import {
   addressBookListsImportPath,
   addressBookListsPath,
   addressBookPath,
+  addressBookShareSubscribeUrl,
+  addressBookShareUrl,
   addressBooksCollectionPath,
   allContactsPath,
   buildListQueryParams,
@@ -174,6 +180,104 @@ const notifyBookDelete = notifyMutation({
   successMessage: 'address_book_delete.success.message.string',
   errorTitle: 'address_book_delete.error.title.string',
   errorMessage: 'address_book_delete.error.message.string',
+})
+
+const notifyBookShare = notifyMutation({
+  successTitle: 'address_book_share.success.title.string',
+  successMessage: 'address_book_share.success.message.string',
+  errorTitle: 'address_book_share.error.title.string',
+  errorMessage: 'address_book_share.error.message.string',
+})
+
+const notifyBookSubscribeUser = notifyMutation({
+  successTitle: 'address_book_subscribe_user.success.title.string',
+  successMessage: 'address_book_subscribe_user.success.message.string',
+  errorTitle: 'address_book_subscribe_user.error.title.string',
+  errorMessage: 'address_book_subscribe_user.error.message.string',
+})
+
+function toWireAddressBookShareUserClass(
+  userClass: AddressBookShareUser['userClass']
+): string {
+  return userClass === 'any-authenticated-user'
+    ? USER_CLASS_ANY
+    : USER_CLASS_USER
+}
+
+/**
+ * The real backend sends the wire shape (`user_class`); the fakeApi mock
+ * returns the already-normalized app shape (`userClass`) since it stores
+ * what its own PUT handler built. Accept either.
+ */
+interface RawAddressBookShareUser {
+  uid: string
+  c_email?: string
+  userClass?: AddressBookShareUser['userClass']
+  user_class?: string
+  rights: AddressBookShareUser['rights']
+  subscribed?: boolean
+}
+
+function fromWireAddressBookShareUserClass(
+  userClass?: string
+): AddressBookShareUser['userClass'] {
+  return userClass === USER_CLASS_ANY ? 'any-authenticated-user' : 'normal-user'
+}
+
+function normalizeAddressBookShareUser(
+  raw: RawAddressBookShareUser
+): AddressBookShareUser {
+  return {
+    uid: raw.uid,
+    c_email: raw.c_email,
+    userClass: raw.userClass ?? fromWireAddressBookShareUserClass(raw.user_class),
+    rights: raw.rights,
+    subscribed: raw.subscribed ?? false,
+  }
+}
+
+// The real backend returns `data` as a bare array of share entries; the
+// fakeApi mock returns `data.users` as a Record keyed by uid. Normalize both
+// into the Record shape the rest of the app expects.
+function normalizeAddressBookShareData(data: unknown): AddressBookShareData {
+  if (Array.isArray(data)) {
+    const users: AddressBookShareData['users'] = {}
+    for (const u of data as RawAddressBookShareUser[]) {
+      const normalized = normalizeAddressBookShareUser(u)
+      users[normalized.uid] = normalized
+    }
+    return { users }
+  }
+  if (data && typeof data === 'object' && 'users' in data) {
+    const users: AddressBookShareData['users'] = {}
+    for (const [uid, u] of Object.entries(
+      (data as { users: Record<string, RawAddressBookShareUser> }).users
+    )) {
+      users[uid] = normalizeAddressBookShareUser(u)
+    }
+    return { users }
+  }
+  return { users: {} }
+}
+
+const setAddressBookShareQuery = ({
+  bookId,
+  users,
+}: {
+  bookId: string
+  users: AddressBookShareUser[]
+}) => ({
+  url: addressBookShareUrl(bookId),
+  method: 'PUT' as const,
+  body: users.map((u) => {
+    const user_class = toWireAddressBookShareUserClass(u.userClass)
+    return {
+      c_email: u.c_email,
+      ...(user_class === USER_CLASS_ANY ? {} : { uid: u.uid }),
+      user_class,
+      rights: u.rights,
+    }
+  }),
 })
 
 export type GetAddressBookVCardsArg = {
@@ -640,6 +744,54 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    getAddressBookShare: builder.query<AddressBookShareData, { bookId: string }>({
+      query: ({ bookId }) => ({
+        url: addressBookShareUrl(bookId),
+        method: 'GET',
+      }),
+      transformResponse: (response: { data: unknown } | unknown) =>
+        normalizeAddressBookShareData(unwrapApiData(response)),
+      providesTags: (_result, _error, { bookId }) => [
+        { type: ADDRESS_BOOK_SHARE_SLICE, id: bookId },
+      ],
+    }),
+
+    setAddressBookShare: builder.mutation<
+      AddressBookShareData,
+      { bookId: string; users: AddressBookShareUser[] }
+    >({
+      query: setAddressBookShareQuery,
+      transformResponse: (response: { data: unknown } | unknown) =>
+        normalizeAddressBookShareData(unwrapApiData(response)),
+      invalidatesTags: (_result, _error, { bookId }) => [
+        { type: ADDRESS_BOOK_SHARE_SLICE, id: bookId },
+        ADDRESS_BOOK_SHARE_SLICE,
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await notifyBookShare(dispatch, { queryFulfilled })
+      },
+    }),
+
+    // Deliberately does NOT invalidate ADDRESS_BOOK_SHARE_SLICE: a refetch
+    // here would reset the share dialog's local (possibly unsaved) rights
+    // edits for other users. The caller patches `subscribed` into its local
+    // state directly instead.
+    subscribeAddressBookUser: builder.mutation<
+      AddressBookShareUser,
+      { bookId: string; uid: string }
+    >({
+      query: ({ bookId, uid }) => ({
+        url: addressBookShareSubscribeUrl(bookId, uid),
+        method: 'POST',
+      }),
+      transformResponse: (
+        response: { data: AddressBookShareUser } | AddressBookShareUser
+      ) => unwrapApiData(response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await notifyBookSubscribeUser(dispatch, { queryFulfilled })
+      },
+    }),
+
     searchContactsAutocomplete: builder.query<
       ContactSuggestion[],
       { q: string }
@@ -869,6 +1021,10 @@ export const {
   useDeleteVCardFromAddressBookMutation,
   useAddAddressBookMutation,
   useDeleteAddressBookMutation,
+  useGetAddressBookShareQuery,
+  useLazyGetAddressBookShareQuery,
+  useSetAddressBookShareMutation,
+  useSubscribeAddressBookUserMutation,
   useSearchContactsAutocompleteQuery,
   useLazySearchContactsAutocompleteQuery,
   useGetAddressBookContactPickerQuery,
@@ -882,3 +1038,5 @@ export const {
 } = injectedEndpoints
 
 export const addressBooksApiEndpoints = injectedEndpoints
+
+export { setAddressBookShareQuery }

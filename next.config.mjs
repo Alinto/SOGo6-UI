@@ -2,6 +2,10 @@ import createNextIntlPlugin from 'next-intl/plugin';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    experimental: {
+    webpackMemoryOptimizations: true,
+    preloadEntriesOnStart: false,
+    },
     reactStrictMode: false, // Disable because of trigger several components remounts
     typescript: {
         // !! WARN !!

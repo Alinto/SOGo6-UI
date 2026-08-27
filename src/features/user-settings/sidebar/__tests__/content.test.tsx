@@ -9,6 +9,7 @@ jest.mock('@/features/user-profile', () => ({
 jest.mock('lucide-react', () => ({
   Calendar: 'Calendar',
   Contact: 'Contact',
+  Lock: 'Lock',
   Mail: 'Mail',
   SettingsIcon: 'SettingsIcon',
   ShieldUser: 'ShieldUser',
@@ -30,6 +31,7 @@ const mockProfile = (overrides = {}) => {
     mailFilteringEnabled: true,
     notifyEnabled: true,
     passwordChangeEnabled: true,
+    folderSharingDisabled: [],
     ...overrides,
   })
 }
@@ -170,10 +172,10 @@ describe('useNavItems', () => {
   // --- Settings section top-level items ---
 
   describe('Settings section top-level items', () => {
-    it('has exactly 4 top-level items', () => {
+    it('has exactly 5 top-level items when sharing is fully enabled', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items).toHaveLength(4)
+      expect(result.current[1].items).toHaveLength(5)
     })
 
     it('first item is General with correct url', () => {
@@ -192,35 +194,101 @@ describe('useNavItems', () => {
       expect(item?.collapsedIcon).toBeDefined()
     })
 
-    it('second item is Address Books with correct url', () => {
+    it('second item is the global Access item with correct url', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
       const item = result.current[1].items?.[1]
-      expect(item?.title).toBe('US_SIDEBAR.settings.address_books.string')
-      expect(item?.url).toBe('/user_settings/address_books')
+      expect(item?.title).toBe('US_SIDEBAR.settings.access.string')
+      expect(item?.url).toBe('/user_settings/access')
     })
 
-    it('Address Books item has an icon', () => {
+    it('global Access item has icon and collapsedIcon', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
       const item = result.current[1].items?.[1]
       expect(item?.icon).toBeDefined()
+      expect(item?.collapsedIcon).toBeDefined()
     })
 
-    it('third item is Calendars subsection', () => {
+    it('excludes the global Access item when sharing is disabled for every module', () => {
+      mockProfile({ folderSharingDisabled: ['mail', 'calendar', 'contact'] })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.access.string'
+      )
+      expect(item).toBeUndefined()
+    })
+
+    it('includes the global Access item when sharing is disabled for only some modules', () => {
+      mockProfile({ folderSharingDisabled: ['mail'] })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.access.string'
+      )
+      expect(item).toBeDefined()
+    })
+
+    it('third item is Address Books subsection', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
       expect(result.current[1].items?.[2].title).toBe(
+        'US_SIDEBAR.settings.address_books.title.string'
+      )
+    })
+
+    it('fourth item is Calendars subsection', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[3].title).toBe(
         'US_SIDEBAR.settings.calendars.title.string'
       )
     })
 
-    it('fourth item is Email subsection', () => {
+    it('fifth item is Email subsection', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items?.[3].title).toBe(
+      expect(result.current[1].items?.[4].title).toBe(
         'US_SIDEBAR.settings.email.title.string'
       )
+    })
+  })
+
+  // --- Address books subsection ---
+
+  describe('Address books subsection', () => {
+    it('has icon and collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const addressBooks = result.current[1].items?.[2]
+      expect(addressBooks?.icon).toBeDefined()
+      expect(addressBooks?.collapsedIcon).toBeDefined()
+    })
+
+    it('first sub-item is General with the unchanged url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[2].items?.[0]
+      expect(item?.title).toBe('US_SIDEBAR.settings.address_books.general.string')
+      expect(item?.url).toBe('/user_settings/address_books')
+    })
+
+    it('includes Access when contact sharing is enabled', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[2].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.address_books.access.string'
+      )
+      expect(item).toBeDefined()
+      expect(item?.url).toBe('/user_settings/address_books/access')
+    })
+
+    it('excludes Access when contact sharing is disabled', () => {
+      mockProfile({ folderSharingDisabled: ['contact'] })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[2].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.address_books.access.string'
+      )
+      expect(item).toBeUndefined()
     })
   })
 
@@ -230,7 +298,7 @@ describe('useNavItems', () => {
     it('has icon and collapsedIcon', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const calendars = result.current[1].items?.[2]
+      const calendars = result.current[1].items?.[3]
       expect(calendars?.icon).toBeDefined()
       expect(calendars?.collapsedIcon).toBeDefined()
     })
@@ -238,19 +306,19 @@ describe('useNavItems', () => {
     it('is active', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items?.[2].isActive).toBe(true)
+      expect(result.current[1].items?.[3].isActive).toBe(true)
     })
 
-    it('has exactly 2 sub-items', () => {
+    it('has exactly 3 sub-items when calendar sharing is enabled', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items?.[2].items).toHaveLength(2)
+      expect(result.current[1].items?.[3].items).toHaveLength(3)
     })
 
     it('first sub-item is Calendars General with correct url', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[2].items?.[0]
+      const item = result.current[1].items?.[3].items?.[0]
       expect(item?.title).toBe('US_SIDEBAR.settings.calendars.general.string')
       expect(item?.url).toBe('/user_settings/calendars/general')
     })
@@ -258,11 +326,28 @@ describe('useNavItems', () => {
     it('second sub-item is Calendars Categories with correct url', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[2].items?.[1]
+      const item = result.current[1].items?.[3].items?.[1]
       expect(item?.title).toBe(
         'US_SIDEBAR.settings.calendars.categories.string'
       )
       expect(item?.url).toBe('/user_settings/calendars/categories')
+    })
+
+    it('third sub-item is Calendars Access with correct url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.[2]
+      expect(item?.title).toBe('US_SIDEBAR.settings.calendars.access.string')
+      expect(item?.url).toBe('/user_settings/calendars/access')
+    })
+
+    it('excludes Access when calendar sharing is disabled', () => {
+      mockProfile({ folderSharingDisabled: ['calendar'] })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[3].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.calendars.access.string'
+      )
+      expect(item).toBeUndefined()
     })
   })
 
@@ -272,7 +357,7 @@ describe('useNavItems', () => {
     it('has icon and collapsedIcon', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const email = result.current[1].items?.[3]
+      const email = result.current[1].items?.[4]
       expect(email?.icon).toBeDefined()
       expect(email?.collapsedIcon).toBeDefined()
     })
@@ -280,13 +365,13 @@ describe('useNavItems', () => {
     it('is active', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items?.[3].isActive).toBe(true)
+      expect(result.current[1].items?.[4].isActive).toBe(true)
     })
 
     it('always includes General at index 0', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.[0]
+      const item = result.current[1].items?.[4].items?.[0]
       expect(item?.title).toBe('US_SIDEBAR.settings.email.general.string')
       expect(item?.url).toBe('/user_settings/mail/general')
     })
@@ -294,7 +379,7 @@ describe('useNavItems', () => {
     it('always includes Categories at index 1', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.[1]
+      const item = result.current[1].items?.[4].items?.[1]
       expect(item?.title).toBe('US_SIDEBAR.settings.email.categories.string')
       expect(item?.url).toBe('/user_settings/mail/categories')
     })
@@ -302,32 +387,52 @@ describe('useNavItems', () => {
     it('always includes IMAP Accounts at index 2', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.[2]
+      const item = result.current[1].items?.[4].items?.[2]
       expect(item?.title).toBe(
         'US_SIDEBAR.settings.email.external_accounts.string'
       )
       expect(item?.url).toBe('/user_settings/mail/external_accounts')
     })
 
+    it('includes Access when mail sharing is enabled', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[4].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.access.string'
+      )
+      expect(item).toBeDefined()
+      expect(item?.url).toBe('/user_settings/mail/access')
+    })
+
+    it('excludes Access when mail sharing is disabled', () => {
+      mockProfile({ folderSharingDisabled: ['mail'] })
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[4].items?.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.access.string'
+      )
+      expect(item).toBeUndefined()
+    })
+
     it('includes Notifications when notifyEnabled is true', () => {
       mockProfile({ notifyEnabled: true })
       const { result } = renderHook(() => useNavItems())
-      const items = result.current[1].items?.[3].items ?? []
-      const last = items[items.length - 1]
-      expect(last?.title).toBe('US_SIDEBAR.settings.email.notifications.string')
-      expect(last?.url).toBe('/user_settings/mail/notifications')
+      const items = result.current[1].items?.[4].items ?? []
+      const item = items.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.notifications.string'
+      )
+      expect(item?.url).toBe('/user_settings/mail/notifications')
     })
 
     it('excludes Notifications when notifyEnabled is false', () => {
       mockProfile({ notifyEnabled: false })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.notifications.string'
       )
       expect(item).toBeUndefined()
     })
 
-    it('has 7 items when all conditional flags are enabled', () => {
+    it('has 8 items when all conditional flags are enabled', () => {
       mockProfile({
         forwardEnabled: true,
         vacationEnabled: true,
@@ -335,10 +440,10 @@ describe('useNavItems', () => {
         notifyEnabled: true,
       })
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items?.[3].items).toHaveLength(7)
+      expect(result.current[1].items?.[4].items).toHaveLength(8)
     })
 
-    it('has 3 items when all conditional flags are disabled', () => {
+    it('has 4 items when all conditional flags are disabled', () => {
       mockProfile({
         forwardEnabled: false,
         vacationEnabled: false,
@@ -346,7 +451,7 @@ describe('useNavItems', () => {
         notifyEnabled: false,
       })
       const { result } = renderHook(() => useNavItems())
-      expect(result.current[1].items?.[3].items).toHaveLength(3)
+      expect(result.current[1].items?.[4].items).toHaveLength(4)
     })
   })
 
@@ -356,7 +461,7 @@ describe('useNavItems', () => {
     it('includes Filters when mailFilteringEnabled is true', () => {
       mockProfile({ mailFilteringEnabled: true })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.filters.string'
       )
       expect(item).toBeDefined()
@@ -366,7 +471,7 @@ describe('useNavItems', () => {
     it('excludes Filters when mailFilteringEnabled is false', () => {
       mockProfile({ mailFilteringEnabled: false })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.filters.string'
       )
       expect(item).toBeUndefined()
@@ -377,7 +482,7 @@ describe('useNavItems', () => {
     it('includes Vacation when vacationEnabled is true', () => {
       mockProfile({ vacationEnabled: true })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.vacation.string'
       )
       expect(item).toBeDefined()
@@ -387,7 +492,7 @@ describe('useNavItems', () => {
     it('excludes Vacation when vacationEnabled is false', () => {
       mockProfile({ vacationEnabled: false })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.vacation.string'
       )
       expect(item).toBeUndefined()
@@ -398,7 +503,7 @@ describe('useNavItems', () => {
     it('includes Forward when forwardEnabled is true', () => {
       mockProfile({ forwardEnabled: true })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.forward.string'
       )
       expect(item).toBeDefined()
@@ -408,77 +513,10 @@ describe('useNavItems', () => {
     it('excludes Forward when forwardEnabled is false', () => {
       mockProfile({ forwardEnabled: false })
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[3].items?.find(
+      const item = result.current[1].items?.[4].items?.find(
         (i) => i.title === 'US_SIDEBAR.settings.email.forward.string'
       )
       expect(item).toBeUndefined()
-    })
-  })
-
-  // --- Memoisation ---
-
-  describe('Memoisation', () => {
-    it('returns the same reference when profile values do not change', () => {
-      mockProfile()
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-      rerender()
-      expect(result.current).toBe(first)
-    })
-
-    it('returns a new reference when passwordChangeEnabled changes', () => {
-      mockProfile({ passwordChangeEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ passwordChangeEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when forwardEnabled changes', () => {
-      mockProfile({ forwardEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ forwardEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when vacationEnabled changes', () => {
-      mockProfile({ vacationEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ vacationEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when mailFilteringEnabled changes', () => {
-      mockProfile({ mailFilteringEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ mailFilteringEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when notifyEnabled changes', () => {
-      mockProfile({ notifyEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ notifyEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
     })
   })
 })

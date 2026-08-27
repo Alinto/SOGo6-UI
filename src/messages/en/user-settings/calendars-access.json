@@ -1,0 +1,43 @@
+{
+  "US_CALENDARS_ACCESS": {
+    "title": {
+      "string": "Calendar access"
+    },
+    "page": {
+      "description": {
+        "string": "See who has access to your calendars and manage their permissions."
+      }
+    },
+    "disabled": {
+      "string": "Calendar sharing has been disabled by your administrator."
+    },
+    "empty": {
+      "string": "You don't have any calendars yet."
+    },
+    "row": {
+      "notShared": {
+        "string": "Not shared"
+      },
+      "sharedOne": {
+        "string": "1 person has access"
+      },
+      "sharedCount": {
+        "string": "{count} people have access"
+      },
+      "anyAuthenticated": {
+        "string": "Any authenticated user has access"
+      },
+      "manage": {
+        "string": "Manage access"
+      }
+    },
+    "errors_api": {
+      "feature_disabled": {
+        "string": "Calendar sharing has been disabled by your administrator."
+      },
+      "load_failed": {
+        "string": "Could not load your calendars. Please try again later."
+      }
+    }
+  }
+}

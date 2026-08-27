@@ -1,0 +1,193 @@
+{
+  "US_ACCESS": {
+    "title": {
+      "string": "Access"
+    },
+    "page": {
+      "description": {
+        "string": "See every person who has access to your mail folders, calendars and address books, and manage what they can do. To grant a new person access, open the item you want to share from its own Access page."
+      }
+    },
+    "empty": {
+      "string": "Nobody has access to anything you own yet."
+    },
+    "errors_api": {
+      "feature_disabled": {
+        "string": "Sharing has been disabled by your administrator."
+      },
+      "load_failed": {
+        "string": "Could not load access information. Please try again later."
+      }
+    },
+    "user": {
+      "grantCountOne": {
+        "string": "Access to 1 item"
+      },
+      "grantCount": {
+        "string": "Access to {count} items"
+      },
+      "actions": {
+        "add": {
+          "string": "Add access"
+        },
+        "copy": {
+          "string": "Copy access to another user"
+        },
+        "delete": {
+          "string": "Remove all access"
+        }
+      },
+      "copy": {
+        "title": {
+          "string": "Copy access to another user"
+        },
+        "description": {
+          "string": "Grant the same access {user} has on {count, plural, one {1 item} other {# items}} to someone else."
+        },
+        "placeholder": {
+          "string": "person@example.com"
+        },
+        "error": {
+          "invalid": {
+            "string": "Enter a valid email address."
+          },
+          "same": {
+            "string": "This is already that person's own access."
+          }
+        },
+        "cancel": {
+          "string": "Cancel"
+        },
+        "confirm": {
+          "string": "Copy access"
+        }
+      },
+      "deleteConfirm": {
+        "title": {
+          "string": "Remove all access?"
+        },
+        "description": {
+          "string": "{user} will lose access to everything they were granted."
+        },
+        "cancel": {
+          "string": "Cancel"
+        },
+        "confirm": {
+          "string": "Remove all"
+        }
+      },
+      "removePendingConfirm": {
+        "title": {
+          "string": "Remove this person?"
+        },
+        "description": {
+          "string": "{user} hasn't been granted any access yet. They'll be removed from this list."
+        }
+      }
+    },
+    "addUser": {
+      "button": {
+        "string": "Add"
+      },
+      "dialog": {
+        "title": {
+          "string": "Add a person"
+        },
+        "description": {
+          "string": "They'll appear in the list below with no access yet — use the add-access menu on their row to grant permissions."
+        },
+        "placeholder": {
+          "string": "person@example.com"
+        },
+        "error": {
+          "invalid": {
+            "string": "Enter a valid email address."
+          },
+          "duplicate": {
+            "string": "This person is already in the list."
+          }
+        },
+        "cancel": {
+          "string": "Cancel"
+        },
+        "confirm": {
+          "string": "Add"
+        }
+      }
+    },
+    "addAccess": {
+      "menu": {
+        "folder": {
+          "string": "Mail folder"
+        },
+        "calendar": {
+          "string": "Calendar"
+        },
+        "contact": {
+          "string": "Address book"
+        }
+      },
+      "folder": {
+        "title": {
+          "string": "Share a mail folder"
+        },
+        "description": {
+          "string": "Choose which additional folder to share with {user}."
+        }
+      },
+      "calendar": {
+        "title": {
+          "string": "Share a calendar"
+        },
+        "description": {
+          "string": "Choose which additional calendar to share with {user}."
+        }
+      },
+      "contact": {
+        "title": {
+          "string": "Share an address book"
+        },
+        "description": {
+          "string": "Choose which additional address book to share with {user}."
+        }
+      },
+      "itemsLabel": {
+        "string": "Items to share"
+      },
+      "noItems": {
+        "string": "You don't own anything shareable yet."
+      },
+      "allShared": {
+        "string": "This person already has access to everything you can share."
+      },
+      "cancel": {
+        "string": "Cancel"
+      },
+      "confirm": {
+        "string": "Share"
+      }
+    },
+    "grant": {
+      "change": {
+        "string": "Change"
+      },
+      "remove": {
+        "string": "Remove access"
+      },
+      "removeConfirm": {
+        "title": {
+          "string": "Remove access?"
+        },
+        "description": {
+          "string": "This person will no longer have access to \"{item}\"."
+        },
+        "cancel": {
+          "string": "Cancel"
+        },
+        "confirm": {
+          "string": "Remove"
+        }
+      }
+    }
+  }
+}

@@ -14,6 +14,7 @@ export const MAIL_VACATION_SETTINGS_SLICE = 'mail_vacation_settings'
 export const MAIL_FORWARD_SETTINGS_SLICE = 'mail_forward_settings'
 export const EXTERNAL_ACCOUNTS_SLICE = 'external_accounts'
 export const ADDRESS_BOOKS_SLICE = 'address_books'
+export const ADDRESS_BOOK_SHARE_SLICE = 'address_book_share'
 export const VCARD_SLICE = 'vcard'
 export const MAIL_FOLDERS_SLICE = 'mail/folders'
 export const FOLDER_MESSAGES_SLICE = 'folder/messages'
@@ -24,6 +25,7 @@ export const MAILS_FOLDERS_SLICE = 'mails/folders'
 export const CALENDARS_SLICE = 'calendars'
 export const CALENDAR_EVENTS_SLICE = 'calendar_events'
 export const CALENDAR_SYNC_SLICE = 'calendar_sync'
+export const CALENDAR_SHARE_SLICE = 'calendar_share'
 export const TASKS_SLICE = 'tasks'
 export const ADMIN_CONFIG_SLICE = 'adminConfig'
 export const ADMIN_CONFIG_DOMAIN_SLICE = 'adminConfig/domain'
@@ -58,6 +60,7 @@ const tagTypes = [
   MAIL_FORWARD_SETTINGS_SLICE,
   EXTERNAL_ACCOUNTS_SLICE,
   ADDRESS_BOOKS_SLICE,
+  ADDRESS_BOOK_SHARE_SLICE,
   VCARD_SLICE,
   MAIL_FOLDERS_SLICE,
   FOLDER_MESSAGES_SLICE,
@@ -68,6 +71,7 @@ const tagTypes = [
   CALENDARS_SLICE,
   CALENDAR_EVENTS_SLICE,
   CALENDAR_SYNC_SLICE,
+  CALENDAR_SHARE_SLICE,
   TASKS_SLICE,
   ADMIN_CONFIG_SLICE,
   ADMIN_CONFIG_DOMAIN_SLICE,
