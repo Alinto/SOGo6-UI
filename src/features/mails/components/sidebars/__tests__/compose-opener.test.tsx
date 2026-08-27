@@ -113,11 +113,11 @@ describe('ComposeOpener Component', () => {
       renderWithProvider()
 
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-14')
+      expect(button).toHaveClass('h-10')
       expect(button).toHaveClass('justify-center')
       expect(button).toHaveClass('rounded-lg')
       expect(button).toHaveClass('border-2')
-      expect(button).toHaveClass('text-lg')
+      expect(button).toHaveClass('text-sm')
     })
 
     it('should render Pencil icon', () => {
@@ -152,8 +152,8 @@ describe('ComposeOpener Component', () => {
       const svgElements = document.querySelectorAll('svg')
       if (svgElements.length > 0) {
         const icon = svgElements[0]
-        expect(icon).toHaveClass('h-5')
-        expect(icon).toHaveClass('w-5')
+        expect(icon).toHaveClass('h-4')
+        expect(icon).toHaveClass('w-4')
       }
     })
 
@@ -417,11 +417,11 @@ describe('ComposeOpener Component', () => {
 
       const button = screen.getByRole('button')
       const expectedClasses = [
-        'h-14',
+        'h-10',
         'justify-center',
         'rounded-lg',
         'border-2',
-        'text-lg',
+        'text-sm',
       ]
 
       expectedClasses.forEach((className) => {
@@ -435,8 +435,8 @@ describe('ComposeOpener Component', () => {
       const svgElements = document.querySelectorAll('svg')
       if (svgElements.length > 0) {
         const icon = svgElements[0]
-        expect(icon).toHaveClass('h-5')
-        expect(icon).toHaveClass('w-5')
+        expect(icon).toHaveClass('h-4')
+        expect(icon).toHaveClass('w-4')
         expect(icon).toHaveClass('transition-transform')
       }
     })

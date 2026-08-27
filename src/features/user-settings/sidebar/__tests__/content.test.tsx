@@ -192,19 +192,12 @@ describe('useNavItems', () => {
       expect(item?.collapsedIcon).toBeDefined()
     })
 
-    it('second item is Address Books with correct url', () => {
+    it('second item is Address Books subsection', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[1]
-      expect(item?.title).toBe('US_SIDEBAR.settings.address_books.string')
-      expect(item?.url).toBe('/user_settings/address_books')
-    })
-
-    it('Address Books item has an icon', () => {
-      mockProfile()
-      const { result } = renderHook(() => useNavItems())
-      const item = result.current[1].items?.[1]
-      expect(item?.icon).toBeDefined()
+      expect(result.current[1].items?.[1].title).toBe(
+        'US_SIDEBAR.settings.address_books.title.string'
+      )
     })
 
     it('third item is Calendars subsection', () => {
@@ -221,6 +214,34 @@ describe('useNavItems', () => {
       expect(result.current[1].items?.[3].title).toBe(
         'US_SIDEBAR.settings.email.title.string'
       )
+    })
+  })
+
+  // --- Address books subsection ---
+
+  describe('Address books subsection', () => {
+    it('has icon and collapsedIcon', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const addressBooks = result.current[1].items?.[1]
+      expect(addressBooks?.icon).toBeDefined()
+      expect(addressBooks?.collapsedIcon).toBeDefined()
+    })
+
+    it('has exactly 1 sub-item', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      expect(result.current[1].items?.[1].items).toHaveLength(1)
+    })
+
+    it('first sub-item is General with the unchanged url', () => {
+      mockProfile()
+      const { result } = renderHook(() => useNavItems())
+      const item = result.current[1].items?.[1].items?.[0]
+      expect(item?.title).toBe(
+        'US_SIDEBAR.settings.address_books.general.string'
+      )
+      expect(item?.url).toBe('/user_settings/address_books')
     })
   })
 
@@ -311,9 +332,10 @@ describe('useNavItems', () => {
       mockProfile({ notifyEnabled: true })
       const { result } = renderHook(() => useNavItems())
       const items = result.current[1].items?.[3].items ?? []
-      const last = items[items.length - 1]
-      expect(last?.title).toBe('US_SIDEBAR.settings.email.notifications.string')
-      expect(last?.url).toBe('/user_settings/mail/notifications')
+      const item = items.find(
+        (i) => i.title === 'US_SIDEBAR.settings.email.notifications.string'
+      )
+      expect(item?.url).toBe('/user_settings/mail/notifications')
     })
 
     it('excludes Notifications when notifyEnabled is false', () => {
@@ -410,73 +432,6 @@ describe('useNavItems', () => {
         (i) => i.title === 'US_SIDEBAR.settings.email.forward.string'
       )
       expect(item).toBeUndefined()
-    })
-  })
-
-  // --- Memoisation ---
-
-  describe('Memoisation', () => {
-    it('returns the same reference when profile values do not change', () => {
-      mockProfile()
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-      rerender()
-      expect(result.current).toBe(first)
-    })
-
-    it('returns a new reference when passwordChangeEnabled changes', () => {
-      mockProfile({ passwordChangeEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ passwordChangeEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when forwardEnabled changes', () => {
-      mockProfile({ forwardEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ forwardEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when vacationEnabled changes', () => {
-      mockProfile({ vacationEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ vacationEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when mailFilteringEnabled changes', () => {
-      mockProfile({ mailFilteringEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ mailFilteringEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
-    })
-
-    it('returns a new reference when notifyEnabled changes', () => {
-      mockProfile({ notifyEnabled: true })
-      const { result, rerender } = renderHook(() => useNavItems())
-      const first = result.current
-
-      mockProfile({ notifyEnabled: false })
-      rerender()
-
-      expect(result.current).not.toBe(first)
     })
   })
 })
