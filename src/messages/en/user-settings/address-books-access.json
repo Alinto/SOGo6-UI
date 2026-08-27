@@ -1,0 +1,43 @@
+{
+  "US_ADDRESS_BOOKS_ACCESS": {
+    "title": {
+      "string": "Address book access"
+    },
+    "page": {
+      "description": {
+        "string": "See who has access to your address books and manage their permissions."
+      }
+    },
+    "disabled": {
+      "string": "Address book sharing has been disabled by your administrator."
+    },
+    "empty": {
+      "string": "You don't have any address books yet."
+    },
+    "row": {
+      "notShared": {
+        "string": "Not shared"
+      },
+      "sharedOne": {
+        "string": "1 person has access"
+      },
+      "sharedCount": {
+        "string": "{count} people have access"
+      },
+      "anyAuthenticated": {
+        "string": "Any authenticated user has access"
+      },
+      "manage": {
+        "string": "Manage access"
+      }
+    },
+    "errors_api": {
+      "feature_disabled": {
+        "string": "Address book sharing has been disabled by your administrator."
+      },
+      "load_failed": {
+        "string": "Could not load your address books. Please try again later."
+      }
+    }
+  }
+}

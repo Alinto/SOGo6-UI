@@ -226,7 +226,110 @@
         "string": "Delete Calendar"
       },
       "sharing": {
-        "string": "Sharing Settings"
+        "string": "Sharing",
+        "title": {
+          "string": "Share calendar"
+        },
+        "description": {
+          "string": "Manage who has access to \"{calendar}\" and their permissions."
+        },
+        "noUsers": {
+          "string": "No users have access yet."
+        },
+        "addUser": {
+          "label": {
+            "string": "Add a user"
+          },
+          "placeholder": {
+            "string": "email@domain.com"
+          },
+          "button": {
+            "string": "Add"
+          },
+          "error": {
+            "invalid": {
+              "string": "Please enter a valid email address."
+            },
+            "duplicate": {
+              "string": "This user already has access."
+            }
+          }
+        },
+        "classifications": {
+          "public": {
+            "label": {
+              "string": "Public events"
+            }
+          },
+          "confidential": {
+            "label": {
+              "string": "Confidential events"
+            }
+          },
+          "private": {
+            "label": {
+              "string": "Private events"
+            }
+          }
+        },
+        "levels": {
+          "none": {
+            "label": {
+              "string": "None"
+            }
+          },
+          "viewDateTime": {
+            "label": {
+              "string": "View date and time only"
+            }
+          },
+          "viewAll": {
+            "label": {
+              "string": "View all"
+            }
+          },
+          "respond": {
+            "label": {
+              "string": "Respond to"
+            }
+          },
+          "modify": {
+            "label": {
+              "string": "Modify"
+            }
+          }
+        },
+        "canCreate": {
+          "label": {
+            "string": "This person can create objects in my calendar"
+          }
+        },
+        "canErase": {
+          "label": {
+            "string": "This person can erase objects from my calendar"
+          }
+        },
+        "anyAuthenticatedUser": {
+          "label": {
+            "string": "Any authenticated user"
+          }
+        },
+        "badge": {
+          "you": {
+            "string": "You"
+          }
+        },
+        "removeUser": {
+          "tooltip": {
+            "string": "Cannot remove yourself"
+          }
+        },
+        "save": {
+          "string": "Save"
+        },
+        "cancel": {
+          "string": "Cancel"
+        }
       },
       "link": {
         "string": "Get Calendar Link",

@@ -5,6 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   Calendar,
   Contact,
+  Lock,
   Mail,
   SettingsIcon,
   ShieldUser,
@@ -32,7 +33,12 @@ export function useNavItems(): NavItem[] {
     mailFilteringEnabled,
     notifyEnabled,
     passwordChangeEnabled,
+    folderSharingDisabled,
   } = useProfile()
+  const sharingFullyDisabled =
+    folderSharingDisabled.includes('mail') &&
+    folderSharingDisabled.includes('calendar') &&
+    folderSharingDisabled.includes('contact')
 
   return useMemo(
     () => [
@@ -64,10 +70,27 @@ export function useNavItems(): NavItem[] {
             icon: UserCog,
             collapsedIcon: UserCog,
           },
+          ...when(!sharingFullyDisabled, {
+            title: 'US_SIDEBAR.settings.access.string',
+            url: '/user_settings/access',
+            icon: Lock,
+            collapsedIcon: Lock,
+          }),
           {
-            title: 'US_SIDEBAR.settings.address_books.string',
-            url: '/user_settings/address_books',
+            title: 'US_SIDEBAR.settings.address_books.title.string',
             icon: Contact,
+            collapsedIcon: Contact,
+            isActive: true,
+            items: [
+              {
+                title: 'US_SIDEBAR.settings.address_books.general.string',
+                url: '/user_settings/address_books',
+              },
+              ...when(!folderSharingDisabled.includes('contact'), {
+                title: 'US_SIDEBAR.settings.address_books.access.string',
+                url: '/user_settings/address_books/access',
+              }),
+            ],
           },
           {
             title: 'US_SIDEBAR.settings.calendars.title.string',
@@ -83,6 +106,10 @@ export function useNavItems(): NavItem[] {
                 title: 'US_SIDEBAR.settings.calendars.categories.string',
                 url: '/user_settings/calendars/categories',
               },
+              ...when(!folderSharingDisabled.includes('calendar'), {
+                title: 'US_SIDEBAR.settings.calendars.access.string',
+                url: '/user_settings/calendars/access',
+              }),
             ],
           },
           {
@@ -119,6 +146,10 @@ export function useNavItems(): NavItem[] {
                 title: 'US_SIDEBAR.settings.email.notifications.string',
                 url: '/user_settings/mail/notifications',
               }),
+              ...when(!folderSharingDisabled.includes('mail'), {
+                title: 'US_SIDEBAR.settings.email.access.string',
+                url: '/user_settings/mail/access',
+              }),
             ],
           },
         ],
@@ -130,6 +161,8 @@ export function useNavItems(): NavItem[] {
       mailFilteringEnabled,
       notifyEnabled,
       passwordChangeEnabled,
+      folderSharingDisabled,
+      sharingFullyDisabled,
     ]
   )
 }

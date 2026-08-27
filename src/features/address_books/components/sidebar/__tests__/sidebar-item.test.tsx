@@ -24,6 +24,11 @@ jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({})),
 }))
 
+const mockUseProfile = jest.fn(() => ({ folderSharingDisabled: [] as string[] }))
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => mockUseProfile(),
+}))
+
 jest.mock('lucide-react/dynamic', () => ({
   DynamicIcon: ({ name, ...props }: any) => (
     <span data-testid={`dynamic-icon-${name}`} {...props}>
@@ -120,6 +125,15 @@ jest.mock('../actions/link', () => ({
   __esModule: true,
   default: ({ id }: any) => (
     <div data-testid="link-action">Link Action for {id}</div>
+  ),
+}))
+
+jest.mock('../actions/share', () => ({
+  __esModule: true,
+  default: ({ id, name }: any) => (
+    <div data-testid="share-action">
+      Share Action for {name} (ID: {id})
+    </div>
   ),
 }))
 

@@ -13,6 +13,7 @@ import {
   useGetSyncStatusQuery,
   useTriggerSyncMutation,
 } from '@/features/calendars/store/calendars-api'
+import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn } from '@/lib/utils'
 import {
@@ -26,9 +27,13 @@ import {
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
 import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
-import { isSubscriptionCalendar } from '../../utils/calendar-source-type'
+import {
+  isPersonalCalendar,
+  isSubscriptionCalendar,
+} from '../../utils/calendar-source-type'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
+import ShareCalendarAction from './actions/share'
 import EditForm from './forms/edit'
 
 interface SidebarItemProps {
@@ -128,11 +133,15 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const [type, setType] = React.useState('')
   const [dialogOpen, setDialogOpen] = React.useState(false)
   const { setCalendarVisibility, isCalendarVisible } = useCalendarVisibility()
+  const { folderSharingDisabled } = useProfile()
   const t = useTranslations('CALENDARS')
   const isMobile = useIsMobile()
   const isIcs = sourceType === 'ics' && Boolean(calendarKey)
   const isReadOnly = isSubscriptionCalendar({ source_type: sourceType })
   const resolvedCalendarKey = calendarKey ?? id
+  const canShareCalendar =
+    isPersonalCalendar({ source_type: sourceType }) &&
+    !folderSharingDisabled.includes('calendar')
 
   const handleCheckboxChange = (checked: boolean) => {
     setCalendarVisibility(id, checked)
@@ -240,16 +249,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DropdownMenuItem>
               </DialogTrigger>
 
-              <DialogTrigger asChild>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setType('sharing')
-                    setDialogOpen(true)
-                  }}
-                >
-                  <span>{t('sidebar.sharing.string')}</span>
-                </DropdownMenuItem>
-              </DialogTrigger>
+              {canShareCalendar && (
+                <DialogTrigger asChild>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setType('sharing')
+                      setDialogOpen(true)
+                    }}
+                  >
+                    <span>{t('sidebar.sharing.string')}</span>
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              )}
 
               <DropdownMenuSeparator />
 
@@ -283,7 +294,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             )}
             {type === 'link' && <LinkAction id={id} />}
             {type === 'sharing' && (
-              <WorkInProgress title={t('sidebar.sharing.string')} />
+              <ShareCalendarAction
+                id={id}
+                calendarKey={resolvedCalendarKey}
+                name={name}
+                onClose={() => setDialogOpen(false)}
+              />
             )}
             {type === 'export' && (
               <WorkInProgress title={t('sidebar.export.string')} />

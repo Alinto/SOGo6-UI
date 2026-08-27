@@ -218,7 +218,7 @@ export class SSEService {
 
   private attemptReconnect(): void {
     // Max 3 reconnection attempts
-    if (this.reconnectAttempts >= 3) {
+    if (this.reconnectAttempts >= 13) {
       // Clean up any pending reconnection timeout
       if (this.reconnectTimeout) {
         clearTimeout(this.reconnectTimeout)

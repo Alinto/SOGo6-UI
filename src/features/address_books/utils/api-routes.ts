@@ -16,6 +16,12 @@ export const addressBookContactsPath = (key: string) =>
 export const addressBookContactPath = (bookKey: string, contactKey: string) =>
   `${addressBookContactsPath(bookKey)}/${encodeURIComponent(contactKey)}`
 
+export const addressBookShareUrl = (key: string) =>
+  `${addressBookPath(key)}/share`
+
+export const addressBookShareSubscribeUrl = (key: string, uid: string) =>
+  `${addressBookShareUrl(key)}/${encodeURIComponent(uid)}/subscribe`
+
 export const addressBookListsPath = (key: string) =>
   `${addressBookPath(key)}/lists`
 

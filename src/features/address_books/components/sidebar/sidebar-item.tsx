@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useProfile } from '@/features/user-profile'
 import { useRouter } from '@/lib/i18n/navigation'
 import { MoreVertical } from 'lucide-react'
 import { DynamicIcon, IconName } from 'lucide-react/dynamic'
@@ -20,6 +21,7 @@ import { useParams } from 'next/navigation'
 import React from 'react'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
+import ShareAddressBookAction from './actions/share'
 import EditForm from './forms/edit'
 import ImportDialog from './actions/import-dialog'
 import ExportDialog from './actions/export-dialog'
@@ -60,11 +62,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const formT = useTranslations('FORM_COMMONS')
   const { push } = useRouter()
   const params = useParams()
+  const { folderSharingDisabled } = useProfile()
   const activeBookId =
     typeof params?.book_id === 'string' ? params.book_id : null
   const isActive = activeBookId === id
   const isMobile = useIsMobile()
-  
+  const canShareAddressBook =
+    sharingAction && writable && !folderSharingDisabled.includes('contact')
+
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
@@ -117,7 +122,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DialogTrigger>
               )}
               <DropdownMenuSeparator />
-              {sharingAction && (
+              {canShareAddressBook && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('sharing')}>
                     <span>{t('options.sharing.string')}</span>
@@ -155,7 +160,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             {type === 'delete' && <DeleteAction id={id} name={name} />}
             {type === 'link' && <LinkAction id={id} name={name} />}
             {type === 'sharing' && (
-              <WorkInProgress title={t('options.sharing.string')} />
+              <ShareAddressBookAction
+                id={id}
+                name={name}
+                onClose={() => setType('')}
+              />
             )}
             {type === 'import' && (
               <ImportDialog

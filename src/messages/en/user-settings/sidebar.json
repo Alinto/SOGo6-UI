@@ -23,9 +23,23 @@
                 "string": "General",
                 "context": "Link to the general settings in the settings sidebar"
             },
+            "access": {
+                "string": "Sharing",
+                "context": "Link to the global access settings (all permissions across mail folders, calendars and address books) in the settings sidebar"
+            },
             "address_books": {
-                "string": "Address books",
-                "context": "Link to the settings address books in the settings sidebar"
+                "title": {
+                    "string": "Address books",
+                    "context": "Section title for the settings sidebar"
+                },
+                "general": {
+                    "string": "General",
+                    "context": "Link to the general address books settings in the settings sidebar"
+                },
+                "access": {
+                    "string": "Sharing",
+                    "context": "Link to the address books access settings in the settings sidebar"
+                }
             },
             "calendars": {
                 "title": {
@@ -39,6 +53,10 @@
                 "categories": {
                     "string": "Categories",
                     "context": "Link to the categories calendars settings in the settings sidebar"
+                },
+                "access": {
+                    "string": "Sharing",
+                    "context": "Link to the calendars access settings in the settings sidebar"
                 }
             },
             "email": {
@@ -73,6 +91,10 @@
                 "forward": {
                     "string": "Forward",
                     "context": "Link to the forward email settings in the settings sidebar"
+                },
+                "access": {
+                    "string": "Sharing",
+                    "context": "Link to the mail folder access settings in the settings sidebar"
                 }
             }
         }
