@@ -1,3 +1,4 @@
+import type { SogoModule } from '@/features/user-profile/profile-types'
 import type { ImapFolder, ImapFolderType } from '../mails-types'
 import { canRenameFolder } from './can-rename-folder'
 import {
@@ -31,7 +32,7 @@ export interface FolderActionDefinition {
 
 export interface GetFolderActionsOptions {
   mailPurgeAllow?: boolean
-  folderSharingDisabled?: boolean
+  folderSharingDisabled?: SogoModule[]
 }
 
 const ACTION_UNAVAILABLE_KEY = 'folders.actions.action_unavailable.string'
@@ -45,7 +46,9 @@ const BACKEND_BLOCKED_ACTIONS = new Set<FolderActionId>([
 ])
 
 function isNormalOnlyAction(id: FolderActionId): boolean {
-  return id === 'rename' || id === 'move_to' || id === 'delete' || id === 'set_as'
+  return (
+    id === 'rename' || id === 'move_to' || id === 'delete' || id === 'set_as'
+  )
 }
 
 function buildAction(
@@ -70,7 +73,8 @@ export function getFolderActions(
   folder: Pick<ImapFolder, 'type' | 'selectable' | 'default'>,
   options: GetFolderActionsOptions = {}
 ): FolderActionDefinition[] {
-  const { mailPurgeAllow = false, folderSharingDisabled = false } = options
+  const { mailPurgeAllow = false, folderSharingDisabled = [] } = options
+  const isSharingDisabled = folderSharingDisabled.includes('mail')
 
   if (isVirtualFolder(folder)) {
     return [
@@ -90,7 +94,7 @@ export function getFolderActions(
     buildAction('new_subfolder', 'folders.actions.new_subfolder.string'),
   ]
 
-  if (!folderSharingDisabled) {
+  if (!isSharingDisabled) {
     actions.push(
       buildAction('sharing', 'folders.actions.sharing.string', {
         separatorBefore: true,
@@ -100,7 +104,7 @@ export function getFolderActions(
 
   actions.push(
     buildAction('export', 'folders.actions.export.string', {
-      separatorBefore: !folderSharingDisabled,
+      separatorBefore: !isSharingDisabled,
     })
   )
 

@@ -75,7 +75,9 @@ export function useProfile() {
     mailMaxRecipient: profile?.ui?.SOGO_D_MAIL_MAX_RECIPIENT ?? 0,
     jitsiLinkEnabled: profile?.ui?.SOGO_D_JITSI_LINK_ENABLED ?? false,
     jitsiBaseUrl: profile?.ui?.SOGO_D_JITSI_BASE_URL ?? null,
-    folderSharingDisabled: profile?.ui?.SOGO_D_FOLDER_DISABLE_SHARING ?? false,
+    folderSharingDisabled: profile?.ui?.SOGO_D_FOLDER_DISABLE_SHARING || [],
+    folderSharingDisabledAnyAuth:
+      profile?.ui?.SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH || [],
     draftAutosaveTimer: profile?.ui?.SOGO_D_MAIL_DRAFT_AUTOSAVE ?? 5, // Default to 5s if not set
   }
 }
