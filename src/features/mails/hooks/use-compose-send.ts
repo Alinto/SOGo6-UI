@@ -8,6 +8,7 @@ import { probeNetwork } from '@/features/offline/network/probe'
 import { enqueueOutbox } from '@/features/offline/outbox/outbox-coordinator'
 import { releaseOutboxForEdit } from '@/features/offline/outbox/outbox-edit-hold'
 import { notifyOutboxChanged } from '@/features/offline/outbox/outbox-events'
+import { isQuotaExceededError } from '@/features/offline/storage/quota'
 import {
   ATTACHMENT_MAX_BYTES,
   ATTACHMENT_MAX_COUNT,
@@ -109,8 +110,12 @@ export function useComposeSend({
           localDraftId: draftId,
           replaceOutboxId: sourceOutboxId ?? undefined,
         })
-      } catch {
-        toast.error(t('offline_send_error.string'))
+      } catch (error) {
+        toast.error(
+          isQuotaExceededError(error)
+            ? t('storage_quota_exceeded.string')
+            : t('offline_send_error.string')
+        )
         return
       }
 

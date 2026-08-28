@@ -27,6 +27,18 @@ jest.mock('@/features/offline/components/offline-provider', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }))
 
+jest.mock('@/features/offline/hooks/use-compose-deep-link', () => ({
+  useComposeDeepLink: jest.fn(),
+}))
+
+jest.mock('@/features/offline/prefetch/use-inbox-prefetch', () => ({
+  useInboxPrefetch: jest.fn(),
+}))
+
+jest.mock('@/features/offline/hooks/use-calendar-prefetch', () => ({
+  useCalendarPrefetch: jest.fn(),
+}))
+
 jest.mock('@/features/user-profile', () => ({
   useGetUserProfileQuery: jest.fn(() => ({
     data: undefined,

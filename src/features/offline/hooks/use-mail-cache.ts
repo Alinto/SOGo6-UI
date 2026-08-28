@@ -2,6 +2,7 @@
 
 import { useCallback } from 'react'
 import { getAuthUserId } from '../auth/get-auth-token'
+import { syncAppBadge } from '../badge/app-badge'
 import {
   getCachedFolders,
   getMailBody,
@@ -63,6 +64,7 @@ export function useMailCache() {
           updatedAt: now,
         }))
       )
+      void syncAppBadge(userId)
     },
     []
   )

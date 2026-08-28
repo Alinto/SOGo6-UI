@@ -1,6 +1,11 @@
 import { deleteLocalDraft } from '../db/drafts-store'
 import { getOutboxItem, putOutboxWithAttachments } from '../db/outbox-store'
 import { isPwaBgSyncEnabled, isPwaOutboxEnabled } from '../flags'
+import {
+  assertStorageFits,
+  isQuotaExceededError,
+  StorageQuotaExceededError,
+} from '../storage/quota'
 import type {
   LocalDraftRecord,
   OutboxAttachmentRecord,
@@ -64,6 +69,12 @@ export async function enqueueOutbox(
   }))
   const attachmentIds = attachmentRecords.map((a) => a.id)
 
+  const extraBytes = attachmentRecords.reduce(
+    (sum, attachment) => sum + attachment.size,
+    0
+  )
+  await assertStorageFits(extraBytes)
+
   const record: OutboxRecord = {
     id,
     userId: input.userId,
@@ -88,7 +99,14 @@ export async function enqueueOutbox(
     updatedAt: now,
   }
 
-  await putOutboxWithAttachments(record, attachmentRecords)
+  try {
+    await putOutboxWithAttachments(record, attachmentRecords)
+  } catch (error) {
+    if (isQuotaExceededError(error)) {
+      throw new StorageQuotaExceededError()
+    }
+    throw error
+  }
 
   if (input.localDraftId) {
     await deleteLocalDraft(input.userId, input.localDraftId)

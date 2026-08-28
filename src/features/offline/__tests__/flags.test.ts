@@ -1,5 +1,6 @@
 import {
   isPwaBgSyncEnabled,
+  isPwaCalendarCacheEnabled,
   isPwaEnabled,
   isPwaMailCacheEnabled,
   isPwaOutboxEnabled,
@@ -26,6 +27,7 @@ describe('PWA flags', () => {
     expect(isPwaOutboxEnabled()).toBe(true)
     expect(isPwaMailCacheEnabled()).toBe(true)
     expect(isPwaBgSyncEnabled()).toBe(true)
+    expect(isPwaCalendarCacheEnabled()).toBe(false)
   })
 
   it('subflags can be turned off while master stays on', () => {
@@ -37,5 +39,11 @@ describe('PWA flags', () => {
     expect(isPwaOutboxEnabled()).toBe(false)
     expect(isPwaMailCacheEnabled()).toBe(false)
     expect(isPwaBgSyncEnabled()).toBe(false)
+  })
+
+  it('calendar cache is opt-in even when master is on', () => {
+    process.env.NEXT_PUBLIC_PWA_ENABLED = 'true'
+    process.env.NEXT_PUBLIC_PWA_CALENDAR_CACHE = 'true'
+    expect(isPwaCalendarCacheEnabled()).toBe(true)
   })
 })

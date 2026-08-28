@@ -15,6 +15,7 @@ jest.mock('next-intl', () => ({
 jest.mock('../../flags', () => ({
   isPwaEnabled: () => mockPwa,
   isPwaMailCacheEnabled: () => mockPwa,
+  isPwaCalendarCacheEnabled: () => false,
 }))
 
 jest.mock('../../network/use-network-status', () => ({

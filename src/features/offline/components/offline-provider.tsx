@@ -7,6 +7,7 @@ import {
   isPwaOutboxEnabled,
 } from '@/features/offline/flags'
 import { flushOutboxWithToasts } from '@/features/offline/outbox/outbox-flush-feedback'
+import { requestPersistentStorageOnce } from '@/features/offline/storage/persist'
 import { useTranslations } from 'next-intl'
 import { memo, type ReactNode, useEffect } from 'react'
 import { purgeExpiredCache } from '../db/mail-cache-store'
@@ -26,10 +27,14 @@ function OfflineProviderInner({ children }: OfflineProviderProps) {
   useOutboxFlushTriggers(true)
 
   useEffect(() => {
-    if (!isPwaMailCacheEnabled()) return
     const userId = getAuthUserId()
     if (!userId) return
-    void purgeExpiredCache(userId)
+    if (isPwaMailCacheEnabled()) {
+      void purgeExpiredCache(userId)
+    }
+    if (isPwaEnabled()) {
+      void requestPersistentStorageOnce(userId)
+    }
   }, [])
 
   useEffect(() => {

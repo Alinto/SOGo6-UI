@@ -193,6 +193,8 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         accountId?: string
         folder: string
         mailId: string
+        /** Prefetch into IndexedDB without marking the message seen. */
+        skipMarkRead?: boolean
       }
     >({
       query: getMailQuery,
@@ -230,6 +232,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
        * the mail will NOT be marked as read. This is acceptable and expected.
        */
       async onQueryStarted(arg, { dispatch, getState }) {
+        if (arg.skipMarkRead) return
         const accountKey = arg.accountId ?? '0'
         const listItem = findListItemInFolderCaches(
           getState() as RootState,

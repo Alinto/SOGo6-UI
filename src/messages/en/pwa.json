@@ -150,6 +150,30 @@
     "offline_unavailable_notes_body": {
       "string": "Reconnect to open notes."
     },
+    "offline_unavailable_admin_title": {
+      "string": "Admin is not available offline"
+    },
+    "offline_unavailable_admin_body": {
+      "string": "Reconnect to open the admin panel."
+    },
+    "offline_module_admin": {
+      "string": "Admin — offline"
+    },
+    "storage_quota": {
+      "string": "{used} / {quota}"
+    },
+    "storage_quota_exceeded": {
+      "string": "Not enough storage on this device to queue the message."
+    },
+    "offline_calendar_empty": {
+      "string": "No cached events for the next days."
+    },
+    "offline_calendar_untitled": {
+      "string": "(No title)"
+    },
+    "offline_calendar_all_day": {
+      "string": "All day"
+    },
     "outbox_edit_limit": {
       "string": "Close a compose window before editing this message."
     },

@@ -1,3 +1,4 @@
+import { syncAppBadge } from '../badge/app-badge'
 import { deleteOfflineDb } from './offline-db'
 
 /**
@@ -6,4 +7,5 @@ import { deleteOfflineDb } from './offline-db'
 export async function wipeOfflineUserData(userId: string): Promise<void> {
   if (!userId) return
   await deleteOfflineDb(userId)
+  await syncAppBadge(null)
 }

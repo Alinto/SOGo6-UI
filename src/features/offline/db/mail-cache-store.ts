@@ -22,6 +22,17 @@ export async function getCachedFolders(
   return getOfflineDb(userId).cachedFolders.get(`${userId}:${accountId}`)
 }
 
+function mailDateMs(date: string): number {
+  const ms = Date.parse(date)
+  return Number.isNaN(ms) ? 0 : ms
+}
+
+function sortHeadersByMailDateDesc(
+  rows: CachedMailHeaderRecord[]
+): CachedMailHeaderRecord[] {
+  return [...rows].sort((a, b) => mailDateMs(b.date) - mailDateMs(a.date))
+}
+
 export async function saveMailHeaders(
   userId: string,
   headers: CachedMailHeaderRecord[]
@@ -29,14 +40,22 @@ export async function saveMailHeaders(
   const db = getOfflineDb(userId)
   await db.cachedMailHeaders.bulkPut(headers)
 
-  for (const folderPath of new Set(headers.map((h) => h.folderPath))) {
+  const folders = new Map<string, { accountId: string; folderPath: string }>()
+  for (const header of headers) {
+    folders.set(`${header.accountId}\0${header.folderPath}`, {
+      accountId: header.accountId,
+      folderPath: header.folderPath,
+    })
+  }
+
+  for (const { accountId, folderPath } of folders.values()) {
     const all = await db.cachedMailHeaders
-      .where('userId')
-      .equals(userId)
-      .filter((h) => h.folderPath === folderPath)
+      .where('[userId+accountId+folderPath]')
+      .equals([userId, accountId, folderPath])
       .toArray()
-    all.sort((a, b) => b.updatedAt - a.updatedAt)
-    const excess = all.slice(MAIL_CACHE_HEADERS_PER_FOLDER)
+    const excess = sortHeadersByMailDateDesc(all).slice(
+      MAIL_CACHE_HEADERS_PER_FOLDER
+    )
     if (excess.length) {
       await db.cachedMailHeaders.bulkDelete(excess.map((h) => h.id))
     }
@@ -49,11 +68,30 @@ export async function listCachedMailHeaders(
   folderPath: string
 ): Promise<CachedMailHeaderRecord[]> {
   const rows = await getOfflineDb(userId)
+    .cachedMailHeaders.where('[userId+accountId+folderPath]')
+    .equals([userId, accountId, folderPath])
+    .toArray()
+  return sortHeadersByMailDateDesc(rows)
+}
+
+export async function getFolderHeadersCachedAt(
+  userId: string,
+  accountId: string,
+  folderPath: string
+): Promise<number | null> {
+  const rows = await listCachedMailHeaders(userId, accountId, folderPath)
+  if (!rows.length) return null
+  return Math.max(...rows.map((row) => row.updatedAt))
+}
+
+export async function countUnseenCachedHeaders(
+  userId: string
+): Promise<number> {
+  return getOfflineDb(userId)
     .cachedMailHeaders.where('userId')
     .equals(userId)
-    .filter((h) => h.accountId === accountId && h.folderPath === folderPath)
-    .toArray()
-  return rows.sort((a, b) => b.updatedAt - a.updatedAt)
+    .filter((header) => !header.seen)
+    .count()
 }
 
 export async function saveMailBody(

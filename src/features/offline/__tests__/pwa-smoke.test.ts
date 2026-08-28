@@ -7,6 +7,10 @@ describe('PWA smoke assets', () => {
       'public/icons/icon-192.png',
       'public/icons/icon-512.png',
       'public/icons/icon-maskable-512.png',
+      'public/icons/splash-light-1170x2532.png',
+      'public/icons/splash-dark-1170x2532.png',
+      'public/icons/splash-light-1290x2796.png',
+      'public/icons/splash-dark-1290x2796.png',
     ]
     for (const rel of icons) {
       expect(fs.existsSync(path.join(process.cwd(), rel))).toBe(true)
@@ -39,5 +43,12 @@ describe('PWA manifest start_url', () => {
       '/en/u/0/INBOX',
       '/en/u/0/INBOX?compose=1',
     ])
+    expect(
+      (m as { share_target?: { action: string } }).share_target?.action
+    ).toBe('/en/share')
+    expect(
+      (m as { protocol_handlers?: { protocol: string }[] })
+        .protocol_handlers?.[0]?.protocol
+    ).toBe('mailto')
   })
 })

@@ -103,4 +103,16 @@ describe('OfflineUnavailable', () => {
       screen.getByText('offline_unavailable_notes_body.string')
     ).toBeInTheDocument()
   })
+
+  it('renders an admin empty state', () => {
+    render(<OfflineUnavailable force target="admin" />)
+
+    expect(screen.getByTestId('offline-unavailable')).toHaveAttribute(
+      'data-target',
+      'admin'
+    )
+    expect(
+      screen.getByText('offline_unavailable_admin_title.string')
+    ).toBeInTheDocument()
+  })
 })

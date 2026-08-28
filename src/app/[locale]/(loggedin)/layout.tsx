@@ -17,8 +17,11 @@ import {
 } from '@/features/notifications'
 import { redirectAfterLogout } from '@/features/offline/auth/redirect-after-logout'
 import OfflineProvider from '@/features/offline/components/offline-provider'
+import { useCalendarPrefetch } from '@/features/offline/hooks/use-calendar-prefetch'
+import { useComposeDeepLink } from '@/features/offline/hooks/use-compose-deep-link'
 import { cacheIdentities } from '@/features/offline/hooks/use-offline-draft-sync'
 import { shouldSkipDocumentNav } from '@/features/offline/network/skip-document-nav'
+import { useInboxPrefetch } from '@/features/offline/prefetch/use-inbox-prefetch'
 import { useGetUserProfileQuery, useProfile } from '@/features/user-profile'
 import { fetchEnvVars } from '@/lib/env-service'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -39,6 +42,17 @@ import { Contact2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { startTransition, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
+
+function ComposeDeepLink() {
+  useComposeDeepLink()
+  return null
+}
+
+function MailCachePrefetch() {
+  useInboxPrefetch()
+  useCalendarPrefetch()
+  return null
+}
 
 function ProfilePrefetch() {
   const { mainAccount, identitiesEnabled } = useProfile()
@@ -120,6 +134,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <OfflineProvider>
       <ProfilePrefetch />
+      <MailCachePrefetch />
+      <ComposeDeepLink />
       <DemoWarningToast />
       <NotificationToaster />
       <NotificationProvider />
