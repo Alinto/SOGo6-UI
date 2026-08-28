@@ -7,6 +7,7 @@ export {
 export { wipeOfflineUserData } from './db/wipe'
 export {
   isPwaBgSyncEnabled,
+  isPwaCalendarCacheEnabled,
   isPwaEnabled,
   isPwaMailCacheEnabled,
   isPwaOutboxEnabled,

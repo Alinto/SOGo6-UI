@@ -26,8 +26,30 @@ export const metadata: Metadata = {
   robots: 'noindex, nofollow',
   appleWebApp: {
     capable: true,
-    statusBarStyle: 'default',
+    statusBarStyle: 'black-translucent',
     title: 'SOGo',
+    startupImage: [
+      {
+        url: '/icons/splash-light-1170x2532.png',
+        media:
+          '(prefers-color-scheme: light) and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)',
+      },
+      {
+        url: '/icons/splash-dark-1170x2532.png',
+        media:
+          '(prefers-color-scheme: dark) and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)',
+      },
+      {
+        url: '/icons/splash-light-1290x2796.png',
+        media:
+          '(prefers-color-scheme: light) and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)',
+      },
+      {
+        url: '/icons/splash-dark-1290x2796.png',
+        media:
+          '(prefers-color-scheme: dark) and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)',
+      },
+    ],
   },
   icons: {
     icon: [
@@ -42,7 +64,10 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#1a56db',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#1a56db' },
+    { media: '(prefers-color-scheme: dark)', color: '#0b1220' },
+  ],
 }
 
 export default async function RootLayout({

@@ -5,7 +5,6 @@ import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
 import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
-import { createDraft } from '@/features/mails/store/mail-compose-slice'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -15,7 +14,6 @@ import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { folderLabelFromPath } from '@/features/offline/utils/cache-clock'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
-import { createClientId } from '@/lib/utils/create-client-id'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -55,17 +53,6 @@ const Page = () => {
   useEffect(() => {
     dispatch(setSkipFolderFetch(false))
   }, [folderPath, dispatch])
-
-  // PWA manifest shortcut "New mail" lands on ?compose=1
-  // (createDraft itself enforces the open-windows cap)
-  useEffect(() => {
-    if (searchParams.get('compose') !== '1') return
-    const params = new URLSearchParams(searchParams.toString())
-    params.delete('compose')
-    const query = params.toString()
-    replace(query ? `${pathname}?${query}` : pathname)
-    dispatch(createDraft({ draftId: createClientId() }))
-  }, [searchParams, pathname, replace, dispatch])
 
   const clientFilterActive = activeFilter !== 'all'
 

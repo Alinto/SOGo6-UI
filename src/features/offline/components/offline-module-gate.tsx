@@ -1,7 +1,11 @@
 'use client'
 
+import OfflineCalendarAgenda from '@/features/offline/components/offline-calendar-agenda'
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
-import { isPwaEnabled } from '@/features/offline/flags'
+import {
+  isPwaCalendarCacheEnabled,
+  isPwaEnabled,
+} from '@/features/offline/flags'
 import { useNetworkStatus } from '@/features/offline/network/use-network-status'
 import {
   isMailFolderUnavailableTarget,
@@ -15,6 +19,13 @@ interface OfflineModuleGateProps {
   children: ReactNode
 }
 
+function offlineBody(target: OfflineModuleId) {
+  if (target === 'calendar' && isPwaCalendarCacheEnabled()) {
+    return <OfflineCalendarAgenda />
+  }
+  return <OfflineUnavailable force target={target} />
+}
+
 function OfflineModuleGate({ target, children }: OfflineModuleGateProps) {
   const { view } = useOfflineNav()
   const { isOnline, isProbing } = useNetworkStatus()
@@ -24,13 +35,13 @@ function OfflineModuleGate({ target, children }: OfflineModuleGateProps) {
     view.kind === 'unavailable' &&
     !isMailFolderUnavailableTarget(view.target)
   ) {
-    return <OfflineUnavailable force target={view.target} />
+    return offlineBody(view.target as OfflineModuleId)
   }
 
   if (!isPwaEnabled() || isOnline || isProbing) {
     return children
   }
-  return <OfflineUnavailable force target={target} />
+  return offlineBody(target)
 }
 
 export default memo(OfflineModuleGate)

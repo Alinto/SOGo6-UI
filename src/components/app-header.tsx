@@ -25,6 +25,7 @@ function overlayTitleForTarget(
   if (target === 'tasks') return t('offline_module_tasks.string')
   if (target === 'settings') return t('offline_module_settings.string')
   if (target === 'notes') return t('offline_module_notes.string')
+  if (target === 'admin') return t('offline_module_admin.string')
   return null
 }
 

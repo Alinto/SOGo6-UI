@@ -62,6 +62,12 @@ function copyForTarget(
       body: t('offline_unavailable_notes_body.string'),
     }
   }
+  if (target === 'admin') {
+    return {
+      title: t('offline_unavailable_admin_title.string'),
+      body: t('offline_unavailable_admin_body.string'),
+    }
+  }
   return {
     title: t('offline_unavailable_mail_title.string'),
     body: t('offline_unavailable_mail_body.string'),

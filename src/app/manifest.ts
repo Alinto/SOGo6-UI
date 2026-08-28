@@ -1,8 +1,13 @@
 import { pwaStartUrl } from '@/features/offline/pwa-start-url'
+import { getDefaultLocale } from '@/lib/i18n/config'
 import type { MetadataRoute } from 'next'
+
+const PWA_THEME_COLOR = '#1a56db'
+const PWA_BACKGROUND_COLOR = '#0b1220'
 
 export default function manifest(): MetadataRoute.Manifest {
   const startUrl = pwaStartUrl()
+  const locale = getDefaultLocale()
 
   return {
     name: 'SOGo',
@@ -13,9 +18,9 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: startUrl,
     scope: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#1a56db',
-    lang: 'en',
+    background_color: PWA_BACKGROUND_COLOR,
+    theme_color: PWA_THEME_COLOR,
+    lang: locale,
     icons: [
       {
         src: '/icons/icon-192.png',
@@ -48,5 +53,22 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
       },
     ],
-  }
+    share_target: {
+      action: `/${locale}/share`,
+      method: 'POST',
+      enctype: 'multipart/form-data',
+      params: {
+        title: 'title',
+        text: 'text',
+        url: 'url',
+        files: [{ name: 'files', accept: ['*/*'] }],
+      },
+    },
+    protocol_handlers: [
+      {
+        protocol: 'mailto',
+        url: `${startUrl}?compose=1&mailto=%s`,
+      },
+    ],
+  } as MetadataRoute.Manifest
 }

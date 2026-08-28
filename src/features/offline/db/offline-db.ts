@@ -1,8 +1,10 @@
 import Dexie, { type EntityTable } from 'dexie'
 import type {
+  CachedCalendarEventRecord,
   CachedFolderRecord,
   CachedMailBodyRecord,
   CachedMailHeaderRecord,
+  KvRecord,
   LocalDraftRecord,
   MetaIdentityRecord,
   OutboxAttachmentRecord,
@@ -17,6 +19,8 @@ export type OfflineDatabase = Dexie & {
   cachedMailHeaders: EntityTable<CachedMailHeaderRecord, 'id'>
   cachedMailBodies: EntityTable<CachedMailBodyRecord, 'id'>
   metaIdentities: EntityTable<MetaIdentityRecord, 'id'>
+  kv: EntityTable<KvRecord, 'key'>
+  cachedCalendarEvents: EntityTable<CachedCalendarEventRecord, 'id'>
 }
 
 const dbCache = new Map<string, OfflineDatabase>()
@@ -31,6 +35,27 @@ function createOfflineDb(userId: string): OfflineDatabase {
     cachedMailHeaders: 'id, userId, accountId, folderPath, updatedAt',
     cachedMailBodies: 'id, userId, lastAccessedAt, updatedAt',
     metaIdentities: 'id, userId, updatedAt',
+  })
+  db.version(2).stores({
+    drafts: 'id, userId, updatedAt',
+    outbox: 'id, userId, status, updatedAt',
+    outboxAttachments: 'id, outboxId',
+    cachedFolders: 'id, userId, accountId, updatedAt',
+    cachedMailHeaders: 'id, userId, [userId+accountId+folderPath], updatedAt',
+    cachedMailBodies: 'id, userId, lastAccessedAt, updatedAt',
+    metaIdentities: 'id, userId, updatedAt',
+    kv: 'key',
+  })
+  db.version(3).stores({
+    drafts: 'id, userId, updatedAt',
+    outbox: 'id, userId, status, updatedAt',
+    outboxAttachments: 'id, outboxId',
+    cachedFolders: 'id, userId, accountId, updatedAt',
+    cachedMailHeaders: 'id, userId, [userId+accountId+folderPath], updatedAt',
+    cachedMailBodies: 'id, userId, lastAccessedAt, updatedAt',
+    metaIdentities: 'id, userId, updatedAt',
+    kv: 'key',
+    cachedCalendarEvents: 'id, userId, updatedAt',
   })
   return db
 }

@@ -16,6 +16,7 @@ import {
   offlineFallbackPath,
   pathnameFromRequestUrl,
 } from './sw-runtime'
+import { handleShareTarget, isShareTargetRequest } from './sw-share'
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -135,6 +136,11 @@ const serwist = new Serwist({
       },
     ],
   },
+})
+
+self.addEventListener('fetch', (event) => {
+  if (!isShareTargetRequest(event.request)) return
+  event.respondWith(handleShareTarget(event.request))
 })
 
 serwist.addEventListeners()

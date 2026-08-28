@@ -101,11 +101,48 @@ export interface MetaIdentityRecord {
   updatedAt: number
 }
 
+export interface KvRecord {
+  key: string
+  value: string | number | boolean
+}
+
+export interface CachedCalendarEventRecord {
+  id: string
+  userId: string
+  rangeStart: string
+  rangeEnd: string
+  payloadJson: string
+  updatedAt: number
+}
+
+export interface PendingShareFile {
+  name: string
+  type: string
+  blob: Blob
+}
+
+export interface PendingShareRecord {
+  id: string
+  to: string
+  subject: string
+  body: string
+  url: string
+  files: PendingShareFile[]
+  createdAt: number
+}
+
 export const OUTBOX_FLUSH_SYNC_TAG = 'outbox-flush'
 
 export const MAIL_CACHE_HEADERS_PER_FOLDER = 75
-export const MAIL_CACHE_BODIES_MAX = 35
+export const MAIL_CACHE_BODIES_MAX = 100
 export const MAIL_CACHE_TTL_MS = 10 * 24 * 60 * 60 * 1000
+export const MAIL_CACHE_PREFETCH_FRESH_MS = 60 * 60 * 1000
+export const MAIL_CACHE_PREFETCH_BODIES = 10
+
+export const STORAGE_QUOTA_HEADROOM = 0.9
+export const KV_PERSIST_ASKED_AT = 'persistAskedAt'
 
 export const ATTACHMENT_MAX_COUNT = 10
 export const ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024
+
+export const CALENDAR_CACHE_DAYS = 7

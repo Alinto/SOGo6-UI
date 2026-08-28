@@ -32,3 +32,8 @@ export function isPwaMailCacheEnabled(): boolean {
 export function isPwaBgSyncEnabled(): boolean {
   return isPwaEnabled() && !isExplicitlyOff(process.env.NEXT_PUBLIC_PWA_BG_SYNC)
 }
+
+/** Opt-in: calendar cache stays off unless explicitly enabled. */
+export function isPwaCalendarCacheEnabled(): boolean {
+  return isPwaEnabled() && isOn(process.env.NEXT_PUBLIC_PWA_CALENDAR_CACHE)
+}

@@ -74,33 +74,30 @@ interface OfflineNavApi {
 
 const OfflineNavContext = createContext<OfflineNavApi | null>(null)
 
-function useRouteFallback(): OfflineNavApi {
-  const { push } = useRouter()
-  return useMemo(
-    () => ({
-      view: { kind: 'route' },
-      folderPathOverride: null,
-      openFolder: async (accountId: string, path: string, _label?: string) => {
-        push(`/u/${accountId}/${encodeURIComponent(path)}`)
-      },
-      openOutbox: (accountId: string) => {
-        push(`/u/${accountId}/outbox`)
-      },
-      openMail: async (
-        accountId: string,
-        folderPath: string,
-        mailId: string
-      ) => {
-        push(`/u/${accountId}/${encodeURIComponent(folderPath)}/${mailId}`)
-      },
-      navigateApp: (href: string) => {
-        push(href)
-      },
-      closeOverlay: () => {},
-      clearUnavailable: () => {},
-    }),
-    [push]
-  )
+function assignHref(href: string): void {
+  if (typeof window === 'undefined') return
+  window.location.assign(href)
+}
+
+function routeFallbackApi(): OfflineNavApi {
+  return {
+    view: { kind: 'route' },
+    folderPathOverride: null,
+    openFolder: async (accountId: string, path: string, _label?: string) => {
+      assignHref(`/u/${accountId}/${encodeURIComponent(path)}`)
+    },
+    openOutbox: (accountId: string) => {
+      assignHref(`/u/${accountId}/outbox`)
+    },
+    openMail: async (accountId: string, folderPath: string, mailId: string) => {
+      assignHref(`/u/${accountId}/${encodeURIComponent(folderPath)}/${mailId}`)
+    },
+    navigateApp: (href: string) => {
+      assignHref(href)
+    },
+    closeOverlay: () => {},
+    clearUnavailable: () => {},
+  }
 }
 
 export function OfflineNavProvider({ children }: { children: ReactNode }) {
@@ -242,6 +239,5 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
 
 export function useOfflineNav(): OfflineNavApi {
   const ctx = useContext(OfflineNavContext)
-  const fallback = useRouteFallback()
-  return ctx ?? fallback
+  return ctx ?? routeFallbackApi()
 }

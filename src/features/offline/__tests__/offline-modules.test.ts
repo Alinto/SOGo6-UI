@@ -14,6 +14,7 @@ describe('moduleTargetFromHref', () => {
     expect(moduleTargetFromHref('/user_settings/profile')).toBe('settings')
     expect(moduleTargetFromHref('/notes')).toBe('notes')
     expect(moduleTargetFromHref('/notes/foo')).toBe('notes')
+    expect(moduleTargetFromHref('/admin_panel/system')).toBe('admin')
   })
 
   it('ignores mail routes', () => {

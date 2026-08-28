@@ -256,10 +256,13 @@ describe('useComposeSend', () => {
     })
   })
 
-  it('toasts and keeps the draft open when enqueueing to the outbox fails', async () => {
+  it('toasts a dedicated quota error when enqueueing fails for storage', async () => {
     mockOutboxEnabled = true
     mockProbeNetwork.mockResolvedValue(false)
-    mockEnqueueOutbox.mockRejectedValue(new Error('QuotaExceeded'))
+    const quotaError = Object.assign(new Error('StorageQuotaExceeded'), {
+      name: 'StorageQuotaExceededError',
+    })
+    mockEnqueueOutbox.mockRejectedValue(quotaError)
 
     const { result } = renderHook(() => useComposeSend(baseFields))
 
@@ -267,7 +270,7 @@ describe('useComposeSend', () => {
       await result.current.handleSend()
     })
 
-    expect(toast.error).toHaveBeenCalledWith('offline_send_error.string')
+    expect(toast.error).toHaveBeenCalledWith('storage_quota_exceeded.string')
     expect(mockDispatch).not.toHaveBeenCalledWith(
       closeDraft({ draftId: 'draft-1' })
     )

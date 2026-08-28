@@ -1,5 +1,10 @@
+import OfflineModuleGate from '@/features/offline/components/offline-module-gate'
 import React from 'react'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="flex flex-col">{children}</div>
+  return (
+    <OfflineModuleGate target="admin">
+      <div className="flex flex-col">{children}</div>
+    </OfflineModuleGate>
+  )
 }

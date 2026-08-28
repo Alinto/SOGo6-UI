@@ -2,9 +2,10 @@
 
 import { cn } from '@/lib/utils'
 import { useLocale, useTranslations } from 'next-intl'
-import { memo } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { isPwaMailCacheEnabled } from '../flags'
 import { useNetworkStatus } from '../network/use-network-status'
+import { estimateStorage, formatBytes } from '../storage/quota'
 import { formatCacheClock } from '../utils/cache-clock'
 
 interface CachedDataIndicatorProps {
@@ -21,6 +22,24 @@ function CachedDataIndicator({
   const t = useTranslations('PWA')
   const locale = useLocale()
   const { isOnline } = useNetworkStatus()
+  const [quotaLabel, setQuotaLabel] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isPwaMailCacheEnabled()) return
+    let cancelled = false
+    void estimateStorage().then((estimate) => {
+      if (cancelled || !estimate) return
+      setQuotaLabel(
+        t('storage_quota.string', {
+          used: formatBytes(estimate.usage),
+          quota: formatBytes(estimate.quota),
+        })
+      )
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [t])
 
   if (!isPwaMailCacheEnabled() || isOnline) return null
 
@@ -33,8 +52,15 @@ function CachedDataIndicator({
         : t('cached_data_indicator.string')
 
   return (
-    <p className={cn('text-muted-foreground text-xs', className)} role="status">
-      {label}
+    <p
+      className={cn(
+        'text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs',
+        className
+      )}
+      role="status"
+    >
+      <span>{label}</span>
+      {quotaLabel ? <span>{quotaLabel}</span> : null}
     </p>
   )
 }

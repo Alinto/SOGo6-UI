@@ -6,6 +6,7 @@ export type OfflineUnavailableTarget =
   | 'tasks'
   | 'settings'
   | 'notes'
+  | 'admin'
 
 export type OfflineModuleId =
   | 'calendar'
@@ -13,6 +14,7 @@ export type OfflineModuleId =
   | 'tasks'
   | 'settings'
   | 'notes'
+  | 'admin'
 
 export function moduleTargetFromHref(href: string): OfflineModuleId | null {
   if (href.startsWith('/user_settings')) return 'settings'
@@ -20,6 +22,7 @@ export function moduleTargetFromHref(href: string): OfflineModuleId | null {
   if (href.startsWith('/address_books')) return 'contacts'
   if (href === '/tasks' || href.startsWith('/tasks/')) return 'tasks'
   if (href === '/notes' || href.startsWith('/notes/')) return 'notes'
+  if (href.startsWith('/admin_panel')) return 'admin'
   return null
 }
 

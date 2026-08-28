@@ -50,9 +50,12 @@ jest.mock('@/components/ui/sidebar', () => ({
   ),
 }))
 
-jest.mock('@/lib/i18n/navigation', () => ({
-  useRouter: jest.fn(() => ({
-    push: jest.fn(),
+const mockOpenFolder = jest.fn()
+
+jest.mock('@/features/offline/offline-nav-context', () => ({
+  useOfflineNav: jest.fn(() => ({
+    openFolder: mockOpenFolder,
+    folderPathOverride: null,
   })),
 }))
 
@@ -148,7 +151,7 @@ jest.mock('../../utils', () => ({
   }),
 }))
 
-import { useRouter } from '@/lib/i18n/navigation'
+import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useParams } from 'next/navigation'
 import { useGetFoldersQuery } from '../../../store/mails-api'
 
@@ -429,23 +432,23 @@ describe('MailSidebar Component', () => {
   })
 
   describe('Folder Navigation', () => {
-    it('should call push with correct path on folder click', async () => {
+    it('should open folder with correct account and path on click', async () => {
       const user = userEvent.setup()
-      const mockPush = jest.fn()
-      ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
 
       render(<MailSidebar />)
 
       const inboxFolder = screen.getByTestId('sidebar-item-INBOX')
       await user.click(inboxFolder)
 
-      expect(mockPush).toHaveBeenCalledWith('/u/test@example.com/INBOX')
+      expect(mockOpenFolder).toHaveBeenCalledWith(
+        'test@example.com',
+        'INBOX',
+        'folders.inbox.string'
+      )
     })
 
-    it('should encode folder path with special characters', async () => {
+    it('should open folder with special characters in path', async () => {
       const user = userEvent.setup()
-      const mockPush = jest.fn()
-      ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
 
       const foldersWithSpecialChars: ImapFolder[] = [
         {
@@ -471,13 +474,15 @@ describe('MailSidebar Component', () => {
       const folder = screen.getByTestId('sidebar-item-Test Folder')
       await user.click(folder)
 
-      expect(mockPush).toHaveBeenCalledWith('/u/test@example.com/Test%20Folder')
+      expect(mockOpenFolder).toHaveBeenCalledWith(
+        'test@example.com',
+        'Test Folder',
+        'Test Folder'
+      )
     })
 
     it('should use current account from params', async () => {
       const user = userEvent.setup()
-      const mockPush = jest.fn()
-      ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
       ;(useParams as jest.Mock).mockReturnValue({ account: 'work@example.com' })
 
       render(<MailSidebar />)
@@ -485,7 +490,11 @@ describe('MailSidebar Component', () => {
       const inboxFolder = screen.getByTestId('sidebar-item-INBOX')
       await user.click(inboxFolder)
 
-      expect(mockPush).toHaveBeenCalledWith('/u/work@example.com/INBOX')
+      expect(mockOpenFolder).toHaveBeenCalledWith(
+        'work@example.com',
+        'INBOX',
+        'folders.inbox.string'
+      )
     })
   })
 
@@ -924,14 +933,10 @@ describe('MailSidebar Component', () => {
       expect(useParams).toHaveBeenCalled()
     })
 
-    it('should use router for navigation', async () => {
-      const user = userEvent.setup()
-      const mockPush = jest.fn()
-      ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
-
+    it('should use offline nav for navigation', async () => {
       render(<MailSidebar />)
 
-      expect(useRouter).toHaveBeenCalled()
+      expect(useOfflineNav).toHaveBeenCalled()
     })
   })
 

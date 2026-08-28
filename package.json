@@ -23,7 +23,8 @@
     "check:translations:quiet": "node scripts/check-translation-keys.js --quiet",
     "check:translations:file": "node scripts/check-translation-keys.js --file",
     "prepare": "husky",
-    "type-check": "tsc"
+    "type-check": "tsc",
+    "test:e2e:pwa": "playwright test"
   },
   "dependencies": {
     "@ckeditor/ckeditor5-react": "^11.1.2",
@@ -90,6 +91,7 @@
     "@eslint/eslintrc": "3.3.3",
     "@eslint/js": "9.39.2",
     "@next/eslint-plugin-next": "16.2.10",
+    "@playwright/test": "^1.62.1",
     "@serwist/turbopack": "^9.5.11",
     "@tailwindcss/postcss": "4.1.18",
     "@testing-library/jest-dom": "6.9.1",
