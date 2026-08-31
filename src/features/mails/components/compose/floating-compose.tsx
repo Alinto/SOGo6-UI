@@ -148,6 +148,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
       : 5000,
     selectedSignatureKey,
     sourceOutboxId,
+    attachments,
     ...mailFields,
   })
 

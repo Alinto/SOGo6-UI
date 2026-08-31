@@ -84,7 +84,8 @@ describe('OutboxToolbar', () => {
     )
     expect(mockFlush).toHaveBeenCalledWith(
       'user@example.org',
-      expect.any(Function)
+      expect.any(Function),
+      { force: true }
     )
   })
 

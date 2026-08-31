@@ -14,16 +14,25 @@ function localeFromRequestUrl(requestUrl: string): string | undefined {
     const first = new URL(requestUrl, 'http://localhost').pathname
       .split('/')
       .filter(Boolean)[0]
-    if (
-      first &&
-      (OFFLINE_FALLBACK_LOCALES as readonly string[]).includes(first)
-    ) {
+    if (first && isOfflineLocale(first)) {
       return first
     }
   } catch {
     // Invalid URL.
   }
   return undefined
+}
+
+export function isOfflineLocale(
+  value: string
+): value is (typeof OFFLINE_FALLBACK_LOCALES)[number] {
+  return (OFFLINE_FALLBACK_LOCALES as readonly string[]).includes(value)
+}
+
+/** Locale prefix for share redirects; unknown segments fall back to English. */
+export function shareLocaleFromPathname(pathname: string): string {
+  const first = pathname.split('/').filter(Boolean)[0]
+  return first && isOfflineLocale(first) ? first : DEFAULT_OFFLINE_LOCALE
 }
 
 export function pathnameFromRequestUrl(requestUrl: string): string {
@@ -37,6 +46,11 @@ export function pathnameFromRequestUrl(requestUrl: string): string {
 /** `/{locale}/auth/login` — precached so logout can land here while offline. */
 export function isAuthLoginPath(pathname: string): boolean {
   return /^\/(?:en|de|fr|es)\/auth\/login\/?$/.test(pathname)
+}
+
+/** Login or `~offline` documents — the only navigations safe to CacheFirst. */
+export function isPrecachedDocumentPath(pathname: string): boolean {
+  return /\/~offline\/?$/.test(pathname) || isAuthLoginPath(pathname)
 }
 
 export function offlineLoginPath(requestUrl: string): string {

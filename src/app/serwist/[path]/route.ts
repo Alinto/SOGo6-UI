@@ -3,10 +3,20 @@ import { getLocales } from '@/lib/i18n/config'
 import { createSerwistRoute } from '@serwist/turbopack'
 import { spawnSync } from 'node:child_process'
 
-const revision =
-  spawnSync('git', ['rev-parse', 'HEAD'], {
+function swPrecacheRevision(): string {
+  const fromEnv =
+    process.env.SOURCE_VERSION?.trim() ||
+    process.env.GIT_COMMIT?.trim() ||
+    process.env.VERCEL_GIT_COMMIT_SHA?.trim()
+  if (fromEnv) return fromEnv
+  const git = spawnSync('git', ['rev-parse', 'HEAD'], {
     encoding: 'utf-8',
-  }).stdout?.trim() || crypto.randomUUID()
+  })
+  const sha = git.stdout?.trim()
+  return sha || 'dev'
+}
+
+const revision = swPrecacheRevision()
 
 export const { dynamic, dynamicParams, revalidate, generateStaticParams, GET } =
   createSerwistRoute({

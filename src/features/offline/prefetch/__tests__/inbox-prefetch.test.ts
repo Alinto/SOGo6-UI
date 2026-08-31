@@ -90,6 +90,45 @@ describe('prefetchInboxCache', () => {
     expect(cacheBody).toHaveBeenCalled()
   })
 
+  it('uses the typed Inbox path when it is not INBOX', async () => {
+    const folders: ImapFolder[] = [
+      {
+        name: 'Boîte',
+        path: 'INBOX/Boite',
+        type: 'INBOX',
+        unseen_count: 0,
+        messages: 1,
+        flags: [],
+        delimiter: '/',
+        readOnly: false,
+        selectable: true,
+      },
+    ]
+    const fetchMail = jest.fn(async () => ({ id: '1', body: 'hi' }))
+    const cacheBody = jest.fn(async () => undefined)
+    await prefetchInboxCache(
+      userId,
+      '0',
+      {
+        fetchFolders: async () => folders,
+        fetchFolderMails: async (folder) => [mail(`${folder}-1`)],
+        fetchMail,
+      },
+      {
+        cacheFolders: async () => undefined,
+        cacheHeaders: async () => undefined,
+        cacheBody,
+      }
+    )
+    expect(fetchMail).toHaveBeenCalledWith('INBOX/Boite', 'INBOX/Boite-1')
+    expect(cacheBody).toHaveBeenCalledWith(
+      '0',
+      'INBOX/Boite',
+      'INBOX/Boite-1',
+      expect.anything()
+    )
+  })
+
   it('skips network when inbox headers are fresh', async () => {
     await saveMailHeaders(userId, [
       {

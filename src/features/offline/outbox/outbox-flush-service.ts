@@ -12,7 +12,12 @@ import {
 } from '../db/outbox-store'
 import { isPwaOutboxEnabled } from '../flags'
 import { probeNetwork } from '../network/probe'
-import type { OutboxAttachmentRecord, OutboxRecord } from '../types'
+import {
+  OUTBOX_FLUSH_MAX_RETRIES,
+  OUTBOX_INTERRUPTED_ERROR,
+  type OutboxAttachmentRecord,
+  type OutboxRecord,
+} from '../types'
 import { isOutboxHeldForEdit } from './outbox-edit-hold'
 import { notifyOutboxChanged } from './outbox-events'
 
@@ -173,7 +178,20 @@ function isFakeApiBase(base: string): boolean {
   return base === '/fakeApi' || base.endsWith('/fakeApi')
 }
 
-async function runFlush(userId: string): Promise<FlushResult> {
+export type FlushOutboxOptions = {
+  /** Manual send-all: retry interrupted / cap-exceeded failed items. */
+  force?: boolean
+}
+
+function shouldAutoFlushItem(item: OutboxRecord): boolean {
+  if (item.status === 'pending') return true
+  if (item.status !== 'failed') return false
+  if (item.lastError === OUTBOX_INTERRUPTED_ERROR) return false
+  if (item.retryCount >= OUTBOX_FLUSH_MAX_RETRIES) return false
+  return true
+}
+
+async function runFlush(userId: string, force = false): Promise<FlushResult> {
   const result: FlushResult = {
     sent: 0,
     failed: 0,
@@ -211,18 +229,21 @@ async function runFlush(userId: string): Promise<FlushResult> {
   const all = await listOutbox(userId)
 
   // Recover items stuck in 'sending' after a killed page / crashed flush.
-  // The per-user lock guarantees no flush is running concurrently in this tab.
+  // Mark failed (not pending) so auto-flush will not blindly resend.
   for (const stale of all.filter((i) => i.status === 'sending')) {
-    await updateOutboxStatus(userId, stale.id, 'pending', {
-      lastError: 'interrupted',
+    await updateOutboxStatus(userId, stale.id, 'failed', {
+      lastError: OUTBOX_INTERRUPTED_ERROR,
     })
-    stale.status = 'pending'
+    stale.status = 'failed'
+    stale.lastError = OUTBOX_INTERRUPTED_ERROR
   }
 
   const items = all.filter(
     (i) =>
-      (i.status === 'pending' || i.status === 'failed') &&
-      !isOutboxHeldForEdit(i.id)
+      !isOutboxHeldForEdit(i.id) &&
+      (force
+        ? i.status === 'pending' || i.status === 'failed'
+        : shouldAutoFlushItem(i))
   )
 
   for (const item of items) {
@@ -262,24 +283,32 @@ async function runFlush(userId: string): Promise<FlushResult> {
   return result
 }
 
-function runFlushExclusive(userId: string): Promise<FlushResult> {
+function runFlushExclusive(
+  userId: string,
+  force: boolean
+): Promise<FlushResult> {
   // Web Locks (when available) prevent a double send across tabs / windows
   // of the same origin; the in-memory lock covers the current tab.
   const locks = typeof navigator !== 'undefined' ? navigator.locks : undefined
   if (locks?.request) {
-    return locks.request(`sogo-outbox-flush-${userId}`, () => runFlush(userId))
+    return locks.request(`sogo-outbox-flush-${userId}`, () =>
+      runFlush(userId, force)
+    )
   }
-  return runFlush(userId)
+  return runFlush(userId, force)
 }
 
 /**
  * Flush pending outbox items one-by-one, with per-user in-memory +
  * cross-tab locking (no double send).
  */
-export function flushOutbox(userId: string): Promise<FlushResult> {
+export function flushOutbox(
+  userId: string,
+  options?: FlushOutboxOptions
+): Promise<FlushResult> {
   const existing = flushLocks.get(userId)
   if (existing) return existing
-  const promise = runFlushExclusive(userId)
+  const promise = runFlushExclusive(userId, options?.force === true)
     .then((result) => {
       if (result.sent > 0 || result.failed > 0) notifyOutboxChanged()
       return result

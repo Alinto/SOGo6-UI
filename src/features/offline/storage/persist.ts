@@ -1,5 +1,5 @@
 import { getKv, setKv } from '../db/kv-store'
-import { KV_PERSIST_ASKED_AT } from '../types'
+import { KV_PERSIST_ASKED_AT, PERSIST_RETRY_MS } from '../types'
 
 export async function requestPersistentStorage(): Promise<boolean> {
   if (typeof navigator === 'undefined' || !navigator.storage?.persist) {
@@ -14,20 +14,26 @@ export async function requestPersistentStorage(): Promise<boolean> {
   }
 }
 
-/** Ask once per user DB. Safari may refuse; that is fine. */
+/** Ask once, then retry after PERSIST_RETRY_MS if the browser still refused. */
 export async function requestPersistentStorageOnce(
-  userId: string
+  userId: string,
+  now = Date.now()
 ): Promise<boolean> {
   if (!userId) return false
   const asked = await getKv(userId, KV_PERSIST_ASKED_AT)
   if (asked != null) {
     try {
-      return (await navigator.storage?.persisted?.()) ?? false
+      const persisted = (await navigator.storage?.persisted?.()) ?? false
+      if (persisted) return true
     } catch {
+      // continue cooldown check
+    }
+    const askedAt = Number(asked)
+    if (Number.isFinite(askedAt) && now - askedAt < PERSIST_RETRY_MS) {
       return false
     }
   }
   const persisted = await requestPersistentStorage()
-  await setKv(userId, KV_PERSIST_ASKED_AT, Date.now())
+  await setKv(userId, KV_PERSIST_ASKED_AT, now)
   return persisted
 }

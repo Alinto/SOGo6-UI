@@ -1,5 +1,9 @@
 import { toast } from 'sonner'
-import { flushOutbox, type FlushResult } from './outbox-flush-service'
+import {
+  flushOutbox,
+  type FlushOutboxOptions,
+  type FlushResult,
+} from './outbox-flush-service'
 
 type Translate = (key: string, values?: Record<string, number>) => string
 
@@ -25,9 +29,10 @@ function notifyFlushResult(result: FlushResult, t: Translate) {
  */
 export function flushOutboxWithToasts(
   userId: string,
-  t: Translate
+  t: Translate,
+  options?: FlushOutboxOptions
 ): Promise<FlushResult> {
-  const promise = flushOutbox(userId)
+  const promise = flushOutbox(userId, options)
   if (promise === toastedPromise) return promise
   toastedPromise = promise
   return promise.then((result) => {

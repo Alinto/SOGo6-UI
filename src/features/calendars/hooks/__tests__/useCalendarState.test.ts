@@ -16,10 +16,6 @@ jest.mock('next-intl', () => ({
   useLocale: () => 'en',
 }))
 
-jest.mock('@/features/offline/hooks/use-calendar-cache', () => ({
-  useCalendarCache: () => ({ cacheEvents: jest.fn() }),
-}))
-
 import { useGetCalendarsQuery, useGetEventsQuery } from '@/features/calendars'
 import { useCalendarState } from '../useCalendarState'
 

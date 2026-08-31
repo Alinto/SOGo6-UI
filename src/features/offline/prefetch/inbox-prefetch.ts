@@ -84,8 +84,15 @@ export async function prefetchInboxCache(
   cache: InboxPrefetchCache,
   now = Date.now()
 ): Promise<void> {
-  const cachedAt = await getFolderHeadersCachedAt(userId, accountId, 'INBOX')
-  if (cachedAt != null && now - cachedAt < MAIL_CACHE_PREFETCH_FRESH_MS) {
+  const defaultInboxCachedAt = await getFolderHeadersCachedAt(
+    userId,
+    accountId,
+    'INBOX'
+  )
+  if (
+    defaultInboxCachedAt != null &&
+    now - defaultInboxCachedAt < MAIL_CACHE_PREFETCH_FRESH_MS
+  ) {
     return
   }
 
@@ -94,16 +101,28 @@ export async function prefetchInboxCache(
     await cache.cacheFolders(accountId, folders)
   }
 
+  const inboxPath = findFolderByType(folders, 'INBOX')?.path || 'INBOX'
+  if (inboxPath !== 'INBOX') {
+    const cachedAt = await getFolderHeadersCachedAt(
+      userId,
+      accountId,
+      inboxPath
+    )
+    if (cachedAt != null && now - cachedAt < MAIL_CACHE_PREFETCH_FRESH_MS) {
+      return
+    }
+  }
+
   const inboxMails = await cacheFolderMails(
     accountId,
-    'INBOX',
+    inboxPath,
     MAIL_CACHE_HEADERS_PER_FOLDER,
     api,
     cache
   )
 
   const sent = findFolderByType(folders, 'SENT')
-  if (sent?.path && sent.path !== 'INBOX') {
+  if (sent?.path && sent.path !== inboxPath) {
     await cacheFolderMails(
       accountId,
       sent.path,
@@ -116,9 +135,9 @@ export async function prefetchInboxCache(
   const toPrefetch = inboxMails.slice(0, MAIL_CACHE_PREFETCH_BODIES)
   for (const mail of toPrefetch) {
     try {
-      const payload = await api.fetchMail('INBOX', mail.id)
+      const payload = await api.fetchMail(inboxPath, mail.id)
       if (payload) {
-        await cache.cacheBody(accountId, 'INBOX', mail.id, payload)
+        await cache.cacheBody(accountId, inboxPath, mail.id, payload)
       }
     } catch {
       // Best-effort: a missing body still leaves the header list usable.

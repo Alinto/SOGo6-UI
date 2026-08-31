@@ -108,6 +108,24 @@ describe('offline-db stores', () => {
     expect(await listOutbox(userId)).toHaveLength(0)
   })
 
+  it('wipe drops share session data and runtime caches', async () => {
+    sessionStorage.setItem('sogo_pending_share', '{"subject":"x"}')
+    const deleted: string[] = []
+    Object.defineProperty(globalThis, 'caches', {
+      configurable: true,
+      value: {
+        keys: async () => ['pages', 'env', 'next-static', 'serwist-precache'],
+        delete: async (key: string) => {
+          deleted.push(key)
+          return true
+        },
+      },
+    })
+    await wipeOfflineUserData(userId)
+    expect(sessionStorage.getItem('sogo_pending_share')).toBeNull()
+    expect(deleted.sort()).toEqual(['env', 'pages'])
+  })
+
   it('replaces outbox attachments in one transaction without dropping the row', async () => {
     await putOutboxWithAttachments(outbox({ attachmentIds: ['old'] }), [
       {
