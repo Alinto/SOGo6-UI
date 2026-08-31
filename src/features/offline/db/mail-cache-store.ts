@@ -38,28 +38,31 @@ export async function saveMailHeaders(
   headers: CachedMailHeaderRecord[]
 ): Promise<void> {
   const db = getOfflineDb(userId)
-  await db.cachedMailHeaders.bulkPut(headers)
-
-  const folders = new Map<string, { accountId: string; folderPath: string }>()
+  const folders = new Map<string, CachedMailHeaderRecord[]>()
   for (const header of headers) {
-    folders.set(`${header.accountId}\0${header.folderPath}`, {
-      accountId: header.accountId,
-      folderPath: header.folderPath,
-    })
+    const key = `${header.accountId}\0${header.folderPath}`
+    const rows = folders.get(key) ?? []
+    rows.push(header)
+    folders.set(key, rows)
   }
 
-  for (const { accountId, folderPath } of folders.values()) {
-    const all = await db.cachedMailHeaders
-      .where('[userId+accountId+folderPath]')
-      .equals([userId, accountId, folderPath])
-      .toArray()
-    const excess = sortHeadersByMailDateDesc(all).slice(
-      MAIL_CACHE_HEADERS_PER_FOLDER
-    )
-    if (excess.length) {
-      await db.cachedMailHeaders.bulkDelete(excess.map((h) => h.id))
+  await db.transaction('rw', db.cachedMailHeaders, async () => {
+    for (const [, folderHeaders] of folders) {
+      const accountId = folderHeaders[0]!.accountId
+      const folderPath = folderHeaders[0]!.folderPath
+      const incoming = sortHeadersByMailDateDesc(folderHeaders).slice(
+        0,
+        MAIL_CACHE_HEADERS_PER_FOLDER
+      )
+      await db.cachedMailHeaders
+        .where('[userId+accountId+folderPath]')
+        .equals([userId, accountId, folderPath])
+        .delete()
+      if (incoming.length) {
+        await db.cachedMailHeaders.bulkPut(incoming)
+      }
     }
-  }
+  })
 }
 
 export async function listCachedMailHeaders(

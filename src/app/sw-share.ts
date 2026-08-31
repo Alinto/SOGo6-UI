@@ -1,5 +1,8 @@
-import { savePendingShare } from '../features/offline/share/pending-share'
-import { pathnameFromRequestUrl } from './sw-runtime'
+import {
+  capShareFiles,
+  savePendingShare,
+} from '../features/offline/share/pending-share'
+import { pathnameFromRequestUrl, shareLocaleFromPathname } from './sw-runtime'
 
 export function isShareTargetRequest(
   request: Pick<Request, 'method' | 'url'>
@@ -13,9 +16,11 @@ export async function handleShareTarget(request: Request): Promise<Response> {
   const title = String(form.get('title') ?? form.get('subject') ?? '')
   const text = String(form.get('text') ?? form.get('body') ?? '')
   const sharedUrl = String(form.get('url') ?? '')
-  const files = form.getAll('files').filter((entry): entry is File => {
-    return typeof File !== 'undefined' && entry instanceof File
-  })
+  const files = capShareFiles(
+    form.getAll('files').filter((entry): entry is File => {
+      return typeof File !== 'undefined' && entry instanceof File
+    })
+  )
 
   await savePendingShare({
     to: '',
@@ -29,8 +34,7 @@ export async function handleShareTarget(request: Request): Promise<Response> {
     })),
   })
 
-  const locale =
-    pathnameFromRequestUrl(request.url).split('/').filter(Boolean)[0] ?? 'en'
+  const locale = shareLocaleFromPathname(pathnameFromRequestUrl(request.url))
   const dest = new URL(`/${locale}/u/0/INBOX?compose=1&share=1`, request.url)
   return Response.redirect(dest, 303)
 }

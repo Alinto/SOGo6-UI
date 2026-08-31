@@ -194,11 +194,31 @@ describe('flushOutbox', () => {
     expect(sendBody.subject).toBe('S')
   })
 
-  it('recovers items stuck in sending state', async () => {
+  it('does not auto-resend items left in sending after a crash', async () => {
     await upsertOutboxItem(makeItem({ status: 'sending' }))
     const result = await flushOutbox(userId)
+    expect(result.sent).toBe(0)
+    const items = await listOutbox(userId)
+    expect(items).toHaveLength(1)
+    expect(items[0]!.status).toBe('failed')
+    expect(items[0]!.lastError).toBe('interrupted')
+    expect(global.fetch).not.toHaveBeenCalled()
+  })
+
+  it('resends interrupted items when force is set', async () => {
+    await upsertOutboxItem(makeItem({ status: 'sending' }))
+    const result = await flushOutbox(userId, { force: true })
     expect(result.sent).toBe(1)
     expect(await listOutbox(userId)).toHaveLength(0)
+  })
+
+  it('skips failed items at the retry cap unless force is set', async () => {
+    await upsertOutboxItem(
+      makeItem({ status: 'failed', retryCount: 5, lastError: 'boom' })
+    )
+    expect((await flushOutbox(userId)).sent).toBe(0)
+    expect(global.fetch).not.toHaveBeenCalled()
+    expect((await flushOutbox(userId, { force: true })).sent).toBe(1)
   })
 
   it('still sends on fakeApi when the stored JWT is expired', async () => {

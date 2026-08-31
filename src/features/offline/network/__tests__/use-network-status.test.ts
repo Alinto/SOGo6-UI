@@ -3,7 +3,10 @@
  */
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { probeNetwork } from '../probe'
-import { useNetworkStatus } from '../use-network-status'
+import {
+  NETWORK_PROBE_INTERVAL_MS,
+  useNetworkStatus,
+} from '../use-network-status'
 
 jest.mock('../probe', () => ({
   probeNetwork: jest.fn(),
@@ -55,7 +58,7 @@ describe('useNetworkStatus', () => {
     expect(result.current.isProbing).toBe(false)
 
     await act(async () => {
-      jest.advanceTimersByTime(1000)
+      jest.advanceTimersByTime(NETWORK_PROBE_INTERVAL_MS)
       await Promise.resolve()
       await Promise.resolve()
     })

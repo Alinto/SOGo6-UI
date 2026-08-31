@@ -22,8 +22,19 @@ Periodic Background Sync is **not** implemented: the service worker must not hol
 - TTL: ~10 days; eviction by mail date (headers) / last access (bodies)
 - Persistent storage requested after login (`navigator.storage.persist()`)
 - Quota checked before outbox enqueue; usage shown on the cached-mail indicator
-- Survives app close; wiped on logout
+- Survives app close; wiped on logout (Dexie + `sogo-share-pending` + runtime Cache Storage `pages`/`others`/`env`/`manifest`)
 - Not a full mailbox mirror
+- Folder header snapshots are replaced on each write (deleted server mail disappears from the cache)
+
+## Outbox
+
+- Auto-flush skips items left `interrupted` after a crash, and skips `failed` after 5 retries
+- Outbox “Send all” force-retries those items (no server idempotency key)
+
+## Share target
+
+- Files capped to compose attachment limits; `accept` is not `*/*`
+- OS share without a controlling SW stores text in `sessionStorage` (no PII in the query string)
 
 ## Calendar (opt-in)
 

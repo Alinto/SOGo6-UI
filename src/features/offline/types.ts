@@ -5,6 +5,7 @@ export interface LocalDraftAttachmentMeta {
   name: string
   size: number
   type: string
+  blob?: Blob
 }
 
 export interface LocalDraftRecord {
@@ -144,5 +145,10 @@ export const KV_PERSIST_ASKED_AT = 'persistAskedAt'
 
 export const ATTACHMENT_MAX_COUNT = 10
 export const ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024
+
+export const OUTBOX_FLUSH_MAX_RETRIES = 5
+export const OUTBOX_INTERRUPTED_ERROR = 'interrupted'
+
+export const PERSIST_RETRY_MS = 7 * 24 * 60 * 60 * 1000
 
 export const CALENDAR_CACHE_DAYS = 7

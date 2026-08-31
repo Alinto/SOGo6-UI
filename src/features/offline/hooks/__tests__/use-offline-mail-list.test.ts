@@ -10,6 +10,7 @@ if (typeof globalThis.structuredClone !== 'function') {
 
 import type { ImapMessagesList } from '@/features/mails/mails-types'
 import { renderHook, waitFor } from '@testing-library/react'
+import { listCachedMailHeaders } from '../../db/mail-cache-store'
 import { wipeOfflineUserData } from '../../db/wipe'
 
 let mockIsOnline = true
@@ -85,17 +86,16 @@ describe('useOfflineMailList', () => {
 
     expect(result.current.isShowingCache).toBe(false)
 
-    // Give the async cache write a tick
     await waitFor(async () => {
-      // Offline pass: fallback served from IndexedDB
-      mockIsOnline = false
-      rerender({ mails: undefined, hasError: true })
-      await waitFor(() => {
-        expect(result.current.isShowingCache).toBe(true)
-      })
+      expect(await listCachedMailHeaders(userId, '0', 'INBOX')).toHaveLength(2)
     })
 
-    expect(result.current.cachedMails).toHaveLength(2)
+    mockIsOnline = false
+    rerender({ mails: undefined, hasError: true })
+
+    await waitFor(() => {
+      expect(result.current.cachedMails).toHaveLength(2)
+    })
     // Sorted by date desc
     expect(result.current.cachedMails![0]!.id).toBe('m2')
     expect(result.current.cachedMails![1]!.id).toBe('m1')
@@ -133,14 +133,14 @@ describe('useOfflineMailList', () => {
       { initialProps: { mails, hasError: false } }
     )
 
-    await waitFor(() => {
-      mockIsOnline = true
-      rerender({ mails: undefined, hasError: true })
+    await waitFor(async () => {
+      expect(await listCachedMailHeaders(userId, '0', 'INBOX')).toHaveLength(2)
     })
 
+    rerender({ mails: undefined, hasError: true })
+
     await waitFor(() => {
-      expect(result.current.isShowingCache).toBe(true)
+      expect(result.current.cachedMails).toHaveLength(2)
     })
-    expect(result.current.cachedMails).toHaveLength(2)
   })
 })

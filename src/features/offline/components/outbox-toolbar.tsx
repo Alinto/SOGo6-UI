@@ -94,7 +94,7 @@ function OutboxToolbar({ itemIds, onBulkDelete }: OutboxToolbarProps) {
             onClick={() => {
               const userId = getAuthUserId()
               if (!userId) return
-              void flushOutboxWithToasts(userId, t)
+              void flushOutboxWithToasts(userId, t, { force: true })
             }}
           >
             <Send className="mr-1 size-4" aria-hidden />

@@ -10,8 +10,8 @@ import {
 } from 'serwist'
 import {
   filterPrecacheEntries,
-  isAuthLoginPath,
   isNavigationRequest,
+  isPrecachedDocumentPath,
   OFFLINE_FALLBACK_LOCALES,
   offlineFallbackPath,
   pathnameFromRequestUrl,
@@ -51,8 +51,7 @@ const serwist = new Serwist({
     {
       matcher: ({ request }) => {
         if (!isNavigationRequest(request)) return false
-        const path = pathnameFromRequestUrl(request.url)
-        return /\/~offline\/?$/.test(path) || isAuthLoginPath(path)
+        return isPrecachedDocumentPath(pathnameFromRequestUrl(request.url))
       },
       handler: new CacheFirst({
         cacheName: 'pages',
@@ -61,11 +60,7 @@ const serwist = new Serwist({
     },
     {
       matcher: ({ request }) => isNavigationRequest(request),
-      handler: new NetworkFirst({
-        cacheName: 'pages',
-        networkTimeoutSeconds: 3,
-        plugins: [expire(32, 24 * 60 * 60)],
-      }),
+      handler: new NetworkOnly(),
     },
     {
       matcher: /\/_next\/static\//,
@@ -102,11 +97,7 @@ const serwist = new Serwist({
     {
       matcher: /.*/i,
       method: 'GET',
-      handler: new NetworkFirst({
-        cacheName: 'others',
-        networkTimeoutSeconds: 3,
-        plugins: [expire(64, 24 * 60 * 60)],
-      }),
+      handler: new NetworkOnly(),
     },
   ],
   fallbacks: {

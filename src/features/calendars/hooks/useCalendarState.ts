@@ -14,7 +14,6 @@ import {
 import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
 import { singleOccurrenceMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
-import { useCalendarCache } from '@/features/offline/hooks/use-calendar-cache'
 import { endOfDay, startOfDay } from 'date-fns'
 import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
@@ -185,12 +184,6 @@ export function useCalendarState(): UseCalendarStateReturn {
       skip: !calendarsData?.length,
     }
   )
-
-  const { cacheEvents } = useCalendarCache()
-  useEffect(() => {
-    if (!currentData) return
-    void cacheEvents(dateRange.startDate, dateRange.endDate, currentData)
-  }, [cacheEvents, currentData, dateRange.endDate, dateRange.startDate])
 
   // Transform fetched events to have Date objects
   // Recalculate when timezone changes to properly display events in new timezone

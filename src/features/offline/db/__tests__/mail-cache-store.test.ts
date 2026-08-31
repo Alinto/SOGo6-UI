@@ -45,27 +45,33 @@ describe('mail-cache-store indexes', () => {
     await wipeOfflineUserData(userId)
   })
 
-  it('evicts oldest mails by date, not cache write time', async () => {
+  it('replaces a folder snapshot so deleted mails disappear', async () => {
+    await saveMailHeaders(userId, [
+      header('INBOX', 'keep', '2026-08-20T10:00:00Z'),
+      header('INBOX', 'gone', '2026-08-21T10:00:00Z'),
+    ])
+    await saveMailHeaders(userId, [
+      header('INBOX', 'keep', '2026-08-20T10:00:00Z'),
+    ])
+    const rows = await listCachedMailHeaders(userId, '0', 'INBOX')
+    expect(rows.map((row) => row.mailId)).toEqual(['keep'])
+  })
+
+  it('caps a replaced folder at MAIL_CACHE_HEADERS_PER_FOLDER', async () => {
     const now = Date.now()
     const inbox = Array.from(
-      { length: MAIL_CACHE_HEADERS_PER_FOLDER },
+      { length: MAIL_CACHE_HEADERS_PER_FOLDER + 5 },
       (_, i) =>
         header(
           'INBOX',
-          `new-${i}`,
+          `m-${i}`,
           `2026-08-${String((i % 27) + 1).padStart(2, '0')}T10:00:00Z`,
           now
         )
     )
     await saveMailHeaders(userId, inbox)
-
-    await saveMailHeaders(userId, [
-      header('INBOX', 'ancient', '2010-01-01T00:00:00Z', now + 10_000),
-    ])
-
     const rows = await listCachedMailHeaders(userId, '0', 'INBOX')
     expect(rows).toHaveLength(MAIL_CACHE_HEADERS_PER_FOLDER)
-    expect(rows.some((row) => row.mailId === 'ancient')).toBe(false)
   })
 
   it('does not evict Inbox when another folder is written', async () => {

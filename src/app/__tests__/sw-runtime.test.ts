@@ -3,8 +3,10 @@ import {
   isAuthLoginPath,
   isBrokenPrecacheUrl,
   isNavigationRequest,
+  isPrecachedDocumentPath,
   offlineFallbackPath,
   offlineLoginPath,
+  shareLocaleFromPathname,
 } from '../sw-runtime'
 
 describe('isNavigationRequest', () => {
@@ -90,6 +92,16 @@ describe('isAuthLoginPath', () => {
   })
 })
 
+describe('isPrecachedDocumentPath', () => {
+  it('matches login and ~offline only', () => {
+    expect(isPrecachedDocumentPath('/en/auth/login')).toBe(true)
+    expect(isPrecachedDocumentPath('/fr/~offline')).toBe(true)
+    expect(isPrecachedDocumentPath('/~offline')).toBe(true)
+    expect(isPrecachedDocumentPath('/en/u/0/INBOX')).toBe(false)
+    expect(isPrecachedDocumentPath('/en/calendars')).toBe(false)
+  })
+})
+
 describe('offlineLoginPath', () => {
   it('uses the locale-prefixed login page', () => {
     expect(offlineLoginPath('https://sogo.example/fr/u/0/INBOX')).toBe(
@@ -105,5 +117,13 @@ describe('offlineLoginPath', () => {
       '/en/auth/login'
     )
     expect(offlineLoginPath('not a url')).toBe('/en/auth/login')
+  })
+})
+
+describe('shareLocaleFromPathname', () => {
+  it('keeps known locales and falls back to English', () => {
+    expect(shareLocaleFromPathname('/fr/share')).toBe('fr')
+    expect(shareLocaleFromPathname('/share')).toBe('en')
+    expect(shareLocaleFromPathname('/xx/share')).toBe('en')
   })
 })

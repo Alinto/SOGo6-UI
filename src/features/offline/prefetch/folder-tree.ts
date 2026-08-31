@@ -1,5 +1,8 @@
 import type { ImapFolder, ImapFolderType } from '@/features/mails/mails-types'
-import { isSentFolderType } from '@/features/mails/utils/folder-type-helpers'
+import {
+  isInboxFolderType,
+  isSentFolderType,
+} from '@/features/mails/utils/folder-type-helpers'
 
 export function findFolderByType(
   folders: ImapFolder[],
@@ -7,7 +10,11 @@ export function findFolderByType(
 ): ImapFolder | undefined {
   for (const folder of folders) {
     if (
-      type === 'SENT' ? isSentFolderType(folder.type) : folder.type === type
+      type === 'SENT'
+        ? isSentFolderType(folder.type)
+        : type === 'INBOX'
+          ? isInboxFolderType(folder.type)
+          : folder.type === type
     ) {
       return folder
     }

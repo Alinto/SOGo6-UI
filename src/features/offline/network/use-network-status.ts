@@ -14,6 +14,8 @@ const browserStatus = (): NetworkStatus => {
   return { isOnline: navigator.onLine, isProbing: navigator.onLine }
 }
 
+export const NETWORK_PROBE_INTERVAL_MS = 30_000
+
 let snapshot: NetworkStatus = browserStatus()
 const listeners = new Set<() => void>()
 let started = false
@@ -77,7 +79,7 @@ function start() {
   window.addEventListener('offline', onOffline)
   window.addEventListener('focus', syncNavigatorFlag)
   document.addEventListener('visibilitychange', syncNavigatorFlag)
-  intervalId = window.setInterval(syncNavigatorFlag, 1000)
+  intervalId = window.setInterval(syncNavigatorFlag, NETWORK_PROBE_INTERVAL_MS)
   void refresh()
 }
 

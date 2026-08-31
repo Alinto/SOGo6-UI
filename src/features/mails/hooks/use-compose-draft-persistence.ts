@@ -10,6 +10,7 @@ import { useInterval } from '@/hooks/use-interval'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { closeDraft } from '../store'
 import { useDeleteMailMutation, useSaveDraftMutation } from '../store/mail-api'
+import type { MailComposeAttachment } from '../store/mail-compose-slice'
 import { markDraftSaved, updateMailKey } from '../store/mail-compose-slice'
 import {
   buildComposeMailPayload,
@@ -29,6 +30,7 @@ interface UseComposeDraftPersistenceOptions extends ComposeMailFields {
   autosaveIntervalMs: number
   selectedSignatureKey?: string | null
   sourceOutboxId?: string | null
+  attachments?: MailComposeAttachment[]
 }
 
 export function useComposeDraftPersistence({
@@ -44,6 +46,7 @@ export function useComposeDraftPersistence({
   autosaveIntervalMs,
   selectedSignatureKey = null,
   sourceOutboxId = null,
+  attachments = [],
   ...mailFields
 }: UseComposeDraftPersistenceOptions) {
   const dispatch = useAppDispatch()
@@ -70,7 +73,15 @@ export function useComposeDraftPersistence({
       isPlainText: mailFields.isPlainText,
       priority: mailFields.selectedPriority,
       requestReadReceipt: mailFields.requestReadReceipt,
-      attachments: [],
+      attachments: attachments
+        .filter((attachment) => attachment.file)
+        .map((attachment, index) => ({
+          id: `${attachment.name}-${attachment.size}-${index}`,
+          name: attachment.name,
+          size: attachment.size,
+          type: attachment.type,
+          blob: attachment.file,
+        })),
     })
   }
 
