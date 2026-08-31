@@ -128,9 +128,9 @@
       "string": "Add instant messaging",
       "context": "Button to add another instant messaging field"
     },
-    "categories": {
-      "string": "Categories",
-      "context": "Label for contact categories field"
+    "labels": {
+      "string": "Labels",
+      "context": "Label for contact labels field"
     },
     "photo": {
       "string": "Photo",

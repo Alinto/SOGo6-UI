@@ -4,6 +4,7 @@ import { addressBooksUiReducer } from '@/features/address_books'
 import { tasksUiReducer } from '@/features/tasks'
 import mailLayoutReducer from '@/features/mails/store/mail-layout-slice'
 import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
+import mailSearchReducer from '@/features/mails/store/mail-search-slice'
 import { notificationsReducer } from '@/features/notifications'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
@@ -31,6 +32,7 @@ const staticReducers = {
   mailCompose: mailComposeReducer,
   mailLayout: mailLayoutReducer,
   mailNavigation: mailNavigationReducer,
+  mailSearch: mailSearchReducer,
   notifications: notificationsReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
   [sseApi.reducerPath]: sseApi.reducer,

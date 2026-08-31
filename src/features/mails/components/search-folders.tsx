@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { DropdownMenuItem } from '@radix-ui/react-dropdown-menu'
+import { Check } from 'lucide-react'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
@@ -16,12 +17,12 @@ import { ImapFolder } from '../mails-types'
 import { useGetFoldersQuery } from '../store/mails-api'
 import { iconSelectorByType } from './utils'
 
-interface FlattenedFolder extends ImapFolder {
+export interface FlattenedFolder extends ImapFolder {
   level: number
   key: string
 }
 
-function flattenFolders(
+export function flattenFolders(
   folders: ImapFolder[],
   level = 0,
   parentPath = ''
@@ -38,8 +39,20 @@ function flattenFolders(
   return result
 }
 
-const SearchFolders = () => {
-  const { data } = useGetFoldersQuery()
+interface SearchFoldersProps {
+  value: string
+  onValueChange: (path: string) => void
+  accountId?: string
+  pinnedPaths?: string[]
+}
+
+const SearchFolders = ({
+  value,
+  onValueChange,
+  accountId,
+  pinnedPaths = [],
+}: SearchFoldersProps) => {
+  const { data } = useGetFoldersQuery({ accountId })
   const [search, setSearch] = useState('')
   const t = useTranslations('MAILS_COMMONS')
   // Flatten only filtered folders
@@ -73,10 +86,19 @@ const SearchFolders = () => {
       : []
   }, [data, search])
 
+  const selectedFolder = useMemo(() => {
+    if (pinnedPaths.includes(value)) return undefined
+    return flattenFolders(
+      Array.isArray(data) ? data : data ? [data] : []
+    ).find((f) => f.path === value)
+  }, [data, value, pinnedPaths])
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant={'outline'}>{t('search.others.string')}</Button>
+        <Button variant={selectedFolder ? 'default' : 'outline'}>
+          {selectedFolder ? selectedFolder.name : t('search.others.string')}
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <DropdownMenuGroup>
@@ -103,12 +125,17 @@ const SearchFolders = () => {
                         <DropdownMenuItem
                           className="hover:bg-accent flex cursor-pointer items-center truncate rounded-md px-2"
                           style={{ paddingLeft: f.level * 20 }}
+                          aria-selected={f.path === value}
+                          onClick={() => onValueChange(f.path)}
                         >
                           <DynamicIcon
                             name={iconSelectorByType(f.type)}
                             className="mr-2 h-4 w-4"
                           />
                           {f.name}
+                          {f.path === value && (
+                            <Check className="ml-auto h-4 w-4" />
+                          )}
                         </DropdownMenuItem>
                       </div>
                     )

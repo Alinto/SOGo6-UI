@@ -24,7 +24,7 @@ export function MailCategoryList({
   busy,
 }: MailCategoryListProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
-  const tCategories = useTranslations('US_MAIL_CATEGORIES')
+  const tCategories = useTranslations('US_MAIL_CATEGORY_LABELS')
 
   return (
     <div className="flex max-h-64 flex-col gap-2 overflow-y-auto py-2">
@@ -37,7 +37,7 @@ export function MailCategoryList({
         const isIndeterminate = indeterminate?.has(category.name) ?? false
         const isSelected = selected.has(category.name)
         const displayName = category.is_default
-          ? tCategories(`categories.${category.name}`)
+          ? tCategories(`labels.${category.name}`)
           : category.name
         return (
           <label

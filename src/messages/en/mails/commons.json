@@ -288,6 +288,20 @@
                         "description": "Write a new message to the contact"
                     }
                 }
+            },
+            "not_found": {
+                "title": {
+                    "string": "Mail not found",
+                    "description": "Title shown when the requested mail could not be found (backend error S000303)"
+                },
+                "generic_title": {
+                    "string": "Unable to load this mail",
+                    "description": "Title shown when the mail detail fails to load for a reason other than 'not found'"
+                },
+                "action": {
+                    "string": "Back to folder",
+                    "description": "Button to return to the folder's mail list from the mail-not-found/error state"
+                }
             }
         },
         "error": {
@@ -299,9 +313,17 @@
                 "string": "Search emails",
                 "description": "Placeholder text for the email search input field"
             },
-            "more_options": {
-                "string": "More Options",
-                "description": "Button to open more search options"
+            "advanced_placeholder": {
+                "string": "",
+                "description": "Placeholder text for the advanced search bar, showing an example of the key:value query syntax"
+            },
+            "advanced_bar_label": {
+                "string": "Advanced search",
+                "description": "Badge shown next to the search bar to make it explicit that it has switched to the advanced key:value query syntax"
+            },
+            "advanced": {
+                "string": "Advanced search",
+                "description": "Label/aria-label for the button that opens the advanced search modal, and title of that modal"
             },
             "folders": {
                 "string": "Folders",
@@ -323,13 +345,13 @@
                 "string": "In favorites",
                 "description": "Option to filter emails that are marked as favorites"
             },
+            "include_subfolders": {
+                "string": "Include subfolders",
+                "description": "Option, only available in advanced search, to also search the subfolders of the selected folder"
+            },
             "unseen_only": {
                 "string": "Unseen only",
                 "description": "Option to filter emails that are unseen"
-            },
-            "body": {
-                "string": "Body",
-                "description": "Label for the 'Body' field in email search options"
             },
             "date_from": {
                 "string": "Date from",
@@ -339,14 +361,134 @@
                 "string": "Date to",
                 "description": "Label for the 'Date to' field in email search options"
             },
+            "date_range": {
+                "label": {
+                    "string": "Date",
+                    "description": "Label for the date range preset selector in email search options"
+                },
+                "anytime": {
+                    "string": "Anytime",
+                    "description": "Date range preset: no date restriction"
+                },
+                "last_7_days": {
+                    "string": "Last 7 days",
+                    "description": "Date range preset: messages from the last 7 days"
+                },
+                "last_30_days": {
+                    "string": "Last 30 days",
+                    "description": "Date range preset: messages from the last 30 days"
+                },
+                "last_6_months": {
+                    "string": "Last 6 months",
+                    "description": "Date range preset: messages from the last 6 months"
+                },
+                "before": {
+                    "string": "Before",
+                    "description": "Date range preset: messages before a given date"
+                },
+                "after": {
+                    "string": "After",
+                    "description": "Date range preset: messages after a given date"
+                },
+                "between": {
+                    "string": "Between",
+                    "description": "Date range preset: messages between two given dates"
+                }
+            },
             "others": {
                 "string": "Others",
                 "description": "Label for the 'Others' section in email search options"
+            },
+            "active": {
+                "string": "Search active",
+                "description": "Shown in the search bar when a search with no readable single term (only checkbox/filter options) is applied"
+            },
+            "clear": {
+                "string": "Clear search",
+                "description": "ARIA label for the button that clears the active search and reloads the folder's mail list"
+            },
+            "folders_all": {
+                "string": "All mailboxes",
+                "description": "Quick folder-scope chip: search across every folder"
+            },
+            "full_text": {
+                "string": "Full text",
+                "description": "Label for the general keyword field in email search options, matching subject, sender, recipients and body"
+            },
+            "attachment_type": {
+                "string": "Attachment type",
+                "description": "Label for the attachment file type filter in email search options",
+                "placeholder": {
+                    "string": "Any file type",
+                    "description": "Placeholder for the attachment file type multi-select"
+                }
+            },
+            "labels": {
+                "string": "Labels",
+                "description": "Label for the mail label/category filter in email search options",
+                "placeholder": {
+                    "string": "Any label",
+                    "description": "Placeholder for the labels multi-select"
+                },
+                "empty": {
+                    "string": "No labels found",
+                    "description": "Shown when there are no labels matching the search in the labels multi-select"
+                }
+            },
+            "read_status": {
+                "label": {
+                    "string": "Read status",
+                    "description": "Label for the read/unread filter in email search options"
+                },
+                "any": {
+                    "string": "Any",
+                    "description": "Read status filter: no restriction"
+                },
+                "unread": {
+                    "string": "Unread",
+                    "description": "Read status filter: unread messages only"
+                },
+                "read": {
+                    "string": "Read",
+                    "description": "Read status filter: read messages only"
+                }
+            },
+            "scope": {
+                "sender": {
+                    "string": "Sender",
+                    "description": "Simple-search field scope: matches sender only"
+                },
+                "entire_message": {
+                    "string": "Entire message",
+                    "description": "Simple-search field scope: matches subject, sender, recipients and body"
+                }
+            },
+            "to_or_cc": {
+                "string": "To or Cc",
+                "description": "Label for the merged 'To or Cc' field/scope in email search, matching either the To or the Cc header"
+            },
+            "operator": {
+                "label": {
+                    "string": "Match",
+                    "description": "Label for the AND/OR operator selector in email search options, controlling how the selected criteria are combined"
+                },
+                "and": {
+                    "string": "All criteria",
+                    "description": "Operator option: results must match every selected search criterion"
+                },
+                "or": {
+                    "string": "Any criteria",
+                    "description": "Operator option: results must match at least one selected search criterion"
+                }
             }
         },
         "from": {
             "string": "From",
             "description": "Label for the 'From' field in email search options"
+        },
+        "cc": {
+            "string": "Cc",
+            "description": "Label for the 'Cc' field in email search options"
         },
         "account_switcher": {
             "add_account": {

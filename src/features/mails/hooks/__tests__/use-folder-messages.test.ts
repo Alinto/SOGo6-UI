@@ -4,6 +4,13 @@ import { act, renderHook, waitFor } from '@testing-library/react'
 const mockDispatch = jest.fn()
 const mockSearchParams = new URLSearchParams()
 const mockGetFolderMessagesQuery = jest.fn()
+const mockSearchMailsQuery = jest.fn()
+const mockMailSearchState = {
+  isActive: false,
+  accountId: null as string | null,
+  params: null,
+  folder: null as string | null,
+}
 
 jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(() => mockSearchParams),
@@ -12,7 +19,10 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => mockDispatch),
   useAppSelector: jest.fn((selector: (s: any) => any) =>
-    selector({ mailNavigation: { skipFolderFetch: false } })
+    selector({
+      mailNavigation: { skipFolderFetch: false },
+      mailSearch: mockMailSearchState,
+    })
   ),
 }))
 
@@ -21,8 +31,13 @@ jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
   setMailNavigation: jest.fn((payload) => ({ type: 'mailNavigation/setMailNavigation', payload })),
 }))
 
+jest.mock('@/features/mails/store/mail-search-slice', () => ({
+  clearMailSearch: jest.fn(() => ({ type: 'mailSearch/clearMailSearch' })),
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: (...args: any[]) => mockGetFolderMessagesQuery(...args),
+  useSearchMailsQuery: (...args: any[]) => mockSearchMailsQuery(...args),
 }))
 
 jest.mock('../use-current-folder', () => ({
@@ -58,6 +73,27 @@ describe('useFolderMessages', () => {
       isLoading: false,
       isFetching: false,
     })
+    mockSearchMailsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isFetching: false,
+    })
+    mockMailSearchState.isActive = false
+    mockMailSearchState.accountId = null
+    mockMailSearchState.params = null
+    mockMailSearchState.folder = null
+    ;(useCurrentFolder as jest.Mock).mockReturnValue({
+      isSelectable: true,
+      isVirtual: false,
+      isLoading: false,
+    })
+    const { useAppSelector } = require('@/lib/redux/hooks')
+    useAppSelector.mockImplementation((selector: (s: any) => any) =>
+      selector({
+        mailNavigation: { skipFolderFetch: false },
+        mailSearch: mockMailSearchState,
+      })
+    )
   })
 
   describe('params construction', () => {
@@ -165,7 +201,10 @@ describe('useFolderMessages', () => {
     it('skips query when skipFolderFetch is true', () => {
       const { useAppSelector } = require('@/lib/redux/hooks')
       useAppSelector.mockImplementation((selector: (s: any) => any) =>
-        selector({ mailNavigation: { skipFolderFetch: true } })
+        selector({
+          mailNavigation: { skipFolderFetch: true },
+          mailSearch: mockMailSearchState,
+        })
       )
       renderHook(() => useFolderMessages({ folder: 'INBOX' }))
       const [, options] = mockGetFolderMessagesQuery.mock.calls[0]
@@ -243,6 +282,90 @@ describe('useFolderMessages', () => {
         fields: 'contents',
         fields_action: 'exclude',
       })
+    })
+  })
+
+  describe('search mode', () => {
+    it('skips the folder query and uses search results when a search is active for this account', () => {
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      mockSearchMailsQuery.mockReturnValue({
+        data: mockData,
+        isLoading: false,
+        isFetching: false,
+      })
+
+      const { result } = renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+
+      const [, folderOptions] = mockGetFolderMessagesQuery.mock.calls[0]
+      expect(folderOptions.skip).toBe(true)
+      const [searchArgs, searchOptions] = mockSearchMailsQuery.mock.calls[0]
+      expect(searchArgs).toEqual({ accountId: '0', body: { text: 'invoice' } })
+      expect(searchOptions.skip).toBe(false)
+      expect(result.current.data).toBe(mockData)
+      expect(result.current.isSearchActive).toBe(true)
+      expect(result.current.isVirtualFolder).toBe(false)
+    })
+
+    it('ignores an active search from a different account', () => {
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '1'
+      mockMailSearchState.params = { text: 'invoice' } as any
+
+      renderHook(() => useFolderMessages({ folder: 'INBOX', accountId: '0' }))
+
+      const [, folderOptions] = mockGetFolderMessagesQuery.mock.calls[0]
+      expect(folderOptions.skip).toBe(false)
+      const [, searchOptions] = mockSearchMailsQuery.mock.calls[0]
+      expect(searchOptions.skip).toBe(true)
+    })
+
+    it('clears the search when navigating to a different folder', () => {
+      const { clearMailSearch } = require('@/features/mails/store/mail-search-slice')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      mockMailSearchState.folder = 'INBOX'
+
+      const { rerender } = renderHook(
+        ({ folder }) => useFolderMessages({ folder, accountId: '0' }),
+        { initialProps: { folder: 'INBOX' } }
+      )
+      expect(mockDispatch).not.toHaveBeenCalledWith(clearMailSearch())
+
+      rerender({ folder: 'Archive' })
+      expect(mockDispatch).toHaveBeenCalledWith(clearMailSearch())
+    })
+
+    it('clears the search on first mount when it was activated from a different folder', () => {
+      // Regression test: this hook is called from page-level components,
+      // which Next.js remounts on every navigation (unlike layouts). A
+      // component-local "previous folder" ref would always initialize to
+      // the new folder on such a remount and never detect the navigation —
+      // the fix tracks the search's origin folder in Redux instead, which
+      // survives the remount.
+      const { clearMailSearch } = require('@/features/mails/store/mail-search-slice')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      mockMailSearchState.folder = 'INBOX'
+
+      renderHook(() => useFolderMessages({ folder: 'Archive', accountId: '0' }))
+
+      expect(mockDispatch).toHaveBeenCalledWith(clearMailSearch())
+    })
+
+    it('does not clear the search on mount when it was activated from the same folder', () => {
+      const { clearMailSearch } = require('@/features/mails/store/mail-search-slice')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      mockMailSearchState.folder = 'INBOX'
+
+      renderHook(() => useFolderMessages({ folder: 'INBOX', accountId: '0' }))
+
+      expect(mockDispatch).not.toHaveBeenCalledWith(clearMailSearch())
     })
   })
 })

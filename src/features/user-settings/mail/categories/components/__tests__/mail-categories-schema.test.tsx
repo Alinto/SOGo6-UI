@@ -11,7 +11,7 @@ jest.mock('next-intl', () => ({
 
 const mockT = (key: string) => {
   const map: Record<string, string> = {
-    'categories.validation.category-name-required': 'Category name is required',
+    'labels.validation.label-name-required': 'Label name is required',
   }
   return map[key] ?? key
 }
@@ -104,7 +104,7 @@ describe('createSchema (mail categories)', () => {
       )
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('Category name is required')
+        expect(result.error.issues[0].message).toBe('Label name is required')
       }
     })
 
@@ -192,7 +192,7 @@ describe('createSchema (mail categories)', () => {
     it('calls t with the correct key for the name validation message', () => {
       const customT = jest.fn((key: string) => key)
       createSchema(customT as any)
-      expect(customT).toHaveBeenCalledWith('categories.validation.category-name-required')
+      expect(customT).toHaveBeenCalledWith('labels.validation.label-name-required')
     })
 
     it('uses the value returned by t as the validation error message', () => {
@@ -209,8 +209,8 @@ describe('createSchema (mail categories)', () => {
 
     it('uses a different locale t function and resolves the message correctly', () => {
       const frT = (key: string) =>
-        key === 'categories.validation.category-name-required'
-          ? 'Nom de catégorie requis'
+        key === 'labels.validation.label-name-required'
+          ? 'Nom de libellé requis'
           : key
       const schema = createSchema(frT as any)
       const result = schema.safeParse(
@@ -218,7 +218,7 @@ describe('createSchema (mail categories)', () => {
       )
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('Nom de catégorie requis')
+        expect(result.error.issues[0].message).toBe('Nom de libellé requis')
       }
     })
   })

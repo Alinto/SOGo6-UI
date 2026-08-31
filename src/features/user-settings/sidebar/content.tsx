@@ -80,7 +80,7 @@ export function useNavItems(): NavItem[] {
                 url: '/user_settings/calendars/general',
               },
               {
-                title: 'US_SIDEBAR.settings.calendars.categories.string',
+                title: 'US_SIDEBAR.settings.calendars.labels.string',
                 url: '/user_settings/calendars/categories',
               },
             ],
@@ -96,7 +96,7 @@ export function useNavItems(): NavItem[] {
                 url: '/user_settings/mail/general',
               },
               {
-                title: 'US_SIDEBAR.settings.email.categories.string',
+                title: 'US_SIDEBAR.settings.email.labels.string',
                 url: '/user_settings/mail/categories',
               },
               {

@@ -17,6 +17,7 @@ import type {
   ImapMessagesBackendResponse,
   MailActionType,
   MailBatchActionType,
+  MailSearchParams,
   UpdateFolderBody,
 } from '../mails-types'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
@@ -142,6 +143,18 @@ const mailActionQuery = ({
   body: { action, data },
 })
 
+const searchMailsQuery = ({
+  accountId = '0',
+  body,
+}: {
+  accountId?: string
+  body: MailSearchParams
+}) => ({
+  url: `mailboxes/${accountId}/search`,
+  method: 'POST' as const,
+  body,
+})
+
 const mailBatchActionQuery = ({
   accountId = '0',
   folder,
@@ -185,6 +198,15 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       providesTags: (_result, _error, { folder }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
       ],
+    }),
+
+    searchMails: builder.query<
+      ImapMessagesBackendResponse,
+      { accountId?: string; body: MailSearchParams }
+    >({
+      keepUnusedDataFor: 60,
+      query: searchMailsQuery,
+      transformResponse: transformFolderMessagesResponse,
     }),
 
     getMail: builder.query<
@@ -810,6 +832,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 export const {
   useGetFoldersQuery,
   useGetFolderMessagesQuery,
+  useSearchMailsQuery,
   useGetMailQuery,
   useLazyGetMailQuery,
   useLazyGetEditMessageQuery,

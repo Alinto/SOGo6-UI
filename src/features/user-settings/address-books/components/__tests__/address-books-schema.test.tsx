@@ -10,7 +10,7 @@ jest.mock('next-intl', () => ({
 
 const mockT = (key: string) => {
   const map: Record<string, string> = {
-    'validation.category-name-required': 'Category name is required',
+    'validation.label-name-required': 'Label name is required',
   }
   return map[key] ?? key
 }
@@ -145,7 +145,7 @@ describe('createSchema', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         const message = result.error.issues[0].message
-        expect(message).toBe('Category name is required')
+        expect(message).toBe('Label name is required')
       }
     })
 
@@ -240,13 +240,13 @@ describe('createSchema', () => {
   describe('translated validation messages', () => {
     it('uses the t function to resolve the category name error message', () => {
       const customT = jest.fn((key: string) =>
-        key === 'validation.category-name-required' ? 'Custom required msg' : key
+        key === 'validation.label-name-required' ? 'Custom required msg' : key
       )
       const schema = createSchema(customT as any)
       const result = schema.safeParse(
         validPayload({ categories: [validCategory({ name: '' })] })
       )
-      expect(customT).toHaveBeenCalledWith('validation.category-name-required')
+      expect(customT).toHaveBeenCalledWith('validation.label-name-required')
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('Custom required msg')

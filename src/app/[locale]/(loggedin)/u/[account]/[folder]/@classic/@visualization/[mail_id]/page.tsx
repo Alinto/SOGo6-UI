@@ -2,6 +2,7 @@
 
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import MailContent from '@/features/mails/components/mail/mail-content'
+import { MailDetailError } from '@/features/mails/components/mail/mail-detail-error'
 import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
@@ -40,7 +41,7 @@ const VisualizationPage: React.FC = () => {
   const folder = folderPathFromParams(params.folder)
   const isMobile = useIsMobile()
 
-  const { data, isLoading, isError } = useGetMailQuery({
+  const { data, isLoading, isError, error } = useGetMailQuery({
     folder,
     mailId: mail_id,
     accountId: account,
@@ -72,7 +73,16 @@ const VisualizationPage: React.FC = () => {
         <MailDetailSkeleton />
       </div>
     )
-  if (isError || !data) return null
+  if (isError || !data)
+    return (
+      <div className="flex h-full w-full">
+        <MailDetailError
+          error={error}
+          folderPath={folder}
+          accountId={Array.isArray(account) ? account[0] : account}
+        />
+      </div>
+    )
 
   const {
     from: fromRaw,

@@ -105,7 +105,7 @@ beforeEach(() => {
   ;(useTranslations as jest.Mock).mockImplementation((namespace: string) => {
     const translations: Record<string, Record<string, string>> = {
       US_CALENDARS: {
-        'categories.create.string': 'Create',
+        'labels.create.string': 'Create',
         'accessibility.icon.delete.string': 'Delete {{name}}',
       },
     }

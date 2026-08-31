@@ -260,7 +260,7 @@ describe('useNavItems', () => {
       const { result } = renderHook(() => useNavItems())
       const item = result.current[1].items?.[2].items?.[1]
       expect(item?.title).toBe(
-        'US_SIDEBAR.settings.calendars.categories.string'
+        'US_SIDEBAR.settings.calendars.labels.string'
       )
       expect(item?.url).toBe('/user_settings/calendars/categories')
     })
@@ -295,7 +295,7 @@ describe('useNavItems', () => {
       mockProfile()
       const { result } = renderHook(() => useNavItems())
       const item = result.current[1].items?.[3].items?.[1]
-      expect(item?.title).toBe('US_SIDEBAR.settings.email.categories.string')
+      expect(item?.title).toBe('US_SIDEBAR.settings.email.labels.string')
       expect(item?.url).toBe('/user_settings/mail/categories')
     })
 

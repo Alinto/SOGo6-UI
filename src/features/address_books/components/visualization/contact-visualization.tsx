@@ -163,7 +163,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
               id="categories-heading"
               className="text-foreground text-base font-semibold sm:text-lg"
             >
-              {t('categories.string')}
+              {t('labels.string')}
             </h2>
             <ContactFieldRow value={data.categories.join(', ')} type="text" />
           </section>

@@ -5,6 +5,7 @@ import MailContent from '@/features/mails/components/mail/mail-content'
 import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
+import { MailDetailError } from '@/features/mails/components/mail/mail-detail-error'
 import MailInvitationWidget from '@/features/mails/components/mail/mail-invitation-widget'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
 import MailSubject from '@/features/mails/components/mail/mail-subject'
@@ -47,7 +48,7 @@ const MailPage: React.FC = () => {
     navigation: mailNavigation,
   } = useMailDetailNavigation()
 
-  const { data, isLoading, isError } = useGetMailQuery({
+  const { data, isLoading, isError, error } = useGetMailQuery({
     folder,
     mailId: mail_id,
     accountId: account,
@@ -65,7 +66,14 @@ const MailPage: React.FC = () => {
   })
 
   if (isLoading) return <MailDetailSkeleton />
-  if (isError || !data) return null
+  if (isError || !data)
+    return (
+      <MailDetailError
+        error={error}
+        folderPath={folder}
+        accountId={Array.isArray(account) ? account[0] : account}
+      />
+    )
 
   const {
     from: fromRaw,

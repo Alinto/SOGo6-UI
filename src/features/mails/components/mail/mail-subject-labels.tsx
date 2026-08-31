@@ -21,7 +21,7 @@ export default function MailSubjectLabels({
   flags = [],
 }: MailSubjectLabelsProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
-  const tCategories = useTranslations('US_MAIL_CATEGORIES')
+  const tCategories = useTranslations('US_MAIL_CATEGORY_LABELS')
   const { data } = useGetUserPreferencesQuery()
   const [mailAction] = useMailActionMutation()
 
@@ -56,7 +56,7 @@ export default function MailSubjectLabels({
           color={label.color}
           displayName={
             label.is_default
-              ? tCategories(`categories.${label.name}`)
+              ? tCategories(`labels.${label.name}`)
               : label.name
           }
           onRemove={handleRemove}

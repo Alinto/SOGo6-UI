@@ -323,7 +323,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
         <FileText className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
         <div className="flex-1">
           <h3 className="mb-2 font-semibold">
-            {t('visualization.categories.string')}
+            {t('visualization.labels.string')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {data.categories.map((category) => (

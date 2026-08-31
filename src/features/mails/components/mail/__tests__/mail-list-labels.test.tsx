@@ -71,6 +71,6 @@ describe('MailListLabels', () => {
       ])
     )
     render(<MailListLabels flags={['Important']} />)
-    expect(screen.getByText('categories.Important')).toBeInTheDocument()
+    expect(screen.getByText('labels.Important')).toBeInTheDocument()
   })
 })

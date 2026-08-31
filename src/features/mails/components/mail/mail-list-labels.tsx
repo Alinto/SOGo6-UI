@@ -11,7 +11,7 @@ export type MailListLabelsProps = {
 }
 
 export default function MailListLabels({ flags = [] }: MailListLabelsProps) {
-  const tCategories = useTranslations('US_MAIL_CATEGORIES')
+  const tCategories = useTranslations('US_MAIL_CATEGORY_LABELS')
   const { data } = useGetUserPreferencesQuery()
 
   const categories = useMemo(
@@ -35,7 +35,7 @@ export default function MailListLabels({ flags = [] }: MailListLabelsProps) {
           color={label.color}
           displayName={
             label.is_default
-              ? tCategories(`categories.${label.name}`)
+              ? tCategories(`labels.${label.name}`)
               : label.name
           }
           size="sm"

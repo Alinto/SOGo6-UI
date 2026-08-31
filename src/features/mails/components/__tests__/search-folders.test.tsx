@@ -67,14 +67,32 @@ jest.mock('lucide-react/dynamic', () => ({
 import SearchFolders from '../search-folders'
 
 describe('SearchFolders', () => {
-  it('renders trigger button with translation key', () => {
-    render(<SearchFolders />)
+  it('renders trigger button with translation key when nothing is selected', () => {
+    render(<SearchFolders value="all" onValueChange={jest.fn()} />)
     expect(screen.getByRole('button', { name: 'search.others.string' })).toBeInTheDocument()
+  })
+
+  it('shows the selected folder name on the trigger button', () => {
+    render(<SearchFolders value="INBOX/Work" onValueChange={jest.fn()} />)
+    expect(screen.getByRole('button', { name: 'Work' })).toBeInTheDocument()
+  })
+
+  it('stays inert when the selected value is a pinned quick-select folder', () => {
+    render(
+      <SearchFolders
+        value="INBOX"
+        onValueChange={jest.fn()}
+        pinnedPaths={['INBOX']}
+      />
+    )
+    expect(
+      screen.getByRole('button', { name: 'search.others.string' })
+    ).toBeInTheDocument()
   })
 
   it('filters folder list when typing in search input', async () => {
     const user = userEvent.setup()
-    render(<SearchFolders />)
+    render(<SearchFolders value="all" onValueChange={jest.fn()} />)
 
     await user.click(screen.getByRole('button', { name: 'search.others.string' }))
     await user.type(screen.getByPlaceholderText('search.folders.string'), 'Work')
@@ -82,5 +100,16 @@ describe('SearchFolders', () => {
     expect(screen.getByText('Work')).toBeInTheDocument()
     expect(screen.getByText('INBOX')).toBeInTheDocument()
     expect(screen.queryByText('Archive')).not.toBeInTheDocument()
+  })
+
+  it('calls onValueChange with the folder path when a folder is picked', async () => {
+    const user = userEvent.setup()
+    const onValueChange = jest.fn()
+    render(<SearchFolders value="all" onValueChange={onValueChange} />)
+
+    await user.click(screen.getByRole('button', { name: 'search.others.string' }))
+    await user.click(screen.getByText('Archive'))
+
+    expect(onValueChange).toHaveBeenCalledWith('Archive')
   })
 })

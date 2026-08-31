@@ -1230,7 +1230,7 @@ function ContactForm({
 
                 {categoryOptions.length > 0 && (
                   <div className="space-y-2">
-                    <FormLabel>{t('categories.string')}</FormLabel>
+                    <FormLabel>{t('labels.string')}</FormLabel>
                     <div className="flex flex-wrap gap-3">
                       {categoryOptions.map((category) => (
                         <label

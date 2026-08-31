@@ -1,8 +1,8 @@
 {
     "US_ADDRESS_BOOKS": {
         "create": {
-            "string": "Add contact category",
-            "context": "Button text to add a new address book category"
+            "string": "Add contact label",
+            "context": "Button text to add a new address book label"
         },
         "title": {
             "string": "Address Books",
@@ -21,8 +21,8 @@
             "string": "Send email notification when an address book is created",
             "context": "Label for the notification setting"
         },
-        "categories": {
-            "title": "Categories",
+        "labels": {
+            "title": "Labels",
             "Work": "Work",
             "Family": "Family",
             "Friends": "Friends"
@@ -31,7 +31,7 @@
             "title": "Couleur"
         },
         "validation": {
-            "category-name-required": "Category name is required"
+            "label-name-required": "Label name is required"
         }
     }
 }

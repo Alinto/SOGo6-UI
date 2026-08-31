@@ -35,7 +35,7 @@ interface Props {
 }
 
 const LabelsForm: React.FC<Props> = ({ data, update }) => {
-  const t = useTranslations('US_MAIL_CATEGORIES')
+  const t = useTranslations('US_MAIL_CATEGORY_LABELS')
   const schema = createSchema(t)
 
   const fetchedData = data ? mapApiToMailCategorySettings(data) : undefined
@@ -106,7 +106,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                         {...field}
                         value={
                           label.isDefault
-                            ? t(`categories.${label.name}`)
+                            ? t(`labels.${label.name}`)
                             : field.value
                         }
                         placeholder="Key"

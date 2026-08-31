@@ -15,7 +15,7 @@ const createSchema = (t: ReturnType<typeof useTranslations>) =>
       z.object({
         name: z
           .string()
-          .min(1, t('categories.validation.category-name-required')),
+          .min(1, t('labels.validation.label-name-required')),
         color: z.string(),
         isDefault: z.boolean(),
       })

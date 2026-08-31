@@ -83,7 +83,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
           </div>
         </div>
         <br />
-        <h2 className="text-2xl">{t('categories.title')}</h2>
+        <h2 className="text-2xl">{t('labels.title')}</h2>
         <Button
           type="button"
           className="mt-4 mb-4"
@@ -125,7 +125,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                         {...field}
                         value={
                           label.isDefault
-                            ? t(`categories.${label.name}`)
+                            ? t(`labels.${label.name}`)
                             : field.value
                         }
                         placeholder="Key"

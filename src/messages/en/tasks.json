@@ -103,8 +103,8 @@
       "calendar": {
         "string": "Calendar"
       },
-      "categories": {
-        "string": "Categories"
+      "labels": {
+        "string": "Labels"
       },
       "visibility": {
         "string": "Visibility"

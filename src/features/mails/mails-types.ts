@@ -189,3 +189,37 @@ export interface UpdateFolderBody {
   subscribed?: number
   type?: string
 }
+
+/**
+ * Simple-search field scope(s): which underlying param(s) the query text is
+ * written to. Several scopes can be active at once (e.g. "subject" and
+ * "sender" together).
+ */
+export type MailSearchFieldScope =
+  | 'subject'
+  | 'sender'
+  | 'to'
+  | 'entire_message'
+
+export interface MailSearchDateRange {
+  start?: string
+  end?: string
+}
+
+/** Body accepted by `POST mailboxes/{accountId}/search`. */
+export interface MailSearchParams {
+  text?: string
+  from?: string
+  to?: string
+  bcc?: string
+  subject?: string
+  has_attachment?: boolean
+  attachment_type?: string[]
+  date_range?: MailSearchDateRange
+  is_read?: boolean
+  is_flagged?: boolean
+  folders?: string[]
+  labels?: string[]
+  operator?: 'AND' | 'OR'
+  include_subfolders?: boolean
+}

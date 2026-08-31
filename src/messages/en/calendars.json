@@ -333,8 +333,8 @@
           "string": "Tentative"
         }
       },
-      "categories": {
-        "string": "Categories"
+      "labels": {
+        "string": "Labels"
       },
       "url": {
         "string": "URL"
@@ -524,15 +524,15 @@
           "string": "Reset"
         }
       },
-      "categories": {
+      "labels": {
         "label": {
-          "string": "Categories"
+          "string": "Labels"
         },
         "placeholder": {
-          "string": "Add a category and press Enter"
+          "string": "Add a label and press Enter"
         },
         "remove": {
-          "string": "Remove {category}"
+          "string": "Remove {label}"
         }
       },
       "attendees": {
