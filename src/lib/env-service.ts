@@ -7,7 +7,7 @@ export interface EnvVariables {
   SSE_ENABLED?: boolean
   /** Runtime prefill for /auth/login (from LOGIN_PREFILL_EMAIL or legacy NEXT_PUBLIC_* on server). */
   LOGIN_PREFILL_EMAIL?: string
-  /** Runtime prefill for /auth/login/pwd (from LOGIN_PREFILL_PASSWORD or legacy NEXT_PUBLIC_* on server). Dev only. */
+  /** Runtime prefill for /auth/login/pwd. Empty in production unless LOGIN_PREFILL_ENABLED=true. */
   LOGIN_PREFILL_PASSWORD?: string
 }
 

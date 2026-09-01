@@ -11,11 +11,21 @@ const defaultDevApiBaseUrl = 'http://127.0.0.1:5000/api/user/v1'
 
 type EnvSource = Record<string, string | undefined>
 
+function isExplicitlyOn(value: string | undefined): boolean {
+  return value === 'true' || value === '1'
+}
+
+/** Prefill is on in non-production, or in production when LOGIN_PREFILL_ENABLED=true. */
+export function isLoginPrefillEnabled(env: EnvSource = process.env): boolean {
+  if (isExplicitlyOn(env.LOGIN_PREFILL_ENABLED)) return true
+  return env.NODE_ENV !== 'production'
+}
+
 /** Build the public JSON payload served by GET /env. */
 export function buildEnvRoutePayload(
   env: EnvSource = process.env
 ): EnvRoutePayload {
-  const isProduction = env.NODE_ENV === 'production'
+  const loginPrefillEnabled = isLoginPrefillEnabled(env)
 
   const loginPrefillEmail =
     env.LOGIN_PREFILL_EMAIL?.trim() ||
@@ -40,7 +50,7 @@ export function buildEnvRoutePayload(
     NEXT_PUBLIC_ADMIN_DOMAINS:
       env.NEXT_PUBLIC_ADMIN_DOMAINS || 'admin.localhost',
     SSE_ENABLED: sseEnabled,
-    LOGIN_PREFILL_EMAIL: isProduction ? '' : loginPrefillEmail,
-    LOGIN_PREFILL_PASSWORD: isProduction ? '' : loginPrefillPassword,
+    LOGIN_PREFILL_EMAIL: loginPrefillEnabled ? loginPrefillEmail : '',
+    LOGIN_PREFILL_PASSWORD: loginPrefillEnabled ? loginPrefillPassword : '',
   }
 }

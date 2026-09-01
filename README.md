@@ -86,6 +86,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | `REACT_APP_API_URL` | Reserved in `/env`; not used by the UI today. |
 | `NEXT_PUBLIC_ADMIN_DOMAINS` | Comma-separated admin hostnames. Server default if unset: `admin.localhost`. |
 | `SSE_ENABLED` | In **development**, SSE is **off** unless set to `true`. In production, enabled when unset; set to `false` to disable. |
+| `LOGIN_PREFILL_ENABLED` | Set to `true` to expose login prefill via `GET /env` in **production** images (staging/QA). Off by default when `NODE_ENV=production`. |
 | `LOGIN_PREFILL_EMAIL` | Prefills the email field on **`/auth/login`** (optional). Read at **runtime** by `GET /env`. |
 | `LOGIN_PREFILL_PASSWORD` | Prefills the password on **`/auth/login/pwd`** (same as above). |
 
@@ -100,9 +101,12 @@ Open [http://localhost:3000](http://localhost:3000).
 Sign-in is two steps: email (`/auth/login`) then password (`/auth/login/pwd`).
 
 ```env
+LOGIN_PREFILL_ENABLED=true
 LOGIN_PREFILL_EMAIL=sogo-tests1@example.org
 LOGIN_PREFILL_PASSWORD=sogo
 ```
+
+`LOGIN_PREFILL_ENABLED` is required on production Docker images (`NODE_ENV=production`), e.g. Rancher staging. Local `npm run dev` still prefills without it.
 
 - Values must **match an account on your SOGo 6 instance** (not fetched from the server automatically).
 - Readable by anyone who can call **`/env`**.

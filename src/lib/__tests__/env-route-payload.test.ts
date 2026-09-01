@@ -12,7 +12,7 @@ describe('buildEnvRoutePayload', () => {
     expect(payload.LOGIN_PREFILL_PASSWORD).toBe('dev-secret')
   })
 
-  it('strips login prefill values in production', () => {
+  it('strips login prefill values in production unless LOGIN_PREFILL_ENABLED', () => {
     const payload = buildEnvRoutePayload({
       NODE_ENV: 'production',
       LOGIN_PREFILL_EMAIL: 'prod@example.org',
@@ -22,6 +22,30 @@ describe('buildEnvRoutePayload', () => {
     expect(payload.LOGIN_PREFILL_EMAIL).toBe('')
     expect(payload.LOGIN_PREFILL_PASSWORD).toBe('')
     expect(payload.REACT_APP_API_BASE_URL).toBeUndefined()
+  })
+
+  it('exposes login prefill in production when LOGIN_PREFILL_ENABLED is true', () => {
+    const payload = buildEnvRoutePayload({
+      NODE_ENV: 'production',
+      LOGIN_PREFILL_ENABLED: 'true',
+      LOGIN_PREFILL_EMAIL: 'qa@example.org',
+      LOGIN_PREFILL_PASSWORD: 'qa-secret',
+    })
+
+    expect(payload.LOGIN_PREFILL_EMAIL).toBe('qa@example.org')
+    expect(payload.LOGIN_PREFILL_PASSWORD).toBe('qa-secret')
+  })
+
+  it('treats LOGIN_PREFILL_ENABLED=1 as enabled in production', () => {
+    const payload = buildEnvRoutePayload({
+      NODE_ENV: 'production',
+      LOGIN_PREFILL_ENABLED: '1',
+      LOGIN_PREFILL_EMAIL: 'qa@example.org',
+      LOGIN_PREFILL_PASSWORD: 'qa-secret',
+    })
+
+    expect(payload.LOGIN_PREFILL_EMAIL).toBe('qa@example.org')
+    expect(payload.LOGIN_PREFILL_PASSWORD).toBe('qa-secret')
   })
 
   it('includes NEXT_PUBLIC_ADMIN_DOMAINS in the payload', () => {
