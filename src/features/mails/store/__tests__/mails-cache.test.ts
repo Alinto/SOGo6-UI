@@ -33,12 +33,15 @@ jest.mock('@/lib/redux/api/api-slice', () => ({
     },
   },
   FOLDER_MESSAGES_SLICE: 'mails/folder-messages',
+  MAIL_SLICE: 'mails/mail',
+  MAILS_FOLDERS_SLICE: 'mails/folders',
 }))
 
 import {
   dispatchSeenPatchOnAllFolderMessageCachesBatch,
   isFolderRemovingAction,
   isMailActionSeenFlagToggle,
+  mailActionInvalidationTags,
   normalizeMailActionDataArray,
   removeMailFromAllFolderCaches,
   removeMailsFromAllFolderCaches,
@@ -73,6 +76,62 @@ describe('mail action predicates', () => {
     expect(isFolderRemovingAction('delete')).toBe(true)
     expect(isFolderRemovingAction('tag')).toBe(false)
     expect(isFolderRemovingAction('copy')).toBe(false)
+  })
+
+  it('mailActionInvalidationTags includes destination folder on move/copy', () => {
+    expect(
+      mailActionInvalidationTags({
+        folder: 'INBOX',
+        action: 'move',
+        data: 'banane',
+        mailIds: ['42'],
+      })
+    ).toEqual([
+      { type: 'mails/folder-messages', folder: 'INBOX' },
+      'mails/folders',
+      { type: 'mails/mail', id: '42' },
+      { type: 'mails/folder-messages', folder: 'banane' },
+    ])
+
+    expect(
+      mailActionInvalidationTags({
+        folder: 'INBOX',
+        action: 'copy',
+        data: 'Archive',
+        mailIds: ['1', '2'],
+      })
+    ).toEqual([
+      { type: 'mails/folder-messages', folder: 'INBOX' },
+      'mails/folders',
+      { type: 'mails/mail', id: '1' },
+      { type: 'mails/mail', id: '2' },
+      { type: 'mails/folder-messages', folder: 'Archive' },
+    ])
+  })
+
+  it('mailActionInvalidationTags does not add dest for delete or same-folder move', () => {
+    const sourceOnlyTags = [
+      { type: 'mails/folder-messages', folder: 'INBOX' },
+      'mails/folders',
+      { type: 'mails/mail', id: '42' },
+    ]
+
+    expect(
+      mailActionInvalidationTags({
+        folder: 'INBOX',
+        action: 'delete',
+        mailIds: ['42'],
+      })
+    ).toEqual(sourceOnlyTags)
+
+    expect(
+      mailActionInvalidationTags({
+        folder: 'INBOX',
+        action: 'move',
+        data: 'INBOX',
+        mailIds: ['42'],
+      })
+    ).toEqual(sourceOnlyTags)
   })
 })
 

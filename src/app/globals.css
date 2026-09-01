@@ -32,6 +32,28 @@
   }
 }
 
+html.mail-dragging,
+html.mail-dragging * {
+  cursor: grabbing !important;
+}
+
+html.mail-dragging.mail-drop-forbidden,
+html.mail-dragging.mail-drop-forbidden * {
+  cursor: not-allowed !important;
+}
+
+/* Inset outline on the folder row (sidebar is teal/primary, so ring-primary is invisible). */
+.folder-drop-target-allowed [data-sidebar='menu-button'] {
+  background-color: hsl(var(--sidebar-foreground) / 0.16);
+  box-shadow: inset 0 0 0 2px hsl(var(--sidebar-foreground));
+  font-weight: 600;
+}
+
+.folder-drop-target-forbidden [data-sidebar='menu-button'] {
+  background-color: hsl(var(--destructive) / 0.18);
+  box-shadow: inset 0 0 0 2px hsl(var(--destructive));
+}
+
 @layer base {
   :root {
     --header-height: 48px;
@@ -347,21 +369,25 @@
 }
 
 @layer base {
-[data-sidebar="menu-item"]:hover > [data-sidebar="menu-button"],
-[data-sidebar="menu-item"]:has(> [data-sidebar="menu-action"]:hover) > [data-sidebar="menu-button"] {
-  background-color: hsl(var(--sidebar-accent));
-  color: hsl(var(--sidebar-accent-foreground));
-  border-radius: calc(var(--radius) - 0.125rem);
-}
+  [data-sidebar='menu-item']:hover > [data-sidebar='menu-button'],
+  [data-sidebar='menu-item']:has(> [data-sidebar='menu-action']:hover)
+    > [data-sidebar='menu-button'] {
+    background-color: hsl(var(--sidebar-accent));
+    color: hsl(var(--sidebar-accent-foreground));
+    border-radius: calc(var(--radius) - 0.125rem);
+  }
 
-[data-sidebar="menu-item"]:has([data-sidebar="menu-action"][data-state="open"]) > [data-sidebar="menu-button"] {
-  background-color: hsl(var(--sidebar-accent));
-  color: hsl(var(--sidebar-accent-foreground));
-}
+  [data-sidebar='menu-item']:has(
+      [data-sidebar='menu-action'][data-state='open']
+    )
+    > [data-sidebar='menu-button'] {
+    background-color: hsl(var(--sidebar-accent));
+    color: hsl(var(--sidebar-accent-foreground));
+  }
 
-[data-sidebar="menu-item"]:hover > [data-sidebar="menu-action"] {
-  opacity: 1!important;
-}
+  [data-sidebar='menu-item']:hover > [data-sidebar='menu-action'] {
+    opacity: 1 !important;
+  }
 }
 
 /* Force dyslexic font on all elements when dyslexia theme is active */
@@ -369,8 +395,9 @@
 html.dyslexia,
 html.dyslexia *,
 html.dyslexia body,
-html.dyslexia [class*="font-"] {
-  font-family: var(--font-opendyslexic), 'OpenDyslexic', Arial, sans-serif !important;
+html.dyslexia [class*='font-'] {
+  font-family:
+    var(--font-opendyslexic), 'OpenDyslexic', Arial, sans-serif !important;
   letter-spacing: 0.05em !important;
   word-spacing: 0.1em !important;
 }
@@ -383,4 +410,4 @@ html.dyslexia [class*="font-"] {
 /* Font faces are now loaded via next/font/local in src/lib/fonts.ts */
 /* The font variable --font-opendyslexic is available when the font is imported */
 
-  @import '../components/calendar/calendar-responsive.css';
+@import '../components/calendar/calendar-responsive.css';

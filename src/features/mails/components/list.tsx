@@ -1,4 +1,3 @@
-import Draggable from '@/components/dnd/draggable'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import {
   clearSelectedMails,
@@ -17,6 +16,7 @@ import type { ImapMessagesList } from '../mails-types'
 import { folderPathFromParams } from '../utils/folder-path-from-params'
 import ListItem from './list-item'
 import ListItemClassic from './list-item-classic'
+import MailListDraggable from './mail-list-draggable'
 import AddressBookListSkeleton from './skeletons/skeleton'
 
 interface MessagesListProps {
@@ -58,6 +58,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
     markSpam,
     markHam,
     isJunk,
+    folderType,
   } = useMailItemActions({
     accountId: accountIdStr,
     folder: folderStr,
@@ -184,7 +185,15 @@ const MessagesList: React.FC<MessagesListProps> = ({
                   {isMobile ? (
                     listItemComponent
                   ) : (
-                    <Draggable id={item.id}>{listItemComponent}</Draggable>
+                    <MailListDraggable
+                      item={item}
+                      accountId={accountIdStr}
+                      folder={folderStr}
+                      folderType={folderType}
+                      selectedIds={selectedIds}
+                    >
+                      {listItemComponent}
+                    </MailListDraggable>
                   )}
                 </li>
               )

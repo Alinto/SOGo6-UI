@@ -1,4 +1,9 @@
-import { apiSlice } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  FOLDER_MESSAGES_SLICE,
+  MAIL_SLICE,
+  MAILS_FOLDERS_SLICE,
+} from '@/lib/redux/api/api-slice'
 import type { RootState } from '@/lib/redux/store'
 import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit'
 import type {
@@ -123,6 +128,35 @@ export function isFolderRemovingAction(action: string): boolean {
     action === 'ham' ||
     action === 'delete'
   )
+}
+
+/** RTK Query tags to invalidate after a mail (batch) action. */
+export function mailActionInvalidationTags(arg: {
+  folder: string
+  action: string
+  data?: string | string[] | null
+  mailIds: string[]
+}): Array<string | { type: string; folder?: string; id?: string }> {
+  if (isMailActionSeenFlagToggle(arg)) {
+    return [MAILS_FOLDERS_SLICE]
+  }
+
+  const tags: Array<string | { type: string; folder?: string; id?: string }> = [
+    { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
+    MAILS_FOLDERS_SLICE,
+    ...arg.mailIds.map((id) => ({ type: MAIL_SLICE, id })),
+  ]
+
+  if (
+    (arg.action === 'move' || arg.action === 'copy') &&
+    typeof arg.data === 'string' &&
+    arg.data !== '' &&
+    arg.data !== arg.folder
+  ) {
+    tags.push({ type: FOLDER_MESSAGES_SLICE, folder: arg.data })
+  }
+
+  return tags
 }
 
 export function findListItemInFolderCaches(

@@ -36,7 +36,14 @@ jest.mock('@/components/ui/tooltip', () => ({
 }))
 jest.mock('@/components/dnd/draggable', () => ({
   __esModule: true,
-  default: ({ children }: any) => <div data-testid="draggable">{children}</div>,
+  default: ({ children, id, data }: any) => (
+    <div data-testid="draggable" data-id={id} data-type={data?.type}>
+      {children}
+    </div>
+  ),
+}))
+jest.mock('@dnd-kit/core', () => ({
+  useDndContext: () => ({ active: null }),
 }))
 jest.mock('../../hooks/use-mail-item-actions', () => ({
   useMailItemActions: jest.fn(() => ({
@@ -45,6 +52,9 @@ jest.mock('../../hooks/use-mail-item-actions', () => ({
     archiveMail: jest.fn(),
     markSpam: jest.fn(),
     isJunk: false,
+    folderType: 'INBOX',
+    toggleFlag: jest.fn(),
+    markHam: jest.fn(),
   })),
 }))
 jest.mock('../list-item', () => ({
@@ -189,6 +199,14 @@ describe('MessagesList', () => {
   it('wraps items in Draggable on desktop', () => {
     render(<MessagesList {...defaultProps} />)
     expect(screen.getAllByTestId('draggable')).toHaveLength(2)
+  })
+
+  it('passes namespaced mail drag ids and data', () => {
+    render(<MessagesList {...defaultProps} />)
+    const rows = screen.getAllByTestId('draggable')
+    expect(rows[0]).toHaveAttribute('data-id', 'mail:1')
+    expect(rows[0]).toHaveAttribute('data-type', 'mail')
+    expect(rows[1]).toHaveAttribute('data-id', 'mail:2')
   })
 
   it('does not wrap in Draggable on mobile', () => {

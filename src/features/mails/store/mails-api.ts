@@ -30,6 +30,7 @@ import {
   folderMessagesCache,
   isFolderRemovingAction,
   isMailActionSeenFlagToggle,
+  mailActionInvalidationTags,
   removeMailFromAllFolderCaches,
   removeMailsFromAllFolderCaches,
 } from './mails-cache'
@@ -389,13 +390,12 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
       invalidatesTags: (_result, _error, arg) =>
-        isMailActionSeenFlagToggle(arg)
-          ? [MAILS_FOLDERS_SLICE]
-          : [
-              { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
-              MAILS_FOLDERS_SLICE,
-              { type: MAIL_SLICE, id: arg.mailId },
-            ],
+        mailActionInvalidationTags({
+          folder: arg.folder,
+          action: arg.action,
+          data: arg.data,
+          mailIds: [arg.mailId],
+        }),
     }),
 
     mailBatchAction: builder.mutation<
@@ -461,13 +461,12 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
       invalidatesTags: (_result, _error, arg) =>
-        isMailActionSeenFlagToggle(arg)
-          ? [MAILS_FOLDERS_SLICE]
-          : [
-              { type: FOLDER_MESSAGES_SLICE, folder: arg.folder },
-              MAILS_FOLDERS_SLICE,
-              ...arg.uids.map((id) => ({ type: MAIL_SLICE, id })),
-            ],
+        mailActionInvalidationTags({
+          folder: arg.folder,
+          action: arg.action,
+          data: arg.data,
+          mailIds: arg.uids,
+        }),
     }),
 
     downloadMail: builder.mutation<
