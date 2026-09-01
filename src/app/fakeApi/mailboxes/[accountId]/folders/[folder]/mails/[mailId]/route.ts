@@ -41,7 +41,14 @@ export async function GET(
     {}
   )
   const overriddenFlags = flagsOverrides[buildMailFlagsKey(folder, mailId)]
-  const withFlags = overriddenFlags ? { ...raw, flags: overriddenFlags } : raw
+  const withFlags = overriddenFlags
+    ? {
+        ...raw,
+        flags: overriddenFlags,
+        flagged: overriddenFlags.includes('\\Flagged'),
+        seen: overriddenFlags.includes('\\Seen'),
+      }
+    : raw
 
   const normalized = normalizeDemoMailDetail(withFlags)
   return NextResponse.json(okEnvelope(normalized))

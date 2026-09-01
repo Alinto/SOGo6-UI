@@ -14,13 +14,13 @@ import {
   Archive,
   Calendar,
   ChevronsUp,
-  Flame,
   Forward,
   Inbox,
   Mail,
   MailOpen,
   Paperclip,
   Reply,
+  ShieldX,
   Star,
   Trash2,
   User,
@@ -259,7 +259,10 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             ) : null}
 
             {onMoveToInbox ? (
-              <TooltipWrapper content={tBar('report_not_spam.string')} side="top">
+              <TooltipWrapper
+                content={tBar('report_not_spam.string')}
+                side="top"
+              >
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
@@ -280,7 +283,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
                   }}
                   className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
                 >
-                  <Flame size={16} />
+                  <ShieldX size={16} />
                 </button>
               </TooltipWrapper>
             ) : null}

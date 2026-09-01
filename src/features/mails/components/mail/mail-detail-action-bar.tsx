@@ -9,7 +9,7 @@ import {
   useLazyGetMailRawQuery,
 } from '@/features/mails/store/mails-api'
 import { useRouter } from '@/lib/i18n/navigation'
-import { Flame, Inbox, Mail, Star, Tag, Trash2 } from 'lucide-react'
+import { Inbox, Mail, ShieldX, Star, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useCallback, useState } from 'react'
 import MailActionsBar from './mail-action-bar'
@@ -207,7 +207,7 @@ export default function MailDetailActionBar({
       }
     : {
         id: ActionId.SPAM,
-        icon: <Flame size={18} />,
+        icon: <ShieldX size={18} />,
         title: t('report_spam.string'),
         disabled: isLoading,
       }

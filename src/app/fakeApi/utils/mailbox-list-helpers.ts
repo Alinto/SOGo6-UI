@@ -1,5 +1,13 @@
+import { NextRequest } from 'next/server'
+
 import type { ImapMessagesList } from '@/features/mails/mails-types'
 
+import { getDemoData } from '@/app/fakeApi/utils/demo-storage'
+import {
+  buildMailFlagsKey,
+  MAIL_FLAGS_COOKIE,
+  MailFlagsOverrides,
+} from '@/app/fakeApi/utils/mailbox-flags-store'
 import { messagesByFolderSeed } from '@/app/fakeApi/utils/mailbox-messages-seed'
 
 const listDefaults: Pick<
@@ -115,7 +123,8 @@ function sortFolderMessages(
 
 export function buildFolderMessagesListResponse(
   folder: string,
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  req?: NextRequest
 ): {
   mails: RawMailListItemSeed[]
   total: number
@@ -135,12 +144,27 @@ export function buildFolderMessagesListResponse(
     ? Math.max(1, Math.min(100, parseInt(pageSizeParam, 10) || 20))
     : 30
 
+  const flagsOverrides = req
+    ? getDemoData<MailFlagsOverrides>(req, MAIL_FLAGS_COOKIE, {})
+    : {}
+
   let messages: ImapMessagesList[] = (messagesByFolderSeed[folder] || []).map(
-    (m) =>
-      ({
+    (m) => {
+      const overriddenFlags = m.id
+        ? flagsOverrides[buildMailFlagsKey(folder, m.id)]
+        : undefined
+      return {
         ...listDefaults,
         ...m,
-      }) as ImapMessagesList
+        ...(overriddenFlags
+          ? {
+              flags: overriddenFlags,
+              flagged: overriddenFlags.includes('\\Flagged'),
+              seen: overriddenFlags.includes('\\Seen'),
+            }
+          : {}),
+      } as ImapMessagesList
+    }
   )
 
   messages = sortFolderMessages(messages, sortBy, sortOrder)

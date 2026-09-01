@@ -69,14 +69,14 @@ const ModuleRail: React.FC = () => {
     icon: React.ComponentType
   }[] = [
     {
-      id: 'address-book',
-      title: t('address_book.string'),
-      icon: ModuleNavIcon.AddressBook,
-    },
-    {
       id: 'calendar',
       title: t('calendar.string'),
       icon: ModuleNavIcon.Calendar,
+    },
+    {
+      id: 'address-book',
+      title: t('address_book.string'),
+      icon: ModuleNavIcon.AddressBook,
     },
     {
       id: 'tasks',

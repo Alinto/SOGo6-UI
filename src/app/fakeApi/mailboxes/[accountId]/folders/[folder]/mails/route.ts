@@ -8,7 +8,7 @@ export async function GET(
 ) {
   const { folder } = await ctx.params
   const { searchParams } = new URL(req.url)
-  const body = buildFolderMessagesListResponse(folder, searchParams)
+  const body = buildFolderMessagesListResponse(folder, searchParams, req)
   return NextResponse.json(body)
 }
 

@@ -15,11 +15,11 @@ import {
   FileCode,
   FishingHook,
   Flag,
-  Flame,
   Inbox,
   Mail,
   MoreHorizontal,
   Printer,
+  ShieldX,
   Tag,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -199,7 +199,7 @@ export default function MailMoreActionsMenu({
           )}
           {showSpamActions && !isJunk && onMarkSpam && (
             <DropdownMenuItem onClick={onMarkSpam}>
-              <Flame className="mr-2 h-4 w-4" />
+              <ShieldX className="mr-2 h-4 w-4" />
               {t('report_spam.string')}
             </DropdownMenuItem>
           )}

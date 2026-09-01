@@ -287,7 +287,7 @@ const SidebarTrigger = React.forwardRef<
   const isMobile = useIsMobile()
   const { toggleSidebar, open, openMobile } = useSidebar()
 
-  let icon = open ? <ChevronsLeft /> : <ChevronsRight />
+  let icon = open ? <ChevronsRight /> : <ChevronsLeft />
   if (isMobile) {
     icon = openMobile ? <ChevronsLeft /> : <Menu />
   }
@@ -295,7 +295,7 @@ const SidebarTrigger = React.forwardRef<
     if (isMobile) {
       icon = openMobile ? <Menu /> : <ChevronsLeft />
     } else {
-      icon = open ? <ChevronsRight /> : <ChevronsLeft />
+      icon = open ? <ChevronsLeft /> : <ChevronsRight />
     }
   }
   return (
@@ -666,7 +666,7 @@ const SidebarMenuAction = React.forwardRef<
         ref={ref}
         data-sidebar={dataSidebar ? dataSidebar : 'menu-action'}
         className={cn(
-          'text-sidebar-foreground ring-sidebar-ring hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 flex aspect-square w-5 items-center justify-center rounded-md p-0 outline-hidden cursor-pointer transition-[opacity_200ms_ease-in-out,transform] focus-visible:ring-2 [&>svg]:shrink-0',
+          'text-sidebar-foreground ring-sidebar-ring hover:text-sidebar-accent-foreground peer-hover/menu-button:text-sidebar-accent-foreground absolute top-1.5 right-1 flex aspect-square w-5 cursor-pointer items-center justify-center rounded-md p-0 outline-hidden transition-[opacity_200ms_ease-in-out,transform] focus-visible:ring-2 [&>svg]:shrink-0',
           // Increases the hit area of the button on mobile.
           'after:absolute after:-inset-2 md:after:hidden',
           'peer-data-[size=sm]/menu-button:top-1',

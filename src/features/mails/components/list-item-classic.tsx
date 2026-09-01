@@ -14,14 +14,18 @@ import { getListDisplayContact } from '@/features/mails/utils/folder-type-helper
 import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
+  Archive,
   Calendar,
   ChevronsUp,
   Forward,
+  Inbox,
   Mail,
   MailOpen,
   Paperclip,
   Reply,
+  ShieldX,
   Star,
+  Trash2,
   User,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -36,6 +40,10 @@ interface ListItemClassicProps {
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
   onToggleRead?: (id: string) => void
   onToggleFlag?: (id: string) => void
+  onDelete?: (id: string) => void
+  onArchive?: (id: string) => void
+  onSpam?: (id: string) => void
+  onMoveToInbox?: (id: string) => void
   onOpenMail?: (id: string) => void | Promise<void>
 }
 
@@ -45,9 +53,14 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   onHandleCheckboxClick,
   onToggleRead,
   onToggleFlag,
+  onDelete,
+  onArchive,
+  onSpam,
+  onMoveToInbox,
   onOpenMail,
 }) => {
   const t = useTranslations('MAILS_LIST')
+  const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const tMinutesAgo = (count: number) => t('time.minutes_ago.string', { count })
   const { push } = useRouter()
   const { account, folder } = useParams()
@@ -69,6 +82,9 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const hasEventType = data.mailType.includes('event')
   const hasContactType = data.mailType.includes('contact')
   const displayName = getListDisplayContact(data, folderType)
+  const hasHoverActions = Boolean(
+    onToggleRead || onDelete || onArchive || onSpam || onMoveToInbox
+  )
 
   // Highlight when this mail is open in the right panel
   const isOpenInPanel = decodeURIComponent(pathname).endsWith(`/${id}`)
@@ -142,30 +158,109 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
               {displayName}
             </span>
             <div className="flex shrink-0 items-center gap-1">
-              {onToggleRead && (
-                <div className="hidden group-hover:flex">
-                  <TooltipWrapper
-                    content={
-                      data.seen
-                        ? t('actions.mark_as_unread.string')
-                        : t('actions.mark_as_read.string')
-                    }
-                    side="top"
-                  >
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onToggleRead(data.id)
-                      }}
-                      className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+              {hasHoverActions && (
+                <div className="hidden items-center gap-1 group-hover:flex">
+                  {onToggleRead && (
+                    <TooltipWrapper
+                      content={
+                        data.seen
+                          ? t('actions.mark_as_unread.string')
+                          : t('actions.mark_as_read.string')
+                      }
+                      side="top"
                     >
-                      {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
-                    </button>
-                  </TooltipWrapper>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onToggleRead(data.id)
+                        }}
+                        className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                      >
+                        {data.seen ? (
+                          <MailOpen size={16} />
+                        ) : (
+                          <Mail size={16} />
+                        )}
+                      </button>
+                    </TooltipWrapper>
+                  )}
+                  {onDelete && (
+                    <TooltipWrapper
+                      content={t('actions.delete.string')}
+                      side="top"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onDelete(data.id)
+                        }}
+                        className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </TooltipWrapper>
+                  )}
+                  {onArchive && (
+                    <TooltipWrapper
+                      content={t('actions.archive.string')}
+                      side="top"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onArchive(data.id)
+                        }}
+                        className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                      >
+                        <Archive size={16} />
+                      </button>
+                    </TooltipWrapper>
+                  )}
+                  {onMoveToInbox && (
+                    <TooltipWrapper
+                      content={tBar('report_not_spam.string')}
+                      side="top"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onMoveToInbox(data.id)
+                        }}
+                        className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                      >
+                        <Inbox size={16} />
+                      </button>
+                    </TooltipWrapper>
+                  )}
+                  {onSpam && (
+                    <TooltipWrapper
+                      content={tBar('report_spam.string')}
+                      side="top"
+                    >
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onSpam(data.id)
+                        }}
+                        className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
+                      >
+                        <ShieldX size={16} />
+                      </button>
+                    </TooltipWrapper>
+                  )}
                 </div>
               )}
-              <span className="text-muted-foreground shrink-0 text-sm whitespace-nowrap">
+              <span
+                className={cn(
+                  'text-muted-foreground shrink-0 text-sm whitespace-nowrap',
+                  hasHoverActions && 'group-hover:hidden'
+                )}
+              >
                 {formatDate(data.date, undefined, tMinutesAgo)}
               </span>
             </div>

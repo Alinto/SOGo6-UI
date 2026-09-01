@@ -29,10 +29,10 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
 import {
   Archive,
-  Flame,
   Inbox,
   Mail,
   MailOpen,
+  ShieldX,
   Tag,
   Trash2,
 } from 'lucide-react'
@@ -273,7 +273,7 @@ const ListToolbar: React.FC = () => {
                   title: isJunk
                     ? tBar('report_not_spam.string')
                     : tBar('report_spam.string'),
-                  icon: isJunk ? <Inbox size={16} /> : <Flame size={16} />,
+                  icon: isJunk ? <Inbox size={16} /> : <ShieldX size={16} />,
                   disabled: isBatchActionLoading,
                 },
                 {

@@ -29,8 +29,8 @@ export default function MailLabelBadge({
           : 'gap-1 rounded-full py-0.5 pr-1 font-normal'
       }
       style={{
-        borderColor: `color-mix(in srgb, ${color} 15%, white)`,
-        backgroundColor: `color-mix(in srgb, ${color} 15%, white)`,
+        borderColor: `color-mix(in srgb, ${color} 15%, hsl(var(--card)))`,
+        backgroundColor: `color-mix(in srgb, ${color} 15%, hsl(var(--card)))`,
       }}
     >
       <span

@@ -164,6 +164,10 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     isSelected={selectedIds.includes(String(item.id))}
                     onToggleRead={handleToggleRead}
                     onToggleFlag={handleToggleFlag}
+                    onDelete={handleDelete}
+                    onArchive={handleArchive}
+                    onSpam={isJunk ? undefined : handleSpam}
+                    onMoveToInbox={isJunk ? handleMoveToInbox : undefined}
                     onOpenMail={openMail}
                   />
                 ) : (

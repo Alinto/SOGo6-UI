@@ -39,7 +39,8 @@ function MailLayoutInner({
   const mailLayoutMode = useAppSelector(
     (state: RootState) => state.mailLayout.mode
   )
-  const { isOpen, activeModule, closeModule } = useFastAccessRequired()
+  const { isOpen, activeModule, openModule, closeModule } =
+    useFastAccessRequired()
   const toolbarMode = useListToolbarMode()
   const { view, closeOverlay } = useOfflineNav()
 
@@ -86,6 +87,9 @@ function MailLayoutInner({
         name="right-mail-sidebar-2"
         defaultOpen={false}
         open={isOpen}
+        onOpenChange={(open) =>
+          open ? openModule(activeModule ?? 'calendar') : closeModule()
+        }
         width={`calc(${SIDEBAR_WIDTH} - 1.5rem)`}
         className="min-w-0 flex-1"
       >
