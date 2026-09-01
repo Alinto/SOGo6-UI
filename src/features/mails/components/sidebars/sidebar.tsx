@@ -14,7 +14,7 @@ import { useOfflineFolders } from '@/features/offline/hooks/use-offline-folders'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
 import { folderPathFromParams } from '../../utils/folder-path-from-params'
@@ -29,6 +29,7 @@ import {
 import { iconSelectorByType, nameSelectorByType } from '../utils'
 import { AccountSwitcher } from './account-switcher'
 import ComposeOpener from './compose-opener'
+import FolderDroppable from './folder-droppable'
 import { MailboxQuota } from './mailbox-quota'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
@@ -58,6 +59,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
 
   const [open, setOpen] = useState(false)
   const effectiveOpen = descendantActive || open
+  const expandFolder = useCallback(() => setOpen(true), [])
 
   const typeTranslationKey =
     getFolderTranslationKey(folder.type) ?? nameSelectorByType(folder.type)
@@ -85,27 +87,46 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
     navigateToFolder()
   }
 
+  const sidebarItem = (
+    <FolderDroppable
+      folderPath={folder.path}
+      folderType={folder.type}
+      folderName={displayName}
+      selectable={folder.selectable}
+      isVirtual={isVirtual}
+      hasSubfolders={hasSubfolders}
+      onDwellExpand={hasSubfolders ? expandFolder : undefined}
+    >
+      <SidebarItem
+        icon={iconSelectorByType(folder.type)}
+        isDefault={folder.default}
+        isOpen={hasSubfolders ? effectiveOpen : undefined}
+        name={displayName}
+        isActive={isActive}
+        handleClick={handleClick}
+        onExpandClick={
+          hasSubfolders
+            ? (e) => {
+                e.stopPropagation()
+                toggleExpand()
+              }
+            : undefined
+        }
+        folderPath={folder.path}
+        folderName={folder.name}
+        accountId={String(account ?? '0')}
+        hasSubfolders={hasSubfolders}
+        selectable={folder.selectable}
+        isVirtual={isVirtual}
+        unseenCount={folder.unseen_count}
+        folderType={folder.type}
+        folderDelimiter={folder.delimiter}
+      />
+    </FolderDroppable>
+  )
+
   if (!hasSubfolders) {
-    return (
-      <SidebarMenuItem>
-        <SidebarItem
-          icon={iconSelectorByType(folder.type)}
-          isDefault={folder.default}
-          name={displayName}
-          isActive={isActive}
-          handleClick={handleClick}
-          folderPath={folder.path}
-          folderName={folder.name}
-          accountId={String(account ?? '0')}
-          hasSubfolders={false}
-          selectable={folder.selectable}
-          isVirtual={isVirtual}
-          unseenCount={folder.unseen_count}
-          folderType={folder.type}
-          folderDelimiter={folder.delimiter}
-        />
-      </SidebarMenuItem>
-    )
+    return <SidebarMenuItem>{sidebarItem}</SidebarMenuItem>
   }
 
   return (
@@ -115,27 +136,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
       className="group-data-[collapsible=icon]:hidden"
     >
       <SidebarMenuItem>
-        <SidebarItem
-          icon={iconSelectorByType(folder.type)}
-          isDefault={folder.default}
-          isOpen={effectiveOpen}
-          name={displayName}
-          isActive={isActive}
-          handleClick={handleClick}
-          onExpandClick={(e) => {
-            e.stopPropagation()
-            toggleExpand()
-          }}
-          folderPath={folder.path}
-          folderName={folder.name}
-          accountId={String(account ?? '0')}
-          hasSubfolders
-          selectable={folder.selectable}
-          isVirtual={isVirtual}
-          unseenCount={folder.unseen_count}
-          folderType={folder.type}
-          folderDelimiter={folder.delimiter}
-        />
+        {sidebarItem}
         <CollapsibleContent className="w-full">
           <SidebarMenuSub className="mr-0 pr-0">
             {folder.subfolders?.map((sub) => (

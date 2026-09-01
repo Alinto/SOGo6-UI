@@ -105,6 +105,11 @@ jest.mock('../sidebar-item', () => ({
   ),
 }))
 
+jest.mock('../folder-droppable', () => ({
+  __esModule: true,
+  default: ({ children }: { children: React.ReactNode }) => children,
+}))
+
 jest.mock('../skeleton', () => ({
   __esModule: true,
   default: () => <div data-testid="sidebar-skeleton">Skeleton</div>,

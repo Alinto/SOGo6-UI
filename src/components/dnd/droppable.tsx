@@ -1,32 +1,37 @@
 import { cn } from '@/lib/utils'
 import { useDroppable } from '@dnd-kit/core'
-import { useParams } from 'next/navigation'
 import React from 'react'
+import type { AppDragData } from './types'
 
 function Droppable({
   children,
   id,
+  data,
+  disabled = false,
+  className,
+  isOverClassName,
+  dataDrop,
 }: {
   children: React.ReactNode
   id: string
+  data?: AppDragData
+  disabled?: boolean
+  className?: string
+  isOverClassName?: string
+  dataDrop?: string
 }) {
-  const { book_id } = useParams()
-  const { isOver, active, setNodeRef } = useDroppable({
+  const { isOver, setNodeRef } = useDroppable({
     id,
+    data,
+    disabled,
   })
-
-  const isActiveClass = `bg-primary/50 rounded-xl`
-  const isOverClass = `hover:bg-primary/70`
-  const isNoDrop = active && book_id === id
 
   return (
     <div
       ref={setNodeRef}
-      className={cn(
-        active && book_id !== id && isActiveClass,
-        isNoDrop && 'hover:cursor-no-drop',
-        isOver && isOverClass
-      )}
+      data-over={isOver && !disabled ? 'true' : undefined}
+      data-drop={dataDrop}
+      className={cn(isOver && !disabled && isOverClassName, className)}
     >
       {children}
     </div>

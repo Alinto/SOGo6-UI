@@ -2,6 +2,8 @@
 
 import AppHeader from '@/components/app-header'
 import { DemoWarningToast } from '@/components/demo-warning-toast'
+import { appCollisionDetection } from '@/components/dnd/collision'
+import { isMailDragData, type AppDragData } from '@/components/dnd/types'
 import MobileCreateFab from '@/components/mobile-create-fab'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
@@ -11,6 +13,10 @@ import { useAddressBookDragEnd } from '@/features/address_books/hooks/use-addres
 import { LoginForm } from '@/features/auth/components/login-form'
 import LoginShell from '@/features/auth/components/login-shell'
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
+import MailDragOverlay from '@/features/mails/components/mail-drag-overlay'
+import MailDragSession from '@/features/mails/components/mail-drag-session'
+import { useMailDragEnd } from '@/features/mails/hooks/use-mail-drag-end'
+import { resolveDraggedMailIds } from '@/features/mails/utils/mail-folder-drop'
 import {
   NotificationProvider,
   NotificationToaster,
@@ -36,11 +42,13 @@ import {
   TouchSensor,
   useSensor,
   useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { Contact2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import React, { startTransition, useEffect, useState } from 'react'
+import React, { startTransition, useCallback, useEffect, useState } from 'react'
 import ReactDOM from 'react-dom'
 
 function ComposeDeepLink() {
@@ -97,7 +105,42 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   })
   const sensors = useSensors(mouseSensor, touchSensor)
   const handleAddressBookDragEnd = useAddressBookDragEnd()
+  const handleMailDragEnd = useMailDragEnd()
+  const selectedMailIds = useAppSelector(
+    (state) => state.mailLayout?.selectedMailIds ?? []
+  )
+  const [activeDrag, setActiveDrag] = useState<AppDragData | null>(null)
   const [connect] = useConnectSSEMutation()
+
+  const handleDragStart = useCallback(
+    (event: DragStartEvent) => {
+      const data = event.active.data.current
+      if (isMailDragData(data)) {
+        setActiveDrag({
+          ...data,
+          count: resolveDraggedMailIds(data.mailId, selectedMailIds).length,
+        })
+        return
+      }
+      if (data && typeof data === 'object' && 'type' in data) {
+        setActiveDrag(data as AppDragData)
+      }
+    },
+    [selectedMailIds]
+  )
+
+  const clearActiveDrag = useCallback(() => {
+    setActiveDrag(null)
+  }, [])
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      handleMailDragEnd(event)
+      handleAddressBookDragEnd(event)
+      setActiveDrag(null)
+    },
+    [handleAddressBookDragEnd, handleMailDragEnd]
+  )
 
   useEffect(() => {
     let cancelled = false
@@ -140,7 +183,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <NotificationToaster />
       <NotificationProvider />
       <SidebarProvider name="left-global-sidebar">
-        <DndContext sensors={sensors} onDragEnd={handleAddressBookDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={appCollisionDetection}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={clearActiveDrag}
+        >
+          <MailDragSession />
           <AppSidebar />
           <SidebarInset className="flex h-screen min-w-0 flex-col overflow-x-hidden">
             <AppHeader />
@@ -151,9 +201,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {typeof window !== 'undefined' &&
             ReactDOM.createPortal(
               <DragOverlay modifiers={[snapCenterToCursor]}>
-                <div className="h-10 w-10">
-                  <Contact2 className="h-7 w-7 text-gray-700" />
-                </div>
+                {activeDrag && isMailDragData(activeDrag) ? (
+                  <MailDragOverlay
+                    from={activeDrag.from}
+                    subject={activeDrag.subject}
+                    count={activeDrag.count}
+                  />
+                ) : activeDrag ? (
+                  <div className="h-10 w-10">
+                    <Contact2 className="h-7 w-7 text-gray-700" />
+                  </div>
+                ) : null}
               </DragOverlay>,
               document.body
             )}

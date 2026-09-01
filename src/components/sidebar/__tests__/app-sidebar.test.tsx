@@ -1,6 +1,10 @@
 import { render, screen } from '@testing-library/react'
 import { AppSidebar } from '../app-sidebar'
 
+jest.mock('@/features/mails/hooks/use-expand-sidebar-on-mail-drag', () => ({
+  useExpandSidebarOnMailDrag: jest.fn(),
+}))
+
 // Mock the UI components
 jest.mock('@/components/ui/sidebar', () => ({
   Sidebar: ({ children, collapsible, ...props }: any) => (

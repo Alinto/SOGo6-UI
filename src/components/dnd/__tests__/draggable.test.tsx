@@ -67,6 +67,30 @@ describe('Draggable Component', () => {
   })
 
   describe('useDraggable integration', () => {
+    it('should call useDraggable with id and data', () => {
+      const { useDraggable } = require('@dnd-kit/core')
+      const data = {
+        type: 'mail' as const,
+        mailId: '1',
+        accountId: '0',
+        folder: 'INBOX',
+        subject: 'Hello',
+        from: 'A',
+        count: 1,
+      }
+
+      render(
+        <Draggable id="unique-draggable-id" data={data}>
+          <div>Content</div>
+        </Draggable>
+      )
+
+      expect(useDraggable).toHaveBeenCalledWith({
+        id: 'unique-draggable-id',
+        data,
+      })
+    })
+
     it('should call useDraggable with correct id', () => {
       const { useDraggable } = require('@dnd-kit/core')
 
@@ -78,6 +102,7 @@ describe('Draggable Component', () => {
 
       expect(useDraggable).toHaveBeenCalledWith({
         id: 'unique-draggable-id',
+        data: undefined,
       })
     })
 

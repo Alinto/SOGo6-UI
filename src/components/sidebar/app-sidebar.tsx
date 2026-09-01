@@ -5,18 +5,21 @@ import {
   SidebarHeader,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
+import { useExpandSidebarOnMailDrag } from '@/features/mails/hooks/use-expand-sidebar-on-mail-drag'
 
 import React from 'react'
-import { AppSidebarMobileEffects } from './app-sidebar-mobile-effects'
 import SidebarsContent from './app-sidebar-content'
+import { AppSidebarMobileEffects } from './app-sidebar-mobile-effects'
 
 export function AppSidebar(): React.JSX.Element {
+  useExpandSidebarOnMailDrag()
+
   return (
     <Sidebar collapsible="icon">
       <AppSidebarMobileEffects />
       <SidebarHeader className="flex h-29 rounded-br-2xl" />
       <SidebarContent
-        className="scrollbar-thin-gray mt-1 overflow-y-auto p-0 pt-1 group-data-[state=collapsed]:overflow-visible [scrollbar-gutter:auto]!"
+        className="scrollbar-thin-gray mt-1 overflow-y-auto p-0 pt-1 [scrollbar-gutter:auto]! group-data-[state=collapsed]:overflow-visible"
         style={{
           scrollbarWidth: 'thin',
           scrollbarColor: '#d1d5db transparent',

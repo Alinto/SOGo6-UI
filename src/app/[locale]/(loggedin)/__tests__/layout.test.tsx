@@ -1,7 +1,7 @@
 import authReducer from '@/features/auth/components/store/auth.slice'
 import { configureStore } from '@reduxjs/toolkit'
 import '@testing-library/jest-dom'
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import { Provider } from 'react-redux'
 import Layout from '../layout'
@@ -111,7 +111,33 @@ jest.mock(
 )
 
 jest.mock('@/features/address_books/hooks/use-address-book-drag-end', () => ({
-  useAddressBookDragEnd: () => jest.fn(),
+  useAddressBookDragEnd: jest.fn(() => jest.fn()),
+}))
+
+jest.mock('@/features/mails/hooks/use-mail-drag-end', () => ({
+  useMailDragEnd: jest.fn(() => jest.fn()),
+}))
+
+jest.mock('@/features/mails/components/mail-drag-overlay', () => ({
+  __esModule: true,
+  default: ({
+    from,
+    subject,
+    count,
+  }: {
+    from: string
+    subject: string
+    count: number
+  }) => (
+    <div data-testid="mail-drag-overlay" data-count={String(count)}>
+      {from} {subject}
+    </div>
+  ),
+}))
+
+jest.mock('@/features/mails/components/mail-drag-session', () => ({
+  __esModule: true,
+  default: () => null,
 }))
 
 jest.mock('@/features/notifications', () => ({
@@ -123,18 +149,41 @@ jest.mock('@/features/notifications', () => ({
   ),
 }))
 
-jest.mock('@dnd-kit/core', () => ({
-  DndContext: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="dnd-context">{children}</div>
-  ),
-  DragOverlay: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="drag-overlay">{children}</div>
-  ),
-  MouseSensor: jest.fn(),
-  TouchSensor: jest.fn(),
-  useSensor: jest.fn((SensorClass, options) => ({})),
-  useSensors: jest.fn((...sensors) => sensors),
-}))
+jest.mock('@dnd-kit/core', () => {
+  const callbacks: {
+    onDragEnd?: (event: unknown) => void
+    onDragStart?: (event: unknown) => void
+    onDragCancel?: () => void
+  } = {}
+  return {
+    __dndCallbacks: callbacks,
+    DndContext: ({
+      children,
+      onDragEnd,
+      onDragStart,
+      onDragCancel,
+    }: {
+      children: React.ReactNode
+      onDragEnd?: (event: unknown) => void
+      onDragStart?: (event: unknown) => void
+      onDragCancel?: () => void
+    }) => {
+      callbacks.onDragEnd = onDragEnd
+      callbacks.onDragStart = onDragStart
+      callbacks.onDragCancel = onDragCancel
+      return <div data-testid="dnd-context">{children}</div>
+    },
+    DragOverlay: ({ children }: { children: React.ReactNode }) => (
+      <div data-testid="drag-overlay">{children}</div>
+    ),
+    MouseSensor: jest.fn(),
+    TouchSensor: jest.fn(),
+    useSensor: jest.fn(() => ({})),
+    useSensors: jest.fn((...sensors: unknown[]) => sensors),
+    pointerWithin: jest.fn(() => []),
+    rectIntersection: jest.fn(() => []),
+  }
+})
 
 jest.mock('@dnd-kit/modifiers', () => ({
   snapCenterToCursor: jest.fn(),
@@ -273,17 +322,71 @@ describe('Layout Component', () => {
     expect(screen.getByTestId('dnd-context')).toBeInTheDocument()
   })
 
-  it('should render DragOverlay with Contact2 icon', () => {
+  it('should render an empty DragOverlay while idle', () => {
     renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('drag-overlay')).toBeInTheDocument()
-    expect(screen.getByTestId('contact-icon')).toBeInTheDocument()
+    expect(screen.queryByTestId('contact-icon')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('mail-drag-overlay')).not.toBeInTheDocument()
   })
 
   it('should render portal for DragOverlay', () => {
     renderWithProvider(<div>Test</div>)
 
     expect(screen.getByTestId('portal')).toBeInTheDocument()
+  })
+
+  it('shows a mail overlay after a mail drag starts', () => {
+    renderWithProvider(<div>Test</div>)
+    const { __dndCallbacks } = require('@dnd-kit/core')
+
+    act(() => {
+      __dndCallbacks.onDragStart?.({
+        active: {
+          data: {
+            current: {
+              type: 'mail',
+              mailId: '1',
+              accountId: '0',
+              folder: 'INBOX',
+              subject: 'Hello',
+              from: 'Ada',
+              count: 1,
+            },
+          },
+        },
+      })
+    })
+
+    expect(screen.getByTestId('mail-drag-overlay')).toBeInTheDocument()
+    expect(screen.getByText('Ada Hello')).toBeInTheDocument()
+  })
+
+  it('dispatches mail then address-book handlers on drag end', () => {
+    const mockMailEnd = jest.fn()
+    const mockAbEnd = jest.fn()
+    const {
+      useMailDragEnd,
+    } = require('@/features/mails/hooks/use-mail-drag-end')
+    const {
+      useAddressBookDragEnd,
+    } = require('@/features/address_books/hooks/use-address-book-drag-end')
+    useMailDragEnd.mockReturnValue(mockMailEnd)
+    useAddressBookDragEnd.mockReturnValue(mockAbEnd)
+
+    renderWithProvider(<div>Test</div>)
+    const { __dndCallbacks } = require('@dnd-kit/core')
+    const event = {
+      active: { data: { current: { type: 'mail' } } },
+      over: null,
+    }
+
+    act(() => {
+      __dndCallbacks.onDragEnd?.(event)
+    })
+
+    expect(mockMailEnd).toHaveBeenCalledWith(event)
+    expect(mockAbEnd).toHaveBeenCalledWith(event)
   })
 
   it('should setup drag and drop sensors', () => {
@@ -369,23 +472,23 @@ describe('Layout Component', () => {
   })
 
   describe('DragOverlay Styling', () => {
-    it('should have correct Contact icon dimensions', () => {
+    it('shows the contact overlay for a non-mail drag', () => {
       renderWithProvider(<div>Test</div>)
+      const { __dndCallbacks } = require('@dnd-kit/core')
 
-      const contactIcon = screen.getByTestId('contact-icon')
-      expect(contactIcon).toHaveClass('h-7')
-      expect(contactIcon).toHaveClass('w-7')
-      expect(contactIcon).toHaveClass('text-gray-700')
-    })
+      act(() => {
+        __dndCallbacks.onDragStart?.({
+          active: {
+            data: { current: { type: 'contact', contactId: 'c1' } },
+          },
+        })
+      })
 
-    it('should have correct overlay container dimensions', () => {
-      renderWithProvider(<div>Test</div>)
-
-      const overlayContainer = screen
-        .getByTestId('portal')
-        .querySelector('div[class*="h-10"]')
-      expect(overlayContainer).toHaveClass('h-10')
-      expect(overlayContainer).toHaveClass('w-10')
+      expect(screen.getByTestId('contact-icon')).toHaveClass(
+        'h-7',
+        'w-7',
+        'text-gray-700'
+      )
     })
   })
 
