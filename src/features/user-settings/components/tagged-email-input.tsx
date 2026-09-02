@@ -314,7 +314,7 @@ function TaggedEmailInput({
                 highlightedTag === i &&
                   'animate-shake border-destructive ring-destructive/20 border-2 ring-2',
                 newTagIds.has(tag.id) &&
-                  'animate-fade-in bg-primary/10 dark:bg-primary/20 ring-primary/30 ring-2',
+                  'animate-fade-in bg-primary/10 ring-primary/30 ring-2',
                 selectedForDeletion === i &&
                   'ring-destructive/50 bg-destructive/10 ring-2'
               )}

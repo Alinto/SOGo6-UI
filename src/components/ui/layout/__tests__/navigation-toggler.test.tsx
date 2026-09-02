@@ -327,8 +327,18 @@ describe('NavigationToggler', () => {
 
       const mailTab = screen.getByTestId('tab-trigger-mail')
       expect(mailTab.className).toContain('text-sidebar-foreground')
-      expect(mailTab.className).toContain('hover:text-foreground')
-      expect(mailTab.className).toContain('data-[state=active]:text-foreground')
+      expect(mailTab.className).toContain('hover:bg-sidebar-foreground/10')
+      expect(mailTab.className).toContain(
+        'hover:text-sidebar-accent-foreground'
+      )
+      expect(mailTab.className).toContain(
+        'data-[state=active]:text-sidebar-accent-foreground'
+      )
+      expect(mailTab.className).toContain(
+        'data-[state=active]:bg-sidebar-accent'
+      )
+      expect(mailTab.className).toContain('h-full')
+      expect(mailTab.className).toContain('py-0')
       expect(mailTab.className).toContain('cursor-pointer')
     })
 

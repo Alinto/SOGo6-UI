@@ -130,7 +130,7 @@ const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
         onAnimationComplete={handleExitComplete}
       >
         <div className="relative">
-          {/* Background indicators */}
+          {/* Swipe affordance: keep universal green/red (not theme tokens). */}
           <div
             className={cn(
               'absolute inset-0 flex items-center px-4',
@@ -163,7 +163,7 @@ const SwipeableMailItem: React.FC<SwipeableMailItemProps> = ({
 
   return (
     <div ref={containerRef} className="relative overflow-hidden">
-      {/* Mark as seen background (green - right swipe) */}
+      {/* Swipe affordance: keep universal green/red (not theme tokens). */}
       <motion.div
         className="absolute inset-0 flex items-center justify-start bg-green-500 px-4"
         style={{ opacity: markAsSeenOpacity }}

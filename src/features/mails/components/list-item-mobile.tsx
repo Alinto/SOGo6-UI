@@ -237,7 +237,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                       {showHighPriority && (
                         <TooltipWrapper content={priorityTitle} side="top">
                           <ChevronsUp
-                            className="h-4 w-4 shrink-0 text-orange-600"
+                            className="text-warning h-4 w-4 shrink-0"
                             aria-hidden
                           />
                         </TooltipWrapper>

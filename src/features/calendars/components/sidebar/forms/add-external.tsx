@@ -87,6 +87,7 @@ const AddExternalCalendar: React.FC = () => {
       <DialogTrigger asChild>
         <SidebarGroupAction title={t('external.add_title.string')}>
           <Plus />
+          <span className="sr-only">{t('external.add_title.string')}</span>
         </SidebarGroupAction>
       </DialogTrigger>
       <DialogContent className="scrollbar-thin-gray max-w-[calc(100vw-2rem)] sm:max-w-2xl">

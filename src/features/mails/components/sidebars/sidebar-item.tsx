@@ -11,10 +11,10 @@ import { SidebarMenuAction, SidebarMenuButton } from '@/components/ui/sidebar'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 import { ChevronRight, MoreVertical, TriangleAlert } from 'lucide-react'
 import type { IconName } from 'lucide-react/dynamic'
 import { DynamicIcon } from 'lucide-react/dynamic'
-import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import type { ImapFolderType } from '../../mails-types'
@@ -160,7 +160,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             >
               <TriangleAlert
                 aria-hidden
-                className="h-3.5 w-3.5 shrink-0 text-amber-500"
+                className="text-warning h-3.5 w-3.5 shrink-0"
               />
             </TooltipWrapper>
           ) : null}
@@ -169,13 +169,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               aria-hidden
               strokeWidth={2.5}
               className={cn(
-                'h-4 w-4 shrink-0 text-sidebar-foreground/85 transition-transform duration-200',
+                'text-sidebar-foreground/85 h-4 w-4 shrink-0 transition-transform duration-200',
                 isOpen && 'rotate-90'
               )}
             />
           ) : null}
           {showUnseenCount && (
-            <span className="shrink-0 text-xs font-medium leading-none text-inherit tabular-nums">
+            <span className="shrink-0 text-xs leading-none font-medium text-inherit tabular-nums">
               {unseenCount > 99 ? '99+' : unseenCount}
             </span>
           )}
@@ -209,16 +209,19 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {activeAction === 'purge' && folderPath && folderName && accountId && (
-            <PurgeFolderDialog
-              open
-              onOpenChange={(open) => !open && closeAction()}
-              accountId={accountId}
-              folderPath={folderPath}
-              folderName={folderName}
-              hasSubfolders={hasSubfolders ?? false}
-            />
-          )}
+          {activeAction === 'purge' &&
+            folderPath &&
+            folderName &&
+            accountId && (
+              <PurgeFolderDialog
+                open
+                onOpenChange={(open) => !open && closeAction()}
+                accountId={accountId}
+                folderPath={folderPath}
+                folderName={folderName}
+                hasSubfolders={hasSubfolders ?? false}
+              />
+            )}
           {activeAction === 'empty_folder' &&
             folderPath &&
             folderName &&
@@ -231,33 +234,42 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 folderName={folderName}
               />
             )}
-          {activeAction === 'expunge' && folderPath && folderName && accountId && (
-            <ExpungeFolderDialog
-              open
-              onOpenChange={(open) => !open && closeAction()}
-              accountId={accountId}
-              folderPath={folderPath}
-              folderName={folderName}
-            />
-          )}
-          {activeAction === 'sharing' && folderPath && folderName && accountId && (
-            <ShareFolderDialog
-              open
-              onOpenChange={(open) => !open && closeAction()}
-              accountId={accountId}
-              folderPath={folderPath}
-              folderName={folderName}
-            />
-          )}
-          {activeAction === 'delete' && folderPath && folderName && accountId && (
-            <DeleteFolderDialog
-              open
-              onOpenChange={(open) => !open && closeAction()}
-              accountId={accountId}
-              folderPath={folderPath}
-              folderName={folderName}
-            />
-          )}
+          {activeAction === 'expunge' &&
+            folderPath &&
+            folderName &&
+            accountId && (
+              <ExpungeFolderDialog
+                open
+                onOpenChange={(open) => !open && closeAction()}
+                accountId={accountId}
+                folderPath={folderPath}
+                folderName={folderName}
+              />
+            )}
+          {activeAction === 'sharing' &&
+            folderPath &&
+            folderName &&
+            accountId && (
+              <ShareFolderDialog
+                open
+                onOpenChange={(open) => !open && closeAction()}
+                accountId={accountId}
+                folderPath={folderPath}
+                folderName={folderName}
+              />
+            )}
+          {activeAction === 'delete' &&
+            folderPath &&
+            folderName &&
+            accountId && (
+              <DeleteFolderDialog
+                open
+                onOpenChange={(open) => !open && closeAction()}
+                accountId={accountId}
+                folderPath={folderPath}
+                folderName={folderName}
+              />
+            )}
           {activeAction === 'new_subfolder' && folderPath && accountId && (
             <CreateFolderDialog
               open

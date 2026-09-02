@@ -125,7 +125,7 @@ const HeaderDropdown: React.FC = () => {
               size="sm"
             />
             {!isMobile && (
-              <div className="text-muted-foreground dark:text-foreground text-sm">
+              <div className="text-header-foreground text-sm">
                 <div>{userName}</div>
                 <div className="block text-sm">{userEmail}</div>
               </div>
@@ -134,9 +134,7 @@ const HeaderDropdown: React.FC = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56">
           <DropdownMenuLabel className="flex items-center justify-between">
-            <span className="text-foreground dark:text-foreground">
-              {t('theme.title.string')}
-            </span>
+            <span className="text-foreground">{t('theme.title.string')}</span>
             <span className="text-muted-foreground text-right">
               {t(`theme.${theme}.string`)}
             </span>

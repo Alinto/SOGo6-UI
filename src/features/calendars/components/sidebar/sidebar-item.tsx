@@ -8,12 +8,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
+import WorkInProgress from '@/components/work-in-progress'
 import {
   useGetSyncStatusQuery,
   useTriggerSyncMutation,
 } from '@/features/calendars/store/calendars-api'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { cn } from '@/lib/utils'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -24,12 +25,11 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
+import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
 import { isSubscriptionCalendar } from '../../utils/calendar-source-type'
 import DeleteAction from './actions/delete'
 import LinkAction from './actions/link'
 import EditForm from './forms/edit'
-import WorkInProgress from '@/components/work-in-progress'
-import { useCalendarVisibility } from '../../hooks/useCalendarVisibility'
 
 interface SidebarItemProps {
   name: string
@@ -54,20 +54,17 @@ function useExternalSyncVisuals(
   const { data: syncStatus } = useGetSyncStatusQuery(calendarKey, {
     skip: !calendarKey || !isSubscription,
   })
-  const isRunning =
-    isMutationLoading || syncStatus?.sync_status === 'running'
+  const isRunning = isMutationLoading || syncStatus?.sync_status === 'running'
 
   const statusIcon = () => {
     if (isRunning) {
       return <Loader2 className="h-3 w-3 shrink-0 animate-spin" />
     }
     if (syncStatus?.sync_status === 'failed') {
-      return (
-        <AlertTriangle className="text-destructive h-3 w-3 shrink-0" />
-      )
+      return <AlertTriangle className="text-destructive h-3 w-3 shrink-0" />
     }
     if (syncStatus?.sync_status === 'completed') {
-      return <CheckCircle2 className="h-3 w-3 shrink-0 text-green-500" />
+      return <CheckCircle2 className="text-success h-3 w-3 shrink-0" />
     }
     return <RefreshCw className="h-3 w-3 shrink-0 opacity-60" />
   }
@@ -151,7 +148,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       <div
         onClick={() => handleCheckboxChange(!isVisible)}
         className={cn(
-          'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+          'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
           !disableActions && 'pr-8'
         )}
       >

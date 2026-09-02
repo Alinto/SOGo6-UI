@@ -3,8 +3,7 @@ import { FieldErrors } from 'react-hook-form'
 import Tag from '../tag'
 import InputWithError from './input-with-error'
 
-interface InputWithTagsProps
-  extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputWithTagsProps extends React.InputHTMLAttributes<HTMLInputElement> {
   tags: { id: string; value: string }[]
   remove: (_index: number) => void
   handleAdd: (_value: string) => void
@@ -21,7 +20,7 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
   ...props
 }) => {
   return (
-    <div className="input-with-tag dark:border-muted flex flex-wrap items-center gap-2 rounded-md border pr-2">
+    <div className="input-with-tag border-input flex flex-wrap items-center gap-2 rounded-md border pr-2">
       {tags.map((tag, i) => (
         <Tag
           key={tag.id}

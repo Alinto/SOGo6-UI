@@ -8,7 +8,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
-import CheckboxToggle from '@/components/ui/checkbox-toggle'
 import {
   Form,
   FormControl,
@@ -17,6 +16,7 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
+import { Switch } from '@/components/ui/switch'
 import {
   Tooltip,
   TooltipContent,
@@ -39,10 +39,7 @@ import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import type { MailForward } from '../mail-forward-types'
 import type { useUpdateMailForwardSettingsMutation } from '../store/mail-forward-settings-api'
 import ForwardEmailInput from './forward-email-input'
-import {
-  createForwardSchema,
-  type ForwardFormValues,
-} from './forward-schema'
+import { createForwardSchema, type ForwardFormValues } from './forward-schema'
 
 interface Props {
   data: MailForward | undefined
@@ -120,7 +117,7 @@ function MailForwardSettingsForm({ data, accountId, update }: Props) {
                   name="enabled"
                   render={({ field }) => (
                     <FormControl>
-                      <CheckboxToggle
+                      <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-label={t('aria.toggle_forwarding.string')}

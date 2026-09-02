@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { TooltipButton } from '@/components/ui/buttons/tooltip-button'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
@@ -151,7 +152,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             {showHighPriority && (
               <TooltipWrapper content={priorityTitle} side="top">
                 <ChevronsUp
-                  className="h-4 w-4 shrink-0 text-orange-600"
+                  className="text-warning h-4 w-4 shrink-0"
                   aria-hidden
                 />
               </TooltipWrapper>
@@ -210,82 +211,91 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
         {hasHoverActions ? (
           <div className="hidden w-1/5 items-center justify-end gap-1 group-hover:flex">
             {onToggleRead ? (
-              <TooltipWrapper
-                content={
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={
                   data.seen
                     ? t('actions.mark_as_unread.string')
                     : t('actions.mark_as_read.string')
                 }
-                side="top"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleRead(data.id)
+                }}
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onToggleRead(data.id)
-                  }}
-                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-                >
-                  {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
-                </button>
-              </TooltipWrapper>
+                {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
+              </TooltipButton>
             ) : null}
 
             {onDelete ? (
-              <TooltipWrapper content={t('actions.delete.string')} side="top">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onDelete(data.id)
-                  }}
-                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-                >
-                  <Trash2 size={16} />
-                </button>
-              </TooltipWrapper>
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={t('actions.delete.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(data.id)
+                }}
+              >
+                <Trash2 size={16} />
+              </TooltipButton>
             ) : null}
 
             {onArchive ? (
-              <TooltipWrapper content={t('actions.archive.string')} side="top">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onArchive(data.id)
-                  }}
-                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-                >
-                  <Archive size={16} />
-                </button>
-              </TooltipWrapper>
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={t('actions.archive.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onArchive(data.id)
+                }}
+              >
+                <Archive size={16} />
+              </TooltipButton>
             ) : null}
 
             {onMoveToInbox ? (
-              <TooltipWrapper
-                content={tBar('report_not_spam.string')}
-                side="top"
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={tBar('report_not_spam.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveToInbox(data.id)
+                }}
               >
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onMoveToInbox(data.id)
-                  }}
-                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-                >
-                  <Inbox size={16} />
-                </button>
-              </TooltipWrapper>
+                <Inbox size={16} />
+              </TooltipButton>
             ) : null}
             {onSpam ? (
-              <TooltipWrapper content={tBar('report_spam.string')} side="top">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onSpam(data.id)
-                  }}
-                  className="hover:bg-background cursor-pointer rounded p-1 transition-colors"
-                >
-                  <ShieldX size={16} />
-                </button>
-              </TooltipWrapper>
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={tBar('report_spam.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSpam(data.id)
+                }}
+              >
+                <ShieldX size={16} />
+              </TooltipButton>
             ) : null}
           </div>
         ) : null}

@@ -49,7 +49,7 @@ export function ColorPicker({
           type="button"
           style={{ backgroundColor: resolvedValue }}
           disabled={disabled}
-          className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border border-gray-300 transition-colors hover:border-gray-400 focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 focus:outline-none"
+          className="border-input hover:border-border focus:ring-ring inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg border transition-colors focus:ring-2 focus:ring-offset-2 focus:outline-none"
         />
       </PopoverTrigger>
       <PopoverContent className="w-64 p-3" align="start">
@@ -60,7 +60,7 @@ export function ColorPicker({
               type="button"
               onClick={() => onChange(color)}
               style={{ backgroundColor: color }}
-              className="relative h-8 w-8 rounded-md border-2 border-gray-300 transition-all hover:scale-110 focus:ring-2 focus:ring-gray-400 focus:ring-offset-1 focus:outline-none"
+              className="border-input hover:border-border focus:ring-ring relative h-8 w-8 rounded-md border-2 transition-all hover:scale-110 focus:ring-2 focus:ring-offset-1 focus:outline-none"
             >
               {resolvedValue === color && (
                 <Check className="absolute inset-0 m-auto h-4 w-4 text-white drop-shadow-md" />
@@ -70,10 +70,13 @@ export function ColorPicker({
         </div>
 
         <div className="mt-3 border-t pt-3">
-          <p className="mb-2 text-xs text-gray-500"> {t('custom-color')}</p>
+          <p className="text-muted-foreground mb-2 text-xs">
+            {' '}
+            {t('custom-color')}
+          </p>
           <div className="flex items-center gap-2">
             <div
-              className="relative h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-md border-2 border-gray-300"
+              className="border-input relative h-8 w-8 shrink-0 cursor-pointer overflow-hidden rounded-md border-2"
               style={{ backgroundColor: resolvedValue }}
             >
               <input

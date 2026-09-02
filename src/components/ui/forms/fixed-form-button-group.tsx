@@ -50,7 +50,7 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
       <Button
         className={cn(
           'shadow-lg',
-          isInline ? 'gap-2 rounded-lg px-6 py-3' : 'rounded-full p-7'
+          isInline ? 'gap-2 rounded-lg px-6 py-3' : 'h-14 w-14 rounded-full'
         )}
         size={isInline ? 'default' : 'icon'}
         type="button"
@@ -58,7 +58,7 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
         onClick={onReset}
         variant="outline"
       >
-        <Undo size={isInline ? 18 : 40} />
+        <Undo size={isInline ? 18 : 24} />
         {isInline && <span>{resetLabel}</span>}
         {!isInline && (
           <AccessibleIcon label={resetLabel}>
@@ -70,18 +70,18 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
       <div className="relative">
         {hasErrors && (
           <div
-            className="absolute -top-1 -right-1 z-10 rounded-full bg-white p-0.5"
+            className="bg-background absolute -top-1 -right-1 z-10 rounded-full p-0.5"
             title={t('forms.fixed-form-button-group.alert', {
               number: Object.keys(errors).length,
             })}
           >
-            <AlertTriangle className="h-4 w-4 text-amber-500" />
+            <AlertTriangle className="text-warning h-4 w-4" />
           </div>
         )}
         <Button
           className={cn(
             'shadow-lg',
-            isInline ? 'gap-2 rounded-lg px-6 py-3' : 'rounded-full p-7'
+            isInline ? 'gap-2 rounded-lg px-6 py-3' : 'h-14 w-14 rounded-full'
           )}
           size={isInline ? 'default' : 'icon'}
           type="submit"
@@ -89,9 +89,9 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
           aria-busy={isLoading}
         >
           {isLoading ? (
-            <Loader2 size={isInline ? 18 : 40} className="animate-spin" />
+            <Loader2 size={isInline ? 18 : 24} className="animate-spin" />
           ) : (
-            <Save size={isInline ? 18 : 40} />
+            <Save size={isInline ? 18 : 24} />
           )}
           {isInline && <span>{submitLabel}</span>}
           {!isInline && (

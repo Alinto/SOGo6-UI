@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { ListRowProps } from 'react-virtualized'
@@ -76,7 +77,10 @@ export function TimezoneSelect({
       <div
         key={key}
         style={style}
-        className={`hover:bg-accent hover:text-accent-foreground relative flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none ${isSelected ? 'bg-accent text-accent-foreground' : ''} `}
+        className={cn(
+          'hover:bg-accent hover:text-accent-foreground relative flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none',
+          isSelected && 'bg-accent text-accent-foreground'
+        )}
         onClick={() => {
           onValueChange?.(timezone.value)
           handleOpenChange(false)

@@ -9,8 +9,11 @@ jest.mock('@/lib/utils', () => ({
 }))
 
 jest.mock('@radix-ui/react-toggle-group', () => ({
-  Root: React.forwardRef<any, any>(
-    ({ children, onValueChange, defaultValue, type, ...props }, ref) => (
+  Root: React.forwardRef<any, any>(function ToggleGroupRoot(
+    { children, onValueChange, defaultValue, type, ...props },
+    ref
+  ) {
+    return (
       <div
         ref={ref}
         data-testid="toggle-group-root"
@@ -26,14 +29,17 @@ jest.mock('@radix-ui/react-toggle-group', () => ({
         {children}
       </div>
     )
-  ),
-  Item: React.forwardRef<HTMLButtonElement, any>(
-    ({ children, ...props }, ref) => (
+  }),
+  Item: React.forwardRef<HTMLButtonElement, any>(function ToggleGroupItemMock(
+    { children, ...props },
+    ref
+  ) {
+    return (
       <button ref={ref} data-testid="toggle-group-item" {...props}>
         {children}
       </button>
     )
-  ),
+  }),
 }))
 
 describe('ToggleGroup', () => {
@@ -83,6 +89,20 @@ describe('ToggleGroup', () => {
 
       expect(screen.getByTestId('toggle-group-item')).toHaveClass(
         'custom-item-class'
+      )
+    })
+
+    it('uses primary foreground on selected items for contrast', () => {
+      render(
+        <ToggleGroup type="single">
+          <ToggleGroupItem value="item1">Item 1</ToggleGroupItem>
+        </ToggleGroup>
+      )
+
+      const item = screen.getByTestId('toggle-group-item')
+      expect(item.className).toContain('data-[state=on]:bg-primary')
+      expect(item.className).toContain(
+        'data-[state=on]:text-primary-foreground'
       )
     })
   })

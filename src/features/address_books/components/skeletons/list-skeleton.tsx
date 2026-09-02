@@ -7,7 +7,7 @@ const ListSkeleton: React.FC = () => {
     <div role="list-skeleton" className="flex w-full flex-col rounded p-4">
       <div
         role="header-skeleton"
-        className="flex flex-row items-center justify-between text-gray-500"
+        className="text-muted-foreground flex flex-row items-center justify-between"
       >
         <Skeleton role="header-item-skeleton" className="h-6 w-1/8" />
         <Skeleton role="header-item-skeleton" className="h-6 w-1/8" />

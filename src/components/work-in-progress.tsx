@@ -3,8 +3,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { useTranslations } from 'next-intl'
 import { Construction } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 
 interface WorkInProgressProps {
@@ -22,7 +22,7 @@ const WorkInProgress: React.FC<WorkInProgressProps> = ({
     <>
       <DialogHeader>
         <DialogTitle className="flex items-center gap-2">
-          <Construction className="h-5 w-5 text-orange-500" />
+          <Construction className="text-warning h-5 w-5" />
           {title}
         </DialogTitle>
         <DialogDescription>

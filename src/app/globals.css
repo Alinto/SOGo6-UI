@@ -2,6 +2,15 @@
 
 @config '../../tailwind.config.ts';
 
+@theme inline {
+  --color-success: hsl(var(--success));
+  --color-success-foreground: hsl(var(--success-foreground));
+  --color-warning: hsl(var(--warning));
+  --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-info: hsl(var(--info));
+  --color-info-foreground: hsl(var(--info-foreground));
+}
+
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
   so we've added these compatibility styles to make sure everything still
@@ -16,7 +25,7 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: hsl(var(--border));
   }
 }
 
@@ -27,7 +36,7 @@
 @layer utilities {
   .scrollbar-thin-gray {
     scrollbar-width: thin;
-    scrollbar-color: #d1d5db transparent;
+    scrollbar-color: hsl(var(--sidebar-foreground) / 0.35) transparent;
     scrollbar-gutter: stable;
   }
 }
@@ -64,300 +73,343 @@ html.mail-dragging.mail-drop-forbidden * {
     --popover: 0 0% 100%;
     --popover-foreground: 240 5% 10%;
 
-    --primary: 180 25% 40%;
+    --primary: 180 28% 32%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 10% 96%; /* light blue-gray */
+    --secondary: 220 10% 96%;
     --secondary-foreground: 240 5% 10%;
 
     --muted: 220 10% 96%;
     --muted-foreground: 220 10% 40%;
 
-    --accent: 180 25% 60%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 180 12% 94%;
+    --accent-foreground: 240 5% 10%;
 
-    --destructive: 0 70% 40%; /* strong red */
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
+
+    --success: 142 48% 32%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 90% 38%;
+    --warning-foreground: 0 0% 100%;
+    --info: 210 80% 40%;
+    --info-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 180 60% 45%;
+    --ring: 180 28% 32%;
 
-    --chart-1: 180 60% 45%; /* teal/cyan */
-    --chart-2: 30 100% 55%; /* orange */
-    --chart-3: 120 40% 50%; /* green */
-    --chart-4: 270 60% 60%; /* purple */
-    --chart-5: 0 70% 40%; /* red */
+    --chart-1: 180 60% 45%;
+    --chart-2: 30 100% 55%;
+    --chart-3: 120 40% 50%;
+    --chart-4: 270 60% 60%;
+    --chart-5: 0 70% 40%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 180 25% 40%;
-    --sidebar-background-secondary: 0 0% 100%; /* bg for the right sidebar */
-    --sidebar-foreground: 0 0% 100%; /* white */
-    --sidebar-foreground-secondary: 240 5% 10%; /* text color for the right sidebar */
+    --sidebar-background: 180 28% 32%;
+    --sidebar-background-secondary: 0 0% 100%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-foreground-secondary: 240 5% 10%;
     --sidebar-muted-foreground-secondary: 240 5% 10%;
     --sidebar-primary: 180 60% 45%;
-    --sidebar-accent: 180 25% 60%;
+    --sidebar-accent: 180 28% 24%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 180 60% 45%;
+    --sidebar-ring: 180 28% 32%;
 
     --header-background: 0 0% 100%;
-    --header-foreground: 270 60% 60%;
-    --header-muted-foreground: 270 60% 60%;
+    --header-foreground: 240 5% 10%;
+    --header-muted-foreground: 220 10% 40%;
   }
   .dark {
-    --background: 220 15% 12%; /* deep blue-gray */
-    --foreground: 220 10% 96%; /* near white */
-    --card: 220 15% 16%; /* slightly lighter than background */
+    --background: 220 15% 12%;
+    --foreground: 220 10% 96%;
+    --card: 220 15% 16%;
     --card-foreground: 220 10% 96%;
     --popover: 220 15% 16%;
     --popover-foreground: 220 10% 96%;
 
-    --primary: 220 15% 30%; /* teal/cyan */
-    --primary-foreground: 0 0% 100%; /* white */
+    --primary: 180 55% 32%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 10% 22%; /* muted blue-gray */
+    --secondary: 220 10% 22%;
     --secondary-foreground: 220 10% 96%;
 
     --muted: 220 10% 22%;
     --muted-foreground: 220 10% 60%;
 
-    --accent: 220 15% 25%; /* orange accent */
+    --accent: 220 12% 20%;
     --accent-foreground: 220 10% 96%;
 
-    --destructive: 0 70% 40%; /* strong red */
+    --destructive: 0 70% 40%;
     --destructive-foreground: 0 0% 100%;
+
+    --success: 142 45% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 85% 45%;
+    --warning-foreground: 0 0% 10%;
+    --info: 200 70% 48%;
+    --info-foreground: 0 0% 10%;
 
     --border: 220 10% 22%;
     --input: 220 10% 22%;
-    --ring: 180 60% 45%;
+    --ring: 180 55% 42%;
 
-    --chart-1: 180 60% 45%; /* teal/cyan */
-    --chart-2: 30 100% 55%; /* orange */
-    --chart-3: 120 40% 50%; /* green */
-    --chart-4: 270 60% 60%; /* purple */
-    --chart-5: 0 70% 40%; /* red */
+    --chart-1: 180 60% 45%;
+    --chart-2: 30 100% 55%;
+    --chart-3: 120 40% 50%;
+    --chart-4: 270 60% 60%;
+    --chart-5: 0 70% 40%;
 
     --sidebar-background: 220 15% 12%;
     --sidebar-background-secondary: 220 15% 12%;
     --sidebar-foreground: 220 10% 96%;
     --sidebar-foreground-secondary: 220 10% 96%;
     --sidebar-muted-foreground-secondary: 220 10% 65%;
-    --sidebar-primary: 180 60% 45%;
-    --sidebar-accent: 220 15% 25%;
+    --sidebar-primary: 180 55% 42%;
+    --sidebar-accent: 180 30% 22%;
     --sidebar-accent-foreground: 220 10% 96%;
     --sidebar-border: 220 10% 22%;
-    --sidebar-ring: 180 60% 45%;
+    --sidebar-ring: 180 55% 42%;
 
     --header-background: 220 15% 12%;
     --header-foreground: 220 10% 96%;
-    --header-muted-foreground: 270 60% 60%;
+    --header-muted-foreground: 220 10% 60%;
   }
   .dyslexia {
-    --background: 210 20% 93%; /* very light blue-gray */
-    --foreground: 220 15% 20%; /* dark blue-gray */
-    --card: 210 20% 98%; /* off-white */
+    --background: 210 20% 93%;
+    --foreground: 220 15% 20%;
+    --card: 210 20% 98%;
     --card-foreground: 220 15% 20%;
     --popover: 210 20% 98%;
     --popover-foreground: 220 15% 20%;
 
-    --primary: 220 80% 45%; /* strong blue */
-    --primary-foreground: 0 0% 100%; /* white */
+    --primary: 220 80% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 210 16% 80%; /* light blue-gray */
+    --secondary: 210 16% 80%;
     --secondary-foreground: 220 15% 20%;
 
-    --muted: 210 16% 85%; /* muted blue-gray */
+    --muted: 210 16% 85%;
     --muted-foreground: 220 15% 40%;
 
-    --accent: 30 100% 70%; /* soft orange for highlights */
+    --accent: 210 16% 85%;
     --accent-foreground: 220 15% 20%;
 
-    --destructive: 0 80% 60%; /* strong red for errors */
+    --destructive: 0 80% 42%;
     --destructive-foreground: 0 0% 100%;
+
+    --success: 142 48% 32%;
+    --success-foreground: 0 0% 100%;
+    --warning: 38 90% 38%;
+    --warning-foreground: 0 0% 100%;
+    --info: 210 80% 38%;
+    --info-foreground: 0 0% 100%;
 
     --border: 220 13% 40%;
     --input: 220 13% 40%;
-    --ring: 220 80% 60%;
+    --ring: 220 80% 38%;
 
-    --chart-1: 220 80% 45%; /* blue */
-    --chart-2: 30 100% 70%; /* orange */
-    --chart-3: 120 40% 50%; /* green */
-    --chart-4: 270 60% 60%; /* purple */
-    --chart-5: 0 80% 60%; /* red */
+    --chart-1: 220 80% 45%;
+    --chart-2: 30 100% 70%;
+    --chart-3: 120 40% 50%;
+    --chart-4: 270 60% 60%;
+    --chart-5: 0 80% 60%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 210 20% 93%;
+    --sidebar-background-secondary: 210 20% 98%;
     --sidebar-foreground: 220 15% 20%;
-    --sidebar-primary: 220 80% 45%;
-    --sidebar-accent: 30 100% 70%;
+    --sidebar-foreground-secondary: 220 15% 20%;
+    --sidebar-muted-foreground-secondary: 220 15% 40%;
+    --sidebar-primary: 220 80% 38%;
+    --sidebar-accent: 210 16% 80%;
     --sidebar-accent-foreground: 220 15% 20%;
     --sidebar-border: 220 13% 40%;
-    --sidebar-ring: 220 80% 60%;
+    --sidebar-ring: 220 80% 38%;
+
+    --header-background: 210 20% 93%;
+    --header-foreground: 220 15% 20%;
+    --header-muted-foreground: 220 15% 40%;
   }
   .tritanopia {
-    /* Backgrounds and foregrounds: high contrast, avoid blue/yellow confusion */
-    --background: 0 0% 95%; /* very light gray */
-    --foreground: 240 5% 10%; /* very dark blue-gray */
+    --background: 0 0% 95%;
+    --foreground: 240 5% 10%;
     --card: 0 0% 100%;
     --card-foreground: 240 5% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 5% 10%;
 
-    /* Primary: red (safe for tritanopia) */
-    --primary: 0 80% 50%; /* strong red */
-    --primary-foreground: 0 0% 100%; /* white */
+    --primary: 0 80% 42%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: green (safe for tritanopia) */
-    --secondary: 120 40% 80%; /* light green */
+    --secondary: 120 40% 80%;
     --secondary-foreground: 240 5% 10%;
 
-    /* Muted: neutral gray */
     --muted: 0 0% 90%;
     --muted-foreground: 240 5% 40%;
 
-    /* Accent: pink (safe for tritanopia) */
-    --accent: 330 60% 70%; /* soft pink */
+    --accent: 0 0% 90%;
     --accent-foreground: 240 5% 10%;
 
-    /* Destructive: dark red */
-    --destructive: 0 70% 40%; /* dark red */
+    --destructive: 0 70% 32%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders and rings: dark gray */
+    --success: 120 40% 32%;
+    --success-foreground: 0 0% 100%;
+    --warning: 330 60% 38%;
+    --warning-foreground: 0 0% 100%;
+    --info: 0 0% 32%;
+    --info-foreground: 0 0% 100%;
+
     --border: 220 13% 40%;
     --input: 220 13% 40%;
-    --ring: 0 80% 60%;
+    --ring: 0 80% 42%;
 
-    /* Chart colors: red, green, pink, orange, gray */
-    --chart-1: 0 80% 50%; /* red */
-    --chart-2: 120 40% 50%; /* green */
-    --chart-3: 330 60% 60%; /* pink */
-    --chart-4: 30 90% 60%; /* orange */
-    --chart-5: 0 0% 50%; /* gray */
+    --chart-1: 0 80% 50%;
+    --chart-2: 120 40% 50%;
+    --chart-3: 330 60% 60%;
+    --chart-4: 30 90% 60%;
+    --chart-5: 0 0% 50%;
 
     --radius: 0.5rem;
 
-    /* Sidebar and header: red and green for contrast */
-    --sidebar-background: 0 80% 50%;
+    --sidebar-background: 0 80% 42%;
+    --sidebar-background-secondary: 0 0% 100%;
     --sidebar-foreground: 0 0% 100%;
+    --sidebar-foreground-secondary: 240 5% 10%;
+    --sidebar-muted-foreground-secondary: 240 5% 40%;
     --sidebar-primary: 120 40% 80%;
-    --sidebar-accent: 330 60% 70%;
-    --sidebar-accent-foreground: 240 5% 10%;
+    --sidebar-accent: 0 80% 32%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 40%;
-    --sidebar-ring: 0 80% 60%;
+    --sidebar-ring: 0 80% 42%;
+
+    --header-background: 0 0% 95%;
+    --header-foreground: 240 5% 10%;
+    --header-muted-foreground: 240 5% 40%;
   }
   .deuteranopia {
-    /* Backgrounds and foregrounds: use high contrast, avoid red/green confusion */
-    --background: 0 0% 95%; /* very light gray */
-    --foreground: 240 5% 10%; /* very dark blue-gray */
+    --background: 0 0% 95%;
+    --foreground: 240 5% 10%;
     --card: 0 0% 100%;
     --card-foreground: 240 5% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 5% 10%;
 
-    /* Primary: blue (safe for deuteranopia) */
-    --primary: 220 80% 45%; /* strong blue */
-    --primary-foreground: 0 0% 100%; /* white */
+    --primary: 220 80% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: yellow/orange (safe for deuteranopia) */
-    --secondary: 45 90% 85%; /* pale yellow */
+    --secondary: 45 90% 85%;
     --secondary-foreground: 240 5% 10%;
 
-    /* Muted: neutral gray */
     --muted: 0 0% 90%;
     --muted-foreground: 240 5% 40%;
 
-    /* Accent: purple (safe for deuteranopia) */
-    --accent: 270 60% 70%; /* soft purple */
+    --accent: 0 0% 90%;
     --accent-foreground: 240 5% 10%;
 
-    /* Destructive: blue-gray (avoid red/green) */
-    --destructive: 210 16% 45%; /* blue-gray */
+    --destructive: 210 16% 38%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders and rings: dark blue-gray */
+    --success: 220 80% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 90% 38%;
+    --warning-foreground: 240 5% 10%;
+    --info: 270 50% 38%;
+    --info-foreground: 0 0% 100%;
+
     --border: 220 13% 40%;
     --input: 220 13% 40%;
-    --ring: 220 80% 60%;
+    --ring: 220 80% 38%;
 
-    /* Chart colors: blue, yellow, purple, orange, cyan */
-    --chart-1: 220 80% 45%; /* blue */
-    --chart-2: 45 90% 60%; /* yellow */
-    --chart-3: 270 60% 60%; /* purple */
-    --chart-4: 30 90% 60%; /* orange */
-    --chart-5: 180 60% 50%; /* cyan */
+    --chart-1: 220 80% 45%;
+    --chart-2: 45 90% 60%;
+    --chart-3: 270 60% 60%;
+    --chart-4: 30 90% 60%;
+    --chart-5: 180 60% 50%;
 
     --radius: 0.5rem;
 
-    /* Sidebar and header: blue and yellow for contrast */
-    --sidebar-background: 220 80% 45%;
+    --sidebar-background: 220 80% 38%;
+    --sidebar-background-secondary: 0 0% 100%;
     --sidebar-foreground: 0 0% 100%;
+    --sidebar-foreground-secondary: 240 5% 10%;
+    --sidebar-muted-foreground-secondary: 240 5% 40%;
     --sidebar-primary: 45 90% 85%;
-    --sidebar-accent: 270 60% 70%;
-    --sidebar-accent-foreground: 240 5% 10%;
+    --sidebar-accent: 220 80% 28%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 40%;
-    --sidebar-ring: 220 80% 60%;
+    --sidebar-ring: 220 80% 38%;
+
+    --header-background: 0 0% 95%;
+    --header-foreground: 240 5% 10%;
+    --header-muted-foreground: 240 5% 40%;
   }
   .protanopia {
-    /* Backgrounds and foregrounds: high contrast, avoid reds/greens */
-    --background: 0 0% 95%; /* very light gray */
-    --foreground: 240 5% 10%; /* very dark blue-gray */
+    --background: 0 0% 95%;
+    --foreground: 240 5% 10%;
     --card: 0 0% 100%;
     --card-foreground: 240 5% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 5% 10%;
 
-    /* Primary: blue (safe for protanopia) */
-    --primary: 220 80% 45%; /* strong blue */
-    --primary-foreground: 0 0% 100%; /* white */
+    --primary: 220 80% 38%;
+    --primary-foreground: 0 0% 100%;
 
-    /* Secondary: yellow/orange (safe for protanopia) */
-    --secondary: 45 90% 85%; /* pale yellow */
+    --secondary: 45 90% 85%;
     --secondary-foreground: 240 5% 10%;
 
-    /* Muted: neutral gray */
     --muted: 0 0% 90%;
     --muted-foreground: 240 5% 40%;
 
-    /* Accent: purple (safe for protanopia) */
-    --accent: 270 60% 70%; /* soft purple */
+    --accent: 0 0% 90%;
     --accent-foreground: 240 5% 10%;
 
-    /* Destructive: blue-gray (avoid red/green) */
-    --destructive: 210 16% 45%; /* blue-gray */
+    --destructive: 210 16% 38%;
     --destructive-foreground: 0 0% 100%;
 
-    /* Borders and rings: dark blue-gray */
+    --success: 220 80% 38%;
+    --success-foreground: 0 0% 100%;
+    --warning: 45 90% 38%;
+    --warning-foreground: 240 5% 10%;
+    --info: 270 50% 38%;
+    --info-foreground: 0 0% 100%;
+
     --border: 220 13% 40%;
     --input: 220 13% 40%;
-    --ring: 220 80% 60%;
+    --ring: 220 80% 38%;
 
-    /* Chart colors: blue, yellow, purple, orange, cyan */
-    --chart-1: 220 80% 45%; /* blue */
-    --chart-2: 45 90% 60%; /* yellow */
-    --chart-3: 270 60% 60%; /* purple */
-    --chart-4: 30 90% 60%; /* orange */
-    --chart-5: 180 60% 50%; /* cyan */
+    --chart-1: 220 80% 45%;
+    --chart-2: 45 90% 60%;
+    --chart-3: 270 60% 60%;
+    --chart-4: 30 90% 60%;
+    --chart-5: 180 60% 50%;
 
     --radius: 0.5rem;
 
-    /* Sidebar and header: blue and yellow for contrast */
-    --sidebar-background: 220 80% 45%;
+    --sidebar-background: 220 80% 38%;
+    --sidebar-background-secondary: 0 0% 100%;
     --sidebar-foreground: 0 0% 100%;
+    --sidebar-foreground-secondary: 240 5% 10%;
+    --sidebar-muted-foreground-secondary: 240 5% 40%;
     --sidebar-primary: 45 90% 85%;
-    --sidebar-accent: 270 60% 70%;
-    --sidebar-accent-foreground: 240 5% 10%;
+    --sidebar-accent: 220 80% 28%;
+    --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 40%;
-    --sidebar-ring: 220 80% 60%;
+    --sidebar-ring: 220 80% 38%;
+
+    --header-background: 0 0% 95%;
+    --header-foreground: 240 5% 10%;
+    --header-muted-foreground: 240 5% 40%;
   }
 }
 
 @layer base {
   html {
-    font-size: 16px; /* Base font size: 14px instead of default 16px */
+    font-size: 16px;
     overflow-x: hidden;
   }
   * {

@@ -7,7 +7,7 @@ exports[`ListSkeleton Component matches the snapshot 1`] = `
     role="list-skeleton"
   >
     <div
-      class="flex flex-row items-center justify-between text-gray-500"
+      class="text-muted-foreground flex flex-row items-center justify-between"
       role="header-skeleton"
     >
       <div

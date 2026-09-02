@@ -1,8 +1,8 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import CheckboxToggle from '@/components/ui/checkbox-toggle'
 import { FormControl, FormField, FormItem } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
 import { Edit, GripVertical, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -51,7 +51,7 @@ const FilterLineForm: React.FC<FilterLineFormProps> = ({
         type="button"
         className={cn(
           'text-muted-foreground hover:text-foreground shrink-0 cursor-grab touch-none rounded p-1 transition-colors',
-          grabbing && 'cursor-grabbing text-foreground'
+          grabbing && 'text-foreground cursor-grabbing'
         )}
         aria-label={t('list.drag_handle.string')}
         onMouseDown={() => setGrabbing(true)}
@@ -69,7 +69,7 @@ const FilterLineForm: React.FC<FilterLineFormProps> = ({
         render={({ field: toggleField }) => (
           <FormItem className="flex shrink-0 items-center space-y-0">
             <FormControl>
-              <CheckboxToggle
+              <Switch
                 checked={toggleField.value}
                 onCheckedChange={toggleField.onChange}
                 aria-label={t('aria.toggle_filter.string')}
@@ -103,7 +103,7 @@ const FilterLineForm: React.FC<FilterLineFormProps> = ({
         </Badge>
       )}
 
-      <div className="flex shrink-0 items-center opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100">
+      <div className="flex shrink-0 items-center opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within:opacity-100 sm:group-hover:opacity-100">
         <Button
           type="button"
           size="icon"

@@ -22,9 +22,9 @@ describe('getPriorityLevel', () => {
 })
 
 describe('getPriorityBadgeClassName', () => {
-  it('uses red for high, amber for medium, sky for low', () => {
-    expect(getPriorityBadgeClassName('high')).toMatch(/red/)
-    expect(getPriorityBadgeClassName('medium')).toMatch(/amber/)
-    expect(getPriorityBadgeClassName('low')).toMatch(/sky/)
+  it('uses destructive for high, warning for medium, info for low', () => {
+    expect(getPriorityBadgeClassName('high')).toMatch(/destructive/)
+    expect(getPriorityBadgeClassName('medium')).toMatch(/warning/)
+    expect(getPriorityBadgeClassName('low')).toMatch(/info/)
   })
 })

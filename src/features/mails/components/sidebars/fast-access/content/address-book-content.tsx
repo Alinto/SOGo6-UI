@@ -64,7 +64,7 @@ function EntryRow({
   const { navigateApp } = useOfflineNav()
   return (
     <div
-      className="group hover:bg-sidebar-accent/50 flex items-center gap-0.5 rounded-md transition-colors"
+      className="group hover:bg-sidebar-foreground/10 flex items-center gap-0.5 rounded-md transition-colors"
       data-testid={testId}
     >
       <button

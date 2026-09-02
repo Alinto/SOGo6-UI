@@ -397,7 +397,11 @@ describe('Sidebar Components', () => {
       </SidebarProvider>
     )
 
-    expect(screen.getByText('Action')).toBeInTheDocument()
+    const action = screen.getByText('Action')
+    expect(action).toBeInTheDocument()
+    expect(action).toHaveClass('h-5', 'w-5')
+    expect(action.className).toContain('[&>svg]:h-4')
+    expect(action.className).toContain('[&>svg]:w-4')
   })
 
   it('renders SidebarGroupContent', () => {
@@ -522,7 +526,10 @@ describe('Sidebar Components', () => {
       </SidebarProvider>
     )
 
-    expect(screen.getByText('Menu Button')).toBeInTheDocument()
+    const button = screen.getByText('Menu Button')
+    expect(button).toBeInTheDocument()
+    expect(button).toHaveClass('hover:bg-sidebar-foreground/10')
+    expect(button).toHaveClass('hover:text-sidebar-accent-foreground')
   })
 
   it('renders SidebarMenuItem', () => {

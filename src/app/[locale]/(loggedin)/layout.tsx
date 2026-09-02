@@ -192,9 +192,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         >
           <MailDragSession />
           <AppSidebar />
-          <SidebarInset className="flex h-screen min-w-0 flex-col overflow-x-hidden">
+          <SidebarInset className="flex h-screen min-w-0 flex-col overflow-hidden">
             <AppHeader />
-            <div className="min-h-0 min-w-0 flex-1 gap-4 overflow-x-hidden border-y">
+            <div className="min-h-0 min-w-0 flex-1 overflow-hidden border-y">
               {children}
             </div>
           </SidebarInset>
@@ -209,7 +209,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   />
                 ) : activeDrag ? (
                   <div className="h-10 w-10">
-                    <Contact2 className="h-7 w-7 text-gray-700" />
+                    <Contact2 className="text-muted-foreground h-7 w-7" />
                   </div>
                 ) : null}
               </DragOverlay>,

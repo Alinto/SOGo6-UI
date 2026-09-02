@@ -72,7 +72,7 @@ function TaskRow({
   return (
     <div
       data-testid="task-row"
-      className="hover:bg-sidebar-accent/50 flex items-start gap-2 rounded-md px-1 py-1 transition-colors"
+      className="hover:bg-sidebar-foreground/10 flex items-start gap-2 rounded-md px-1 py-1 transition-colors"
     >
       <TaskCompleteCheckbox
         completed={false}

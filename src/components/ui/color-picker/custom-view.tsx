@@ -205,7 +205,7 @@ const DraggableColorCanvas = ({
   return (
     <div
       ref={colorAreaRef}
-      className="h-48 w-full touch-auto overscroll-none rounded-xl border border-zinc-200 dark:touch-auto dark:border-zinc-700"
+      className="border-border h-48 w-full touch-auto overscroll-none rounded-xl border"
       style={{
         background: `linear-gradient(to top, #000, transparent, #fff), linear-gradient(to left, hsl(${h}, 100%, 50%), #bbb)`,
         position: 'relative',
@@ -215,7 +215,7 @@ const DraggableColorCanvas = ({
       onTouchStart={handleTouchStart}
     >
       <div
-        className="color-selector border-4 border-white ring-1 ring-zinc-200 dark:border-zinc-900 dark:ring-zinc-700"
+        className="color-selector ring-border border-4 border-white ring-1"
         style={{
           position: 'absolute',
           width: '20px',
@@ -275,7 +275,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             '--thumb-ring-color': '#666666',
           } as React.CSSProperties
         }
-        className="z-30 flex w-full max-w-[300px] flex-col items-center gap-3 overscroll-none rounded-2xl border border-zinc-200 bg-white p-4 shadow-md select-none dark:border-zinc-700 dark:bg-zinc-900"
+        className="border-border bg-popover z-30 flex w-full max-w-[300px] flex-col items-center gap-3 overscroll-none rounded-2xl border p-4 shadow-md select-none"
       >
         <DraggableColorCanvas
           {...color}
@@ -297,7 +297,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
           min="0"
           max="360"
           value={color.h}
-          className="dark:border-zinc-7000 h-3 w-full cursor-pointer appearance-none rounded-full border border-zinc-200 bg-white text-white placeholder:text-white dark:border-zinc-700"
+          className="border-border bg-background h-3 w-full cursor-pointer appearance-none rounded-full border"
           style={{
             background: `linear-gradient(to right, 
             hsl(0, 100%, 50%), 
@@ -319,7 +319,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
         />
         <div className="relative h-fit w-full">
           <div className="absolute inset-y-0 left-0 mt-[30px] flex h-full items-center px-2">
-            <HashIcon className="size-4 text-zinc-600" />
+            <HashIcon className="text-muted-foreground size-4" />
           </div>
         </div>
         <div className="flex w-full items-center justify-between gap-2">
@@ -327,7 +327,7 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             id="color-value"
             ActionComponent={
               <div
-                className="size-7 rounded-md border border-zinc-200 dark:border-zinc-800"
+                className="border-border size-7 rounded-md border"
                 style={{
                   backgroundColor: `hsl(${color.h}, ${color.s}%, ${color.l}%)`,
                 }}
@@ -335,23 +335,13 @@ const ColorPicker: React.FC<ColorPickerProps> = ({
             }
             className={clsx(
               'flex w-full items-center justify-between rounded-lg border p-2 text-sm focus:ring-1',
-              //10 px for the paddng on the hashtag, 16px for the icon
               'pl-[26px]',
-              // 10px for the padding on the color badge, 28px for the color badge
               'pr-[38px]',
-              // bg & text
-              'bg-black/[2.5%] text-zinc-700 dark:bg-white/[2.5%] dark:text-zinc-200',
-              // borders & backgrounds
-              'border-zinc-200 dark:border-zinc-700',
-              // hover classes
-              'hover:border-zinc-300',
-              'dark:hover:border-zinc-600',
-              // focus classes
-              'focus:border-zinc-300 focus:ring-zinc-300',
-              'dark:focus:border-zinc-600 dark:focus:ring-zinc-600',
-              // selection styles
-              'selection:bg-black/20 selection:text-black',
-              'dark:selection:bg-white/30 dark:selection:text-white'
+              'bg-muted text-foreground',
+              'border-border',
+              'hover:border-ring',
+              'focus:border-ring focus:ring-ring',
+              'selection:bg-primary/20 selection:text-foreground'
             )}
             value={color.hex}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => {

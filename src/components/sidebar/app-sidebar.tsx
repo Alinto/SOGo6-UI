@@ -22,7 +22,7 @@ export function AppSidebar(): React.JSX.Element {
         className="scrollbar-thin-gray mt-1 overflow-y-auto p-0 pt-1 [scrollbar-gutter:auto]! group-data-[state=collapsed]:overflow-visible"
         style={{
           scrollbarWidth: 'thin',
-          scrollbarColor: '#d1d5db transparent',
+          scrollbarColor: 'hsl(var(--sidebar-foreground) / 0.35) transparent',
           scrollbarGutter: 'stable',
         }}
       >

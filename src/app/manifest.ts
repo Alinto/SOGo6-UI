@@ -2,8 +2,8 @@ import { pwaStartUrl } from '@/features/offline/pwa-start-url'
 import { getDefaultLocale } from '@/lib/i18n/config'
 import type { MetadataRoute } from 'next'
 
-const PWA_THEME_COLOR = '#1a56db'
-const PWA_BACKGROUND_COLOR = '#0b1220'
+const PWA_THEME_COLOR = '#3b6868'
+const PWA_BACKGROUND_COLOR = '#1a1d23'
 
 export default function manifest(): MetadataRoute.Manifest {
   const startUrl = pwaStartUrl()

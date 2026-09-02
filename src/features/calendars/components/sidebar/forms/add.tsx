@@ -7,13 +7,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { SidebarGroupAction } from '@/components/ui/sidebar'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { useCreateCalendarMutation } from '@/features/calendars/store/calendars-api'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 import { useForm } from 'react-hook-form'
-import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { schema, type CalendarAddFormData } from './add-schema'
 import CalendarFormCore from './calendar-form-core'
 
@@ -60,6 +60,7 @@ const AddCalendar: React.FC<AddCalendarProps> = () => {
       <DialogTrigger asChild>
         <SidebarGroupAction title={t('sidebar.add.string')}>
           <Plus />
+          <span className="sr-only">{t('sidebar.add.string')}</span>
         </SidebarGroupAction>
       </DialogTrigger>
       <DialogContent className="scrollbar-thin-gray max-w-[calc(100vw-2rem)] sm:max-w-2xl">

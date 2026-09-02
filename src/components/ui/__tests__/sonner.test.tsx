@@ -51,6 +51,14 @@ describe('Toaster (sonner UI component)', () => {
     expect(callArgs.theme).toBe('dark')
   })
 
+  it('maps accessibility themes to light for Sonner', () => {
+    mockUseTheme.mockReturnValue({ theme: 'dyslexia' })
+    render(<Toaster />)
+
+    const callArgs = (SonnerToaster as unknown as jest.Mock).mock.calls[0][0]
+    expect(callArgs.theme).toBe('light')
+  })
+
   it('sets correct className', () => {
     render(<Toaster />)
 

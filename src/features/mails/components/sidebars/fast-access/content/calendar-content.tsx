@@ -58,7 +58,7 @@ function EventRow({ event, color }: { event: CalendarEvent; color?: string }) {
     : `${formatTime(event.date_start)} – ${formatTime(event.date_end)}`
 
   return (
-    <div className="hover:bg-sidebar-accent/50 flex items-start gap-2 rounded-md px-2 py-1.5 text-sm transition-colors">
+    <div className="hover:bg-sidebar-foreground/10 flex items-start gap-2 rounded-md px-2 py-1.5 text-sm transition-colors">
       <span
         className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full"
         style={{ backgroundColor: color ?? '#3b82f6' }}

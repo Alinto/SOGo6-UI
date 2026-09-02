@@ -18,7 +18,7 @@ function OfflineBanner() {
       role="status"
       aria-live="polite"
       className={cn(
-        'bg-amber-600 text-white',
+        'bg-warning text-warning-foreground',
         'flex items-center justify-center gap-2 px-3 py-1.5 text-sm'
       )}
     >

@@ -105,7 +105,7 @@ const ModuleRail: React.FC = () => {
                 <SidebarMenuItem key={item.id} className="mt-4 align-middle">
                   <SidebarMenuButton
                     className={cn(
-                      'text-sidebar-foreground-secondary hover:bg-sidebar-accent hover:text-sidebar-accent-foreground [&_svg]:size-5'
+                      'text-sidebar-foreground-secondary [&_svg]:size-5'
                     )}
                     onClick={() => handleSelect(item.id)}
                     data-active={

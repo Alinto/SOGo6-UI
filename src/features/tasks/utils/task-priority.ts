@@ -21,10 +21,10 @@ export function getPriorityBadgeClassName(
 ): string {
   switch (level) {
     case 'high':
-      return 'bg-red-500/15 text-red-700 dark:text-red-400'
+      return 'bg-destructive/15 text-destructive'
     case 'medium':
-      return 'bg-amber-500/15 text-amber-800 dark:text-amber-400'
+      return 'bg-warning/15 text-warning'
     case 'low':
-      return 'bg-sky-500/15 text-sky-700 dark:text-sky-400'
+      return 'bg-info/15 text-info'
   }
 }

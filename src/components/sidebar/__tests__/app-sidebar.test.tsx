@@ -147,7 +147,9 @@ describe('AppSidebar Component', () => {
       const styles = content.style
 
       expect(styles.scrollbarWidth).toBe('thin')
-      expect(styles.scrollbarColor).toBe('#d1d5db transparent')
+      expect(styles.scrollbarColor).toBe(
+        'hsl(var(--sidebar-foreground) / 0.35) transparent'
+      )
       expect(styles.scrollbarGutter).toBe('stable')
     })
   })

@@ -10,13 +10,13 @@ import {
 } from '@/components/ui/sidebar'
 import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
 import { useRouter } from '@/lib/i18n/navigation'
-import { useTranslations } from 'next-intl'
 import { Contact2 } from 'lucide-react'
+import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import React, { memo } from 'react'
+import { memo } from 'react'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
-import AddAddressBook from './forms/add'
 import CreateContactOpener from './create-contact-opener'
+import AddAddressBook from './forms/add'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -51,14 +51,14 @@ function Sidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarGroup>
-      <SidebarGroup className="px-0">
+      <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('personals.string')}</SidebarGroupLabel>
         <AddAddressBook type={'personals'} />
         <SidebarGroupContent>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
-                className="h-10"
+                className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
                 isActive={activeBookId === ALL_CONTACTS_BOOK_ID}
                 onClick={() => push(`/address_books/${ALL_CONTACTS_BOOK_ID}`)}
                 tooltip={t('all_contacts.string')}
@@ -80,7 +80,7 @@ function Sidebar() {
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
-      <SidebarGroup className="px-0">
+      <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('subscriptions.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {subscriptions.map((book) => (
@@ -98,7 +98,7 @@ function Sidebar() {
           ))}
         </SidebarMenu>
       </SidebarGroup>
-      <SidebarGroup className="px-0">
+      <SidebarGroup className="pb-4 group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('globals.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {globals.map((book) => (

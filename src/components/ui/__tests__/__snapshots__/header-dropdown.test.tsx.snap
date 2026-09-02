@@ -15,7 +15,7 @@ exports[`HeaderDropdown component matches snapshot 1`] = `
         </span>
       </div>
       <div
-        class="text-muted-foreground dark:text-foreground text-sm"
+        class="text-header-foreground text-sm"
       >
         <div>
           John Doe

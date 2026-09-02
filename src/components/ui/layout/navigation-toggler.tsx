@@ -16,6 +16,9 @@ const MODULE_HREF: Record<string, string> = {
   tasks: '/tasks',
 }
 
+const MODULE_TAB_TRIGGER_CLASS =
+  'text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:hover:bg-sidebar-accent data-[state=active]:shadow-none h-full py-0 leading-none cursor-pointer'
+
 const NavigationToggler: React.FC<NavigationTogglerProps> = ({
   className = '',
 }) => {
@@ -64,32 +67,32 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
         if (href) navigateApp(href)
       }}
     >
-      <TabsList className="border-sidebar-foreground/20 bg-sidebar grid h-10 w-full grid-cols-4 border px-1 py-1">
+      <TabsList className="border-sidebar-foreground/20 bg-sidebar grid h-10 w-full grid-cols-4 items-stretch border px-1 py-1">
         <TabsTrigger
           value="mail"
           aria-label="Mail"
-          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+          className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.Mail className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="address_books"
           aria-label="Address Books"
-          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+          className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.AddressBook className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="calendars"
           aria-label="Calendars"
-          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+          className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.Calendar className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="tasks"
           aria-label="Tasks"
-          className="text-sidebar-foreground hover:text-foreground data-[state=active]:text-foreground cursor-pointer"
+          className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.Tasks className="h-6 w-6" />
         </TabsTrigger>

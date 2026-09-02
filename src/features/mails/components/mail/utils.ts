@@ -247,8 +247,8 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
         display: block;
         font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         line-height: 1.6;
-        color: #18181b;
-        background: #ffffff;
+        color: hsl(var(--foreground));
+        background: hsl(var(--background));
       }
       
       /* Reset de base */
@@ -266,12 +266,12 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
       
       /* Liens */
       a {
-        color: #2563eb;
+        color: hsl(var(--primary));
         text-decoration: underline;
       }
       
       a:hover {
-        color: #1d4ed8;
+        color: hsl(var(--primary));
       }
       
       /* Listes */
@@ -293,13 +293,13 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
       
       td, th {
         padding: 0.5em;
-        border: 1px solid #e5e7eb;
+        border: 1px solid hsl(var(--border));
         text-align: left;
       }
       
       th {
         font-weight: 600;
-        background: #f9fafb;
+        background: hsl(var(--muted));
       }
       
       /* Typographie */
@@ -319,7 +319,7 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
       
       /* Code */
       code {
-        background: #f3f4f6;
+        background: hsl(var(--muted));
         padding: 0.125em 0.25em;
         border-radius: 0.25em;
         font-family: ui-monospace, monospace;
@@ -327,7 +327,7 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
       }
       
       pre {
-        background: #f3f4f6;
+        background: hsl(var(--muted));
         padding: 1em;
         border-radius: 0.5em;
         overflow-x: auto;
@@ -344,14 +344,14 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
       blockquote {
         margin: 1em 0;
         padding-left: 1em;
-        border-left: 3px solid #e5e7eb;
-        color: #6b7280;
+        border-left: 3px solid hsl(var(--border));
+        color: hsl(var(--muted-foreground));
       }
       
       /* Horizontal rule */
       hr {
         border: none;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid hsl(var(--border));
         margin: 1.5em 0;
       }
     `

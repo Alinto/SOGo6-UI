@@ -53,6 +53,14 @@ jest.mock('@/components/ui/tooltip', () => ({
   ),
 }))
 
+jest.mock('@/components/ui/buttons/tooltip-button', () => ({
+  TooltipButton: ({ children, tooltip, onClick, type }: any) => (
+    <button type={type} data-tooltip={tooltip} onClick={onClick}>
+      {children}
+    </button>
+  ),
+}))
+
 jest.mock('lucide-react', () => ({
   Paperclip: () => <span data-testid="paperclip-icon">📎</span>,
   Star: ({ onClick }: any) => (
@@ -69,6 +77,8 @@ jest.mock('lucide-react', () => ({
   Forward: () => <span data-testid="forward-icon" />,
   Reply: () => <span data-testid="reply-icon" />,
   User: () => <span data-testid="user-icon" />,
+  Inbox: () => <span data-testid="inbox-icon" />,
+  ShieldX: () => <span data-testid="shield-x-icon" />,
 }))
 
 jest.mock('../list-item-utils', () => ({

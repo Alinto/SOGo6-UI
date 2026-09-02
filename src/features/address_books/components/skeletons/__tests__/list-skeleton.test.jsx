@@ -32,7 +32,7 @@ describe('ListSkeleton Component', () => {
     render(<ListSkeleton />)
     const header = screen.getByRole('header-skeleton')
     expect(header).toHaveClass(
-      'flex flex-row items-center justify-between text-gray-500'
+      'text-muted-foreground flex flex-row items-center justify-between'
     )
   })
   it('renders the header item with the correct classnames', () => {

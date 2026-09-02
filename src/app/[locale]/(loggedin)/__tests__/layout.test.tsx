@@ -311,9 +311,9 @@ describe('Layout Component', () => {
 
     const mainContainer = screen
       .getByTestId('sidebar-inset')
-      .querySelector('div[class*="gap-4"]')
-    expect(mainContainer).toHaveClass('gap-4')
+      .querySelector('div[class*="border-y"]')
     expect(mainContainer).toHaveClass('border-y')
+    expect(mainContainer).toHaveClass('overflow-hidden')
   })
 
   it('should wrap content in DndContext', () => {
@@ -441,7 +441,7 @@ describe('Layout Component', () => {
 
       const contentArea = screen
         .getByTestId('sidebar-inset')
-        .querySelector('div[class*="gap-4"]')
+        .querySelector('div[class*="border-y"]')
       expect(contentArea).toBeInTheDocument()
     })
   })
@@ -487,7 +487,7 @@ describe('Layout Component', () => {
       expect(screen.getByTestId('contact-icon')).toHaveClass(
         'h-7',
         'w-7',
-        'text-gray-700'
+        'text-muted-foreground'
       )
     })
   })

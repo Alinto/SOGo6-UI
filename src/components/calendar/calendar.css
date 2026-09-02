@@ -677,11 +677,11 @@ button.rbc-input::-moz-focus-inner {
   text-overflow: ellipsis;
 }
 .rbc-current-time-indicator {
-  background-color: 2px solid hsl(var(--destructive)) !important;
+  background-color: hsl(var(--destructive)) !important;
   z-index: 3;
   position: absolute;
   pointer-events: none;
-  height: 1px;
+  height: 2px;
 }
 .rbc-agenda-empty {
   color: hsl(var(--muted-foreground));
@@ -698,6 +698,14 @@ button.rbc-input::-moz-focus-inner {
 /* SOGo desktop calendar (wrapper in calendar-view): block pointer events on
    date headers so DnD ghost does not show over non-droppable areas. Scoped to
    wrapper only. Descendants included because pointer-events is not inherited. */
+.sogo-calendar-wrapper .rbc-time-header.rbc-overflowing {
+  border-right: 1px solid hsl(var(--border));
+}
+
+.sogo-calendar-wrapper .rbc-time-content {
+  scrollbar-width: thin;
+}
+
 .sogo-calendar-wrapper .rbc-time-header .rbc-header,
 .sogo-calendar-wrapper .rbc-time-header .rbc-header * {
   pointer-events: none;

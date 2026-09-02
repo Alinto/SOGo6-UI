@@ -7,13 +7,13 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { useTranslations } from 'next-intl'
-import React, { memo, useMemo } from 'react'
 import {
   isPersonalCalendar,
   isSharedCalendar,
   isSubscriptionCalendar,
 } from '@/features/calendars/utils/calendar-source-type'
+import { useTranslations } from 'next-intl'
+import React, { memo, useMemo } from 'react'
 import { useGetCalendarsQuery } from '../../store/calendars-api'
 import CreateEventOpener from './create-event-opener'
 import AddCalendar from './forms/add'
@@ -50,7 +50,7 @@ const Sidebar: React.FC = () => {
         </SidebarMenu>
       </SidebarGroup>
 
-      <SidebarGroup className="px-0">
+      <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
         <AddCalendar type="personals" />
         <SidebarGroupContent>
@@ -72,7 +72,7 @@ const Sidebar: React.FC = () => {
         </SidebarGroupContent>
       </SidebarGroup>
 
-      <SidebarGroup className="px-0">
+      <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('sidebar.shared.string')}</SidebarGroupLabel>
         <SidebarMenu>
           {shared.map((calendar) => (
@@ -90,7 +90,7 @@ const Sidebar: React.FC = () => {
         </SidebarMenu>
       </SidebarGroup>
 
-      <SidebarGroup className="px-0">
+      <SidebarGroup className="pb-4 group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>
           {t('sidebar.subscriptions.string')}
         </SidebarGroupLabel>

@@ -32,9 +32,10 @@ interface VisualizationProps {
 
 const getStatusClassName = (status: NonNullable<CalendarEvent['status']>) =>
   cn(
-    status === 'confirmed' && 'border-green-200 bg-green-100 text-green-800',
-    status === 'tentative' && 'border-orange-200 bg-orange-100 text-orange-800',
-    status === 'cancelled' && 'border-red-200 bg-red-100 text-red-800'
+    status === 'confirmed' && 'border-success/30 bg-success/15 text-success',
+    status === 'tentative' && 'border-warning/30 bg-warning/15 text-warning',
+    status === 'cancelled' &&
+      'border-destructive/30 bg-destructive/15 text-destructive'
   )
 
 function formatReminderTimeBefore(
@@ -73,21 +74,21 @@ function AttendeeParticipationStatus({
   const config =
     status === 'accepted'
       ? {
-          dotClassName: 'bg-green-500',
+          dotClassName: 'bg-success',
           label: t('visualization.attendeeStatus.accepted.string'),
         }
       : status === 'declined'
         ? {
-            dotClassName: 'bg-red-500',
+            dotClassName: 'bg-destructive',
             label: t('visualization.attendeeStatus.declined.string'),
           }
         : status === 'tentative'
           ? {
-              dotClassName: 'bg-orange-500',
+              dotClassName: 'bg-warning',
               label: t('visualization.attendeeStatus.tentative.string'),
             }
           : {
-              dotClassName: 'bg-orange-500',
+              dotClassName: 'bg-warning',
               label: t('visualization.attendeeStatus.pending.string'),
             }
 

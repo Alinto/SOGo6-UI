@@ -46,7 +46,7 @@ export function MailboxQuota() {
           >
             <TriangleAlert
               aria-hidden
-              className="h-3.5 w-3.5 shrink-0 text-amber-500"
+              className="text-warning h-3.5 w-3.5 shrink-0"
             />
           </TooltipWrapper>
         )}

@@ -53,7 +53,8 @@ describe('User Settings Layout', () => {
     expect(layoutDiv).toHaveClass(
       'h-[calc(100vh-var(--header-height))]',
       'overflow-y-auto',
-      'p-2'
+      'p-2',
+      'pb-24'
     )
   })
 

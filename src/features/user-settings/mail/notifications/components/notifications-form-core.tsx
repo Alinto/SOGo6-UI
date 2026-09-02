@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import CheckboxToggle from '@/components/ui/checkbox-toggle'
 import {
   Form,
   FormControl,
@@ -17,6 +16,7 @@ import {
   FormLabel,
 } from '@/components/ui/form'
 import InputWithError from '@/components/ui/inputs/input-with-error'
+import { Switch } from '@/components/ui/switch'
 import SettingsFormActionBar from '@/features/user-settings/components/settings-form-action-bar'
 import TaggedEmailInput from '@/features/user-settings/components/tagged-email-input'
 import { MAX_NOTIFY_ADDRESSES } from '@/features/user-settings/mail/notifications/mail-notifications-constants'
@@ -114,7 +114,7 @@ function MailNotificationsSettingForm({ data, accountId, update }: Props) {
                   name="enabled"
                   render={({ field }) => (
                     <FormControl>
-                      <CheckboxToggle
+                      <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
                         aria-label={t('aria.toggle_notifications.string')}
@@ -193,7 +193,9 @@ function MailNotificationsSettingForm({ data, accountId, update }: Props) {
 
         <SettingsFormActionBar
           onReset={() =>
-            reset(mapMailNotificationToFormValues(data ?? createEmptyNotification()))
+            reset(
+              mapMailNotificationToFormValues(data ?? createEmptyNotification())
+            )
           }
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}

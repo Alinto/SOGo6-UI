@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { useRecipientSuggestions } from '@/features/address_books/hooks/use-recipient-suggestions'
 import { cn, tagDismissButtonClassName } from '@/lib/utils'
 import { Loader2, Search, UserPlus, X } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -13,17 +14,16 @@ import {
   useState,
   type KeyboardEvent,
 } from 'react'
-import { useRecipientSuggestions } from '@/features/address_books/hooks/use-recipient-suggestions'
 import type { AttendeeInputItem } from '../../calendars-types'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const isValidEmail = (email: string) => EMAIL_RE.test(email)
 
 const STATUS_STYLES: Record<string, string> = {
-  accepted: 'bg-emerald-500',
-  declined: 'bg-red-500',
-  tentative: 'bg-amber-400',
-  'needs-action': 'bg-gray-400',
+  accepted: 'bg-success',
+  declined: 'bg-destructive',
+  tentative: 'bg-warning',
+  'needs-action': 'bg-muted-foreground',
 }
 
 interface AttendeeInputProps {
@@ -218,7 +218,7 @@ export default function AttendeeInput({
                 <span
                   className={cn(
                     'h-1.5 w-1.5 shrink-0 rounded-full',
-                    STATUS_STYLES[attendee.status] ?? 'bg-gray-400'
+                    STATUS_STYLES[attendee.status] ?? 'bg-muted-foreground'
                   )}
                 />
               )}

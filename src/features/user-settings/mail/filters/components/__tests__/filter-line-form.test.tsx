@@ -1,19 +1,18 @@
-import '@testing-library/jest-dom'
 import { Form } from '@/components/ui/form'
+import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useForm } from 'react-hook-form'
 import { createEmptyFilter } from '../../mail-filters-utils'
-import type { FiltersFormValues } from '../filters-schema'
 import FilterLineForm from '../filter-line-form'
+import type { FiltersFormValues } from '../filters-schema'
 
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
-jest.mock('@/components/ui/checkbox-toggle', () => ({
-  __esModule: true,
-  default: ({
+jest.mock('@/components/ui/switch', () => ({
+  Switch: ({
     checked,
     onCheckedChange,
     'aria-label': ariaLabel,
@@ -90,9 +89,7 @@ describe('FilterLineForm', () => {
     const user = userEvent.setup()
     const onEdit = jest.fn()
     render(<Wrapper onEdit={onEdit} />)
-    await user.click(
-      screen.getByRole('button', { name: 'form.edit.string' })
-    )
+    await user.click(screen.getByRole('button', { name: 'form.edit.string' }))
     expect(onEdit).toHaveBeenCalledTimes(1)
   })
 

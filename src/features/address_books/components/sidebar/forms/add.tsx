@@ -14,7 +14,6 @@ import {
 import { InputWithLabel } from '@/components/ui/input'
 import { SidebarGroupAction } from '@/components/ui/sidebar'
 import { useAddAddressBookMutation } from '@/features/address_books/store/address-books-api'
-import { cn } from '@/lib/utils'
 import { Plus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useState } from 'react'
@@ -55,15 +54,8 @@ const AddAddressBook: React.FC<AddAddressBookProps> = ({ type }) => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <SidebarGroupAction
-          title={title}
-          className={cn(
-            'cursor-pointer',
-            'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
-            'aspect-square h-5 w-5'
-          )}
-        >
-          <Plus className="h-4 w-4" />
+        <SidebarGroupAction title={title}>
+          <Plus />
           <span className="sr-only">{title}</span>
         </SidebarGroupAction>
       </DialogTrigger>
@@ -83,7 +75,7 @@ const AddAddressBook: React.FC<AddAddressBookProps> = ({ type }) => {
               required
             />
           </div>
-          <DialogFooter className="gap-2 sm:justify-space-between">
+          <DialogFooter className="sm:justify-space-between gap-2">
             <DialogClose asChild>
               <Button type="button" variant="secondary" disabled={isLoading}>
                 {formT('cancel.default.string')}

@@ -16,10 +16,12 @@ describe('Calendars Layout', () => {
     expect(screen.getByText('Calendars Content')).toBeInTheDocument()
   })
 
-  it('should have correct height using CSS variable', () => {
+  it('should fill the parent pane without a second page scrollbar', () => {
     const { container } = render(<Layout>{mockChildren}</Layout>)
     const layoutDiv = container.firstChild as HTMLElement
-    expect(layoutDiv).toHaveClass('h-[calc(100vh-var(--header-height))]')
+    expect(layoutDiv).toHaveClass('h-full')
+    expect(layoutDiv).toHaveClass('min-h-0')
+    expect(layoutDiv).toHaveClass('overflow-hidden')
   })
 
   it('should have overflow-hidden to avoid double scroll with RBC', () => {
@@ -28,10 +30,10 @@ describe('Calendars Layout', () => {
     expect(layoutDiv).toHaveClass('overflow-hidden')
   })
 
-  it('should have vertical padding class', () => {
+  it('should have padding class', () => {
     const { container } = render(<Layout>{mockChildren}</Layout>)
     const layoutDiv = container.firstChild as HTMLElement
-    expect(layoutDiv).toHaveClass('py-2')
+    expect(layoutDiv).toHaveClass('p-2')
   })
 
   it('should render multiple children', () => {
@@ -48,11 +50,7 @@ describe('Calendars Layout', () => {
   it('should apply all styling classes', () => {
     const { container } = render(<Layout>{mockChildren}</Layout>)
     const layoutDiv = container.firstChild as HTMLElement
-    expect(layoutDiv).toHaveClass(
-      'h-[calc(100vh-var(--header-height))]',
-      'overflow-hidden',
-      'py-2'
-    )
+    expect(layoutDiv).toHaveClass('h-full', 'min-h-0', 'overflow-hidden', 'p-2')
   })
 
   it('should render with empty children', () => {

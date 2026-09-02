@@ -38,12 +38,8 @@ export function AgendaView({
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-muted-foreground text-center">
-          <p className="text-lg font-medium">
-            {t('schedule.noEvents.string')}
-          </p>
-          <p className="text-sm">
-            {t('schedule.noUpcomingEvents.string')}
-          </p>
+          <p className="text-lg font-medium">{t('schedule.noEvents.string')}</p>
+          <p className="text-sm">{t('schedule.noUpcomingEvents.string')}</p>
         </div>
       </div>
     )
@@ -69,14 +65,11 @@ export function AgendaView({
               className={cn(
                 'border-border bg-card flex gap-4 rounded-lg border p-4 transition-colors',
                 onEventClick &&
-                  'hover:bg-muted/50 cursor-pointer focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none'
+                  'hover:bg-muted/50 focus-visible:ring-ring cursor-pointer focus-visible:ring-2 focus-visible:outline-none'
               )}
               onClick={() => onEventClick?.(event)}
               onKeyDown={(e) => {
-                if (
-                  !onEventClick ||
-                  (e.key !== 'Enter' && e.key !== ' ')
-                ) {
+                if (!onEventClick || (e.key !== 'Enter' && e.key !== ' ')) {
                   return
                 }
                 e.preventDefault()
@@ -104,7 +97,9 @@ export function AgendaView({
                 <p className="text-muted-foreground mt-1 text-xs">
                   {format(eventDate, 'EEEE, MMMM d, yyyy')}
                 </p>
-                <p className="text-muted-foreground text-xs">{timeRangeLabel}</p>
+                <p className="text-muted-foreground text-xs">
+                  {timeRangeLabel}
+                </p>
                 {event.description && (
                   <p className="text-muted-foreground mt-2 line-clamp-2 text-xs">
                     {event.description}
@@ -115,7 +110,7 @@ export function AgendaView({
               {/* Status Indicator */}
               <div className="flex items-center justify-end">
                 {event.all_day && (
-                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700">
+                  <span className="bg-info/15 text-info inline-flex items-center rounded-full px-2 py-1 text-xs font-medium">
                     {t('forms.createCalendar.durationOptions.allDay.string')}
                   </span>
                 )}

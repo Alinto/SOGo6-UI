@@ -49,8 +49,7 @@ const ColorContainer: React.FC<ColorContainerProps> = ({
         variant={'ghost'}
         style={{ color: initialColor }}
         className={cn(
-          'relative -z-0 rounded-full text-sm font-medium transition-colors duration-75',
-          open ? 'text-slate-300' : 'text-slate-500'
+          'text-muted-foreground relative -z-0 rounded-full text-sm font-medium transition-colors duration-75'
         )}
       >
         <PaintBucket />

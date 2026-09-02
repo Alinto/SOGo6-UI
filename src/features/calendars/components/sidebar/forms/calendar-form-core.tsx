@@ -17,12 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { cn } from '@/lib/utils'
 import { Plus, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { UseFormReturn } from 'react-hook-form'
-import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import type {
   CalendarCreateFormData,
   CalendarEditFormData,
@@ -170,317 +170,333 @@ const CalendarFormCore: React.FC<CalendarFormCoreProps> = ({
 
           {formPrefix === 'editCalendar' && (
             <>
-          {/* Event Duration Field */}
-          <FormField
-            control={form.control}
-            name="eventDuration"
-            render={({ field }) => {
-              const defaultValue = t(
-                `forms.${formPrefix}.durationOptions.thirtyMinutes.string`
-              )
-              const currentValue = field.value || defaultValue
-              return (
-                <FormItem className="space-y-2">
-                  <FormLabel>
-                    {t(`forms.${formPrefix}.eventDuration.string`)}
-                  </FormLabel>
-                  <Select value={currentValue} onValueChange={field.onChange}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={defaultValue} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem
-                        value={t(
-                          `forms.${formPrefix}.durationOptions.thirtyMinutes.string`
-                        )}
+              {/* Event Duration Field */}
+              <FormField
+                control={form.control}
+                name="eventDuration"
+                render={({ field }) => {
+                  const defaultValue = t(
+                    `forms.${formPrefix}.durationOptions.thirtyMinutes.string`
+                  )
+                  const currentValue = field.value || defaultValue
+                  return (
+                    <FormItem className="space-y-2">
+                      <FormLabel>
+                        {t(`forms.${formPrefix}.eventDuration.string`)}
+                      </FormLabel>
+                      <Select
+                        value={currentValue}
+                        onValueChange={field.onChange}
                       >
-                        {t(
-                          `forms.${formPrefix}.durationOptions.thirtyMinutes.string`
-                        )}
-                      </SelectItem>
-                      <SelectItem
-                        value={t(
-                          `forms.${formPrefix}.durationOptions.oneHour.string`
-                        )}
-                      >
-                        {t(
-                          `forms.${formPrefix}.durationOptions.oneHour.string`
-                        )}
-                      </SelectItem>
-                      <SelectItem
-                        value={t(
-                          `forms.${formPrefix}.durationOptions.twoHours.string`
-                        )}
-                      >
-                        {t(
-                          `forms.${formPrefix}.durationOptions.twoHours.string`
-                        )}
-                      </SelectItem>
-                      <SelectItem
-                        value={t(
-                          `forms.${formPrefix}.durationOptions.allDay.string`
-                        )}
-                      >
-                        {t(`forms.${formPrefix}.durationOptions.allDay.string`)}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )
-            }}
-          />
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder={defaultValue} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem
+                            value={t(
+                              `forms.${formPrefix}.durationOptions.thirtyMinutes.string`
+                            )}
+                          >
+                            {t(
+                              `forms.${formPrefix}.durationOptions.thirtyMinutes.string`
+                            )}
+                          </SelectItem>
+                          <SelectItem
+                            value={t(
+                              `forms.${formPrefix}.durationOptions.oneHour.string`
+                            )}
+                          >
+                            {t(
+                              `forms.${formPrefix}.durationOptions.oneHour.string`
+                            )}
+                          </SelectItem>
+                          <SelectItem
+                            value={t(
+                              `forms.${formPrefix}.durationOptions.twoHours.string`
+                            )}
+                          >
+                            {t(
+                              `forms.${formPrefix}.durationOptions.twoHours.string`
+                            )}
+                          </SelectItem>
+                          <SelectItem
+                            value={t(
+                              `forms.${formPrefix}.durationOptions.allDay.string`
+                            )}
+                          >
+                            {t(
+                              `forms.${formPrefix}.durationOptions.allDay.string`
+                            )}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )
+                }}
+              />
 
-          {/* Event Notifications Section */}
-          <div className="space-y-2">
-            <FormLabel>
-              {t(`forms.${formPrefix}.eventNotifications.string`)}
-            </FormLabel>
-            <div className="space-y-2">
-              {eventNotifications.map((notification, index) => (
-                <div
-                  key={index}
-                  className="flex min-w-0 flex-wrap items-center gap-2"
-                >
-                  <Select
-                    value={notification.type}
-                    onValueChange={(value) => {
-                      const updated = [...eventNotifications]
-                      updated[index].type = value as 'notification' | 'email'
-                      setEventNotifications(updated)
-                      form.setValue('eventNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  >
-                    <SelectTrigger className="w-fit min-w-0 shrink-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="notification">
-                        {t(`forms.${formPrefix}.notification.string`)
-                          .charAt(0)
-                          .toUpperCase() +
-                          t(`forms.${formPrefix}.notification.string`).slice(1)}
-                      </SelectItem>
-                      <SelectItem value="email">
-                        {t(`forms.${formPrefix}.email.string`)
-                          .charAt(0)
-                          .toUpperCase() +
-                          t(`forms.${formPrefix}.email.string`).slice(1)}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Select
-                    value={notification.timing}
-                    onValueChange={(value) => {
-                      const updated = [...eventNotifications]
-                      updated[index].timing = value
-                      setEventNotifications(updated)
-                      form.setValue('eventNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  >
-                    <SelectTrigger className="min-w-0 flex-1 sm:min-w-[200px]">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="at_time">
-                        {t(`forms.${formPrefix}.atTimeOfEvent.string`)}
-                      </SelectItem>
-                      <SelectItem value="5_min">
-                        {t(`forms.${formPrefix}.fiveMinutes.string`)}
-                      </SelectItem>
-                      <SelectItem value="15_min">
-                        {t(`forms.${formPrefix}.fifteenMinutes.string`)}
-                      </SelectItem>
-                      <SelectItem value="30_min">
-                        {t(`forms.${formPrefix}.thirtyMinutesBefore.string`)}
-                      </SelectItem>
-                      <SelectItem value="1_hour">
-                        {t(`forms.${formPrefix}.oneHourBefore.string`)}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 w-9 p-0 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                    type="button"
-                    onClick={() => {
-                      const updated = eventNotifications.filter(
-                        (_, i) => i !== index
-                      )
-                      setEventNotifications(updated)
-                      form.setValue('eventNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <Button
-              variant="ghost"
-              type="button"
-              className="h-auto p-0 text-sm text-blue-600 hover:bg-transparent hover:text-blue-700"
-              onClick={() => {
-                const updated = [
-                  ...eventNotifications,
-                  { type: 'notification' as const, timing: 'at_time' },
-                ]
-                setEventNotifications(updated)
-                form.setValue('eventNotifications', updated, {
-                  shouldDirty: true,
-                })
-              }}
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              {t(`forms.${formPrefix}.addNotification.string`)}
-            </Button>
-          </div>
-
-          {/* All Day Notifications Section */}
-          <div className="space-y-2">
-            <FormLabel>
-              {t(`forms.${formPrefix}.allDayNotifications.string`)}
-            </FormLabel>
-            <div className="space-y-2">
-              {allDayNotifications.map((notification, index) => (
-                <div
-                  key={index}
-                  className="flex min-w-0 flex-wrap items-center gap-2"
-                >
-                  <Select
-                    value={notification.type}
-                    onValueChange={(value) => {
-                      const updated = [...allDayNotifications]
-                      updated[index].type = value as 'notification' | 'email'
-                      setAllDayNotifications(updated)
-                      form.setValue('allDayNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  >
-                    <SelectTrigger className="w-fit min-w-0 shrink-0">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="notification">
-                        {t(`forms.${formPrefix}.notification.string`)
-                          .charAt(0)
-                          .toUpperCase() +
-                          t(`forms.${formPrefix}.notification.string`).slice(1)}
-                      </SelectItem>
-                      <SelectItem value="email">
-                        {t(`forms.${formPrefix}.email.string`)
-                          .charAt(0)
-                          .toUpperCase() +
-                          t(`forms.${formPrefix}.email.string`).slice(1)}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Input
-                    type="number"
-                    className="w-14 shrink-0 text-center"
-                    value={notification.daysBefore}
-                    onChange={(e) => {
-                      const updated = [...allDayNotifications]
-                      updated[index].daysBefore = parseInt(e.target.value) || 0
-                      setAllDayNotifications(updated)
-                      form.setValue('allDayNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  />
-                  <span className="shrink-0 text-sm whitespace-nowrap">
-                    {t(`forms.${formPrefix}.dayBefore.string`)}
-                  </span>
-                  <span className="shrink-0 text-sm whitespace-nowrap">
-                    {t(`forms.${formPrefix}.at.string`)}
-                  </span>
-                  <Input
-                    type="time"
-                    className="w-fit min-w-0 shrink-0"
-                    value={notification.time}
-                    onChange={(e) => {
-                      const updated = [...allDayNotifications]
-                      updated[index].time = e.target.value
-                      setAllDayNotifications(updated)
-                      form.setValue('allDayNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-9 w-9 p-0 text-gray-500 hover:bg-red-50 hover:text-red-600"
-                    type="button"
-                    onClick={() => {
-                      const updated = allDayNotifications.filter(
-                        (_, i) => i !== index
-                      )
-                      setAllDayNotifications(updated)
-                      form.setValue('allDayNotifications', updated, {
-                        shouldDirty: true,
-                      })
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-            <Button
-              variant="ghost"
-              type="button"
-              className="h-auto p-0 text-sm text-blue-600 hover:bg-transparent hover:text-blue-700"
-              onClick={() => {
-                const updated = [
-                  ...allDayNotifications,
-                  {
-                    type: 'notification' as const,
-                    daysBefore: 1,
-                    time: '09:00',
-                  },
-                ]
-                setAllDayNotifications(updated)
-                form.setValue('allDayNotifications', updated, {
-                  shouldDirty: true,
-                })
-              }}
-            >
-              <Plus className="mr-1.5 h-4 w-4" />
-              {t(`forms.${formPrefix}.addNotification.string`)}
-            </Button>
-          </div>
-
-          {/* Show Busy Status Checkbox */}
-          <FormField
-            control={form.control}
-            name="showBusyStatus"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center space-y-0 space-x-3">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={(checked) =>
-                      field.onChange(checked === true)
-                    }
-                  />
-                </FormControl>
-                <FormLabel className="font-normal">
-                  {t(`forms.${formPrefix}.showBusyStatus.string`)}
+              {/* Event Notifications Section */}
+              <div className="space-y-2">
+                <FormLabel>
+                  {t(`forms.${formPrefix}.eventNotifications.string`)}
                 </FormLabel>
-              </FormItem>
-            )}
-          />
+                <div className="space-y-2">
+                  {eventNotifications.map((notification, index) => (
+                    <div
+                      key={index}
+                      className="flex min-w-0 flex-wrap items-center gap-2"
+                    >
+                      <Select
+                        value={notification.type}
+                        onValueChange={(value) => {
+                          const updated = [...eventNotifications]
+                          updated[index].type = value as
+                            | 'notification'
+                            | 'email'
+                          setEventNotifications(updated)
+                          form.setValue('eventNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      >
+                        <SelectTrigger className="w-fit min-w-0 shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="notification">
+                            {t(`forms.${formPrefix}.notification.string`)
+                              .charAt(0)
+                              .toUpperCase() +
+                              t(
+                                `forms.${formPrefix}.notification.string`
+                              ).slice(1)}
+                          </SelectItem>
+                          <SelectItem value="email">
+                            {t(`forms.${formPrefix}.email.string`)
+                              .charAt(0)
+                              .toUpperCase() +
+                              t(`forms.${formPrefix}.email.string`).slice(1)}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Select
+                        value={notification.timing}
+                        onValueChange={(value) => {
+                          const updated = [...eventNotifications]
+                          updated[index].timing = value
+                          setEventNotifications(updated)
+                          form.setValue('eventNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      >
+                        <SelectTrigger className="min-w-0 flex-1 sm:min-w-[200px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="at_time">
+                            {t(`forms.${formPrefix}.atTimeOfEvent.string`)}
+                          </SelectItem>
+                          <SelectItem value="5_min">
+                            {t(`forms.${formPrefix}.fiveMinutes.string`)}
+                          </SelectItem>
+                          <SelectItem value="15_min">
+                            {t(`forms.${formPrefix}.fifteenMinutes.string`)}
+                          </SelectItem>
+                          <SelectItem value="30_min">
+                            {t(
+                              `forms.${formPrefix}.thirtyMinutesBefore.string`
+                            )}
+                          </SelectItem>
+                          <SelectItem value="1_hour">
+                            {t(`forms.${formPrefix}.oneHourBefore.string`)}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive h-9 w-9 p-0"
+                        type="button"
+                        onClick={() => {
+                          const updated = eventNotifications.filter(
+                            (_, i) => i !== index
+                          )
+                          setEventNotifications(updated)
+                          form.setValue('eventNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="text-primary hover:text-primary/80 h-auto p-0 text-sm hover:bg-transparent"
+                  onClick={() => {
+                    const updated = [
+                      ...eventNotifications,
+                      { type: 'notification' as const, timing: 'at_time' },
+                    ]
+                    setEventNotifications(updated)
+                    form.setValue('eventNotifications', updated, {
+                      shouldDirty: true,
+                    })
+                  }}
+                >
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  {t(`forms.${formPrefix}.addNotification.string`)}
+                </Button>
+              </div>
+
+              {/* All Day Notifications Section */}
+              <div className="space-y-2">
+                <FormLabel>
+                  {t(`forms.${formPrefix}.allDayNotifications.string`)}
+                </FormLabel>
+                <div className="space-y-2">
+                  {allDayNotifications.map((notification, index) => (
+                    <div
+                      key={index}
+                      className="flex min-w-0 flex-wrap items-center gap-2"
+                    >
+                      <Select
+                        value={notification.type}
+                        onValueChange={(value) => {
+                          const updated = [...allDayNotifications]
+                          updated[index].type = value as
+                            | 'notification'
+                            | 'email'
+                          setAllDayNotifications(updated)
+                          form.setValue('allDayNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      >
+                        <SelectTrigger className="w-fit min-w-0 shrink-0">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="notification">
+                            {t(`forms.${formPrefix}.notification.string`)
+                              .charAt(0)
+                              .toUpperCase() +
+                              t(
+                                `forms.${formPrefix}.notification.string`
+                              ).slice(1)}
+                          </SelectItem>
+                          <SelectItem value="email">
+                            {t(`forms.${formPrefix}.email.string`)
+                              .charAt(0)
+                              .toUpperCase() +
+                              t(`forms.${formPrefix}.email.string`).slice(1)}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        className="w-14 shrink-0 text-center"
+                        value={notification.daysBefore}
+                        onChange={(e) => {
+                          const updated = [...allDayNotifications]
+                          updated[index].daysBefore =
+                            parseInt(e.target.value) || 0
+                          setAllDayNotifications(updated)
+                          form.setValue('allDayNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      />
+                      <span className="shrink-0 text-sm whitespace-nowrap">
+                        {t(`forms.${formPrefix}.dayBefore.string`)}
+                      </span>
+                      <span className="shrink-0 text-sm whitespace-nowrap">
+                        {t(`forms.${formPrefix}.at.string`)}
+                      </span>
+                      <Input
+                        type="time"
+                        className="w-fit min-w-0 shrink-0"
+                        value={notification.time}
+                        onChange={(e) => {
+                          const updated = [...allDayNotifications]
+                          updated[index].time = e.target.value
+                          setAllDayNotifications(updated)
+                          form.setValue('allDayNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive h-9 w-9 p-0"
+                        type="button"
+                        onClick={() => {
+                          const updated = allDayNotifications.filter(
+                            (_, i) => i !== index
+                          )
+                          setAllDayNotifications(updated)
+                          form.setValue('allDayNotifications', updated, {
+                            shouldDirty: true,
+                          })
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button
+                  variant="ghost"
+                  type="button"
+                  className="text-primary hover:text-primary/80 h-auto p-0 text-sm hover:bg-transparent"
+                  onClick={() => {
+                    const updated = [
+                      ...allDayNotifications,
+                      {
+                        type: 'notification' as const,
+                        daysBefore: 1,
+                        time: '09:00',
+                      },
+                    ]
+                    setAllDayNotifications(updated)
+                    form.setValue('allDayNotifications', updated, {
+                      shouldDirty: true,
+                    })
+                  }}
+                >
+                  <Plus className="mr-1.5 h-4 w-4" />
+                  {t(`forms.${formPrefix}.addNotification.string`)}
+                </Button>
+              </div>
+
+              {/* Show Busy Status Checkbox */}
+              <FormField
+                control={form.control}
+                name="showBusyStatus"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-y-0 space-x-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) =>
+                          field.onChange(checked === true)
+                        }
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      {t(`forms.${formPrefix}.showBusyStatus.string`)}
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
             </>
           )}
         </div>

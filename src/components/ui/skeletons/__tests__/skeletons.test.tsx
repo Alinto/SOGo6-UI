@@ -15,7 +15,7 @@ describe('ButtonSkeleton', () => {
 
   it('applies correct classes for default size', () => {
     const { container } = render(<ButtonSkeleton size="default" />)
-    expect(container.firstChild).toHaveClass('h-10 w-20 px-4 py-2')
+    expect(container.firstChild).toHaveClass('h-9 w-20 px-4 py-2')
   })
 
   it('applies correct classes for sm size', () => {
