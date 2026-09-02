@@ -28,8 +28,8 @@ export function AppSidebar(): React.JSX.Element {
       >
         <SidebarsContent />
       </SidebarContent>
-      <SidebarFooter className="flex justify-end p-0">
-        <SidebarTrigger className="mb-2 ml-auto h-10 w-15 rounded-r-none" />
+      <SidebarFooter className="flex justify-end p-0 group-data-[collapsible=icon]:px-1">
+        <SidebarTrigger className="mb-2 ml-auto h-10 w-15 rounded-r-none group-data-[collapsible=icon]:ml-0 group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:rounded-md" />
       </SidebarFooter>
     </Sidebar>
   )

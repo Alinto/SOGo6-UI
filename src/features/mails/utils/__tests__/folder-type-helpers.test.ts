@@ -17,7 +17,7 @@ describe('folder-type-helpers', () => {
 
   it('maps folder types to icons', () => {
     expect(getFolderIcon('SENT')).toBe('send')
-    expect(getFolderIcon('TEMPLATE')).toBe('layout-template')
+    expect(getFolderIcon('TEMPLATE')).toBe('layers')
     expect(getFolderIcon('NORMAL')).toBe('folder')
   })
 

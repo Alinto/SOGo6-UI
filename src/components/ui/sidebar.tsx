@@ -287,7 +287,7 @@ const SidebarTrigger = React.forwardRef<
   const isMobile = useIsMobile()
   const { toggleSidebar, open, openMobile } = useSidebar()
 
-  let icon = open ? <ChevronsRight /> : <ChevronsLeft />
+  let icon = open ? <ChevronsLeft /> : <ChevronsRight />
   if (isMobile) {
     icon = openMobile ? <ChevronsLeft /> : <Menu />
   }
@@ -295,7 +295,7 @@ const SidebarTrigger = React.forwardRef<
     if (isMobile) {
       icon = openMobile ? <Menu /> : <ChevronsLeft />
     } else {
-      icon = open ? <ChevronsLeft /> : <ChevronsRight />
+      icon = open ? <ChevronsRight /> : <ChevronsLeft />
     }
   }
   return (

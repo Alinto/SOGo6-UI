@@ -31,6 +31,7 @@ jest.mock('next/image', () => {
   }) {
     // Filter out Next.js specific props that aren't valid DOM attributes
     const { fill, priority, quality, sizes, ...domProps } = props
+    // eslint-disable-next-line @next/next/no-img-element -- test mock for next/image
     return <img src={src} alt={alt} {...domProps} />
   }
 })
@@ -101,7 +102,7 @@ jest.mock('@/components/ui/button', () => ({
       size?: string
       [key: string]: any
     }>
-  >(({ children, ...props }, ref) => {
+  >(function Button({ children, ...props }, ref) {
     // Filter out non-DOM props
     const { asChild, variant, size, ...domProps } = props
     return (
@@ -116,7 +117,7 @@ jest.mock('@/components/ui/input', () => ({
   Input: React.forwardRef<
     HTMLInputElement,
     React.InputHTMLAttributes<HTMLInputElement> & { asChild?: boolean }
-  >((props, ref) => {
+  >(function Input(props, ref) {
     // Filter out non-DOM props
     const { asChild, ...domProps } = props
     return <input ref={ref} {...domProps} />
@@ -235,7 +236,7 @@ jest.mock('@/components/ui/toggle', () => ({
   Toggle: React.forwardRef<
     HTMLButtonElement,
     React.PropsWithChildren<Record<string, any>>
-  >(({ children, ...props }, ref) => {
+  >(function Toggle({ children, ...props }, ref) {
     // Filter out non-DOM props and convert pressed to string
     const { pressed, variant, size, ...domProps } = props
     return (
@@ -305,6 +306,7 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
+  SidebarTrigger,
 } from '../sidebar'
 
 describe('Sidebar Components', () => {
@@ -590,5 +592,45 @@ describe('Sidebar Components', () => {
 
     // SidebarSeparator is an hr element, check for its presence
     expect(document.querySelector('hr')).toBeInTheDocument()
+  })
+
+  it('shows close-direction chevrons when the left sidebar is open', () => {
+    render(
+      <SidebarProvider open>
+        <SidebarTrigger />
+      </SidebarProvider>
+    )
+
+    expect(screen.getByTestId('chevrons-left')).toBeInTheDocument()
+  })
+
+  it('shows open-direction chevrons when the left sidebar is closed', () => {
+    render(
+      <SidebarProvider open={false}>
+        <SidebarTrigger />
+      </SidebarProvider>
+    )
+
+    expect(screen.getByTestId('chevrons-right')).toBeInTheDocument()
+  })
+
+  it('shows close-direction chevrons when the right sidebar is open', () => {
+    render(
+      <SidebarProvider open>
+        <SidebarTrigger reverseIcon />
+      </SidebarProvider>
+    )
+
+    expect(screen.getByTestId('chevrons-right')).toBeInTheDocument()
+  })
+
+  it('shows open-direction chevrons when the right sidebar is closed', () => {
+    render(
+      <SidebarProvider open={false}>
+        <SidebarTrigger reverseIcon />
+      </SidebarProvider>
+    )
+
+    expect(screen.getByTestId('chevrons-left')).toBeInTheDocument()
   })
 })

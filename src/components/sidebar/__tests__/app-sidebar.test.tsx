@@ -114,7 +114,12 @@ describe('AppSidebar Component', () => {
       render(<AppSidebar />)
 
       const footer = screen.getByTestId('sidebar-footer')
-      expect(footer).toHaveClass('flex', 'justify-end', 'p-0')
+      expect(footer).toHaveClass(
+        'flex',
+        'justify-end',
+        'p-0',
+        'group-data-[collapsible=icon]:px-1'
+      )
     })
 
     it('should apply correct CSS classes to trigger', () => {
@@ -126,7 +131,10 @@ describe('AppSidebar Component', () => {
         'ml-auto',
         'h-10',
         'w-15',
-        'rounded-r-none'
+        'rounded-r-none',
+        'group-data-[collapsible=icon]:ml-0',
+        'group-data-[collapsible=icon]:w-full',
+        'group-data-[collapsible=icon]:rounded-md'
       )
     })
   })

@@ -54,9 +54,9 @@ export function getFolderIcon(
     case 'TRASH':
       return 'trash-2'
     case 'JUNK':
-      return 'alert-triangle'
+      return 'shield-x'
     case 'TEMPLATE':
-      return 'layout-template'
+      return 'layers'
     default:
       return defaultIcon ?? 'folder'
   }
@@ -103,8 +103,6 @@ export function getListDisplayContact(
   return mail.from.name || mail.from.email
 }
 
-export function isVirtualFolder(folder: {
-  selectable?: boolean
-}): boolean {
+export function isVirtualFolder(folder: { selectable?: boolean }): boolean {
   return folder.selectable === false
 }
