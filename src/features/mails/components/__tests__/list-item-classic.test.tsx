@@ -149,19 +149,18 @@ describe('ListItemClassic', () => {
     expect(screen.queryByTestId('paperclip-icon')).not.toBeInTheDocument()
   })
 
-  it('should not apply unread background when seen is true', () => {
-    const mockDataSeen = { ...mockData, seen: true }
-
+  it('should not apply unread background', () => {
     renderWithRedux(
       <ListItemClassic
-        data={mockDataSeen}
+        data={mockData}
         isSelected={false}
         onHandleCheckboxClick={mockOnHandleCheckboxClick}
       />
     )
 
-    const item = screen.getByText('John Doe').closest('div')
-    expect(item).not.toHaveClass('bg-primary/15')
+    expect(screen.getByText('John Doe').closest('div')).not.toHaveClass(
+      'bg-primary/15'
+    )
   })
 
   it('should use email initial when name is empty', () => {

@@ -162,7 +162,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
             className={cn(
               'flex cursor-pointer flex-col gap-1 p-2 transition-transform duration-75 select-none',
               isSelectedClass,
-              data.seen ? '' : 'bg-primary/15 font-semibold',
+              data.seen ? '' : 'font-semibold',
               data.deleted && 'opacity-60'
             )}
             onClick={async () => {

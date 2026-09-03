@@ -101,7 +101,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         className={cn(
           'group hover:bg-secondary flex min-h-14 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75',
           isSelectedClass,
-          data.seen ? '' : 'bg-primary/15 font-semibold',
+          data.seen ? '' : 'font-semibold',
           data.deleted && 'opacity-60'
         )}
         onMouseEnter={() => setIsHovered(true)}

@@ -88,7 +88,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
         className={cn(
           'group hover:bg-secondary flex min-h-10 cursor-pointer flex-row items-center gap-2 p-2 transition-colors duration-75',
           isSelectedClass,
-          data.seen ? '' : 'bg-primary/15 font-semibold',
+          data.seen ? '' : 'font-semibold',
           data.deleted && 'opacity-60'
         )}
         onClick={async () => {
