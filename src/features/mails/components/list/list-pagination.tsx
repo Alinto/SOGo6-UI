@@ -1,5 +1,6 @@
 'use client'
 import { Button } from '@/components/ui/button'
+import { TooltipButton } from '@/components/ui/buttons/tooltip-button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,10 +34,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
   const searchParams = useSearchParams()
   const t = useTranslations('MAILS_LIST')
   const effectiveTotalPages = totalPages > 0 ? totalPages : 1
-  const effectivePage = Math.min(
-    Math.max(1, currentPage),
-    effectiveTotalPages
-  )
+  const effectivePage = Math.min(Math.max(1, currentPage), effectiveTotalPages)
   const handlePrev = () => {
     if (currentPage > 1) {
       const params = new URLSearchParams(searchParams.toString())
@@ -71,16 +69,17 @@ const ListPagination: React.FC<ListPaginationProps> = ({
 
   return (
     <div className="flex items-center">
-      <Button
+      <TooltipButton
         variant={'outline'}
         size={'icon'}
         onClick={handlePrev}
         disabled={!hasPreviousPage || effectivePage === 1}
         aria-label={t('pagination.previous.string')}
         aria-disabled={effectivePage === 1}
+        tooltip={t('pagination.previous.string')}
       >
         <ChevronLeft />
-      </Button>
+      </TooltipButton>
       {!isMobile && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -111,15 +110,16 @@ const ListPagination: React.FC<ListPaginationProps> = ({
           </DropdownMenuContent>
         </DropdownMenu>
       )}
-      <Button
+      <TooltipButton
         size={'icon'}
         variant={'outline'}
         onClick={handleNext}
         aria-label={t('pagination.next.string')}
         disabled={!hasNextPage || effectivePage === effectiveTotalPages}
+        tooltip={t('pagination.next.string')}
       >
         <ChevronRight />
-      </Button>
+      </TooltipButton>
     </div>
   )
 }

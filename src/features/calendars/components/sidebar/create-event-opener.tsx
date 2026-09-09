@@ -13,6 +13,7 @@ const CreateEventOpener: React.FC = () => {
   return (
     <SidebarMenuButton
       onClick={onClick}
+      tooltip={t('createEvent.string')}
       className={cn(
         'h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none'
       )}

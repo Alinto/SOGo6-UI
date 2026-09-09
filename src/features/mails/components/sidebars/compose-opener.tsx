@@ -1,5 +1,4 @@
 import { SidebarMenuButton } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useComposeAction } from '../../hooks/use-compose-action'
@@ -11,10 +10,11 @@ const ComposeOpener: React.FC = () => {
   return (
     <SidebarMenuButton
       onClick={onClick}
-      className="h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
+      tooltip={t('new_message.string')}
+      className="bg-sidebar-foreground text-sidebar hover:bg-sidebar-foreground/90 hover:text-sidebar h-14 justify-center gap-2 rounded-lg border-2 border-transparent text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
     >
       <span className="sr-only">{t('new_message.string')}</span>
-      <Icon className="hidden h-5 w-5 transition-transform group-data-[collapsible=icon]:flex" />
+      <Icon className="h-5 w-5 shrink-0 transition-transform" />
       <span className="truncate group-data-[collapsible=icon]:hidden">
         {t('new_message.string')}
       </span>

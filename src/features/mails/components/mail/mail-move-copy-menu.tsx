@@ -6,6 +6,11 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { FolderInput } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useState } from 'react'
@@ -40,19 +45,24 @@ export default function MailMoveCopyMenu({
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          disabled={disabled}
-          className={triggerClassName}
-          aria-label={t('move.string')}
-          data-testid="mail-action-btn-move-copy"
-        >
-          <FolderInput size={18} />
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              disabled={disabled}
+              className={triggerClassName}
+              aria-label={t('move.string')}
+              data-testid="mail-action-btn-move-copy"
+            >
+              <FolderInput size={18} />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{t('move.string')}</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="start">
         <MailMoveCopySubmenu
           mode="move"

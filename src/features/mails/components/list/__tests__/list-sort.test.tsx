@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import React from 'react'
 import ListSort from '../list-sort'
 
 const mockReplace = jest.fn()
@@ -23,6 +22,14 @@ jest.mock('@/components/ui/button', () => ({
     <button data-testid="sort-button" {...props}>
       {children}
     </button>
+  ),
+}))
+
+jest.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: any) => <>{children}</>,
+  TooltipTrigger: ({ children }: any) => <>{children}</>,
+  TooltipContent: ({ children }: any) => (
+    <div data-testid="tooltip-content">{children}</div>
   ),
 }))
 
@@ -103,7 +110,9 @@ describe('ListSort component', () => {
   describe('integration', () => {
     it('updates URL with sort query when selecting descending date', async () => {
       render(<ListSort />)
-      const descOption = screen.getByText('MAILS_LIST.sort.date.descending.string')
+      const descOption = screen.getByText(
+        'MAILS_LIST.sort.date.descending.string'
+      )
       fireEvent.click(descOption)
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith('/u/en/INBOX?sort=t_desc')
@@ -111,9 +120,13 @@ describe('ListSort component', () => {
     })
 
     it('removes sort query when selecting ascending date from a sorted state', async () => {
-      mockUseSearchParams.mockReturnValue(createSearchParams({ sort: 't_desc' }))
+      mockUseSearchParams.mockReturnValue(
+        createSearchParams({ sort: 't_desc' })
+      )
       render(<ListSort />)
-      const ascOption = screen.getByText('MAILS_LIST.sort.date.ascending.string')
+      const ascOption = screen.getByText(
+        'MAILS_LIST.sort.date.ascending.string'
+      )
       fireEvent.click(ascOption)
       await waitFor(() => {
         expect(mockReplace).toHaveBeenCalledWith('/u/en/INBOX?')

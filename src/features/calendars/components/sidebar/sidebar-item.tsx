@@ -7,7 +7,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SidebarMenuAction, SidebarMenuItem } from '@/components/ui/sidebar'
+import {
+  SidebarMenuAction,
+  SidebarMenuItem,
+  useSidebar,
+} from '@/components/ui/sidebar'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import WorkInProgress from '@/components/work-in-progress'
 import {
   useGetSyncStatusQuery,
@@ -130,6 +139,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const { setCalendarVisibility, isCalendarVisible } = useCalendarVisibility()
   const t = useTranslations('CALENDARS')
   const isMobile = useIsMobile()
+  const { state: sidebarState } = useSidebar()
   const isIcs = sourceType === 'ics' && Boolean(calendarKey)
   const isReadOnly = isSubscriptionCalendar({ source_type: sourceType })
   const resolvedCalendarKey = calendarKey ?? id
@@ -145,43 +155,56 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   return (
     <SidebarMenuItem>
-      <div
-        onClick={() => handleCheckboxChange(!isVisible)}
-        className={cn(
-          'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
-          !disableActions && 'pr-8'
-        )}
-      >
-        <div onClick={(e) => e.stopPropagation()} className="flex items-center">
-          <Checkbox
-            checked={isVisible}
-            onCheckedChange={handleCheckboxChange}
-            className="cursor-pointer"
-            style={
-              isVisible && color
-                ? { backgroundColor: color, borderColor: color }
-                : color
-                  ? { borderColor: color }
-                  : {}
-            }
-          />
-        </div>
-        <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
-          <span className="min-w-0 truncate text-sm">{name}</span>
-          {isReadOnly && (
-            <Lock
-              className="text-muted-foreground h-3 w-3 shrink-0"
-              aria-label={t('sidebar.readOnlyCalendar.string')}
-            />
-          )}
-          {isIcs && (
-            <InlineSyncStatusIcon
-              calendarKey={resolvedCalendarKey}
-              sourceType={sourceType}
-            />
-          )}
-        </div>
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div
+            onClick={() => handleCheckboxChange(!isVisible)}
+            className={cn(
+              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+              !disableActions && 'pr-8'
+            )}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center"
+            >
+              <Checkbox
+                checked={isVisible}
+                onCheckedChange={handleCheckboxChange}
+                className="cursor-pointer"
+                style={
+                  isVisible && color
+                    ? { backgroundColor: color, borderColor: color }
+                    : color
+                      ? { borderColor: color }
+                      : {}
+                }
+              />
+            </div>
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
+              <span className="min-w-0 truncate text-sm">{name}</span>
+              {isReadOnly && (
+                <Lock
+                  className="text-muted-foreground h-3 w-3 shrink-0"
+                  aria-label={t('sidebar.readOnlyCalendar.string')}
+                />
+              )}
+              {isIcs && (
+                <InlineSyncStatusIcon
+                  calendarKey={resolvedCalendarKey}
+                  sourceType={sourceType}
+                />
+              )}
+            </div>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent
+          side="right"
+          hidden={sidebarState !== 'collapsed' || isMobile}
+        >
+          {name}
+        </TooltipContent>
+      </Tooltip>
       {!disableActions && (
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DropdownMenu>

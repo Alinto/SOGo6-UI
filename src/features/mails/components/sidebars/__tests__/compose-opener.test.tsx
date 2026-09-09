@@ -1,12 +1,12 @@
-import '@testing-library/jest-dom'
 import { configureStore } from '@reduxjs/toolkit'
+import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
-import { Provider } from 'react-redux'
 import userEvent from '@testing-library/user-event'
+import { Provider } from 'react-redux'
 
-import ComposeOpener from '../compose-opener'
 import { createDraft } from '@/features/mails/store'
 import { toast } from 'sonner'
+import ComposeOpener from '../compose-opener'
 
 jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuButton: ({ children, onClick, ...props }: any) => (
@@ -74,7 +74,9 @@ describe('ComposeOpener Component', () => {
     })
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
     ;(useIsMobile as jest.Mock).mockReturnValue(false)
-    jest.spyOn(global.crypto, 'randomUUID').mockReturnValue('generated-draft-id')
+    jest
+      .spyOn(global.crypto, 'randomUUID')
+      .mockReturnValue('generated-draft-id')
     jest.spyOn(mockStore, 'dispatch')
   })
 
@@ -111,7 +113,7 @@ describe('ComposeOpener Component', () => {
       renderWithProvider()
 
       const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-10')
+      expect(button).toHaveClass('h-14')
       expect(button).toHaveClass('justify-center')
       expect(button).toHaveClass('rounded-lg')
       expect(button).toHaveClass('border-2')
@@ -415,7 +417,7 @@ describe('ComposeOpener Component', () => {
 
       const button = screen.getByRole('button')
       const expectedClasses = [
-        'h-10',
+        'h-14',
         'justify-center',
         'rounded-lg',
         'border-2',

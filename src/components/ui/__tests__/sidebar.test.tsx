@@ -445,6 +445,20 @@ describe('Sidebar Components', () => {
     expect(screen.getByTestId('navigation-toggler')).toBeInTheDocument()
   })
 
+  it('links the App Logo to the inbox', () => {
+    render(
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarHeader>Header</SidebarHeader>
+        </Sidebar>
+      </SidebarProvider>
+    )
+
+    const link = screen.getByRole('link', { name: 'Inbox' })
+    expect(link).toHaveAttribute('href', '/u/0/INBOX')
+    expect(screen.getByAltText('App Logo')).toBeInTheDocument()
+  })
+
   it('renders SidebarInput', () => {
     render(
       <SidebarProvider>

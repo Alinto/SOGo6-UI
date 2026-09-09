@@ -40,6 +40,7 @@ jest.mock('../../tabs', () => ({
     children,
     value,
     'aria-label': ariaLabel,
+    title,
     className,
     onClick,
   }: any) => (
@@ -47,6 +48,7 @@ jest.mock('../../tabs', () => ({
       data-testid={`tab-trigger-${value}`}
       data-value={value}
       aria-label={ariaLabel}
+      title={title}
       className={className}
       onClick={() => onClick?.()}
     >
@@ -57,10 +59,22 @@ jest.mock('../../tabs', () => ({
 
 jest.mock('@/lib/icons/module-nav-icons', () => ({
   ModuleNavIcon: {
-    Mail: () => <div data-testid="icon-mail" />,
-    AddressBook: () => <div data-testid="icon-contact2" />,
-    Calendar: () => <div data-testid="icon-calendar" />,
-    Tasks: () => <div data-testid="icon-list-checks" />,
+    Mail: {
+      icon: () => <div data-testid="icon-mail" />,
+      title: 'Mail',
+    },
+    AddressBook: {
+      icon: () => <div data-testid="icon-contact2" />,
+      title: 'Address Books',
+    },
+    Calendar: {
+      icon: () => <div data-testid="icon-calendar" />,
+      title: 'Calendars',
+    },
+    Tasks: {
+      icon: () => <div data-testid="icon-list-checks" />,
+      title: 'Tasks',
+    },
   },
 }))
 
@@ -544,6 +558,27 @@ describe('NavigationToggler', () => {
       expect(screen.getByLabelText('Address Books')).toBeInTheDocument()
       expect(screen.getByLabelText('Calendars')).toBeInTheDocument()
       expect(screen.getByLabelText('Tasks')).toBeInTheDocument()
+    })
+
+    it('should have native title tooltips for all tabs', () => {
+      render(<NavigationToggler />)
+
+      expect(screen.getByTestId('tab-trigger-mail')).toHaveAttribute(
+        'title',
+        'Mail'
+      )
+      expect(screen.getByTestId('tab-trigger-address_books')).toHaveAttribute(
+        'title',
+        'Address Books'
+      )
+      expect(screen.getByTestId('tab-trigger-calendars')).toHaveAttribute(
+        'title',
+        'Calendars'
+      )
+      expect(screen.getByTestId('tab-trigger-tasks')).toHaveAttribute(
+        'title',
+        'Tasks'
+      )
     })
   })
 

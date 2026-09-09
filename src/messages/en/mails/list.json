@@ -5,6 +5,9 @@
       "context": "Displays the number of messages in an mail folder."
     },
     "sort": {
+      "label": {
+        "string": "Sort by"
+      },
       "date": {
         "ascending": {
           "string": "Newest first"
