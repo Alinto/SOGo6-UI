@@ -19,15 +19,22 @@ jest.mock('@/features/mails/hooks/use-mail-detail-navigation', () => ({
   useMailDetailNavigation: () => mockUseMailDetailNavigation(),
 }))
 
-jest.mock('@/components/ui/button', () => ({
-  Button: ({
+jest.mock('@/components/ui/buttons/tooltip-button', () => ({
+  TooltipButton: ({
     children,
     onClick,
     disabled,
     'aria-label': ariaLabel,
+    tooltip: _tooltip,
+    tooltipSide: _tooltipSide,
     ...props
   }: any) => (
-    <button onClick={onClick} disabled={disabled} aria-label={ariaLabel} {...props}>
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      {...props}
+    >
       {children}
     </button>
   ),

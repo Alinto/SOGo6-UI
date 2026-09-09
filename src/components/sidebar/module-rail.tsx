@@ -71,22 +71,22 @@ const ModuleRail: React.FC = () => {
     {
       id: 'calendar',
       title: t('calendar.string'),
-      icon: ModuleNavIcon.Calendar,
+      icon: ModuleNavIcon.Calendar.icon,
     },
     {
       id: 'address-book',
       title: t('address_book.string'),
-      icon: ModuleNavIcon.AddressBook,
+      icon: ModuleNavIcon.AddressBook.icon,
     },
     {
       id: 'tasks',
       title: t('tasks.string'),
-      icon: ModuleNavIcon.Tasks,
+      icon: ModuleNavIcon.Tasks.icon,
     },
     {
       id: 'notes',
       title: t('notes.string'),
-      icon: ModuleNavIcon.Notes,
+      icon: ModuleNavIcon.Notes.icon,
     },
   ]
 
@@ -105,8 +105,9 @@ const ModuleRail: React.FC = () => {
                 <SidebarMenuItem key={item.id} className="mt-4 align-middle">
                   <SidebarMenuButton
                     className={cn(
-                      'text-sidebar-foreground-secondary [&_svg]:size-5'
+                      'text-sidebar-foreground-secondary hover:bg-accent hover:text-accent-foreground [&_svg]:size-5'
                     )}
+                    title={item.title}
                     onClick={() => handleSelect(item.id)}
                     data-active={
                       (fastAccess?.isOpen &&

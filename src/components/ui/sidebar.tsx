@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { Link } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import NavigationMenuToggler from './layout/navigation-menu-toggler'
 import NavigationToggler from './layout/navigation-toggler'
@@ -401,12 +402,14 @@ const SidebarHeader = React.forwardRef<
     >
       {open && (
         <div className="flex items-center justify-center gap-4">
-          <Image
-            alt="App Logo"
-            src={'/images/sogo-full-alt.png'}
-            width={100}
-            height={50}
-          />
+          <Link href="/u/0/INBOX" aria-label="Inbox" title="Inbox">
+            <Image
+              alt="App Logo"
+              src={'/images/sogo-full-alt.png'}
+              width={100}
+              height={50}
+            />
+          </Link>
         </div>
       )}
       <div className="group-data-[state=collapsed]:hidden">

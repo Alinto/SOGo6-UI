@@ -491,6 +491,10 @@
             "description": "Label for the 'Cc' field in email search options"
         },
         "account_switcher": {
+            "loading": {
+                "string": "Loading account…",
+                "description": "Tooltip on the account switcher button while the account list is loading"
+            },
             "add_account": {
                 "string": "Add account",
                 "description": "Button to add an external mail account in the sidebar account switcher"

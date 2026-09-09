@@ -8,6 +8,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import FeatureIncoming from '@/features/mails/components/sidebars/fast-access/content/feature-incoming'
 import {
   Archive,
@@ -107,19 +112,24 @@ export default function MailMoreActionsMenu({
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            disabled={disabled}
-            className={triggerClassName}
-            aria-label={t('more.string')}
-            data-testid="mail-action-btn-more-actions"
-          >
-            <MoreHorizontal size={18} />
-          </Button>
-        </DropdownMenuTrigger>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                disabled={disabled}
+                className={triggerClassName}
+                aria-label={t('more.string')}
+                data-testid="mail-action-btn-more-actions"
+              >
+                <MoreHorizontal size={18} />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <TooltipContent>{t('more.string')}</TooltipContent>
+        </Tooltip>
         <DropdownMenuContent align="start">
           {showSpamActions && isJunk && onMarkHam && (
             <DropdownMenuItem onClick={onMarkHam}>

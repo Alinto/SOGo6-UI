@@ -7,7 +7,7 @@ import { memo, type ReactNode } from 'react'
 function LoginShell({ children }: { children: ReactNode }) {
   return (
     <div className="bg-background relative grid min-h-svh lg:grid-cols-2 lg:items-center">
-      <div className="bg-background lg:animate-horizontalTranslate z-50 flex flex-1 justify-center rounded-lg p-6 shadow-2xl sm:justify-center md:p-10 lg:min-h-[400px] lg:items-center lg:justify-end">
+      <div className="bg-background z-50 flex flex-1 justify-center rounded-lg p-6 shadow-2xl sm:justify-center md:p-10 lg:min-h-[400px] lg:items-center lg:justify-end">
         <Image
           alt="SOGo"
           src="/images/sogo-full.svg"

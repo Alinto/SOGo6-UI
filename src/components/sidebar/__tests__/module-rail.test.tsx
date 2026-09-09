@@ -74,15 +74,18 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuButton: ({
     children,
     onClick,
+    title,
     ...rest
   }: {
     children: ReactNode
     onClick?: () => void
+    title?: string
     'data-active'?: boolean
   }) => (
     <button
       type="button"
       onClick={onClick}
+      title={title}
       data-active={String(!!rest['data-active'])}
     >
       {children}
@@ -104,10 +107,22 @@ jest.mock('@/lib/utils', () => ({
 
 jest.mock('@/lib/icons/module-nav-icons', () => ({
   ModuleNavIcon: {
-    AddressBook: () => <span data-testid="address-book-icon" />,
-    Calendar: () => <span data-testid="calendar-icon" />,
-    Tasks: () => <span data-testid="tasks-icon" />,
-    Notes: () => <span data-testid="notes-icon" />,
+    AddressBook: {
+      icon: () => <span data-testid="address-book-icon" />,
+      title: 'Address Books',
+    },
+    Calendar: {
+      icon: () => <span data-testid="calendar-icon" />,
+      title: 'Calendars',
+    },
+    Tasks: {
+      icon: () => <span data-testid="tasks-icon" />,
+      title: 'Tasks',
+    },
+    Notes: {
+      icon: () => <span data-testid="notes-icon" />,
+      title: 'Notes',
+    },
   },
 }))
 
@@ -150,6 +165,26 @@ describe('ModuleRail', () => {
       expect(screen.getByTestId('calendar-icon')).toBeInTheDocument()
       expect(screen.getByTestId('tasks-icon')).toBeInTheDocument()
       expect(screen.getByTestId('notes-icon')).toBeInTheDocument()
+    })
+
+    it('has a native title tooltip for each module button', () => {
+      render(<ModuleRail />)
+
+      expect(
+        screen.getByRole('button', { name: 'Address Book' })
+      ).toHaveAttribute('title', 'Address Book')
+      expect(screen.getByRole('button', { name: 'Calendar' })).toHaveAttribute(
+        'title',
+        'Calendar'
+      )
+      expect(screen.getByRole('button', { name: 'Tasks' })).toHaveAttribute(
+        'title',
+        'Tasks'
+      )
+      expect(screen.getByRole('button', { name: 'Notes' })).toHaveAttribute(
+        'title',
+        'Notes'
+      )
     })
   })
 

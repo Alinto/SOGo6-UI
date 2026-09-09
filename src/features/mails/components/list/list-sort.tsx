@@ -6,17 +6,38 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { DynamicIcon } from 'lucide-react/dynamic'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import type { IconName } from 'lucide-react/dynamic'
+import { DynamicIcon } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import React from 'react'
 
 const sortList: { label: string; value: string; icon: IconName }[] = [
-  { label: 'MAILS_LIST.sort.date.ascending.string',  value: 't_asc',  icon: 'clock-arrow-down' },
-  { label: 'MAILS_LIST.sort.date.descending.string', value: 't_desc', icon: 'clock-arrow-up' },
-  { label: 'MAILS_LIST.sort.size.ascending.string',  value: 's_asc',  icon: 'arrow-down-narrow-wide' },
-  { label: 'MAILS_LIST.sort.size.descending.string', value: 's_desc', icon: 'arrow-down-wide-narrow' },
+  {
+    label: 'MAILS_LIST.sort.date.ascending.string',
+    value: 't_asc',
+    icon: 'clock-arrow-down',
+  },
+  {
+    label: 'MAILS_LIST.sort.date.descending.string',
+    value: 't_desc',
+    icon: 'clock-arrow-up',
+  },
+  {
+    label: 'MAILS_LIST.sort.size.ascending.string',
+    value: 's_asc',
+    icon: 'arrow-down-narrow-wide',
+  },
+  {
+    label: 'MAILS_LIST.sort.size.descending.string',
+    value: 's_desc',
+    icon: 'arrow-down-wide-narrow',
+  },
 ]
 
 const ListSort: React.FC = () => {
@@ -38,11 +59,26 @@ const ListSort: React.FC = () => {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size={'sm'}>
-          <DynamicIcon name={sortList.find((s) => s.value === sort)?.icon ?? 'clock-arrow-down'} />
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size={'sm'}
+              aria-label={t('MAILS_LIST.sort.label.string')}
+            >
+              <span>{t('MAILS_LIST.sort.label.string')}</span>
+              <DynamicIcon
+                name={
+                  sortList.find((s) => s.value === sort)?.icon ??
+                  'clock-arrow-down'
+                }
+              />
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent>{t('MAILS_LIST.sort.label.string')}</TooltipContent>
+      </Tooltip>
       <DropdownMenuContent className="scrollbar-thin-gray max-h-60 w-auto overflow-auto">
         <DropdownMenuGroup>
           {sortList.map((sort) => (

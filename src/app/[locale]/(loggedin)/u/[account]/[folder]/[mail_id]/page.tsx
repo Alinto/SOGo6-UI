@@ -105,7 +105,7 @@ export function MailDetailPage({
     if (isOfflineOverlay) {
       return <OfflineUnavailable force target="mail" />
     }
-    return isError ? (
+    return isError || fetchedMail === null ? (
       <MailDetailError
         error={error}
         folderPath={folder}

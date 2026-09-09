@@ -41,6 +41,21 @@ jest.mock('@/components/ui/sidebar', () => ({
       {children}
     </div>
   ),
+  useSidebar: () => ({ state: 'expanded', isMobile: false }),
+}))
+
+jest.mock('@/components/ui/tooltip', () => ({
+  Tooltip: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  TooltipTrigger: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  TooltipContent: ({
+    children,
+    hidden,
+  }: {
+    children: React.ReactNode
+    hidden?: boolean
+  }) => (hidden ? null : <div data-testid="tooltip-content">{children}</div>),
 }))
 
 jest.mock('@/components/ui/dialog', () => ({

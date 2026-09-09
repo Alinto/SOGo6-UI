@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen } from '@testing-library/react'
-import React from 'react'
 import ListPagination from '../list-pagination'
 
 const mockPush = jest.fn()
@@ -21,8 +20,40 @@ jest.mock('@/hooks/use-mobile', () => ({
 }))
 
 jest.mock('@/components/ui/button', () => ({
-  Button: ({ children, onClick, disabled, 'aria-label': ariaLabel, ...props }: any) => (
-    <button onClick={onClick} disabled={disabled} aria-label={ariaLabel} {...props}>
+  Button: ({
+    children,
+    onClick,
+    disabled,
+    'aria-label': ariaLabel,
+    ...props
+  }: any) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      {...props}
+    >
+      {children}
+    </button>
+  ),
+}))
+
+jest.mock('@/components/ui/buttons/tooltip-button', () => ({
+  TooltipButton: ({
+    children,
+    onClick,
+    disabled,
+    'aria-label': ariaLabel,
+    tooltip: _tooltip,
+    tooltipSide: _tooltipSide,
+    ...props
+  }: any) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={ariaLabel}
+      {...props}
+    >
       {children}
     </button>
   ),
@@ -30,7 +61,9 @@ jest.mock('@/components/ui/button', () => ({
 
 jest.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: any) => <div data-testid="dropdown-content">{children}</div>,
+  DropdownMenuContent: ({ children }: any) => (
+    <div data-testid="dropdown-content">{children}</div>
+  ),
   DropdownMenuRadioGroup: ({ children, onValueChange, value }: any) => (
     <div data-testid="radio-group" data-value={value}>
       {children}
@@ -55,8 +88,12 @@ describe('ListPagination', () => {
   describe('basic rendering', () => {
     it('renders prev and next buttons', () => {
       render(<ListPagination currentPage={1} totalPages={5} />)
-      expect(screen.getByRole('button', { name: 'pagination.previous.string' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'pagination.next.string' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'pagination.next.string' })
+      ).toBeInTheDocument()
     })
 
     it('renders page indicator on desktop', () => {
@@ -85,44 +122,82 @@ describe('ListPagination', () => {
 
   describe('disabled states', () => {
     it('disables prev button on first page', () => {
-      render(<ListPagination currentPage={1} totalPages={5} hasPreviousPage={false} />)
-      expect(screen.getByRole('button', { name: 'pagination.previous.string' })).toBeDisabled()
+      render(
+        <ListPagination
+          currentPage={1}
+          totalPages={5}
+          hasPreviousPage={false}
+        />
+      )
+      expect(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      ).toBeDisabled()
     })
 
     it('disables next button on last page', () => {
-      render(<ListPagination currentPage={5} totalPages={5} hasNextPage={false} />)
-      expect(screen.getByRole('button', { name: 'pagination.next.string' })).toBeDisabled()
+      render(
+        <ListPagination currentPage={5} totalPages={5} hasNextPage={false} />
+      )
+      expect(
+        screen.getByRole('button', { name: 'pagination.next.string' })
+      ).toBeDisabled()
     })
 
     it('enables prev button when hasPreviousPage is true', () => {
-      render(<ListPagination currentPage={2} totalPages={5} hasPreviousPage={true} />)
-      expect(screen.getByRole('button', { name: 'pagination.previous.string' })).not.toBeDisabled()
+      render(
+        <ListPagination currentPage={2} totalPages={5} hasPreviousPage={true} />
+      )
+      expect(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      ).not.toBeDisabled()
     })
 
     it('enables next button when hasNextPage is true', () => {
-      render(<ListPagination currentPage={2} totalPages={5} hasNextPage={true} />)
-      expect(screen.getByRole('button', { name: 'pagination.next.string' })).not.toBeDisabled()
+      render(
+        <ListPagination currentPage={2} totalPages={5} hasNextPage={true} />
+      )
+      expect(
+        screen.getByRole('button', { name: 'pagination.next.string' })
+      ).not.toBeDisabled()
     })
   })
 
   describe('navigation — handlePrev', () => {
     it('navigates to page 2 when on page 3', () => {
       mockSearchParams.set('sort', 't_desc')
-      render(<ListPagination currentPage={3} totalPages={5} hasPreviousPage={true} />)
-      fireEvent.click(screen.getByRole('button', { name: 'pagination.previous.string' }))
-      expect(mockPush).toHaveBeenCalledWith(`${mockPathname}?sort=t_desc&page=2`)
+      render(
+        <ListPagination currentPage={3} totalPages={5} hasPreviousPage={true} />
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      )
+      expect(mockPush).toHaveBeenCalledWith(
+        `${mockPathname}?sort=t_desc&page=2`
+      )
     })
 
     it('removes page param when navigating back to page 1', () => {
       mockSearchParams.set('sort', 't_desc')
-      render(<ListPagination currentPage={2} totalPages={5} hasPreviousPage={true} />)
-      fireEvent.click(screen.getByRole('button', { name: 'pagination.previous.string' }))
+      render(
+        <ListPagination currentPage={2} totalPages={5} hasPreviousPage={true} />
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      )
       expect(mockPush).toHaveBeenCalledWith(`${mockPathname}?sort=t_desc`)
     })
 
     it('does not navigate when already on page 1', () => {
-      render(<ListPagination currentPage={1} totalPages={5} hasPreviousPage={false} />)
-      fireEvent.click(screen.getByRole('button', { name: 'pagination.previous.string' }))
+      render(
+        <ListPagination
+          currentPage={1}
+          totalPages={5}
+          hasPreviousPage={false}
+        />
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      )
       expect(mockPush).not.toHaveBeenCalled()
     })
   })
@@ -130,14 +205,22 @@ describe('ListPagination', () => {
   describe('navigation — handleNext', () => {
     it('navigates to next page preserving existing params', () => {
       mockSearchParams.set('sort', 't_asc')
-      render(<ListPagination currentPage={1} totalPages={5} hasNextPage={true} />)
-      fireEvent.click(screen.getByRole('button', { name: 'pagination.next.string' }))
+      render(
+        <ListPagination currentPage={1} totalPages={5} hasNextPage={true} />
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: 'pagination.next.string' })
+      )
       expect(mockPush).toHaveBeenCalledWith(`${mockPathname}?sort=t_asc&page=2`)
     })
 
     it('does not navigate when already on last page', () => {
-      render(<ListPagination currentPage={5} totalPages={5} hasNextPage={false} />)
-      fireEvent.click(screen.getByRole('button', { name: 'pagination.next.string' }))
+      render(
+        <ListPagination currentPage={5} totalPages={5} hasNextPage={false} />
+      )
+      fireEvent.click(
+        screen.getByRole('button', { name: 'pagination.next.string' })
+      )
       expect(mockPush).not.toHaveBeenCalled()
     })
   })
@@ -145,31 +228,44 @@ describe('ListPagination', () => {
   describe('accessibility', () => {
     it('prev button has correct aria-label', () => {
       render(<ListPagination currentPage={1} totalPages={3} />)
-      expect(screen.getByRole('button', { name: 'pagination.previous.string' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      ).toBeInTheDocument()
     })
 
     it('next button has correct aria-label', () => {
       render(<ListPagination currentPage={1} totalPages={3} />)
-      expect(screen.getByRole('button', { name: 'pagination.next.string' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'pagination.next.string' })
+      ).toBeInTheDocument()
     })
 
     it('prev button has aria-disabled when on page 1', () => {
       render(<ListPagination currentPage={1} totalPages={3} />)
-      expect(screen.getByRole('button', { name: 'pagination.previous.string' })).toHaveAttribute(
-        'aria-disabled',
-        'true'
-      )
+      expect(
+        screen.getByRole('button', { name: 'pagination.previous.string' })
+      ).toHaveAttribute('aria-disabled', 'true')
     })
   })
 
   describe('component stability', () => {
     it('updates page indicator on re-render', () => {
       const { rerender } = render(
-        <ListPagination currentPage={1} totalPages={3} hasNextPage={true} hasPreviousPage={false} />
+        <ListPagination
+          currentPage={1}
+          totalPages={3}
+          hasNextPage={true}
+          hasPreviousPage={false}
+        />
       )
       expect(screen.getByText('1 / 3')).toBeInTheDocument()
       rerender(
-        <ListPagination currentPage={2} totalPages={3} hasNextPage={true} hasPreviousPage={true} />
+        <ListPagination
+          currentPage={2}
+          totalPages={3}
+          hasNextPage={true}
+          hasPreviousPage={true}
+        />
       )
       expect(screen.getByText('2 / 3')).toBeInTheDocument()
     })

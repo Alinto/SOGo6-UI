@@ -70,6 +70,7 @@ export function AccountSwitcher() {
             size="lg"
             className="bg-sidebar group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
             disabled
+            tooltip={t('account_switcher.loading.string')}
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg group-data-[collapsible=icon]:hidden">
               <Mail className="h-5 w-5 opacity-50" />
@@ -91,6 +92,7 @@ export function AccountSwitcher() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
+                tooltip={selectedEmail}
                 className="bg-sidebar data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
               >
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg group-data-[collapsible=icon]:hidden">

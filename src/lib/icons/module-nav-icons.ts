@@ -8,9 +8,9 @@ import {
 
 /** Lucide icons shared between the main sidebar tab and the fast-access rail. */
 export const ModuleNavIcon = {
-  Mail: Mail,
-  AddressBook: Contact2,
-  Calendar: Calendar1,
-  Tasks: ClipboardCheck,
-  Notes: NotepadText,
+  Mail: { icon: Mail, title: 'Mail' },
+  AddressBook: { icon: Contact2, title: 'Address Books' },
+  Calendar: { icon: Calendar1, title: 'Calendars' },
+  Tasks: { icon: ClipboardCheck, title: 'Tasks' },
+  Notes: { icon: NotepadText, title: 'Notes' },
 } as const

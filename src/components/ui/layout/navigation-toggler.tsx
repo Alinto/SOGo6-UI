@@ -70,31 +70,35 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
       <TabsList className="border-sidebar-foreground/20 bg-sidebar grid h-10 w-full grid-cols-4 items-stretch border px-1 py-1">
         <TabsTrigger
           value="mail"
-          aria-label="Mail"
+          aria-label={ModuleNavIcon.Mail.title}
+          title={ModuleNavIcon.Mail.title}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
-          <ModuleNavIcon.Mail className="h-6 w-6" />
+          <ModuleNavIcon.Mail.icon className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="address_books"
-          aria-label="Address Books"
+          aria-label={ModuleNavIcon.AddressBook.title}
+          title={ModuleNavIcon.AddressBook.title}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
-          <ModuleNavIcon.AddressBook className="h-6 w-6" />
+          <ModuleNavIcon.AddressBook.icon className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="calendars"
-          aria-label="Calendars"
+          aria-label={ModuleNavIcon.Calendar.title}
+          title={ModuleNavIcon.Calendar.title}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
-          <ModuleNavIcon.Calendar className="h-6 w-6" />
+          <ModuleNavIcon.Calendar.icon className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="tasks"
-          aria-label="Tasks"
+          aria-label={ModuleNavIcon.Tasks.title}
+          title={ModuleNavIcon.Tasks.title}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
-          <ModuleNavIcon.Tasks className="h-6 w-6" />
+          <ModuleNavIcon.Tasks.icon className="h-6 w-6" />
         </TabsTrigger>
       </TabsList>
     </Tabs>
