@@ -12,7 +12,7 @@ import {
 import { MailCategoriesSettingsForm } from './components/mail-categories-form'
 
 const MailCategoriesSettings: React.FC = () => {
-  const t = useTranslations('US_MAIL_CATEGORIES')
+  const t = useTranslations('US_MAIL_CATEGORY_LABELS')
   const { data, error, isFetching } = useGetUserPreferencesQuery()
   const [updateMail] = useUpdateUserPreferencesMailCategoryMutation()
   if (error) {

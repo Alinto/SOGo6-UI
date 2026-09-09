@@ -111,14 +111,14 @@
             "help-tooltip": "Warning: if events from the client are more recent, force the sync anyway",
             "context": "Label for the setting that determines whether to force synchronization of events created from CalDAV clients or not"
         },
-        "categories": {
+        "labels": {
             "create": {
-                "string": "Add calendar category",
-                "context": "Button text to add a new calendar category"
+                "string": "Add calendar label",
+                "context": "Button text to add a new calendar label"
             },
             "title": {
-                "string": "Categories",
-                "context": "Title for the calendar categories settings page"
+                "string": "Labels",
+                "context": "Title for the calendar labels settings page"
             },
             "accessibility": {
                 "icon": {
@@ -132,7 +132,7 @@
             "Family": "Family",
             "Friends": "Friends",
             "validation": {
-                "category-name-required": "Category name is required"
+                "label-name-required": "Label name is required"
             }
         }
     }

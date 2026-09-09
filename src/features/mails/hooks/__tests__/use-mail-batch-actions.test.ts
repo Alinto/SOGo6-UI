@@ -85,8 +85,7 @@ describe('useMailBatchActions', () => {
       })
       expect(mockMailBatchAction).toHaveBeenCalledWith({
         accountId: '0',
-        folder: 'INBOX',
-        uids: ['1', '2'],
+        folders: { INBOX: ['1', '2'] },
         action: 'delete',
         data: undefined,
       })
@@ -99,6 +98,25 @@ describe('useMailBatchActions', () => {
       })
       expect(mockMailBatchAction).not.toHaveBeenCalled()
     })
+
+    it('groups ids by their source folder in a single request when the selection spans multiple folders (e.g. search results)', async () => {
+      const { result } = renderHook(() =>
+        useMailBatchActions({
+          ...defaultArgs,
+          folderById: { '1': 'INBOX', '2': 'Trash', '3': 'INBOX' },
+        })
+      )
+      await act(async () => {
+        await result.current.batchDelete(['1', '2', '3'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledTimes(1)
+      expect(mockMailBatchAction).toHaveBeenCalledWith({
+        accountId: '0',
+        folders: { INBOX: ['1', '3'], Trash: ['2'] },
+        action: 'delete',
+        data: undefined,
+      })
+    })
   })
 
   describe('batchArchive', () => {
@@ -109,7 +127,7 @@ describe('useMailBatchActions', () => {
       })
       expect(mockMailBatchAction).toHaveBeenCalledWith(
         expect.objectContaining({
-          uids: ['1', '2'],
+          folders: { INBOX: ['1', '2'] },
           action: 'move',
           data: 'Archive',
         })
@@ -146,7 +164,10 @@ describe('useMailBatchActions', () => {
         await result.current.batchSpam(['1', '2'])
       })
       expect(mockMailBatchAction).toHaveBeenCalledWith(
-        expect.objectContaining({ uids: ['1', '2'], action: 'spam' })
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'spam',
+        })
       )
     })
 
@@ -156,7 +177,68 @@ describe('useMailBatchActions', () => {
         await result.current.batchHam(['1', '2'])
       })
       expect(mockMailBatchAction).toHaveBeenCalledWith(
-        expect.objectContaining({ uids: ['1', '2'], action: 'ham' })
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'ham',
+        })
+      )
+    })
+  })
+
+  describe('batchToggleSpam', () => {
+    it('splits a cross-folder selection: hams mails already in Junk, spams the rest', async () => {
+      const { result } = renderHook(() =>
+        useMailBatchActions({
+          ...defaultArgs,
+          folder: 'INBOX',
+          folderById: { '1': 'INBOX', '2': 'Junk', '3': 'INBOX' },
+        })
+      )
+      await act(async () => {
+        await result.current.batchToggleSpam(['1', '2', '3'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledTimes(2)
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { Junk: ['2'] },
+          action: 'ham',
+        })
+      )
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { INBOX: ['1', '3'] },
+          action: 'spam',
+        })
+      )
+    })
+
+    it('spams everything when browsing a non-junk folder with no folderById override', async () => {
+      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
+      await act(async () => {
+        await result.current.batchToggleSpam(['1', '2'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledTimes(1)
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'spam',
+        })
+      )
+    })
+
+    it('hams everything when browsing the Junk folder with no folderById override', async () => {
+      const { result } = renderHook(() =>
+        useMailBatchActions({ ...defaultArgs, folder: 'Junk' })
+      )
+      await act(async () => {
+        await result.current.batchToggleSpam(['1', '2'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledTimes(1)
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { Junk: ['1', '2'] },
+          action: 'ham',
+        })
       )
     })
   })
@@ -191,7 +273,7 @@ describe('useMailBatchActions', () => {
       })
       expect(mockMailBatchAction).toHaveBeenCalledWith(
         expect.objectContaining({
-          uids: ['1', '2'],
+          folders: { INBOX: ['1', '2'] },
           action: 'tag',
           data: ['Work', 'Urgent'],
         })
@@ -207,7 +289,7 @@ describe('useMailBatchActions', () => {
       })
       expect(mockMailBatchAction).toHaveBeenCalledWith(
         expect.objectContaining({
-          uids: ['1', '2'],
+          folders: { INBOX: ['1', '2'] },
           action: 'untag',
           data: ['Work'],
         })

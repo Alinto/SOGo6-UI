@@ -23,7 +23,10 @@ jest.mock('next-intl', () => ({
 
 jest.mock('@/components/ui/avatar', () => ({
   Avatar: ({ children }: any) => <div data-testid="avatar">{children}</div>,
-  AvatarImage: () => <img data-testid="avatar-image" />,
+  AvatarImage: () => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img data-testid="avatar-image" alt="" />
+  ),
   AvatarFallback: ({ children }: any) => (
     <div data-testid="avatar-fallback">{children}</div>
   ),
@@ -86,6 +89,18 @@ jest.mock('@/features/mails/hooks/use-current-folder', () => ({
   useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
 }))
 
+const mockUseMailFolderLabel = jest.fn<string | undefined, unknown[]>()
+jest.mock('@/features/mails/hooks/use-mail-folder-label', () => ({
+  useMailFolderLabel: (...args: unknown[]) => mockUseMailFolderLabel(...args),
+}))
+
+jest.mock('../mail/mail-folder-label', () => ({
+  __esModule: true,
+  default: ({ name }: { name: string }) => (
+    <div data-testid="mail-folder-label">{name}</div>
+  ),
+}))
+
 jest.mock('@/features/mails/hooks/use-open-draft-on-click', () => ({
   useOpenDraftOnClick: jest.fn(() => ({
     openDraftIfNeeded: jest.fn(async () => false),
@@ -129,7 +144,10 @@ const createTestStore = () =>
 const renderWithRedux = (ui: React.ReactElement) =>
   render(<Provider store={createTestStore()}>{ui}</Provider>)
 
-beforeEach(() => jest.clearAllMocks())
+beforeEach(() => {
+  jest.clearAllMocks()
+  mockUseMailFolderLabel.mockReturnValue(undefined)
+})
 
 // ── Tests ──────────────────────────────────────────────────────────────────
 describe('ListItemDesktop', () => {
@@ -272,5 +290,21 @@ describe('ListItemDesktop', () => {
       <ListItemDesktop {...defaultProps} data={{ ...mockData, priority: 3 }} />
     )
     expect(screen.queryByTestId('chevrons-up-icon')).not.toBeInTheDocument()
+  })
+
+  it('does not show a folder label by default', () => {
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
+    expect(screen.queryByTestId('mail-folder-label')).not.toBeInTheDocument()
+  })
+
+  it('shows the folder label when a cross-folder search is active', () => {
+    mockUseMailFolderLabel.mockReturnValue('Work')
+    renderWithRedux(
+      <ListItemDesktop
+        {...defaultProps}
+        data={{ ...mockData, folder: 'INBOX/Work' }}
+      />
+    )
+    expect(screen.getByTestId('mail-folder-label')).toHaveTextContent('Work')
   })
 })

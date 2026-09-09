@@ -1,20 +1,21 @@
-import { mailComposeReducer } from '@/features/mails/store'
-import calendarUiReducer from '@/features/calendars/store/calendar-ui-slice'
 import { addressBooksUiReducer } from '@/features/address_books'
-import { tasksUiReducer } from '@/features/tasks'
+import authSlice from '@/features/auth/components/store/auth.slice'
+import calendarUiReducer from '@/features/calendars/store/calendar-ui-slice'
+import { mailComposeReducer } from '@/features/mails/store'
 import mailLayoutReducer from '@/features/mails/store/mail-layout-slice'
 import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
+import mailSearchReducer from '@/features/mails/store/mail-search-slice'
 import { notificationsReducer } from '@/features/notifications'
+import { tasksUiReducer } from '@/features/tasks'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
 import { listenerMiddleware } from './listener-middleware'
+import {
+  loadAuthFromStorage,
+  localStorageSyncMiddleware,
+} from './middleware/local-storage-sync'
 import { createReducerManager, ReducerManager } from './reducer-manager'
 import { sseApi } from './sse/sse-api'
-import authSlice from '@/features/auth/components/store/auth.slice'
-import {
-  localStorageSyncMiddleware,
-  loadAuthFromStorage,
-} from './middleware/local-storage-sync'
 
 // Load auth state from localStorage on startup
 const loadPreloadedState = () => {
@@ -31,6 +32,7 @@ const staticReducers = {
   mailCompose: mailComposeReducer,
   mailLayout: mailLayoutReducer,
   mailNavigation: mailNavigationReducer,
+  mailSearch: mailSearchReducer,
   notifications: notificationsReducer,
   [apiSlice.reducerPath]: apiSlice.reducer,
   [sseApi.reducerPath]: sseApi.reducer,

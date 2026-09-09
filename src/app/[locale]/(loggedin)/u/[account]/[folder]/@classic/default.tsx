@@ -21,11 +21,18 @@ const Page: React.FC = () => {
   const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
-  const { data, isLoading, isFetching, error, refetch, isVirtualFolder } =
-    useFolderMessages({
-      folder: folderPath,
-      accountId: accountString,
-    })
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    isVirtualFolder,
+    isSearchActive,
+  } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
 
   useEffect(() => {
     dispatch(setSkipFolderFetch(false))
@@ -40,7 +47,7 @@ const Page: React.FC = () => {
 
   const containerClassName = `${mail_id ? 'hidden lg:flex' : 'flex'} w-full`
 
-  if (isVirtualFolder) {
+  if (isVirtualFolder && !isSearchActive) {
     return (
       <div className={containerClassName}>
         <VirtualFolderEmptyState />
@@ -79,7 +86,9 @@ const Page: React.FC = () => {
         total={clientFilterActive ? filteredMails.length : (data?.total ?? 0)}
         totalPages={clientFilterActive ? 1 : (data?.totalPages ?? 1)}
         hasNextPage={clientFilterActive ? false : (data?.hasNextPage ?? false)}
-        hasPreviousPage={clientFilterActive ? false : (data?.hasPreviousPage ?? false)}
+        hasPreviousPage={
+          clientFilterActive ? false : (data?.hasPreviousPage ?? false)
+        }
         isLoading={false}
         isFetching={isFetching}
         hideToolbar

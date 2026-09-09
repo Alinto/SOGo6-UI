@@ -38,6 +38,18 @@ jest.mock('../mail/mail-list-labels', () => ({
   ),
 }))
 
+const mockUseMailFolderLabel = jest.fn<string | undefined, unknown[]>()
+jest.mock('@/features/mails/hooks/use-mail-folder-label', () => ({
+  useMailFolderLabel: (...args: unknown[]) => mockUseMailFolderLabel(...args),
+}))
+
+jest.mock('../mail/mail-folder-label', () => ({
+  __esModule: true,
+  default: ({ name }: { name: string }) => (
+    <div data-testid="mail-folder-label">{name}</div>
+  ),
+}))
+
 const mockUseRouter = useRouter as jest.MockedFunction<typeof useRouter>
 const mockUseParams = useParams as jest.MockedFunction<typeof useParams>
 const mockUsePathname = usePathname as jest.MockedFunction<typeof usePathname>
@@ -81,6 +93,7 @@ describe('ListItemClassic', () => {
     } as any)
     mockUsePathname.mockReturnValue('/test-path')
     mockUseParams.mockReturnValue({})
+    mockUseMailFolderLabel.mockReturnValue(undefined)
   })
 
   afterEach(() => {
@@ -200,5 +213,28 @@ describe('ListItemClassic', () => {
 
     expect(onToggleFlag).toHaveBeenCalledWith('1')
     expect(push).not.toHaveBeenCalled()
+  })
+
+  it('does not show a folder label by default', () => {
+    renderWithRedux(
+      <ListItemClassic
+        data={mockData}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    expect(screen.queryByTestId('mail-folder-label')).not.toBeInTheDocument()
+  })
+
+  it('shows the folder label when a cross-folder search is active', () => {
+    mockUseMailFolderLabel.mockReturnValue('Work')
+    renderWithRedux(
+      <ListItemClassic
+        data={{ ...mockData, folder: 'INBOX/Work' }}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    expect(screen.getByTestId('mail-folder-label')).toHaveTextContent('Work')
   })
 })

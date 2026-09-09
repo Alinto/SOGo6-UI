@@ -17,6 +17,7 @@ export const ADDRESS_BOOKS_SLICE = 'address_books'
 export const VCARD_SLICE = 'vcard'
 export const MAIL_FOLDERS_SLICE = 'mail/folders'
 export const FOLDER_MESSAGES_SLICE = 'folder/messages'
+export const SEARCH_MAILS_SLICE = 'search/mails'
 export const PREFERENCES_SLICE = 'preferences'
 export const PROFILE_SLICE = 'profile'
 export const MAIL_SLICE = 'mail'
@@ -61,6 +62,7 @@ const tagTypes = [
   VCARD_SLICE,
   MAIL_FOLDERS_SLICE,
   FOLDER_MESSAGES_SLICE,
+  SEARCH_MAILS_SLICE,
   PREFERENCES_SLICE,
   PROFILE_SLICE,
   MAIL_SLICE,
@@ -96,11 +98,7 @@ const ENV_RESOLVE_MS = 6000
 export const API_FETCH_TIMEOUT_MS = 20_000
 
 /** RTK endpoint names that must not send Authorization (pre-login / public). */
-const PUBLIC_AUTH_ENDPOINTS = new Set([
-  'getSystem',
-  'getAuthMode',
-  'login',
-])
+const PUBLIC_AUTH_ENDPOINTS = new Set(['getSystem', 'getAuthMode', 'login'])
 
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
   if (!cachedBaseUrl) {
@@ -130,10 +128,7 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
         throw error
       }
 
-      console.warn(
-        '⚠️ Could not resolve API base URL, using /fakeApi',
-        error
-      )
+      console.warn('⚠️ Could not resolve API base URL, using /fakeApi', error)
       cachedBaseUrl = '/fakeApi'
       clearEnvCache()
     }

@@ -1,5 +1,5 @@
-import { createSchema } from '../mail-categories-schema'
 import { useTranslations } from 'next-intl'
+import { createSchema } from '../mail-categories-schema'
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -11,7 +11,7 @@ jest.mock('next-intl', () => ({
 
 const mockT = (key: string) => {
   const map: Record<string, string> = {
-    'categories.validation.category-name-required': 'Category name is required',
+    'labels.validation.label-name-required': 'Label name is required',
   }
   return map[key] ?? key
 }
@@ -31,7 +31,6 @@ function validPayload(overrides = {}) {
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe('createSchema (mail categories)', () => {
-
   // ── schema creation ───────────────────────────────────────────────────────
 
   describe('schema creation', () => {
@@ -57,7 +56,8 @@ describe('createSchema (mail categories)', () => {
 
     it('accepts a single valid category', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory()] })).success
+        makeSchema().safeParse(validPayload({ categories: [validCategory()] }))
+          .success
       ).toBe(true)
     })
 
@@ -66,8 +66,16 @@ describe('createSchema (mail categories)', () => {
         makeSchema().safeParse(
           validPayload({
             categories: [
-              validCategory({ name: 'Work', color: '#ef4444', isDefault: true }),
-              validCategory({ name: 'Personal', color: '#10b981', isDefault: false }),
+              validCategory({
+                name: 'Work',
+                color: '#ef4444',
+                isDefault: true,
+              }),
+              validCategory({
+                name: 'Personal',
+                color: '#10b981',
+                isDefault: false,
+              }),
             ],
           })
         ).success
@@ -75,7 +83,10 @@ describe('createSchema (mail categories)', () => {
     })
 
     it('rejects a non-array value', () => {
-      expect(makeSchema().safeParse(validPayload({ categories: 'not-an-array' })).success).toBe(false)
+      expect(
+        makeSchema().safeParse(validPayload({ categories: 'not-an-array' }))
+          .success
+      ).toBe(false)
     })
 
     it('rejects when categories field is missing', () => {
@@ -88,13 +99,17 @@ describe('createSchema (mail categories)', () => {
   describe('category.name', () => {
     it('accepts a non-empty string', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ name: 'Inbox' })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ name: 'Inbox' })] })
+        ).success
       ).toBe(true)
     })
 
     it('rejects an empty string', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ name: '' })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ name: '' })] })
+        ).success
       ).toBe(false)
     })
 
@@ -104,19 +119,23 @@ describe('createSchema (mail categories)', () => {
       )
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('Category name is required')
+        expect(result.error.issues[0].message).toBe('Label name is required')
       }
     })
 
     it('rejects a numeric name', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ name: 42 })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ name: 42 })] })
+        ).success
       ).toBe(false)
     })
 
     it('rejects when name is missing', () => {
       const { name: _, ...noName } = validCategory()
-      expect(makeSchema().safeParse(validPayload({ categories: [noName] })).success).toBe(false)
+      expect(
+        makeSchema().safeParse(validPayload({ categories: [noName] })).success
+      ).toBe(false)
     })
   })
 
@@ -125,25 +144,33 @@ describe('createSchema (mail categories)', () => {
   describe('category.color', () => {
     it('accepts a hex color string', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ color: '#ff0000' })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ color: '#ff0000' })] })
+        ).success
       ).toBe(true)
     })
 
     it('accepts an empty string (no format constraint)', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ color: '' })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ color: '' })] })
+        ).success
       ).toBe(true)
     })
 
     it('accepts any arbitrary string', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ color: 'red' })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ color: 'red' })] })
+        ).success
       ).toBe(true)
     })
 
     it('rejects when color is missing', () => {
       const { color: _, ...noColor } = validCategory()
-      expect(makeSchema().safeParse(validPayload({ categories: [noColor] })).success).toBe(false)
+      expect(
+        makeSchema().safeParse(validPayload({ categories: [noColor] })).success
+      ).toBe(false)
     })
   })
 
@@ -152,31 +179,42 @@ describe('createSchema (mail categories)', () => {
   describe('category.isDefault', () => {
     it('accepts true', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ isDefault: true })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ isDefault: true })] })
+        ).success
       ).toBe(true)
     })
 
     it('accepts false', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ isDefault: false })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ isDefault: false })] })
+        ).success
       ).toBe(true)
     })
 
     it('rejects a string', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ isDefault: 'true' })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ isDefault: 'true' })] })
+        ).success
       ).toBe(false)
     })
 
     it('rejects a number', () => {
       expect(
-        makeSchema().safeParse(validPayload({ categories: [validCategory({ isDefault: 1 })] })).success
+        makeSchema().safeParse(
+          validPayload({ categories: [validCategory({ isDefault: 1 })] })
+        ).success
       ).toBe(false)
     })
 
     it('rejects when isDefault is missing', () => {
       const { isDefault: _, ...noDefault } = validCategory()
-      expect(makeSchema().safeParse(validPayload({ categories: [noDefault] })).success).toBe(false)
+      expect(
+        makeSchema().safeParse(validPayload({ categories: [noDefault] }))
+          .success
+      ).toBe(false)
     })
   })
 
@@ -192,7 +230,9 @@ describe('createSchema (mail categories)', () => {
     it('calls t with the correct key for the name validation message', () => {
       const customT = jest.fn((key: string) => key)
       createSchema(customT as any)
-      expect(customT).toHaveBeenCalledWith('categories.validation.category-name-required')
+      expect(customT).toHaveBeenCalledWith(
+        'labels.validation.label-name-required'
+      )
     })
 
     it('uses the value returned by t as the validation error message', () => {
@@ -209,8 +249,8 @@ describe('createSchema (mail categories)', () => {
 
     it('uses a different locale t function and resolves the message correctly', () => {
       const frT = (key: string) =>
-        key === 'categories.validation.category-name-required'
-          ? 'Nom de catégorie requis'
+        key === 'labels.validation.label-name-required'
+          ? 'Nom de libellé requis'
           : key
       const schema = createSchema(frT as any)
       const result = schema.safeParse(
@@ -218,7 +258,7 @@ describe('createSchema (mail categories)', () => {
       )
       expect(result.success).toBe(false)
       if (!result.success) {
-        expect(result.error.issues[0].message).toBe('Nom de catégorie requis')
+        expect(result.error.issues[0].message).toBe('Nom de libellé requis')
       }
     })
   })
@@ -230,7 +270,11 @@ describe('createSchema (mail categories)', () => {
       const payload = validPayload({
         categories: [
           validCategory({ name: 'Work', color: '#ef4444', isDefault: true }),
-          validCategory({ name: 'Personal', color: '#3b82f6', isDefault: false }),
+          validCategory({
+            name: 'Personal',
+            color: '#3b82f6',
+            isDefault: false,
+          }),
         ],
       })
       const result = makeSchema().safeParse(payload)
@@ -241,7 +285,10 @@ describe('createSchema (mail categories)', () => {
     })
 
     it('strips unknown top-level fields', () => {
-      const result = makeSchema().safeParse({ ...validPayload(), extra: 'field' })
+      const result = makeSchema().safeParse({
+        ...validPayload(),
+        extra: 'field',
+      })
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data).not.toHaveProperty('extra')

@@ -2,8 +2,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
+import MailFolderLabel from '@/features/mails/components/mail/mail-folder-label'
 import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import {
   MAIL_PRIORITY_HIGHEST,
@@ -54,7 +56,11 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const folderString = folderPathFromParams(
     folder as string | string[] | undefined
   )
-  const { folderType } = useCurrentFolder(folderString, accountString)
+  // Search results can span multiple folders; data.folder carries the mail's
+  // actual folder in that case, falling back to the route folder otherwise.
+  const mailFolderPath = data.folder ?? folderString
+  const { folderType } = useCurrentFolder(mailFolderPath, accountString)
+  const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
   const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const [isHovered, setIsHovered] = useState(false)
@@ -88,10 +94,12 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onClick={async () => {
-          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
+          push(
+            `/u/${accountString}/${encodeURIComponent(mailFolderPath)}/${id}`
+          )
           await openDraftIfNeeded({
             folderType,
-            folderPath: folderString,
+            folderPath: mailFolderPath,
             accountId: accountString,
             mailId: id,
           })
@@ -129,11 +137,16 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
         </div>
         <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
           <div className="flex w-full items-center justify-between gap-2">
-            <span
-              className={`text-md min-w-0 truncate ${data.seen ? '' : 'font-semibold'}`}
-            >
-              {displayName}
-            </span>
+            <div className="flex min-w-0 items-center gap-1">
+              <span
+                className={`text-md min-w-0 truncate ${data.seen ? '' : 'font-semibold'}`}
+              >
+                {displayName}
+              </span>
+              {folderLabel && (
+                <MailFolderLabel name={folderLabel} type={folderType} />
+              )}
+            </div>
             <div className="flex shrink-0 items-center gap-1">
               {onToggleRead && (
                 <div className="hidden group-hover:flex">

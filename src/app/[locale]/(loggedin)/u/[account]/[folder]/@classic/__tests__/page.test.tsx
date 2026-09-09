@@ -1,6 +1,5 @@
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
-import React from 'react'
 import Page from '../page'
 
 jest.mock('next/navigation', () => ({
@@ -18,13 +17,18 @@ jest.mock('@/lib/redux/hooks', () => ({
 }))
 
 jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
-  selectSkipFolderFetch: (s: any) => s?.mailNavigation?.skipFolderFetch ?? false,
-  setMailNavigation: jest.fn((p) => ({ type: 'mailNavigation/setMailNavigation', payload: p })),
+  selectSkipFolderFetch: (s: any) =>
+    s?.mailNavigation?.skipFolderFetch ?? false,
+  setMailNavigation: jest.fn((p) => ({
+    type: 'mailNavigation/setMailNavigation',
+    payload: p,
+  })),
 }))
 
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
   useGetFoldersQuery: jest.fn(() => ({ data: [], isLoading: false })),
+  useSearchMailsQuery: jest.fn(() => ({ data: undefined, isLoading: false })),
 }))
 
 jest.mock('@/features/mails/components/list', () => ({
@@ -38,7 +42,11 @@ jest.mock('@/features/mails/components/list', () => ({
     type?: string
     hideToolbar?: boolean
   }) => (
-    <div data-testid="messages-list" data-type={type} data-hide-toolbar={String(hideToolbar)}>
+    <div
+      data-testid="messages-list"
+      data-type={type}
+      data-hide-toolbar={String(hideToolbar)}
+    >
       <span data-testid="items-count">{items.length}</span>
     </div>
   ),
@@ -51,10 +59,12 @@ jest.mock('@/features/mails/components/skeletons/list-skeleton', () => ({
 
 describe('Classic Page', () => {
   const mockUseParams = require('next/navigation').useParams as jest.Mock
-  const mockUseSearchParams = require('next/navigation').useSearchParams as jest.Mock
+  const mockUseSearchParams = require('next/navigation')
+    .useSearchParams as jest.Mock
   const mockUseSelector = require('react-redux').useSelector as jest.Mock
-  const mockUseGetFolderMessagesQuery = require('@/features/mails/store/mails-api')
-    .useGetFolderMessagesQuery as jest.Mock
+  const mockUseGetFolderMessagesQuery =
+    require('@/features/mails/store/mails-api')
+      .useGetFolderMessagesQuery as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
@@ -64,7 +74,14 @@ describe('Classic Page', () => {
     )
     mockUseSelector.mockReturnValue('split')
     mockUseGetFolderMessagesQuery.mockReturnValue({
-      data: { mails: [], page: 1, total: 0, totalPages: 1, hasNextPage: false, hasPreviousPage: false },
+      data: {
+        mails: [],
+        page: 1,
+        total: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      },
       isFetching: false,
     })
   })
@@ -96,8 +113,22 @@ describe('Classic Page', () => {
       mockUseGetFolderMessagesQuery.mockReturnValue({
         data: {
           mails: [
-            { id: 1, hasAttachment: true, seen: true, flagged: false, date: '2024-01-01', size: 100 },
-            { id: 2, hasAttachment: false, seen: true, flagged: false, date: '2024-01-02', size: 200 },
+            {
+              id: 1,
+              hasAttachment: true,
+              seen: true,
+              flagged: false,
+              date: '2024-01-01',
+              size: 100,
+            },
+            {
+              id: 2,
+              hasAttachment: false,
+              seen: true,
+              flagged: false,
+              date: '2024-01-02',
+              size: 200,
+            },
           ],
           page: 1,
           total: 2,
@@ -120,8 +151,22 @@ describe('Classic Page', () => {
       mockUseGetFolderMessagesQuery.mockReturnValue({
         data: {
           mails: [
-            { id: 1, hasAttachment: false, seen: false, flagged: false, date: '2024-01-01', size: 100 },
-            { id: 2, hasAttachment: false, seen: true, flagged: false, date: '2024-01-02', size: 200 },
+            {
+              id: 1,
+              hasAttachment: false,
+              seen: false,
+              flagged: false,
+              date: '2024-01-01',
+              size: 100,
+            },
+            {
+              id: 2,
+              hasAttachment: false,
+              seen: true,
+              flagged: false,
+              date: '2024-01-02',
+              size: 200,
+            },
           ],
           page: 1,
           total: 2,
@@ -138,7 +183,10 @@ describe('Classic Page', () => {
     })
 
     it('handles array folder param', () => {
-      mockUseParams.mockReturnValue({ folder: ['Archive', 'Old'], mail_id: undefined })
+      mockUseParams.mockReturnValue({
+        folder: ['Archive', 'Old'],
+        mail_id: undefined,
+      })
       render(<Page />)
       expect(mockUseGetFolderMessagesQuery).toHaveBeenCalledWith(
         expect.objectContaining({ folder: 'Archive/Old' }),

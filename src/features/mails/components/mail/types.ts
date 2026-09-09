@@ -50,6 +50,7 @@ export type MailReturnButtonProps = {
   folderPath: string
   tooltip?: string
   className?: string
+  returnUrl?: string | null
 }
 
 export type EmailContact = {

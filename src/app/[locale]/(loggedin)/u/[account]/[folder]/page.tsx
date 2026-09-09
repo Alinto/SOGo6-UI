@@ -24,11 +24,19 @@ const Page = () => {
   const pathname = usePathname()
   const { replace } = useRouter()
   const activeFilter = searchParams.get('filter') ?? 'all'
-  const { data, isLoading, isFetching, error, refetch, currentPage, isVirtualFolder } =
-    useFolderMessages({
-      folder: folderPath,
-      accountId: accountString,
-    })
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    currentPage,
+    isVirtualFolder,
+    isSearchActive,
+  } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
 
   useEffect(() => {
     dispatch(setSkipFolderFetch(false))
@@ -68,7 +76,7 @@ const Page = () => {
     [data, activeFilter]
   )
 
-  if (isVirtualFolder) {
+  if (isVirtualFolder && !isSearchActive) {
     return <VirtualFolderEmptyState />
   }
 
@@ -93,7 +101,9 @@ const Page = () => {
       total={clientFilterActive ? filteredMails.length : (data?.total ?? 0)}
       totalPages={clientFilterActive ? 1 : (data?.totalPages ?? 1)}
       hasNextPage={clientFilterActive ? false : (data?.hasNextPage ?? false)}
-      hasPreviousPage={clientFilterActive ? false : (data?.hasPreviousPage ?? false)}
+      hasPreviousPage={
+        clientFilterActive ? false : (data?.hasPreviousPage ?? false)
+      }
       isLoading={isLoading}
       isFetching={isFetching}
       hideToolbar

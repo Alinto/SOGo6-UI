@@ -8,18 +8,19 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { useGetPreferencesQuery } from '@/features/app-data/store/user-preferences-api'
+import ListToolbar from '@/features/mails/components/list/list-toolbar'
+import MailSSEListener from '@/features/mails/components/mail-sse-listener'
 import FastAccessContent from '@/features/mails/components/sidebars/fast-access/content'
 import {
   FastAccessProvider,
   useFastAccessRequired,
 } from '@/features/mails/components/sidebars/fast-access/context'
-import ListToolbar from '@/features/mails/components/list/list-toolbar'
-import MailSSEListener from '@/features/mails/components/mail-sse-listener'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
+import { useSyncAdvancedSearchFromUrl } from '@/features/mails/hooks/use-sync-advanced-search-from-url'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
 import { useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
+import { cn } from '@/lib/utils'
 import React from 'react'
 
 function MailLayoutInner({
@@ -37,6 +38,7 @@ function MailLayoutInner({
   )
   const { isOpen, activeModule, closeModule } = useFastAccessRequired()
   const toolbarMode = useListToolbarMode()
+  useSyncAdvancedSearchFromUrl()
 
   const isSplitMode = mailLayoutMode === 'split' && !isMobile
   const isClassicLayout = layoutType === 'classic' || isSplitMode
@@ -71,9 +73,7 @@ function MailLayoutInner({
             {content}
           </div>
         </SidebarInset>
-        {isOpen && activeModule && (
-          <FastAccessContent name={activeModule} />
-        )}
+        {isOpen && activeModule && <FastAccessContent name={activeModule} />}
         {!isMobile && (
           <div className="fixed right-0 bottom-4 z-50">
             <SidebarTrigger

@@ -70,6 +70,9 @@ jest.mock('@/features/mails/components/list/list-toolbar', () => ({
 jest.mock('@/features/mails/hooks/use-list-toolbar-mode', () => ({
   useListToolbarMode: jest.fn(() => 'list'),
 }))
+jest.mock('@/features/mails/hooks/use-sync-advanced-search-from-url', () => ({
+  useSyncAdvancedSearchFromUrl: jest.fn(),
+}))
 jest.mock('@/features/mails/components/mail-sse-listener', () => ({
   __esModule: true,
   default: () => <div data-testid="mail-sse-listener" />,
@@ -172,7 +175,9 @@ describe('Mail Folder Layout', () => {
   })
 
   it('should use full content height when toolbar is hidden on mail detail', () => {
-    const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+    const {
+      useListToolbarMode,
+    } = require('@/features/mails/hooks/use-list-toolbar-mode')
     useListToolbarMode.mockReturnValue('hidden')
 
     const { container } = render(
@@ -183,7 +188,9 @@ describe('Mail Folder Layout', () => {
   })
 
   it('should reserve toolbar height when list toolbar is visible', () => {
-    const { useListToolbarMode } = require('@/features/mails/hooks/use-list-toolbar-mode')
+    const {
+      useListToolbarMode,
+    } = require('@/features/mails/hooks/use-list-toolbar-mode')
     useListToolbarMode.mockReturnValue('list')
 
     const { container } = render(

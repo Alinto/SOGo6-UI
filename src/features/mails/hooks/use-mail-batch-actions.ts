@@ -19,6 +19,12 @@ import {
 export type UseMailBatchActionsArgs = {
   accountId: string
   folder: string
+  /**
+   * Per-mail folder overrides, keyed by mail id. Needed when the selection
+   * comes from cross-folder search results, where `folder` (the currently
+   * open route folder) doesn't necessarily match where a given mail lives.
+   */
+  folderById?: Record<string, string>
 }
 
 export type UseMailBatchActionsReturn = {
@@ -28,6 +34,13 @@ export type UseMailBatchActionsReturn = {
   batchMarkUnread: (mailIds: string[]) => Promise<void>
   batchSpam: (mailIds: string[]) => Promise<void>
   batchHam: (mailIds: string[]) => Promise<void>
+  /**
+   * Marks each id as spam or ham depending on whether *its own* folder is
+   * the Junk folder, not the currently open route folder. Needed because a
+   * selection from cross-folder search results can mix junk and non-junk
+   * mails.
+   */
+  batchToggleSpam: (mailIds: string[]) => Promise<void>
   batchMove: (mailIds: string[], destination: string) => Promise<void>
   batchCopy: (mailIds: string[], destination: string) => Promise<void>
   batchApplyLabels: (mailIds: string[], labels: string[]) => Promise<void>
@@ -42,6 +55,7 @@ export type UseMailBatchActionsReturn = {
 export function useMailBatchActions({
   accountId,
   folder,
+  folderById,
 }: UseMailBatchActionsArgs): UseMailBatchActionsReturn {
   const accountKey = accountId || '0'
 
@@ -67,19 +81,28 @@ export function useMailBatchActions({
       data?: string | string[] | null
     ) => {
       if (mailIds.length === 0) return
-      try {
-        await mailBatchAction({
-          accountId: accountKey,
-          folder,
-          uids: mailIds,
-          action,
-          data,
-        }).unwrap()
-      } catch {
-        // errors surfaced via createApiNotificationHandler
+
+      // Mails selected from cross-folder search results don't all live in
+      // `folder` (the currently open route folder) — group them by their
+      // actual folder so one request can carry every folder at once.
+      const folders: Record<string, string[]> = {}
+      for (const id of mailIds) {
+        const targetFolder = folderById?.[id] ?? folder
+        ;(folders[targetFolder] ??= []).push(id)
       }
+
+      await mailBatchAction({
+        accountId: accountKey,
+        folders,
+        action,
+        data,
+      })
+        .unwrap()
+        .catch(() => {
+          // errors surfaced via createApiNotificationHandler
+        })
     },
-    [mailBatchAction, accountKey, folder]
+    [mailBatchAction, accountKey, folder, folderById]
   )
 
   const batchDelete = useCallback(
@@ -112,6 +135,26 @@ export function useMailBatchActions({
     [runBatch]
   )
 
+  const batchToggleSpam = useCallback(
+    async (mailIds: string[]) => {
+      const junkIds: string[] = []
+      const nonJunkIds: string[] = []
+      for (const id of mailIds) {
+        const targetFolder = folderById?.[id] ?? folder
+        const targetFolderIsJunk =
+          targetFolder === folder
+            ? isJunk
+            : isJunkFolderPath(
+                targetFolder,
+                findFolderByPath(folders ?? [], targetFolder)
+              )
+        ;(targetFolderIsJunk ? junkIds : nonJunkIds).push(id)
+      }
+      await Promise.all([batchHam(junkIds), batchSpam(nonJunkIds)])
+    },
+    [folderById, folder, isJunk, folders, batchHam, batchSpam]
+  )
+
   const batchMove = useCallback(
     (mailIds: string[], destination: string) =>
       runBatch(mailIds, 'move', destination),
@@ -141,6 +184,7 @@ export function useMailBatchActions({
     batchMarkUnread,
     batchSpam,
     batchHam,
+    batchToggleSpam,
     batchMove,
     batchCopy,
     batchApplyLabels,
