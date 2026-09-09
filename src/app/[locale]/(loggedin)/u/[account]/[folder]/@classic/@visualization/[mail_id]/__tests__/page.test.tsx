@@ -21,6 +21,10 @@ jest.mock('@/features/mails/hooks/use-mail-detail-folder-actions', () => ({
   })),
 }))
 
+jest.mock('@/features/mails/hooks/use-mail-detail-navigation', () => ({
+  useMailDetailNavigation: jest.fn(() => ({ returnToListUrl: null })),
+}))
+
 jest.mock('@/features/mails/hooks/use-print-mail', () => ({
   usePrintMail: jest.fn(() => ({
     handlePrint: jest.fn(),
@@ -78,6 +82,10 @@ jest.mock('@/features/mails/components/skeletons/skeleton', () => ({
   default: () => <div data-testid="mail-detail-skeleton">Loading...</div>,
 }))
 
+jest.mock('@/features/mails/components/mail/mail-detail-error', () => ({
+  MailDetailError: () => <div data-testid="mail-detail-error">Error</div>,
+}))
+
 jest.mock('@/hooks/use-mobile', () => ({
   useIsMobile: jest.fn(() => false),
 }))
@@ -130,15 +138,15 @@ describe('VisualizationPage', () => {
       expect(screen.getByTestId('mail-detail-skeleton')).toBeInTheDocument()
     })
 
-    it('returns null when error or no data', () => {
+    it('renders an error state when error or no data', () => {
       const { useGetMailQuery } = require('@/features/mails/store/mails-api')
       useGetMailQuery.mockReturnValue({
         data: undefined,
         isLoading: false,
         isError: true,
       })
-      const { container } = render(<VisualizationPage />)
-      expect(container.firstChild).toBeNull()
+      render(<VisualizationPage />)
+      expect(screen.getByTestId('mail-detail-error')).toBeInTheDocument()
     })
 
     it('renders mail content when data is available', () => {

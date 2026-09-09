@@ -136,7 +136,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(37)
+      expect(tagTypes).toHaveLength(38)
     })
 
     it('should use readonly tag types array', async () => {
@@ -224,16 +224,16 @@ describe('API Slice', () => {
 
   describe('module exports', () => {
     it('should export apiSlice as named export', async () => {
-      const module = await import('../api-slice')
+      const apiSliceModule = await import('../api-slice')
 
-      expect(module.apiSlice).toBeDefined()
-      expect(module.apiSlice).toBe(mockApiSlice)
+      expect(apiSliceModule.apiSlice).toBeDefined()
+      expect(apiSliceModule.apiSlice).toBe(mockApiSlice)
     })
 
     it('should not have default export', async () => {
-      const module = await import('../api-slice')
+      const apiSliceModule = await import('../api-slice')
 
-      expect('default' in module).toBe(false)
+      expect('default' in apiSliceModule).toBe(false)
     })
   })
 

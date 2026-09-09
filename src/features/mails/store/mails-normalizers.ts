@@ -55,6 +55,7 @@ export interface RawMailListItem {
   /** Already normalized (response `{ mails: ImapMessagesList[] }`). */
   mailType?: string[]
   flags?: string[]
+  folder?: string
 }
 
 export function normalizeImapFolder(folder: RawImapFolder): ImapFolder {
@@ -123,6 +124,7 @@ export function mapMailToListItem(mail: RawMailListItem): ImapMessagesList {
         : mail.mailType
     ),
     flags: Array.isArray(mail.flags) ? mail.flags : [],
+    folder: mail.folder,
   }
 }
 

@@ -30,6 +30,9 @@ interface VisualizationProps {
   accentColor?: string
 }
 
+const BULLET_SEPARATOR = '·'
+const BELL_EMOJI = '\u{1F514}'
+
 const getStatusClassName = (status: NonNullable<CalendarEvent['status']>) =>
   cn(
     status === 'confirmed' && 'border-success/30 bg-success/15 text-success',
@@ -289,8 +292,8 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
                     'border-border bg-muted inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-xs'
                   )}
                 >
-                  <span aria-hidden="true">🔔</span>
-                  {methodLabel} · {timeBefore}
+                  <span aria-hidden="true">{BELL_EMOJI}</span>
+                  {methodLabel} {BULLET_SEPARATOR} {timeBefore}
                 </span>
               )
             })}
@@ -324,7 +327,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
         <FileText className="text-muted-foreground mt-0.5 h-5 w-5 shrink-0" />
         <div className="flex-1">
           <h3 className="mb-2 font-semibold">
-            {t('visualization.categories.string')}
+            {t('visualization.labels.string')}
           </h3>
           <div className="flex flex-wrap gap-2">
             {data.categories.map((category) => (
@@ -407,7 +410,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
 
       <Separator className="opacity-50" />
       <p className="text-muted-foreground text-xs">
-        {visibilityLabel} · {showAsLabel}
+        {visibilityLabel} {BULLET_SEPARATOR} {showAsLabel}
       </p>
     </div>
   )

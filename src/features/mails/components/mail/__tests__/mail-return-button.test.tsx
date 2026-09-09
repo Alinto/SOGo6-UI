@@ -137,4 +137,29 @@ describe('MailReturnButton', () => {
     expect(mockPush).toHaveBeenCalledTimes(2)
     expect(mockPush).toHaveBeenCalledWith('/u/test@example.com/inbox')
   })
+
+  it('should navigate to returnUrl instead of folderPath when provided', () => {
+    render(
+      <MailReturnButton
+        {...mockProps}
+        returnUrl="/u/test@example.com/advanced-search?from=jane&page=2"
+      />
+    )
+
+    const button = screen.getByRole('button')
+    fireEvent.click(button)
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/test@example.com/advanced-search?from=jane&page=2'
+    )
+  })
+
+  it('should fall back to folderPath when returnUrl is null', () => {
+    render(<MailReturnButton {...mockProps} returnUrl={null} />)
+
+    const button = screen.getByRole('button')
+    fireEvent.click(button)
+
+    expect(mockPush).toHaveBeenCalledWith('/u/test@example.com/inbox')
+  })
 })

@@ -19,7 +19,10 @@ jest.mock('@/lib/i18n/navigation', () => ({
 
 jest.mock('@/components/ui/avatar', () => ({
   Avatar: jest.fn(({ children }) => <div data-testid="avatar">{children}</div>),
-  AvatarImage: jest.fn(() => <img data-testid="avatar-image" />),
+  AvatarImage: jest.fn(() => (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img data-testid="avatar-image" alt="" />
+  )),
   AvatarFallback: jest.fn(({ children }) => (
     <div data-testid="avatar-fallback">{children}</div>
   )),
@@ -68,6 +71,18 @@ jest.mock('../mail/mail-list-labels', () => ({
 
 jest.mock('@/features/mails/hooks/use-current-folder', () => ({
   useCurrentFolder: jest.fn(() => ({ folderType: 'INBOX' })),
+}))
+
+const mockUseMailFolderLabel = jest.fn<string | undefined, unknown[]>()
+jest.mock('@/features/mails/hooks/use-mail-folder-label', () => ({
+  useMailFolderLabel: (...args: unknown[]) => mockUseMailFolderLabel(...args),
+}))
+
+jest.mock('../mail/mail-folder-label', () => ({
+  __esModule: true,
+  default: ({ name }: { name: string }) => (
+    <div data-testid="mail-folder-label">{name}</div>
+  ),
 }))
 
 jest.mock('@/features/mails/hooks/use-open-draft-on-click', () => ({
@@ -129,6 +144,7 @@ describe('ListItemMobile Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     jest.useFakeTimers()
+    mockUseMailFolderLabel.mockReturnValue(undefined)
   })
 
   afterEach(() => {
@@ -404,5 +420,28 @@ describe('ListItemMobile Component', () => {
     )
     // Avatar should now be hidden and replaced with checkbox
     expect(screen.getByTestId('mail-list-item-checkbox')).toBeInTheDocument()
+  })
+
+  it('does not show a folder label by default', () => {
+    renderWithRedux(
+      <ListItemMobile
+        data={mockData}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    expect(screen.queryByTestId('mail-folder-label')).not.toBeInTheDocument()
+  })
+
+  it('shows the folder label when a cross-folder search is active', () => {
+    mockUseMailFolderLabel.mockReturnValue('Work')
+    renderWithRedux(
+      <ListItemMobile
+        data={{ ...mockData, folder: 'INBOX/Work' }}
+        isSelected={false}
+        onHandleCheckboxClick={mockOnHandleCheckboxClick}
+      />
+    )
+    expect(screen.getByTestId('mail-folder-label')).toHaveTextContent('Work')
   })
 })

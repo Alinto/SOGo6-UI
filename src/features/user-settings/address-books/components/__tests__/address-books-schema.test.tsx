@@ -10,13 +10,15 @@ jest.mock('next-intl', () => ({
 
 const mockT = (key: string) => {
   const map: Record<string, string> = {
-    'validation.category-name-required': 'Category name is required',
+    'validation.label-name-required': 'Label name is required',
   }
   return map[key] ?? key
 }
 
 function makeSchema() {
-  return createSchema(mockT as ReturnType<typeof import('next-intl').useTranslations>)
+  return createSchema(
+    mockT as ReturnType<typeof import('next-intl').useTranslations>
+  )
 }
 
 function validCategory(overrides = {}) {
@@ -60,19 +62,25 @@ describe('createSchema', () => {
   describe('creationNotification field', () => {
     it('accepts true', () => {
       const schema = makeSchema()
-      const result = schema.safeParse(validPayload({ creationNotification: true }))
+      const result = schema.safeParse(
+        validPayload({ creationNotification: true })
+      )
       expect(result.success).toBe(true)
     })
 
     it('accepts false', () => {
       const schema = makeSchema()
-      const result = schema.safeParse(validPayload({ creationNotification: false }))
+      const result = schema.safeParse(
+        validPayload({ creationNotification: false })
+      )
       expect(result.success).toBe(true)
     })
 
     it('rejects a string value', () => {
       const schema = makeSchema()
-      const result = schema.safeParse(validPayload({ creationNotification: 'yes' }))
+      const result = schema.safeParse(
+        validPayload({ creationNotification: 'yes' })
+      )
       expect(result.success).toBe(false)
     })
 
@@ -95,7 +103,9 @@ describe('createSchema', () => {
 
     it('accepts a single valid category', () => {
       const schema = makeSchema()
-      const result = schema.safeParse(validPayload({ categories: [validCategory()] }))
+      const result = schema.safeParse(
+        validPayload({ categories: [validCategory()] })
+      )
       expect(result.success).toBe(true)
     })
 
@@ -121,7 +131,9 @@ describe('createSchema', () => {
 
     it('rejects a non-array value', () => {
       const schema = makeSchema()
-      const result = schema.safeParse(validPayload({ categories: 'not-an-array' }))
+      const result = schema.safeParse(
+        validPayload({ categories: 'not-an-array' })
+      )
       expect(result.success).toBe(false)
     })
   })
@@ -145,7 +157,7 @@ describe('createSchema', () => {
       expect(result.success).toBe(false)
       if (!result.success) {
         const message = result.error.issues[0].message
-        expect(message).toBe('Category name is required')
+        expect(message).toBe('Label name is required')
       }
     })
 
@@ -240,13 +252,13 @@ describe('createSchema', () => {
   describe('translated validation messages', () => {
     it('uses the t function to resolve the category name error message', () => {
       const customT = jest.fn((key: string) =>
-        key === 'validation.category-name-required' ? 'Custom required msg' : key
+        key === 'validation.label-name-required' ? 'Custom required msg' : key
       )
       const schema = createSchema(customT as any)
       const result = schema.safeParse(
         validPayload({ categories: [validCategory({ name: '' })] })
       )
-      expect(customT).toHaveBeenCalledWith('validation.category-name-required')
+      expect(customT).toHaveBeenCalledWith('validation.label-name-required')
       expect(result.success).toBe(false)
       if (!result.success) {
         expect(result.error.issues[0].message).toBe('Custom required msg')
@@ -269,7 +281,11 @@ describe('createSchema', () => {
       const schema = makeSchema()
       const payload = validPayload({
         categories: [
-          validCategory({ name: 'Personal', color: '#3b82f6', isDefault: true }),
+          validCategory({
+            name: 'Personal',
+            color: '#3b82f6',
+            isDefault: true,
+          }),
           validCategory({ name: 'Work', color: '#ef4444', isDefault: false }),
         ],
         creationNotification: true,
@@ -283,7 +299,10 @@ describe('createSchema', () => {
 
     it('strips unknown top-level fields by default', () => {
       const schema = makeSchema()
-      const result = schema.safeParse({ ...validPayload(), unknownField: 'surprise' })
+      const result = schema.safeParse({
+        ...validPayload(),
+        unknownField: 'surprise',
+      })
       expect(result.success).toBe(true)
       if (result.success) {
         expect(result.data).not.toHaveProperty('unknownField')

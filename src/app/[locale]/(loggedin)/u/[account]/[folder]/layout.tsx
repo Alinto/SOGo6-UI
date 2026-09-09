@@ -16,6 +16,7 @@ import {
   useFastAccessRequired,
 } from '@/features/mails/components/sidebars/fast-access/context'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
+import { useSyncAdvancedSearchFromUrl } from '@/features/mails/hooks/use-sync-advanced-search-from-url'
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
 import OutboxPanel from '@/features/offline/components/outbox-panel'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
@@ -43,6 +44,7 @@ function MailLayoutInner({
     useFastAccessRequired()
   const toolbarMode = useListToolbarMode()
   const { view, closeOverlay } = useOfflineNav()
+  useSyncAdvancedSearchFromUrl()
 
   const isSplitMode = mailLayoutMode === 'split' && !isMobile
   const isClassicLayout = layoutType === 'classic' || isSplitMode

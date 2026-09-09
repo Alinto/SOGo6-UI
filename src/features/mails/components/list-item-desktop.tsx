@@ -3,8 +3,10 @@ import { TooltipButton } from '@/components/ui/buttons/tooltip-button'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
+import MailFolderLabel from '@/features/mails/components/mail/mail-folder-label'
 import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -65,7 +67,11 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const folderString = folderPathFromParams(
     folder as string | string[] | undefined
   )
-  const { folderType } = useCurrentFolder(folderString, accountString)
+  // Search results can span multiple folders; data.folder carries the mail's
+  // actual folder in that case, falling back to the route folder otherwise.
+  const mailFolderPath = data.folder ?? folderString
+  const { folderType } = useCurrentFolder(mailFolderPath, accountString)
+  const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
   const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
@@ -94,7 +100,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
         onClick={async () => {
           const openedDraft = await openDraftIfNeeded({
             folderType,
-            folderPath: folderString,
+            folderPath: mailFolderPath,
             accountId: accountString,
             mailId: id,
           })
@@ -103,7 +109,9 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
             await onOpenMail(String(id))
             return
           }
-          push(`/u/${accountString}/${encodeURIComponent(folderString)}/${id}`)
+          push(
+            `/u/${accountString}/${encodeURIComponent(mailFolderPath)}/${id}`
+          )
         }}
       >
         <MailListItemCheckbox
@@ -139,10 +147,15 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
           />
         </div>
 
-        <div
-          className={`text-md w-1/5 truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
-        >
-          {displayName}
+        <div className="flex w-1/5 min-w-0 items-center gap-1">
+          <span
+            className={`text-md min-w-0 truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
+          >
+            {displayName}
+          </span>
+          {folderLabel && (
+            <MailFolderLabel name={folderLabel} type={folderType} />
+          )}
         </div>
 
         <div className="flex w-3/5 min-w-0 flex-col gap-0.5">

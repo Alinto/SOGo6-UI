@@ -124,16 +124,15 @@ describe('mailsApi', () => {
   describe('mailBatchActionQuery', () => {
     it('should return POST batch-action URL and body', () => {
       const query = mailBatchActionQuery({
-        folder: 'INBOX',
-        uids: ['90', '92', '93'],
+        folders: { INBOX: ['90', '92', '93'] },
         action: 'tag',
         data: ['important', 'work'],
       })
       expect(query).toEqual({
-        url: 'mailboxes/0/folders/INBOX/mails/batch-action',
+        url: 'mailboxes/0/batch-action',
         method: 'POST',
         body: {
-          uids: ['90', '92', '93'],
+          uids: { INBOX: ['90', '92', '93'] },
           action: 'tag',
           data: ['important', 'work'],
         },
@@ -142,26 +141,25 @@ describe('mailsApi', () => {
 
     it('should support the delete action', () => {
       const query = mailBatchActionQuery({
-        folder: 'INBOX',
-        uids: ['1', '2'],
+        folders: { INBOX: ['1', '2'] },
         action: 'delete',
       })
       expect(query.body).toEqual({
-        uids: ['1', '2'],
+        uids: { INBOX: ['1', '2'] },
         action: 'delete',
         data: undefined,
       })
     })
 
-    it('should encode folder and account in URL', () => {
+    it('should support several folders in a single payload', () => {
       const query = mailBatchActionQuery({
         accountId: '1',
-        folder: 'A/B',
-        uids: ['1'],
-        action: 'move',
-        data: 'Archive',
+        folders: { INBOX: ['1', '2'], Trash: ['3'] },
+        action: 'tag',
+        data: ['work'],
       })
-      expect(query.url).toBe('mailboxes/1/folders/A%2FB/mails/batch-action')
+      expect(query.url).toBe('mailboxes/1/batch-action')
+      expect(query.body.uids).toEqual({ INBOX: ['1', '2'], Trash: ['3'] })
     })
   })
 })

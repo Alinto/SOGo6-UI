@@ -84,7 +84,7 @@ describe('MailSubjectLabels', () => {
       ])
     )
     render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
-    expect(screen.getByText('categories.Important')).toBeInTheDocument()
+    expect(screen.getByText('labels.Important')).toBeInTheDocument()
   })
 
   it('calls mailAction to untag when the remove button is clicked', () => {

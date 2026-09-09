@@ -3,6 +3,7 @@
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import MailContent from '@/features/mails/components/mail/mail-content'
 import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
+import { MailDetailError } from '@/features/mails/components/mail/mail-detail-error'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
 import { MailReturnButton } from '@/features/mails/components/mail/mail-return-button'
@@ -17,6 +18,7 @@ import {
 import MailDetailSkeleton from '@/features/mails/components/skeletons/skeleton'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useMailDetailFolderActions } from '@/features/mails/hooks/use-mail-detail-folder-actions'
+import { useMailDetailNavigation } from '@/features/mails/hooks/use-mail-detail-navigation'
 import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actions'
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
@@ -39,8 +41,9 @@ const VisualizationPage: React.FC = () => {
   const { account, mail_id } = params
   const folder = folderPathFromParams(params.folder)
   const isMobile = useIsMobile()
+  const { returnToListUrl } = useMailDetailNavigation()
 
-  const { data, isLoading, isError } = useGetMailQuery({
+  const { data, isLoading, isError, error, refetch } = useGetMailQuery({
     folder,
     mailId: mail_id,
     accountId: account,
@@ -72,7 +75,19 @@ const VisualizationPage: React.FC = () => {
         <MailDetailSkeleton />
       </div>
     )
-  if (isError || !data) return null
+  if (isError || !data)
+    return (
+      <div className="flex h-full w-full">
+        <MailDetailError
+          error={error}
+          folderPath={folder}
+          accountId={Array.isArray(account) ? account[0] : account}
+          refetch={() => {
+            void refetch()
+          }}
+        />
+      </div>
+    )
 
   const {
     from: fromRaw,
@@ -118,7 +133,7 @@ const VisualizationPage: React.FC = () => {
     <div className="flex h-full w-full flex-col overflow-y-auto">
       <div className="flex w-full flex-col p-3">
         <div className="mb-4 flex items-center gap-2">
-          <MailReturnButton folderPath={folder} />
+          <MailReturnButton folderPath={folder} returnUrl={returnToListUrl} />
           <MailDetailActionBar
             accountId={Array.isArray(account) ? account[0] : account}
             folder={folder}

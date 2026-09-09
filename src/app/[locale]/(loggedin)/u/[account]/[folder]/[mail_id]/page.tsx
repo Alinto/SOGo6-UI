@@ -3,6 +3,7 @@
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import MailContent from '@/features/mails/components/mail/mail-content'
 import MailDetailActionBar from '@/features/mails/components/mail/mail-detail-action-bar'
+import { MailDetailError } from '@/features/mails/components/mail/mail-detail-error'
 import MailHeader from '@/features/mails/components/mail/mail-header'
 import MailHeaderMobile from '@/features/mails/components/mail/mail-header-mobile'
 import MailInvitationWidget from '@/features/mails/components/mail/mail-invitation-widget'
@@ -51,12 +52,15 @@ export function MailDetailPage({
   const isOfflineOverlay = typeof onBack === 'function'
   const isMobile = useIsMobile()
   const { cacheBody } = useMailCache()
-  const { canGoPrev, canGoNext, goPrev, goNext } = useMailDetailNavigation()
+  const { canGoPrev, canGoNext, goPrev, goNext, returnToListUrl } =
+    useMailDetailNavigation()
 
   const {
     data: fetchedMail,
     isLoading,
     isError,
+    error,
+    refetch,
   } = useGetMailQuery(
     {
       folder,
@@ -98,8 +102,18 @@ export function MailDetailPage({
     return <MailDetailSkeleton />
   }
   if (!data) {
-    return isOfflineOverlay || isError ? (
-      <OfflineUnavailable force target="mail" />
+    if (isOfflineOverlay) {
+      return <OfflineUnavailable force target="mail" />
+    }
+    return isError ? (
+      <MailDetailError
+        error={error}
+        folderPath={folder}
+        accountId={Array.isArray(account) ? account[0] : account}
+        refetch={() => {
+          void refetch()
+        }}
+      />
     ) : null
   }
 
@@ -152,7 +166,11 @@ export function MailDetailPage({
   return (
     <div className="flex w-full flex-col">
       <div className="mb-4 flex items-center gap-2">
-        <MailReturnButton folderPath={folder} onBack={onBack} />
+        <MailReturnButton
+          folderPath={folder}
+          onBack={onBack}
+          returnUrl={returnToListUrl}
+        />
         <MailDetailActionBar
           accountId={accountId}
           folder={Array.isArray(folder) ? folder.join('/') : folder}

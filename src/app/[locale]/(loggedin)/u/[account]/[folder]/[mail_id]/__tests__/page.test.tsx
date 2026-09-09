@@ -1,5 +1,6 @@
 import authReducer from '@/features/auth/components/store/auth.slice'
 import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
+import mailSearchReducer from '@/features/mails/store/mail-search-slice'
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { configureStore } from '@reduxjs/toolkit'
 import '@testing-library/jest-dom'
@@ -12,6 +13,7 @@ const createTestStore = (preloadedState: Record<string, unknown> = {}) =>
     reducer: {
       auth: authReducer,
       mailNavigation: mailNavigationReducer,
+      mailSearch: mailSearchReducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>
@@ -115,6 +117,12 @@ jest.mock('@/features/mails/components/skeletons/skeleton', () =>
   jest.fn(() => <div data-testid="mail-skeleton">Loading...</div>)
 )
 
+jest.mock('@/features/mails/components/mail/mail-detail-error', () => ({
+  MailDetailError: jest.fn(() => (
+    <div data-testid="mail-detail-error">Error</div>
+  )),
+}))
+
 describe('MailPage', () => {
   const mockMailData = {
     id: '123',
@@ -150,7 +158,7 @@ describe('MailPage', () => {
     expect(screen.getByTestId('mail-skeleton')).toBeInTheDocument()
   })
 
-  it('should render null when error occurs', () => {
+  it('should render an error state when error occurs', () => {
     const { useGetMailQuery } = require('@/features/mails/store/mails-api')
     useGetMailQuery.mockReturnValue({
       data: undefined,
@@ -158,12 +166,12 @@ describe('MailPage', () => {
       isError: true,
     })
 
-    const { container } = render(
+    render(
       <Provider store={createTestStore()}>
         <MailPage />
       </Provider>
     )
-    expect(container.firstChild).toBeNull()
+    expect(screen.getByTestId('mail-detail-error')).toBeInTheDocument()
   })
 
   it('should render mail content when data is loaded (desktop)', () => {
@@ -210,7 +218,7 @@ describe('MailPage', () => {
     expect(screen.queryByTestId('mail-header')).not.toBeInTheDocument()
   })
 
-  it('should render null when data is null', () => {
+  it('should render an error state when data is null', () => {
     const { useGetMailQuery } = require('@/features/mails/store/mails-api')
     useGetMailQuery.mockReturnValue({
       data: null,
@@ -218,12 +226,12 @@ describe('MailPage', () => {
       isError: false,
     })
 
-    const { container } = render(
+    render(
       <Provider store={createTestStore()}>
         <MailPage />
       </Provider>
     )
-    expect(container.firstChild).toBeNull()
+    expect(screen.getByTestId('mail-detail-error')).toBeInTheDocument()
   })
 
   it('should parse email contacts correctly', () => {

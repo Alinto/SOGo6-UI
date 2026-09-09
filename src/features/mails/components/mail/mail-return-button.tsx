@@ -11,6 +11,7 @@ export function MailReturnButton({
   tooltip,
   className = '',
   onBack,
+  returnUrl,
 }: MailReturnButtonProps) {
   const { push } = useRouter()
   const { account } = useParams()
@@ -21,8 +22,8 @@ export function MailReturnButton({
       onBack()
       return
     }
-    push(`/u/${account}/${encodeURIComponent(folderPath)}`)
-  }, [account, folderPath, onBack, push])
+    push(returnUrl ?? `/u/${account}/${encodeURIComponent(folderPath)}`)
+  }, [account, folderPath, onBack, push, returnUrl])
 
   return (
     <TooltipButton

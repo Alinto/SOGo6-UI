@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server'
 
-import type { ImapMessagesList } from '@/features/mails/mails-types'
+import type {
+  ImapMessagesList,
+  MailSearchParams,
+} from '@/features/mails/mails-types'
 
 import { getDemoData } from '@/app/fakeApi/utils/demo-storage'
 import {
@@ -8,6 +11,7 @@ import {
   MAIL_FLAGS_COOKIE,
   MailFlagsOverrides,
 } from '@/app/fakeApi/utils/mailbox-flags-store'
+import { mailDetailByFolderSeed } from '@/app/fakeApi/utils/mailbox-mail-detail-seed'
 import { messagesByFolderSeed } from '@/app/fakeApi/utils/mailbox-messages-seed'
 
 const listDefaults: Pick<
@@ -41,6 +45,7 @@ export type RawMailListItemSeed = {
   mailType?: string[]
   hasAttachment?: boolean
   flags?: string[]
+  folder?: string
 }
 
 function toRawMailListItem(m: Partial<ImapMessagesList>): RawMailListItemSeed {
@@ -61,6 +66,7 @@ function toRawMailListItem(m: Partial<ImapMessagesList>): RawMailListItemSeed {
     priority: m.priority,
     mailType: m.mailType,
     flags: m.flags,
+    folder: m.folder,
   }
 }
 
@@ -185,6 +191,149 @@ export function buildFolderMessagesListResponse(
     default:
       break
   }
+
+  const total = messages.length
+  const totalPages = Math.max(1, Math.ceil(total / pageSize))
+  const safePage = Math.min(page, totalPages)
+  const start = (safePage - 1) * pageSize
+  const paged = messages.slice(start, start + pageSize)
+
+  return {
+    mails: paged.map(toRawMailListItem),
+    total,
+    page: safePage,
+    pageSize,
+    totalPages,
+    hasNextPage: safePage < totalPages,
+    hasPreviousPage: safePage > 1,
+  }
+}
+
+function matchesText(value: string | undefined, needle: string): boolean {
+  return (value || '').toLowerCase().includes(needle.toLowerCase())
+}
+
+/**
+ * Mirrors `buildMailSearchParams`'s criteria semantics: subject/from/to/bcc/
+ * text are combined with `operator` (default AND); everything else below is
+ * a plain AND filter on top, regardless of `operator`.
+ */
+function messageMatchesCriteria(
+  message: ImapMessagesList,
+  params: MailSearchParams
+): boolean {
+  const checks: boolean[] = []
+  if (params.subject) checks.push(matchesText(message.subject, params.subject))
+  if (params.from) {
+    checks.push(
+      matchesText(message.from?.email, params.from) ||
+        matchesText(message.from?.name, params.from)
+    )
+  }
+  if (params.to) {
+    checks.push(
+      (message.to || []).some(
+        (r) =>
+          matchesText(r.email, params.to!) || matchesText(r.name, params.to!)
+      )
+    )
+  }
+  // bcc isn't modeled on the fake seed data, so it never matches.
+  if (params.bcc) checks.push(false)
+  if (params.text) {
+    checks.push(
+      matchesText(message.subject, params.text) ||
+        matchesText(message.snippet, params.text)
+    )
+  }
+
+  if (checks.length === 0) return true
+  return params.operator === 'OR' ? checks.some(Boolean) : checks.every(Boolean)
+}
+
+/** Extensions of the message's attachments, resolved from the detail seed (list items only carry `hasAttachment`). */
+function messageAttachmentExtensions(message: ImapMessagesList): string[] {
+  if (!message.folder) return []
+  const detail = (mailDetailByFolderSeed[message.folder] || []).find(
+    (m) => m.id === message.id
+  )
+  const attachments = detail?.attachments
+  if (!Array.isArray(attachments)) return []
+  return attachments
+    .map((a) => a.extension)
+    .filter((ext): ext is string => Boolean(ext))
+}
+
+function messageMatchesFilters(
+  message: ImapMessagesList,
+  params: MailSearchParams
+): boolean {
+  if (params.has_attachment && !message.hasAttachment) return false
+  if (params.attachment_type && params.attachment_type.length > 0) {
+    const extensions = messageAttachmentExtensions(message)
+    if (!params.attachment_type.some((type) => extensions.includes(type))) {
+      return false
+    }
+  }
+  if (params.is_read !== undefined && message.seen !== params.is_read) {
+    return false
+  }
+  if (params.is_flagged && !message.flagged) return false
+  if (params.labels && params.labels.length > 0) {
+    const flags = message.flags || []
+    if (!params.labels.every((label) => flags.includes(label))) return false
+  }
+  const { start, end } = params.date_range || {}
+  if (start || end) {
+    const time = parseListItemDate(message)
+    if (start && time < Date.parse(start)) return false
+    if (end && time > Date.parse(end) + 24 * 60 * 60 * 1000 - 1) return false
+  }
+  return true
+}
+
+function foldersToSearch(params: MailSearchParams): string[] {
+  const allFolders = Object.keys(messagesByFolderSeed)
+  const requested = (params.folders || []).filter((f) => f && f !== 'all')
+  if (requested.length === 0) return allFolders
+  if (!params.include_subfolders) {
+    return allFolders.filter((f) => requested.includes(f))
+  }
+  return allFolders.filter((f) =>
+    requested.some((r) => f === r || f.startsWith(`${r}/`))
+  )
+}
+
+export function buildMailSearchResponse(
+  body: MailSearchParams,
+  searchParams: URLSearchParams
+): {
+  mails: RawMailListItemSeed[]
+  total: number
+  page: number
+  pageSize: number
+  totalPages: number
+  hasNextPage: boolean
+  hasPreviousPage: boolean
+} {
+  const pageParam = searchParams.get('page')
+  const pageSizeParam = searchParams.get('page_size')
+  const page = pageParam ? Math.max(1, parseInt(pageParam, 10) || 1) : 1
+  const pageSize = pageSizeParam
+    ? Math.max(1, Math.min(100, parseInt(pageSizeParam, 10) || 20))
+    : 20
+
+  const folders = foldersToSearch(body)
+  let messages: ImapMessagesList[] = folders.flatMap((folder) =>
+    (messagesByFolderSeed[folder] || []).map(
+      (m) => ({ ...listDefaults, ...m, folder }) as ImapMessagesList
+    )
+  )
+
+  messages = messages.filter(
+    (m) => messageMatchesCriteria(m, body) && messageMatchesFilters(m, body)
+  )
+  messages = sortFolderMessages(messages, 'date', 'desc')
 
   const total = messages.length
   const totalPages = Math.max(1, Math.ceil(total / pageSize))

@@ -1,8 +1,8 @@
 {
     "US_ADDRESS_BOOKS": {
         "create": {
-            "string": "Ajouter une catégorie de contacts",
-            "context": "Button text to add a new address book category"
+            "string": "Ajouter un libellé de contact",
+            "context": "Button text to add a new address book label"
         },
         "title": {
             "string": "Carnets d'adresses",
@@ -21,8 +21,8 @@
             "string": "Envoyer une notification par email quand un carnet d'adresses est créé",
             "context": "Label for the notification setting"
         },
-        "categories": {
-            "title": "Catégories",
+        "labels": {
+            "title": "Libellés",
             "Work": "Travail",
             "Family": "Famille",
             "Friends": "Amis"
@@ -31,7 +31,7 @@
             "title": "Couleur"
         },
         "validation": {
-            "category-name-required": "Un nom est requis"
+            "label-name-required": "Un nom est requis"
         }
     }
 }

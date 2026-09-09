@@ -23,6 +23,7 @@ export const ADDRESS_BOOKS_SLICE = 'address_books'
 export const VCARD_SLICE = 'vcard'
 export const MAIL_FOLDERS_SLICE = 'mail/folders'
 export const FOLDER_MESSAGES_SLICE = 'folder/messages'
+export const SEARCH_MAILS_SLICE = 'search/mails'
 export const PREFERENCES_SLICE = 'preferences'
 export const PROFILE_SLICE = 'profile'
 export const MAIL_SLICE = 'mail'
@@ -67,6 +68,7 @@ const tagTypes = [
   VCARD_SLICE,
   MAIL_FOLDERS_SLICE,
   FOLDER_MESSAGES_SLICE,
+  SEARCH_MAILS_SLICE,
   PREFERENCES_SLICE,
   PROFILE_SLICE,
   MAIL_SLICE,

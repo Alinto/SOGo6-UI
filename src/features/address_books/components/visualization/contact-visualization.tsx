@@ -3,8 +3,8 @@ import { Separator } from '@/components/ui/separator'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
-import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
 import { VCard } from '../../address-books-types'
+import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
 import ContactActions from './contact-actions'
 import { ContactFieldRow } from './contact-field-row'
 import { ContactHeader } from './contact-header'
@@ -15,7 +15,9 @@ interface ContactVisualizationProps {
   data: VCard
 }
 
-const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => {
+const ContactVisualization: React.FC<ContactVisualizationProps> = ({
+  data,
+}) => {
   const {
     firstName,
     lastName,
@@ -163,7 +165,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({ data }) => 
               id="categories-heading"
               className="text-foreground text-base font-semibold sm:text-lg"
             >
-              {t('categories.string')}
+              {t('labels.string')}
             </h2>
             <ContactFieldRow value={data.categories.join(', ')} type="text" />
           </section>
