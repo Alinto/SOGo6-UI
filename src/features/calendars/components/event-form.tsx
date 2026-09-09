@@ -982,7 +982,7 @@ export function EventForm({
             name="categories"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('eventForm.categories.label.string')}</FormLabel>
+                <FormLabel>{t('eventForm.labels.label.string')}</FormLabel>
                 <FormControl>
                   <div
                     className={cn(
@@ -1009,12 +1009,9 @@ export function EventForm({
                                 )
                               }
                               className={tagDismissButtonClassName('p-0.5')}
-                              aria-label={t(
-                                'eventForm.categories.remove.string',
-                                {
-                                  category,
-                                }
-                              )}
+                              aria-label={t('eventForm.labels.remove.string', {
+                                label: category,
+                              })}
                             >
                               <X className={cn('h-3 w-3')} />
                             </button>
@@ -1035,7 +1032,7 @@ export function EventForm({
                           setCategoryInput('')
                         }
                       }}
-                      placeholder={t('eventForm.categories.placeholder.string')}
+                      placeholder={t('eventForm.labels.placeholder.string')}
                     />
                   </div>
                 </FormControl>

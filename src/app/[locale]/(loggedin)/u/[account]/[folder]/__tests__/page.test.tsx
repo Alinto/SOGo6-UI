@@ -1,16 +1,18 @@
 import mailNavigationReducer from '@/features/mails/store/mail-navigation-slice'
+import mailSearchReducer from '@/features/mails/store/mail-search-slice'
 import { useGetFolderMessagesQuery } from '@/features/mails/store/mails-api'
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { configureStore } from '@reduxjs/toolkit'
 import { render, screen, waitFor } from '@testing-library/react'
-import { Provider } from 'react-redux'
 import { useParams, useSearchParams } from 'next/navigation'
+import { Provider } from 'react-redux'
 import Page from '../page'
 
 const createTestStore = (preloadedState: Record<string, unknown> = {}) =>
   configureStore({
     reducer: {
       mailNavigation: mailNavigationReducer,
+      mailSearch: mailSearchReducer,
       [apiSlice.reducerPath]: apiSlice.reducer,
     },
     middleware: (getDefaultMiddleware) =>
@@ -32,6 +34,7 @@ jest.mock('@/lib/i18n/navigation', () => ({
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
   useGetFoldersQuery: jest.fn(() => ({ data: [], isLoading: false })),
+  useSearchMailsQuery: jest.fn(() => ({ data: undefined, isLoading: false })),
 }))
 
 jest.mock('@/features/mails/components/skeletons/list-skeleton', () => {

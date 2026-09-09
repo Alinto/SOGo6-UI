@@ -74,6 +74,9 @@ jest.mock('@/features/mails/components/list/list-toolbar', () => ({
 jest.mock('@/features/mails/hooks/use-list-toolbar-mode', () => ({
   useListToolbarMode: jest.fn(() => 'list'),
 }))
+jest.mock('@/features/mails/hooks/use-sync-advanced-search-from-url', () => ({
+  useSyncAdvancedSearchFromUrl: jest.fn(),
+}))
 jest.mock('@/features/mails/components/mail-sse-listener', () => ({
   __esModule: true,
   default: () => <div data-testid="mail-sse-listener" />,

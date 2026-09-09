@@ -24,6 +24,7 @@ import {
   folderPathFromParams,
   getFolderDisplayName,
 } from '@/features/mails/utils/folder-path-from-params'
+import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '@/features/mails/utils/mail-search-form'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
@@ -55,10 +56,22 @@ const ListToolbar: React.FC = () => {
   const activeFilter = searchParams.get('filter') ?? 'all'
   const clientFilterActive = activeFilter !== 'all'
 
-  const { data, currentPage } = useFolderMessages({
+  const { data, currentPage, isSearchActive } = useFolderMessages({
     folder: folderPath,
     accountId: accountString,
   })
+
+  // Search results can span multiple folders; map each result's id back to
+  // its actual folder so bulk actions target the right one (see
+  // useMailBatchActions).
+  const folderById = useMemo(() => {
+    if (!isSearchActive) return undefined
+    const map: Record<string, string> = {}
+    for (const mail of data?.mails ?? []) {
+      if (mail.folder) map[String(mail.id)] = mail.folder
+    }
+    return map
+  }, [isSearchActive, data])
 
   const filteredMails = useMemo(
     () => getClientFilteredMails(data?.mails ?? [], activeFilter),
@@ -82,7 +95,10 @@ const ListToolbar: React.FC = () => {
   const someSelected = selectedIds.length > 0 && !allSelected
 
   const folderTitle = useMemo(
-    () => getFolderDisplayName(folderPath, tCommons),
+    () =>
+      folderPath === ADVANCED_SEARCH_ROUTE_SEGMENT
+        ? tCommons('search.advanced.string')
+        : getFolderDisplayName(folderPath, tCommons),
     [folderPath, tCommons]
   )
 
@@ -101,8 +117,7 @@ const ListToolbar: React.FC = () => {
     batchArchive,
     batchMarkRead,
     batchMarkUnread,
-    batchSpam,
-    batchHam,
+    batchToggleSpam,
     batchMove,
     batchCopy,
     batchApplyLabels,
@@ -112,6 +127,7 @@ const ListToolbar: React.FC = () => {
   } = useMailBatchActions({
     accountId: accountString,
     folder: folderPath,
+    folderById,
   })
 
   const { hasUnreadSelected, hasReadSelected, selectedMailsFlags } =
@@ -157,11 +173,10 @@ const ListToolbar: React.FC = () => {
           break
         }
         case 4:
-          if (isJunk) {
-            await batchHam(selectedIds)
-          } else {
-            await batchSpam(selectedIds)
-          }
+          // Splits the selection by each mail's own folder internally, so a
+          // cross-folder search selection mixing junk and non-junk mails is
+          // still handled correctly.
+          await batchToggleSpam(selectedIds)
           break
         case 5:
           // Bulk label: keep the selection until the picker dialog resolves.
@@ -179,9 +194,7 @@ const ListToolbar: React.FC = () => {
       batchArchive,
       batchMarkRead,
       batchMarkUnread,
-      batchSpam,
-      batchHam,
-      isJunk,
+      batchToggleSpam,
       dispatch,
     ]
   )
@@ -269,6 +282,9 @@ const ListToolbar: React.FC = () => {
                   disabled: isBatchActionLoading || !hasReadSelected,
                 },
                 {
+                  // Label reflects the currently open folder; the action
+                  // itself (batchToggleSpam) resolves the right direction
+                  // per mail, so a mixed cross-folder selection still works.
                   id: 'bulk-spam',
                   title: isJunk
                     ? tBar('report_not_spam.string')

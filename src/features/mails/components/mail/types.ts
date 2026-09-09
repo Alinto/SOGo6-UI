@@ -51,6 +51,7 @@ export type MailReturnButtonProps = {
   tooltip?: string
   className?: string
   onBack?: () => void
+  returnUrl?: string | null
 }
 
 export type EmailContact = {

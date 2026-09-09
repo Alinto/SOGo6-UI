@@ -154,7 +154,7 @@ describe('EventForm', () => {
         screen.getByText('eventForm.reminders.label.string')
       ).toBeInTheDocument()
       expect(
-        screen.getByText('eventForm.categories.label.string')
+        screen.getByText('eventForm.labels.label.string')
       ).toBeInTheDocument()
     })
   })
@@ -524,7 +524,7 @@ describe('EventForm', () => {
       render(<EventForm calendarKey="cal-1" onCancel={onCancel} />)
 
       const categoryInput = screen.getByPlaceholderText(
-        'eventForm.categories.placeholder.string'
+        'eventForm.labels.placeholder.string'
       )
       await user.type(categoryInput, 'work')
       await user.keyboard('{Enter}')
@@ -549,7 +549,7 @@ describe('EventForm', () => {
       render(<EventForm calendarKey="cal-1" onCancel={onCancel} />)
 
       const categoryInput = screen.getByPlaceholderText(
-        'eventForm.categories.placeholder.string'
+        'eventForm.labels.placeholder.string'
       )
       await user.type(categoryInput, 'work')
       await user.keyboard('{Enter}')

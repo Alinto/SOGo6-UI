@@ -1,6 +1,7 @@
 export type MailNavigationContext = {
   orderedIds: string[]
   folderKey: string | null
+  folderById: Record<string, string>
   page: number
   totalPages: number
 }

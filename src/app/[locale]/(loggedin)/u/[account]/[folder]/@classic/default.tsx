@@ -26,11 +26,18 @@ const Page: React.FC = () => {
   const dispatch = useAppDispatch()
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
-  const { data, isLoading, isFetching, error, refetch, isVirtualFolder } =
-    useFolderMessages({
-      folder: folderPath,
-      accountId: accountString,
-    })
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    isVirtualFolder,
+    isSearchActive,
+  } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
 
   const { cachedMails, cachedAt, isShowingCache } = useOfflineMailList({
     accountId: accountString,
@@ -52,7 +59,7 @@ const Page: React.FC = () => {
 
   const containerClassName = `${mail_id ? 'hidden lg:flex' : 'flex'} w-full`
 
-  if (isVirtualFolder) {
+  if (isVirtualFolder && !isSearchActive) {
     return (
       <div className={containerClassName}>
         <VirtualFolderEmptyState />

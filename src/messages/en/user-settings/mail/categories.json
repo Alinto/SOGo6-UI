@@ -1,12 +1,12 @@
 {
-    "US_MAIL_CATEGORIES": {
+    "US_MAIL_CATEGORY_LABELS": {
         "create": {
-            "string": "Add mail category",
-            "context": "Button text to add a new mail category"
+            "string": "Add mail label",
+            "context": "Button text to add a new mail label"
         },
         "title": {
-            "string": "Categories",
-            "context": "Title for the mail categories settings page"
+            "string": "Labels",
+            "context": "Title for the mail labels settings page"
         },
         "accessibility": {
             "icon": {
@@ -16,12 +16,12 @@
                 }
             }
         },
-        "categories": {
+        "labels": {
             "Work": "Travail",
             "Family": "Famille",
             "Friends": "Amis",
             "validation": {
-                "category-name-required": "Category name is required"
+                "label-name-required": "Label name is required"
             }
         }
     }

@@ -2,8 +2,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Separator } from '@/components/ui/separator'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import MailListItemCheckbox from '@/features/mails/components/mail-list-item-checkbox'
+import MailFolderLabel from '@/features/mails/components/mail/mail-folder-label'
 import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
+import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label'
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -49,9 +51,13 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const folderString = folderPathFromParams(
     folder as string | string[] | undefined
   )
+  // Search results can span multiple folders; data.folder carries the mail's
+  // actual folder in that case, falling back to the route folder otherwise.
+  const mailFolderPath = data.folder ?? folderString
   const [onDelete] = useMoveToTrashMutation()
   const [mailAction] = useMailActionMutation()
-  const { folderType } = useCurrentFolder(folderString, accountString)
+  const { folderType } = useCurrentFolder(mailFolderPath, accountString)
+  const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
   const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const showHighPriority = data.priority <= 2
@@ -116,32 +122,39 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
       return
     }
     onDelete({
-      folder: folderString,
+      folder: mailFolderPath,
       mailId: id,
       accountId: accountString || '0',
     })
-  }, [id, onDelete, onDeleteOverride, folderString, accountString])
+  }, [id, onDelete, onDeleteOverride, mailFolderPath, accountString])
 
   const handleMarkAsSeen = useCallback(() => {
     if (onDeleteOverride || data.seen) return
     mailAction({
       accountId: accountString || '0',
-      folder: folderString,
+      folder: mailFolderPath,
       mailId: id,
       action: 'tag',
       data: ['\\Seen'],
     })
-  }, [data.seen, mailAction, accountString, folderString, id, onDeleteOverride])
+  }, [
+    data.seen,
+    mailAction,
+    accountString,
+    mailFolderPath,
+    id,
+    onDeleteOverride,
+  ])
 
   const handleToggleFlag = useCallback(() => {
     mailAction({
       accountId: accountString || '0',
-      folder: folderString,
+      folder: mailFolderPath,
       mailId: id,
       action: flagged ? 'untag' : 'tag',
       data: ['\\Flagged'],
     })
-  }, [flagged, mailAction, accountString, folderString, id])
+  }, [flagged, mailAction, accountString, mailFolderPath, id])
 
   return (
     <>
@@ -170,7 +183,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
 
               const openedDraft = await openDraftIfNeeded({
                 folderType,
-                folderPath: folderString,
+                folderPath: mailFolderPath,
                 accountId: accountString,
                 mailId: id,
               })
@@ -181,7 +194,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               }
 
               push(
-                `/u/${accountString}/${encodeURIComponent(folderString)}/${id}`
+                `/u/${accountString}/${encodeURIComponent(mailFolderPath)}/${id}`
               )
             }}
           >
@@ -215,12 +228,15 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               {/* Content on the right */}
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <div className="flex min-w-0 flex-row items-center justify-between gap-2">
-                  <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
+                  <div className="flex min-w-0 flex-1 flex-row items-center gap-1">
                     <div
                       className={`text-md min-w-0 truncate select-none ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
                     >
                       {displayName}
                     </div>
+                    {folderLabel && (
+                      <MailFolderLabel name={folderLabel} type={folderType} />
+                    )}
                   </div>
                   <span className="text-muted-foreground shrink-0 select-none">
                     {hasAttachment && (

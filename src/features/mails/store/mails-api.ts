@@ -5,6 +5,7 @@ import {
   FOLDER_SHARE_SLICE,
   MAIL_SLICE,
   MAILS_FOLDERS_SLICE,
+  SEARCH_MAILS_SLICE,
 } from '@/lib/redux/api/api-slice'
 import type { RootState } from '@/lib/redux/store'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
@@ -16,7 +17,9 @@ import type {
   ImapMessages,
   ImapMessagesBackendResponse,
   MailActionType,
+  MailBatchActionFolders,
   MailBatchActionType,
+  MailSearchParams,
   UpdateFolderBody,
 } from '../mails-types'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
@@ -57,6 +60,18 @@ export interface MailListQueryParams {
 const getFoldersQuery = ({ accountId = '0' }: { accountId?: string } = {}) =>
   `mailboxes/${accountId}/folders`
 
+function appendQueryParams(
+  url: string,
+  params?: Record<string, string | number | boolean>
+): string {
+  if (!params || Object.keys(params).length === 0) return url
+  const searchParams = new URLSearchParams()
+  Object.entries(params).forEach(([key, value]) => {
+    searchParams.append(key, String(value))
+  })
+  return `${url}?${searchParams.toString()}`
+}
+
 const getFolderMessagesQuery = ({
   accountId = '0',
   folder,
@@ -65,17 +80,11 @@ const getFolderMessagesQuery = ({
   accountId?: string
   folder: string
   params?: Record<string, string | number | boolean>
-}) => {
-  let url = `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails`
-  if (params && Object.keys(params).length > 0) {
-    const searchParams = new URLSearchParams()
-    Object.entries(params).forEach(([key, value]) => {
-      searchParams.append(key, String(value))
-    })
-    url += `?${searchParams.toString()}`
-  }
-  return url
-}
+}) =>
+  appendQueryParams(
+    `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails`,
+    params
+  )
 
 const getMailQuery = ({
   accountId = '0',
@@ -143,22 +152,34 @@ const mailActionQuery = ({
   body: { action, data },
 })
 
+const searchMailsQuery = ({
+  accountId = '0',
+  body,
+  params,
+}: {
+  accountId?: string
+  body: MailSearchParams
+  params?: Record<string, string | number | boolean>
+}) => ({
+  url: appendQueryParams(`mailboxes/${accountId}/search`, params),
+  method: 'POST' as const,
+  body,
+})
+
 const mailBatchActionQuery = ({
   accountId = '0',
-  folder,
-  uids,
+  folders,
   action,
   data,
 }: {
   accountId?: string
-  folder: string
-  uids: string[]
+  folders: MailBatchActionFolders
   action: MailBatchActionType
   data?: string | string[] | null
 }) => ({
-  url: `mailboxes/${accountId}/folders/${encodeURIComponent(folder)}/mails/batch-action`,
+  url: `mailboxes/${accountId}/batch-action`,
   method: 'POST' as const,
-  body: { uids, action, data },
+  body: { uids: folders, action, data },
 })
 
 const injectedEndpoints = apiSlice.injectEndpoints({
@@ -185,6 +206,22 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       transformResponse: transformFolderMessagesResponse,
       providesTags: (_result, _error, { folder }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
+      ],
+    }),
+
+    searchMails: builder.query<
+      ImapMessagesBackendResponse,
+      {
+        accountId?: string
+        body: MailSearchParams
+        params?: MailListQueryParams & Record<string, string | number | boolean>
+      }
+    >({
+      keepUnusedDataFor: 60,
+      query: searchMailsQuery,
+      transformResponse: transformFolderMessagesResponse,
+      providesTags: (_result, _error, { accountId }) => [
+        { type: SEARCH_MAILS_SLICE, id: accountId ?? '0' },
       ],
     }),
 
@@ -299,8 +336,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'message.error.string',
         })(undefined, { queryFulfilled })
       },
-      invalidatesTags: (_result, _error, { folder, mailId }) => [
+      invalidatesTags: (_result, _error, { accountId, folder, mailId }) => [
         { type: FOLDER_MESSAGES_SLICE, folder },
+        { type: SEARCH_MAILS_SLICE, id: accountId ?? '0' },
         MAILS_FOLDERS_SLICE,
         { type: MAIL_SLICE, id: mailId },
       ],
@@ -389,21 +427,22 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           })
         }
       },
-      invalidatesTags: (_result, _error, arg) =>
-        mailActionInvalidationTags({
+      invalidatesTags: (_result, _error, arg) => [
+        ...mailActionInvalidationTags({
           folder: arg.folder,
           action: arg.action,
           data: arg.data,
           mailIds: [arg.mailId],
         }),
+        { type: SEARCH_MAILS_SLICE, id: arg.accountId ?? '0' },
+      ],
     }),
 
     mailBatchAction: builder.mutation<
       void,
       {
         accountId?: string
-        folder: string
-        uids: string[]
+        folders: MailBatchActionFolders
         action: MailBatchActionType
         data?: string | string[] | null
       }
@@ -411,21 +450,24 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       query: mailBatchActionQuery,
       async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
         const patchResults: Array<{ undo: () => void }> = []
+        const folderEntries = Object.entries(arg.folders)
 
         if (isMailActionSeenFlagToggle(arg)) {
           const seen = arg.action === 'tag'
-          patchResults.push(
-            ...dispatchSeenPatchOnAllFolderMessageCachesBatch(
-              dispatch,
-              getState() as RootState,
-              {
-                accountId: arg.accountId,
-                folder: arg.folder,
-                mailIds: arg.uids,
-                seen,
-              }
+          for (const [folder, mailIds] of folderEntries) {
+            patchResults.push(
+              ...dispatchSeenPatchOnAllFolderMessageCachesBatch(
+                dispatch,
+                getState() as RootState,
+                {
+                  accountId: arg.accountId,
+                  folder,
+                  mailIds,
+                  seen,
+                }
+              )
             )
-          )
+          }
           try {
             await queryFulfilled
           } catch {
@@ -435,17 +477,19 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
 
         if (isFolderRemovingAction(arg.action)) {
-          patchResults.push(
-            ...removeMailsFromAllFolderCaches(
-              dispatch,
-              getState() as RootState,
-              {
-                accountId: arg.accountId,
-                folder: arg.folder,
-                mailIds: arg.uids,
-              }
+          for (const [folder, mailIds] of folderEntries) {
+            patchResults.push(
+              ...removeMailsFromAllFolderCaches(
+                dispatch,
+                getState() as RootState,
+                {
+                  accountId: arg.accountId,
+                  folder,
+                  mailIds,
+                }
+              )
             )
-          )
+          }
           try {
             await queryFulfilled
           } catch {
@@ -461,12 +505,27 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
       invalidatesTags: (_result, _error, arg) =>
-        mailActionInvalidationTags({
-          folder: arg.folder,
-          action: arg.action,
-          data: arg.data,
-          mailIds: arg.uids,
-        }),
+        isMailActionSeenFlagToggle(arg)
+          ? [
+              MAILS_FOLDERS_SLICE,
+              { type: SEARCH_MAILS_SLICE, id: arg.accountId ?? '0' },
+            ]
+          : [
+              ...Object.keys(arg.folders).map((folder) => ({
+                type: FOLDER_MESSAGES_SLICE,
+                folder,
+              })),
+              { type: SEARCH_MAILS_SLICE, id: arg.accountId ?? '0' },
+              MAILS_FOLDERS_SLICE,
+              ...Object.values(arg.folders)
+                .flat()
+                .map((id) => ({ type: MAIL_SLICE, id })),
+              ...((arg.action === 'move' || arg.action === 'copy') &&
+              typeof arg.data === 'string' &&
+              arg.data !== ''
+                ? [{ type: FOLDER_MESSAGES_SLICE, folder: arg.data }]
+                : []),
+            ],
     }),
 
     downloadMail: builder.mutation<
@@ -526,8 +585,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           date: date ?? new Date().toISOString().slice(0, 10),
         },
       }),
-      invalidatesTags: (_result, _error, { folderPath }) => [
+      invalidatesTags: (_result, _error, { accountId, folderPath }) => [
         { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        { type: SEARCH_MAILS_SLICE, id: accountId },
         MAILS_FOLDERS_SLICE,
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
@@ -548,8 +608,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/expunge`,
         method: 'POST',
       }),
-      invalidatesTags: (_result, _error, { folderPath }) => [
+      invalidatesTags: (_result, _error, { accountId, folderPath }) => [
         { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        { type: SEARCH_MAILS_SLICE, id: accountId },
         MAILS_FOLDERS_SLICE,
       ],
       async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
@@ -812,6 +873,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 export const {
   useGetFoldersQuery,
   useGetFolderMessagesQuery,
+  useSearchMailsQuery,
   useGetMailQuery,
   useLazyGetMailQuery,
   useLazyGetEditMessageQuery,

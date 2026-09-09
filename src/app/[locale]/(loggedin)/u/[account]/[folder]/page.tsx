@@ -37,6 +37,7 @@ const Page = () => {
     refetch,
     currentPage,
     isVirtualFolder,
+    isSearchActive,
   } = useFolderMessages({
     folder: folderPath,
     accountId: accountString,
@@ -88,7 +89,7 @@ const Page = () => {
     [data, activeFilter]
   )
 
-  if (isVirtualFolder) {
+  if (isVirtualFolder && !isSearchActive) {
     return <VirtualFolderEmptyState />
   }
 

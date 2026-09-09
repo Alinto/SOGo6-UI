@@ -6,8 +6,7 @@ const mockBatchDelete = jest.fn().mockResolvedValue(undefined)
 const mockBatchArchive = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkRead = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkUnread = jest.fn().mockResolvedValue(undefined)
-const mockBatchSpam = jest.fn().mockResolvedValue(undefined)
-const mockBatchHam = jest.fn().mockResolvedValue(undefined)
+const mockBatchToggleSpam = jest.fn().mockResolvedValue(undefined)
 const mockBatchMove = jest.fn().mockResolvedValue(undefined)
 const mockBatchCopy = jest.fn().mockResolvedValue(undefined)
 const mockBatchApplyLabels = jest.fn().mockResolvedValue(undefined)
@@ -17,8 +16,7 @@ const mockUseMailBatchActions = jest.fn(() => ({
   batchArchive: mockBatchArchive,
   batchMarkRead: mockBatchMarkRead,
   batchMarkUnread: mockBatchMarkUnread,
-  batchSpam: mockBatchSpam,
-  batchHam: mockBatchHam,
+  batchToggleSpam: mockBatchToggleSpam,
   batchMove: mockBatchMove,
   batchCopy: mockBatchCopy,
   batchApplyLabels: mockBatchApplyLabels,
@@ -211,8 +209,7 @@ describe('ListToolbar', () => {
     mockBatchArchive.mockResolvedValue(undefined)
     mockBatchMarkRead.mockResolvedValue(undefined)
     mockBatchMarkUnread.mockResolvedValue(undefined)
-    mockBatchSpam.mockResolvedValue(undefined)
-    mockBatchHam.mockResolvedValue(undefined)
+    mockBatchToggleSpam.mockResolvedValue(undefined)
     mockBatchMove.mockResolvedValue(undefined)
     mockBatchCopy.mockResolvedValue(undefined)
     mockBatchApplyLabels.mockResolvedValue(undefined)
@@ -222,8 +219,7 @@ describe('ListToolbar', () => {
       batchArchive: mockBatchArchive,
       batchMarkRead: mockBatchMarkRead,
       batchMarkUnread: mockBatchMarkUnread,
-      batchSpam: mockBatchSpam,
-      batchHam: mockBatchHam,
+      batchToggleSpam: mockBatchToggleSpam,
       batchMove: mockBatchMove,
       batchCopy: mockBatchCopy,
       batchApplyLabels: mockBatchApplyLabels,
@@ -295,6 +291,13 @@ describe('ListToolbar', () => {
       useParams.mockReturnValue({ folder: 'INBOX%2Fnewsub', account: '0' })
       render(<ListToolbar />)
       expect(screen.getByText('newsub')).toBeInTheDocument()
+    })
+
+    it('shows the advanced-search label as the title on the advanced-search pseudo-folder', () => {
+      const { useParams } = require('next/navigation')
+      useParams.mockReturnValue({ folder: 'advanced-search', account: '0' })
+      render(<ListToolbar />)
+      expect(screen.getByText('search.advanced.string')).toBeInTheDocument()
     })
   })
 
@@ -417,22 +420,21 @@ describe('ListToolbar', () => {
       ).toBeDisabled()
     })
 
-    it('calls batchSpam when not in a junk folder', async () => {
+    it('calls batchToggleSpam with the selection, regardless of folder', async () => {
       render(<ListToolbar />)
       fireEvent.click(screen.getByTestId('mock-bulk-action-bulk-spam'))
       await waitFor(() =>
-        expect(mockBatchSpam).toHaveBeenCalledWith(['1', '2'])
+        expect(mockBatchToggleSpam).toHaveBeenCalledWith(['1', '2'])
       )
     })
 
-    it('calls batchHam when in a junk folder', async () => {
+    it('shows the "not spam" label when in a junk folder', () => {
       mockUseMailBatchActions.mockReturnValue({
         batchDelete: mockBatchDelete,
         batchArchive: mockBatchArchive,
         batchMarkRead: mockBatchMarkRead,
         batchMarkUnread: mockBatchMarkUnread,
-        batchSpam: mockBatchSpam,
-        batchHam: mockBatchHam,
+        batchToggleSpam: mockBatchToggleSpam,
         batchMove: mockBatchMove,
         batchCopy: mockBatchCopy,
         batchApplyLabels: mockBatchApplyLabels,
@@ -441,8 +443,9 @@ describe('ListToolbar', () => {
         isLoading: false,
       })
       render(<ListToolbar />)
-      fireEvent.click(screen.getByTestId('mock-bulk-action-bulk-spam'))
-      await waitFor(() => expect(mockBatchHam).toHaveBeenCalledWith(['1', '2']))
+      expect(
+        screen.getByTestId('mock-bulk-action-bulk-spam')
+      ).toHaveTextContent('report_not_spam.string')
     })
 
     it('opens the bulk label dialog without clearing the selection first', () => {

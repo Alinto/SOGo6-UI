@@ -17,7 +17,7 @@ const okEnvelope = <T>(data: T) => ({
 
 const notFoundEnvelope = () => ({
   data: null,
-  error_code: 'S000300' as const,
+  error_code: 'S000303' as const,
   error_msg: 'Mail not found' as const,
 })
 

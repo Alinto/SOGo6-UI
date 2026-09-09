@@ -12,6 +12,13 @@ export type MailActionType = 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
 
 export type MailBatchActionType = MailActionType | 'delete'
 
+/**
+ * Uids to act on, grouped by source folder. Lets a single batch-action
+ * request span several folders at once (e.g. a selection made from
+ * cross-folder search results).
+ */
+export type MailBatchActionFolders = Record<string, string[]>
+
 export interface ImapFolder {
   name: string
   path: string
@@ -47,6 +54,8 @@ export interface ImapMessagesList {
   mailType: string[]
   /** IMAP keywords/flags, incl. custom mail category names (e.g. "Work"). */
   flags?: string[]
+  /** Folder the message actually lives in. Only set on search results, which can span multiple folders. */
+  folder?: string
 }
 
 export interface ImapAttachmentPart {
@@ -188,4 +197,38 @@ export interface UpdateFolderBody {
   name?: string
   subscribed?: number
   type?: string
+}
+
+/**
+ * Simple-search field scope(s): which underlying param(s) the query text is
+ * written to. Several scopes can be active at once (e.g. "subject" and
+ * "sender" together).
+ */
+export type MailSearchFieldScope =
+  | 'subject'
+  | 'sender'
+  | 'to'
+  | 'entire_message'
+
+export interface MailSearchDateRange {
+  start?: string
+  end?: string
+}
+
+/** Body accepted by `POST mailboxes/{accountId}/search`. */
+export interface MailSearchParams {
+  text?: string
+  from?: string
+  to?: string
+  bcc?: string
+  subject?: string
+  has_attachment?: boolean
+  attachment_type?: string[]
+  date_range?: MailSearchDateRange
+  is_read?: boolean
+  is_flagged?: boolean
+  folders?: string[]
+  labels?: string[]
+  operator?: 'AND' | 'OR'
+  include_subfolders?: boolean
 }

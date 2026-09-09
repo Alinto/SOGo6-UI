@@ -1230,7 +1230,7 @@ function ContactForm({
 
                 {categoryOptions.length > 0 && (
                   <div className="space-y-2">
-                    <FormLabel>{t('categories.string')}</FormLabel>
+                    <FormLabel>{t('labels.string')}</FormLabel>
                     <div className="flex flex-wrap gap-3">
                       {categoryOptions.map((category) => (
                         <label
@@ -1257,6 +1257,7 @@ function ContactForm({
                   <Label>{t('photo.string')}</Label>
                   <div className="flex flex-wrap items-center gap-4">
                     {photoPreviewSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- data: URL preview, not a static asset
                       <img
                         src={photoPreviewSrc}
                         alt={t('photo.string')}

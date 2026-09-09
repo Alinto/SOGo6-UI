@@ -48,7 +48,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
     if (data) {
       form.reset(mapApiToCalendarCategorySettings(data))
     }
-  }, [data])
+  }, [data, form])
 
   function onSubmit(values: z.infer<typeof schema>) {
     update(mapCalendarCategorySettingsToApi(values))
@@ -59,7 +59,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
     name: 'categories',
   })
 
-  const { isDirty, isSubmitting, errors } = form.formState
+  const { isDirty, isSubmitting } = form.formState
 
   return (
     <Form {...form}>
@@ -75,7 +75,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
             })
           }}
         >
-          {t('categories.create.string')}
+          {t('labels.create.string')}
         </Button>
         <div className="grid gap-4 lg:grid-cols-2">
           {fields.map((label, i) => (
@@ -105,7 +105,7 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                         {...field}
                         value={
                           label.isDefault
-                            ? t(`categories.${label.name}`)
+                            ? t(`labels.${label.name}`)
                             : field.value
                         }
                         placeholder="Key"
