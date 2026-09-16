@@ -80,7 +80,12 @@ export function MultiSelect({
       <PopoverContent className="w-full p-0">
         <Command>
           <CommandInput placeholder="Search options..." className="h-9" />
-          <CommandList>
+          {/* Radix Dialog's scroll lock (react-remove-scroll) blocks wheel
+              events on elements outside its own portal subtree — this
+              popover renders in a separate portal, so without stopping
+              propagation here, scrolling this list is silently prevented
+              whenever the select is opened from inside a Dialog. */}
+          <CommandList onWheel={(e) => e.stopPropagation()}>
             <CommandEmpty>{emptyText}</CommandEmpty>
             <CommandGroup>
               {options.map((option) => (

@@ -39,6 +39,16 @@
     scrollbar-color: hsl(var(--sidebar-foreground) / 0.35) transparent;
     scrollbar-gutter: stable;
   }
+
+  /* Same as .scrollbar-thin-gray, but tinted with --foreground instead of
+     --sidebar-foreground, for scroll areas sitting on the regular
+     background/popover surface (where sidebar-foreground can be
+     near-invisible, e.g. white-on-white in the light theme). */
+  .scrollbar-thin-foreground {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--foreground) / 0.4) transparent;
+    scrollbar-gutter: stable;
+  }
 }
 
 html.mail-dragging,

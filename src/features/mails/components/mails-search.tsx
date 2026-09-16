@@ -136,23 +136,32 @@ export function MailsSearch() {
   // editing the active search from the top bar while the modal is closed
   // would leave it showing stale field values the next time it's opened.
   useEffect(() => {
-    if (
-      advancedOpen &&
-      isSearchActiveForAccount &&
-      !advancedPrefilledRef.current
+    if (!advancedOpen || advancedPrefilledRef.current) return
+    const params = mailSearch.params ?? {}
+    // Only reflect the active search here when it actually requires the
+    // advanced form to express (bcc, attachments, dates, labels, etc.) —
+    // a search that came from the simple bar (e.g. typing "tutu" writes it
+    // to subject/from under the hood) must stay local to the simple bar
+    // and not leak into the advanced modal's fields.
+    if (isSearchActiveForAccount && !isSimpleBarCompatible(params)) {
+      advancedForm.reset(mailSearchParamsToFormValues(params))
+    } else if (
+      currentFolderPath &&
+      currentFolderPath !== ADVANCED_SEARCH_ROUTE_SEGMENT
     ) {
-      const params = mailSearch.params ?? {}
-      // Only reflect the active search here when it actually requires the
-      // advanced form to express (bcc, attachments, dates, labels, etc.) —
-      // a search that came from the simple bar (e.g. typing "tutu" writes it
-      // to subject/from under the hood) must stay local to the simple bar
-      // and not leak into the advanced modal's fields.
-      if (!isSimpleBarCompatible(params)) {
-        advancedForm.reset(mailSearchParamsToFormValues(params))
-      }
-      advancedPrefilledRef.current = true
+      // No advanced search to restore — default the folder scope to
+      // whichever folder the user is currently browsing instead of the
+      // form's hardcoded INBOX default.
+      advancedForm.setValue('folder', currentFolderPath)
     }
-  }, [advancedOpen, isSearchActiveForAccount, mailSearch.params, advancedForm])
+    advancedPrefilledRef.current = true
+  }, [
+    advancedOpen,
+    isSearchActiveForAccount,
+    mailSearch.params,
+    advancedForm,
+    currentFolderPath,
+  ])
 
   useEffect(() => {
     if (!isSearchActiveForAccount) {
@@ -454,103 +463,105 @@ export function MailsSearch() {
       </Form>
 
       <Dialog open={advancedOpen} onOpenChange={closeAdvancedModal}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto pl-8 sm:max-w-2xl">
+        <DialogContent className="flex max-h-[85vh] flex-col overflow-hidden pl-8 sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>{t('search.advanced.string')}</DialogTitle>
           </DialogHeader>
           <Form {...advancedForm}>
             <form
-              className="grid gap-4"
+              className="flex min-h-0 flex-1 flex-col gap-4"
               // react-hook-form's handleSubmit reads internal refs when the returned
               // handler runs on submit, not while this closure is created during render.
               // eslint-disable-next-line react-hooks/refs
               onSubmit={advancedForm.handleSubmit(handleAdvancedSubmit)}
             >
-              <FormField
-                control={advancedForm.control}
-                name="folder"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('search.folders.string')}</FormLabel>
-                    <div className="flex flex-wrap gap-2">
-                      {inboxPath && (
-                        <Button
-                          type="button"
-                          className="mr-2"
-                          variant={
-                            field.value === inboxPath ? 'default' : 'outline'
-                          }
-                          onClick={() => field.onChange(inboxPath)}
-                        >
-                          {t('folders.inbox.string')}
-                        </Button>
-                      )}
-                      {draftsPath && (
-                        <Button
-                          type="button"
-                          className="mr-2"
-                          variant={
-                            field.value === draftsPath ? 'default' : 'outline'
-                          }
-                          onClick={() => field.onChange(draftsPath)}
-                        >
-                          {t('folders.drafts.string')}
-                        </Button>
-                      )}
-                      {sentPath && (
-                        <Button
-                          type="button"
-                          className="mr-2"
-                          variant={
-                            field.value === sentPath ? 'default' : 'outline'
-                          }
-                          onClick={() => field.onChange(sentPath)}
-                        >
-                          {t('folders.sent.string')}
-                        </Button>
-                      )}
-                      <SearchFolders
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        accountId={accountId}
-                        pinnedPaths={[inboxPath, draftsPath, sentPath].filter(
-                          (p): p is string => !!p
+              <div className="scrollbar-thin-foreground grid min-h-0 flex-1 gap-4 overflow-y-auto pr-2 pb-2 pl-2">
+                <FormField
+                  control={advancedForm.control}
+                  name="folder"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('search.folders.string')}</FormLabel>
+                      <div className="flex flex-wrap gap-2">
+                        {inboxPath && (
+                          <Button
+                            type="button"
+                            className="mr-2"
+                            variant={
+                              field.value === inboxPath ? 'default' : 'outline'
+                            }
+                            onClick={() => field.onChange(inboxPath)}
+                          >
+                            {t('folders.inbox.string')}
+                          </Button>
                         )}
-                      />
-                      <Button
-                        type="button"
-                        className="mr-2"
-                        variant={field.value === 'all' ? 'default' : 'outline'}
-                        onClick={() => field.onChange('all')}
-                      >
-                        {t('search.folders_all.string')}
-                      </Button>
-                    </div>
-                  </FormItem>
-                )}
-              />
+                        {draftsPath && (
+                          <Button
+                            type="button"
+                            className="mr-2"
+                            variant={
+                              field.value === draftsPath ? 'default' : 'outline'
+                            }
+                            onClick={() => field.onChange(draftsPath)}
+                          >
+                            {t('folders.drafts.string')}
+                          </Button>
+                        )}
+                        {sentPath && (
+                          <Button
+                            type="button"
+                            className="mr-2"
+                            variant={
+                              field.value === sentPath ? 'default' : 'outline'
+                            }
+                            onClick={() => field.onChange(sentPath)}
+                          >
+                            {t('folders.sent.string')}
+                          </Button>
+                        )}
+                        <SearchFolders
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          accountId={accountId}
+                          pinnedPaths={[inboxPath, draftsPath, sentPath].filter(
+                            (p): p is string => !!p
+                          )}
+                        />
+                        <Button
+                          type="button"
+                          className="mr-2"
+                          variant={
+                            field.value === 'all' ? 'default' : 'outline'
+                          }
+                          onClick={() => field.onChange('all')}
+                        >
+                          {t('search.folders_all.string')}
+                        </Button>
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={advancedForm.control}
-                name="includeSubfolders"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-y-0 space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormLabel className="cursor-pointer font-normal">
-                      {t('search.include_subfolders.string')}
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={advancedForm.control}
+                  name="includeSubfolders"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-y-0 space-x-2">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer font-normal">
+                        {t('search.include_subfolders.string')}
+                      </FormLabel>
+                    </FormItem>
+                  )}
+                />
 
-              <Separator className="my-1" />
+                <Separator className="my-1" />
 
-              <div className="scrollbar-thin-gray max-h-[50vh] overflow-y-auto pr-2 pb-2 pl-2">
                 <SearchMoreOptions form={advancedForm} open={advancedOpen} />
               </div>
 
@@ -559,6 +570,7 @@ export function MailsSearch() {
               <DialogFooter>
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={() => advancedForm.reset(defaultSearchFormValues)}
                 >
                   {formT('reset.default.string')}
