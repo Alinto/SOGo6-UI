@@ -72,18 +72,6 @@
     "default": true
   },
   {
-    "name": "Mes envois",
-    "path": "Mes envois",
-    "type": "SENT",
-    "unseen_count": 0,
-    "messages": 2,
-    "flags": ["\\HasNoChildren"],
-    "delimiter": "/",
-    "readOnly": false,
-    "selectable": true,
-    "default": false
-  },
-  {
     "name": "Virtual",
     "path": "Virtual",
     "type": "NORMAL",

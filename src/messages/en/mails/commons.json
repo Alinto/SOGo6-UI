@@ -341,8 +341,8 @@
                 "string": "With Attachments",
                 "description": "Option to filter emails that have attachments"
             },
-            "in_favorites": {
-                "string": "In favorites",
+            "important": {
+                "string": "Important",
                 "description": "Option to filter emails that are marked as favorites"
             },
             "include_subfolders": {
@@ -412,7 +412,7 @@
                 "description": "Quick folder-scope chip: search across every folder"
             },
             "full_text": {
-                "string": "Full text",
+                "string": "Includes the words",
                 "description": "Label for the general keyword field in email search options, matching subject, sender, recipients and body"
             },
             "attachment_type": {
@@ -437,7 +437,7 @@
             },
             "read_status": {
                 "label": {
-                    "string": "Read status",
+                    "string": "Status",
                     "description": "Label for the read/unread filter in email search options"
                 },
                 "any": {

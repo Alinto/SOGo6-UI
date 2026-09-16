@@ -46,6 +46,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
   const t = useTranslations('MAILS_COMMONS')
   const { allCategories } = useMailCategoryPicker(open)
   const dateRangePreset = form.watch('dateRangePreset')
+  const hasAttachment = form.watch('hasAttachment')
 
   const labelOptions = useMemo(
     () =>
@@ -55,12 +56,6 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
       })),
     [allCategories]
   )
-
-  const readStatusOptions = [
-    { value: 'any', label: t('search.read_status.any.string') },
-    { value: 'unread', label: t('search.read_status.unread.string') },
-    { value: 'read', label: t('search.read_status.read.string') },
-  ]
 
   const operatorOptions = [
     { value: 'AND', label: t('search.operator.and.string') },
@@ -78,7 +73,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
         control={form.control}
         name="operator"
         render={({ field }) => (
-          <FormItem className="pt-2">
+          <FormItem>
             <FormLabel>{t('search.operator.label.string')}</FormLabel>
             <RadioGroupForm
               options={operatorOptions}
@@ -89,7 +84,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
           </FormItem>
         )}
       />
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <FormField
           control={form.control}
           name="from"
@@ -127,7 +122,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
           )}
         />
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <FormField
           control={form.control}
           name="subject"
@@ -153,7 +148,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
           )}
         />
       </div>
-      <div className="mt-4 grid grid-cols-2 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <FormField
           control={form.control}
           name="hasAttachment"
@@ -171,59 +166,84 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="isFlagged"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-y-0 space-x-2">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
+        {hasAttachment && (
+          <FormField
+            control={form.control}
+            name="attachmentType"
+            render={({ field }) => (
+              <FormItem>
+                <MultiSelect
+                  options={ATTACHMENT_TYPE_OPTIONS}
+                  selected={field.value}
+                  onChange={field.onChange}
+                  placeholder={t('search.attachment_type.placeholder.string')}
                 />
-              </FormControl>
-              <FormLabel className="cursor-pointer font-normal">
-                {t('search.in_favorites.string')}
-              </FormLabel>
-            </FormItem>
-          )}
-        />
+              </FormItem>
+            )}
+          />
+        )}
       </div>
-      <div className="mt-4">
-        <FormField
-          control={form.control}
-          name="attachmentType"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('search.attachment_type.string')}</FormLabel>
-              <MultiSelect
-                options={ATTACHMENT_TYPE_OPTIONS}
-                selected={field.value}
-                onChange={field.onChange}
-                placeholder={t('search.attachment_type.placeholder.string')}
-              />
-            </FormItem>
-          )}
-        />
-      </div>
-      <div className="mt-4">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <FormField
           control={form.control}
           name="isRead"
           render={({ field }) => (
             <FormItem>
               <FormLabel>{t('search.read_status.label.string')}</FormLabel>
-              <RadioGroupForm
-                options={readStatusOptions}
-                value={field.value}
-                onValueChange={field.onChange}
-                horizontal
-              />
+              <div className="flex items-center gap-4">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={field.value === 'read'}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked ? 'read' : 'any')
+                    }
+                  />
+                  <FormLabel className="cursor-pointer font-normal">
+                    {t('search.read_status.read.string')}
+                  </FormLabel>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    checked={field.value === 'unread'}
+                    onCheckedChange={(checked) =>
+                      field.onChange(checked ? 'unread' : 'any')
+                    }
+                  />
+                  <FormLabel className="cursor-pointer font-normal">
+                    {t('search.read_status.unread.string')}
+                  </FormLabel>
+                </div>
+              </div>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="isFlagged"
+          render={({ field }) => (
+            <FormItem>
+              <span
+                aria-hidden
+                className="invisible block text-sm leading-none"
+              >
+                &nbsp;
+              </span>
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="cursor-pointer font-normal">
+                  {t('search.important.string')}
+                </FormLabel>
+              </div>
             </FormItem>
           )}
         />
       </div>
-      <div className="mt-4">
+      <div>
         <FormField
           control={form.control}
           name="labels"
@@ -241,7 +261,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
           )}
         />
       </div>
-      <div className="mt-4 flex flex-wrap gap-4 sm:flex-nowrap">
+      <div className="flex flex-wrap gap-4 sm:flex-nowrap">
         <FormField
           control={form.control}
           name="dateRangePreset"
