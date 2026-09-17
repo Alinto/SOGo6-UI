@@ -31,6 +31,22 @@ describe('getMailBatchActionNotificationKeys', () => {
     )
   })
 
+  it('returns phishing keys', () => {
+    expect(
+      getMailBatchActionNotificationKeys({ action: 'phishing' })
+    ).toMatchObject({
+      successTitle: 'mail_action.bulk_phishing.successTitle.string',
+    })
+  })
+
+  it('returns illegal keys', () => {
+    expect(
+      getMailBatchActionNotificationKeys({ action: 'illegal' })
+    ).toMatchObject({
+      successTitle: 'mail_action.bulk_illegal.successTitle.string',
+    })
+  })
+
   it('returns move keys', () => {
     expect(
       getMailBatchActionNotificationKeys({ action: 'move', data: 'Archive' })

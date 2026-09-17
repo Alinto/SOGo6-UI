@@ -7,10 +7,6 @@ import {
   useMailBatchActionMutation,
 } from '../store/mails-api'
 import {
-  ARCHIVE_FOLDER_FALLBACK,
-  findArchiveFolderPath,
-} from '../utils/find-archive-folder-path'
-import {
   findFolderByPath,
   isJunkFolderPath,
   isTrashFolderPath,
@@ -29,7 +25,6 @@ export type UseMailBatchActionsArgs = {
 
 export type UseMailBatchActionsReturn = {
   batchDelete: (mailIds: string[]) => Promise<void>
-  batchArchive: (mailIds: string[]) => Promise<void>
   batchMarkRead: (mailIds: string[]) => Promise<void>
   batchMarkUnread: (mailIds: string[]) => Promise<void>
   batchSpam: (mailIds: string[]) => Promise<void>
@@ -41,11 +36,14 @@ export type UseMailBatchActionsReturn = {
    * mails.
    */
   batchToggleSpam: (mailIds: string[]) => Promise<void>
+  batchMarkImportant: (mailIds: string[]) => Promise<void>
+  batchRemoveImportant: (mailIds: string[]) => Promise<void>
+  batchPhishing: (mailIds: string[]) => Promise<void>
+  batchIllegal: (mailIds: string[]) => Promise<void>
   batchMove: (mailIds: string[], destination: string) => Promise<void>
   batchCopy: (mailIds: string[], destination: string) => Promise<void>
   batchApplyLabels: (mailIds: string[], labels: string[]) => Promise<void>
   batchRemoveLabels: (mailIds: string[], labels: string[]) => Promise<void>
-  archiveDestination: string
   isJunk: boolean
   isTrash: boolean
   folderType: ImapFolderType | undefined
@@ -68,8 +66,6 @@ export function useMailBatchActions({
   const isJunk = isJunkFolderPath(folder, currentFolder)
   const isTrash = isTrashFolderPath(folder, currentFolder)
   const folderType = currentFolder?.type
-  const archiveDestination =
-    findArchiveFolderPath(folders) ?? ARCHIVE_FOLDER_FALLBACK
 
   const [mailBatchAction, mailBatchActionState] = useMailBatchActionMutation()
   const isLoading = mailBatchActionState.isLoading
@@ -108,11 +104,6 @@ export function useMailBatchActions({
   const batchDelete = useCallback(
     (mailIds: string[]) => runBatch(mailIds, 'delete'),
     [runBatch]
-  )
-
-  const batchArchive = useCallback(
-    (mailIds: string[]) => runBatch(mailIds, 'move', archiveDestination),
-    [runBatch, archiveDestination]
   )
 
   const batchMarkRead = useCallback(
@@ -155,6 +146,26 @@ export function useMailBatchActions({
     [folderById, folder, isJunk, folders, batchHam, batchSpam]
   )
 
+  const batchMarkImportant = useCallback(
+    (mailIds: string[]) => runBatch(mailIds, 'tag', ['\\Flagged']),
+    [runBatch]
+  )
+
+  const batchRemoveImportant = useCallback(
+    (mailIds: string[]) => runBatch(mailIds, 'untag', ['\\Flagged']),
+    [runBatch]
+  )
+
+  const batchPhishing = useCallback(
+    (mailIds: string[]) => runBatch(mailIds, 'phishing'),
+    [runBatch]
+  )
+
+  const batchIllegal = useCallback(
+    (mailIds: string[]) => runBatch(mailIds, 'illegal'),
+    [runBatch]
+  )
+
   const batchMove = useCallback(
     (mailIds: string[], destination: string) =>
       runBatch(mailIds, 'move', destination),
@@ -179,17 +190,19 @@ export function useMailBatchActions({
 
   return {
     batchDelete,
-    batchArchive,
     batchMarkRead,
     batchMarkUnread,
     batchSpam,
     batchHam,
     batchToggleSpam,
+    batchMarkImportant,
+    batchRemoveImportant,
+    batchPhishing,
+    batchIllegal,
     batchMove,
     batchCopy,
     batchApplyLabels,
     batchRemoveLabels,
-    archiveDestination,
     isJunk,
     isTrash,
     folderType,

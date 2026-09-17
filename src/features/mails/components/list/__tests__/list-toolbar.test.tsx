@@ -3,7 +3,6 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import ListToolbar from '../list-toolbar'
 
 const mockBatchDelete = jest.fn().mockResolvedValue(undefined)
-const mockBatchArchive = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkRead = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkUnread = jest.fn().mockResolvedValue(undefined)
 const mockBatchToggleSpam = jest.fn().mockResolvedValue(undefined)
@@ -11,9 +10,12 @@ const mockBatchMove = jest.fn().mockResolvedValue(undefined)
 const mockBatchCopy = jest.fn().mockResolvedValue(undefined)
 const mockBatchApplyLabels = jest.fn().mockResolvedValue(undefined)
 const mockBatchRemoveLabels = jest.fn().mockResolvedValue(undefined)
+const mockBatchPhishing = jest.fn().mockResolvedValue(undefined)
+const mockBatchIllegal = jest.fn().mockResolvedValue(undefined)
+const mockBatchMarkImportant = jest.fn().mockResolvedValue(undefined)
+const mockBatchRemoveImportant = jest.fn().mockResolvedValue(undefined)
 const mockUseMailBatchActions = jest.fn(() => ({
   batchDelete: mockBatchDelete,
-  batchArchive: mockBatchArchive,
   batchMarkRead: mockBatchMarkRead,
   batchMarkUnread: mockBatchMarkUnread,
   batchToggleSpam: mockBatchToggleSpam,
@@ -21,6 +23,10 @@ const mockUseMailBatchActions = jest.fn(() => ({
   batchCopy: mockBatchCopy,
   batchApplyLabels: mockBatchApplyLabels,
   batchRemoveLabels: mockBatchRemoveLabels,
+  batchPhishing: mockBatchPhishing,
+  batchIllegal: mockBatchIllegal,
+  batchMarkImportant: mockBatchMarkImportant,
+  batchRemoveImportant: mockBatchRemoveImportant,
   isJunk: false,
   isLoading: false,
 }))
@@ -33,8 +39,8 @@ jest.mock('@/features/mails/hooks/use-folder-messages', () => ({
   useFolderMessages: jest.fn(() => ({
     data: {
       mails: [
-        { id: '1', subject: 'Test', seen: false },
-        { id: '2', subject: 'Test 2', seen: true },
+        { id: '1', subject: 'Test', seen: false, flagged: false },
+        { id: '2', subject: 'Test 2', seen: true, flagged: true },
       ],
       total: 2,
       page: 1,
@@ -166,6 +172,65 @@ jest.mock('@/features/mails/components/mail/mail-move-copy-menu', () => ({
   ),
 }))
 
+jest.mock(
+  '@/features/mails/components/mail/mail-bulk-more-actions-menu',
+  () => ({
+    __esModule: true,
+    default: ({
+      onPhishing,
+      onIllegal,
+      onDownload,
+      onMarkImportant,
+      onRemoveImportant,
+      showMarkImportant,
+      showRemoveImportant,
+      disabled,
+    }: any) => (
+      <div data-testid="mail-bulk-more-actions-menu">
+        {showMarkImportant && (
+          <button
+            data-testid="mock-bulk-mark-important"
+            disabled={disabled}
+            onClick={onMarkImportant}
+          >
+            mark-important
+          </button>
+        )}
+        {showRemoveImportant && (
+          <button
+            data-testid="mock-bulk-remove-important"
+            disabled={disabled}
+            onClick={onRemoveImportant}
+          >
+            remove-important
+          </button>
+        )}
+        <button
+          data-testid="mock-bulk-phishing"
+          disabled={disabled}
+          onClick={onPhishing}
+        >
+          phishing
+        </button>
+        <button
+          data-testid="mock-bulk-illegal"
+          disabled={disabled}
+          onClick={onIllegal}
+        >
+          illegal
+        </button>
+        <button
+          data-testid="mock-bulk-download"
+          disabled={disabled}
+          onClick={onDownload}
+        >
+          download
+        </button>
+      </div>
+    ),
+  })
+)
+
 jest.mock('../list-filter', () => ({
   __esModule: true,
   default: () => <div data-testid="list-filter" />,
@@ -206,7 +271,6 @@ describe('ListToolbar', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockBatchDelete.mockResolvedValue(undefined)
-    mockBatchArchive.mockResolvedValue(undefined)
     mockBatchMarkRead.mockResolvedValue(undefined)
     mockBatchMarkUnread.mockResolvedValue(undefined)
     mockBatchToggleSpam.mockResolvedValue(undefined)
@@ -214,9 +278,12 @@ describe('ListToolbar', () => {
     mockBatchCopy.mockResolvedValue(undefined)
     mockBatchApplyLabels.mockResolvedValue(undefined)
     mockBatchRemoveLabels.mockResolvedValue(undefined)
+    mockBatchPhishing.mockResolvedValue(undefined)
+    mockBatchIllegal.mockResolvedValue(undefined)
+    mockBatchMarkImportant.mockResolvedValue(undefined)
+    mockBatchRemoveImportant.mockResolvedValue(undefined)
     mockUseMailBatchActions.mockReturnValue({
       batchDelete: mockBatchDelete,
-      batchArchive: mockBatchArchive,
       batchMarkRead: mockBatchMarkRead,
       batchMarkUnread: mockBatchMarkUnread,
       batchToggleSpam: mockBatchToggleSpam,
@@ -224,6 +291,10 @@ describe('ListToolbar', () => {
       batchCopy: mockBatchCopy,
       batchApplyLabels: mockBatchApplyLabels,
       batchRemoveLabels: mockBatchRemoveLabels,
+      batchPhishing: mockBatchPhishing,
+      batchIllegal: mockBatchIllegal,
+      batchMarkImportant: mockBatchMarkImportant,
+      batchRemoveImportant: mockBatchRemoveImportant,
       isJunk: false,
       isLoading: false,
     })
@@ -364,14 +435,6 @@ describe('ListToolbar', () => {
       expect(mockDispatch).toHaveBeenCalled()
     })
 
-    it('calls batchArchive with the selected ids', async () => {
-      render(<ListToolbar />)
-      fireEvent.click(screen.getByTestId('mock-bulk-action-bulk-archive'))
-      await waitFor(() =>
-        expect(mockBatchArchive).toHaveBeenCalledWith(['1', '2'])
-      )
-    })
-
     it('only marks unseen selected mails as read', async () => {
       render(<ListToolbar />)
       fireEvent.click(screen.getByTestId('mock-bulk-action-bulk-mark-read'))
@@ -431,7 +494,6 @@ describe('ListToolbar', () => {
     it('shows the "not spam" label when in a junk folder', () => {
       mockUseMailBatchActions.mockReturnValue({
         batchDelete: mockBatchDelete,
-        batchArchive: mockBatchArchive,
         batchMarkRead: mockBatchMarkRead,
         batchMarkUnread: mockBatchMarkUnread,
         batchToggleSpam: mockBatchToggleSpam,
@@ -439,6 +501,10 @@ describe('ListToolbar', () => {
         batchCopy: mockBatchCopy,
         batchApplyLabels: mockBatchApplyLabels,
         batchRemoveLabels: mockBatchRemoveLabels,
+        batchPhishing: mockBatchPhishing,
+        batchIllegal: mockBatchIllegal,
+        batchMarkImportant: mockBatchMarkImportant,
+        batchRemoveImportant: mockBatchRemoveImportant,
         isJunk: true,
         isLoading: false,
       })
@@ -487,6 +553,80 @@ describe('ListToolbar', () => {
       await waitFor(() =>
         expect(mockBatchCopy).toHaveBeenCalledWith(['1', '2'], 'Archive')
       )
+    })
+
+    it('only marks non-important selected mails as important', async () => {
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('mock-bulk-mark-important'))
+      await waitFor(() =>
+        expect(mockBatchMarkImportant).toHaveBeenCalledWith(['1'])
+      )
+      expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('only removes important flag from important selected mails', async () => {
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('mock-bulk-remove-important'))
+      await waitFor(() =>
+        expect(mockBatchRemoveImportant).toHaveBeenCalledWith(['2'])
+      )
+      expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('hides mark-important when only important mails are selected', () => {
+      const { useAppSelector } = require('@/lib/redux/hooks')
+      useAppSelector.mockImplementation((fn: any) =>
+        fn({
+          mailLayout: { selectedMailIds: ['2'] },
+          mailNavigation: { skipFolderFetch: false },
+        })
+      )
+      render(<ListToolbar />)
+      expect(
+        screen.queryByTestId('mock-bulk-mark-important')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByTestId('mock-bulk-remove-important')
+      ).toBeInTheDocument()
+    })
+
+    it('hides remove-important when only non-important mails are selected', () => {
+      const { useAppSelector } = require('@/lib/redux/hooks')
+      useAppSelector.mockImplementation((fn: any) =>
+        fn({
+          mailLayout: { selectedMailIds: ['1'] },
+          mailNavigation: { skipFolderFetch: false },
+        })
+      )
+      render(<ListToolbar />)
+      expect(screen.getByTestId('mock-bulk-mark-important')).toBeInTheDocument()
+      expect(
+        screen.queryByTestId('mock-bulk-remove-important')
+      ).not.toBeInTheDocument()
+    })
+
+    it('reports phishing through the more-actions menu and clears the selection', async () => {
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('mock-bulk-phishing'))
+      await waitFor(() =>
+        expect(mockBatchPhishing).toHaveBeenCalledWith(['1', '2'])
+      )
+      expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('reports illegal content through the more-actions menu and clears the selection', async () => {
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('mock-bulk-illegal'))
+      await waitFor(() =>
+        expect(mockBatchIllegal).toHaveBeenCalledWith(['1', '2'])
+      )
+      expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('opens the download coming-soon dialog without clearing the selection', () => {
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('mock-bulk-download'))
+      expect(mockDispatch).not.toHaveBeenCalled()
     })
   })
 })

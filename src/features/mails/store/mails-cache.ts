@@ -126,7 +126,9 @@ export function isFolderRemovingAction(action: string): boolean {
     action === 'move' ||
     action === 'spam' ||
     action === 'ham' ||
-    action === 'delete'
+    action === 'delete' ||
+    action === 'phishing' ||
+    action === 'illegal'
   )
 }
 

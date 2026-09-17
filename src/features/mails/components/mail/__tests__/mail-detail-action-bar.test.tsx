@@ -10,7 +10,8 @@ const mockMarkImportant = jest.fn()
 const mockRemoveImportant = jest.fn()
 const mockMoveMail = jest.fn()
 const mockCopyMail = jest.fn()
-const mockArchiveMail = jest.fn()
+const mockReportPhishing = jest.fn()
+const mockReportIllegal = jest.fn()
 const mockDownloadMail = jest.fn(() => ({
   unwrap: () => Promise.resolve(new Blob(['x'])),
 }))
@@ -37,7 +38,8 @@ jest.mock('@/features/mails/hooks/use-mail-item-actions', () => ({
     markUnread: mockMarkUnread,
     markSpam: mockMarkSpam,
     markHam: mockMarkHam,
-    archiveMail: mockArchiveMail,
+    reportPhishing: mockReportPhishing,
+    reportIllegal: mockReportIllegal,
     moveMail: mockMoveMail,
     copyMail: mockCopyMail,
     applyLabel: jest.fn(),
@@ -154,12 +156,20 @@ jest.mock('../mail-more-actions-menu', () => ({
             mark-unread
           </button>
         )}
-        {props.showArchive && props.onArchive && (
+        {props.onPhishing && (
           <button
-            data-testid={`mock-${prefix}-archive`}
-            onClick={props.onArchive}
+            data-testid={`mock-${prefix}-phishing`}
+            onClick={props.onPhishing}
           >
-            archive
+            phishing
+          </button>
+        )}
+        {props.onIllegal && (
+          <button
+            data-testid={`mock-${prefix}-illegal`}
+            onClick={props.onIllegal}
+          >
+            illegal
           </button>
         )}
         {props.showDownload && props.onDownload && (
@@ -249,7 +259,8 @@ describe('MailDetailActionBar', () => {
         markUnread: mockMarkUnread,
         markSpam: mockMarkSpam,
         markHam: mockMarkHam,
-        archiveMail: mockArchiveMail,
+        reportPhishing: mockReportPhishing,
+        reportIllegal: mockReportIllegal,
         moveMail: mockMoveMail,
         copyMail: mockCopyMail,
         applyLabel: jest.fn(),
@@ -381,12 +392,20 @@ describe('MailDetailActionBar', () => {
       expect(mockMarkUnread).toHaveBeenCalledTimes(1)
     })
 
-    it('archives the mail from the mobile more menu', () => {
+    it('reports phishing from the mobile more menu', () => {
       render(
         <MailDetailActionBar accountId="0" folder="INBOX" mailId="42" seen />
       )
-      fireEvent.click(screen.getByTestId('mock-mobile-archive'))
-      expect(mockArchiveMail).toHaveBeenCalledTimes(1)
+      fireEvent.click(screen.getByTestId('mock-mobile-phishing'))
+      expect(mockReportPhishing).toHaveBeenCalledTimes(1)
+    })
+
+    it('reports illegal content from the mobile more menu', () => {
+      render(
+        <MailDetailActionBar accountId="0" folder="INBOX" mailId="42" seen />
+      )
+      fireEvent.click(screen.getByTestId('mock-mobile-illegal'))
+      expect(mockReportIllegal).toHaveBeenCalledTimes(1)
     })
 
     it('downloads the mail from the mobile more menu', () => {

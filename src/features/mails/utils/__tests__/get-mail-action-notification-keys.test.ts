@@ -19,6 +19,20 @@ describe('getMailActionNotificationKeys', () => {
     })
   })
 
+  it('returns phishing keys', () => {
+    expect(getMailActionNotificationKeys({ action: 'phishing' })).toMatchObject(
+      {
+        successTitle: 'mail_action.phishing.successTitle.string',
+      }
+    )
+  })
+
+  it('returns illegal keys', () => {
+    expect(getMailActionNotificationKeys({ action: 'illegal' })).toMatchObject({
+      successTitle: 'mail_action.illegal.successTitle.string',
+    })
+  })
+
   it('returns tag keys for custom labels', () => {
     expect(
       getMailActionNotificationKeys({ action: 'tag', data: ['Work'] })

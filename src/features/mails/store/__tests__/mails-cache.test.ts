@@ -69,11 +69,13 @@ describe('mail action predicates', () => {
     ).toBe(false)
   })
 
-  it('isFolderRemovingAction matches move/spam/ham/delete only', () => {
+  it('isFolderRemovingAction matches move/spam/ham/delete/phishing/illegal only', () => {
     expect(isFolderRemovingAction('move')).toBe(true)
     expect(isFolderRemovingAction('spam')).toBe(true)
     expect(isFolderRemovingAction('ham')).toBe(true)
     expect(isFolderRemovingAction('delete')).toBe(true)
+    expect(isFolderRemovingAction('phishing')).toBe(true)
+    expect(isFolderRemovingAction('illegal')).toBe(true)
     expect(isFolderRemovingAction('tag')).toBe(false)
     expect(isFolderRemovingAction('copy')).toBe(false)
   })

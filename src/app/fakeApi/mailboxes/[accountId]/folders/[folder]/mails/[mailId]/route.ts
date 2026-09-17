@@ -29,7 +29,17 @@ export async function GET(
 ) {
   const { folder, mailId } = await ctx.params
   const folderMessages = mailDetailByFolderSeed[folder] || []
-  const raw = folderMessages.find((msg) => String(msg.id) === String(mailId))
+  let raw = folderMessages.find((msg) => String(msg.id) === String(mailId))
+
+  if (!raw) {
+    // The mail may have been moved to another folder in the fake API (e.g.
+    // report as phishing/illegal → Junk); demo seed ids are unique across
+    // folders, so fall back to a global lookup.
+    for (const messages of Object.values(mailDetailByFolderSeed)) {
+      raw = messages.find((msg) => String(msg.id) === String(mailId))
+      if (raw) break
+    }
+  }
 
   if (!raw) {
     return NextResponse.json(notFoundEnvelope(), { status: 404 })

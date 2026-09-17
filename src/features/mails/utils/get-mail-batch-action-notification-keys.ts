@@ -57,6 +57,20 @@ export function getMailBatchActionNotificationKeys(arg: {
         errorTitle: 'mail_action.bulk_ham.errorTitle.string',
         errorMessage: 'mail_action.bulk_ham.errorMessage.string',
       }
+    case 'phishing':
+      return {
+        successTitle: 'mail_action.bulk_phishing.successTitle.string',
+        successMessage: 'mail_action.bulk_phishing.successMessage.string',
+        errorTitle: 'mail_action.bulk_phishing.errorTitle.string',
+        errorMessage: 'mail_action.bulk_phishing.errorMessage.string',
+      }
+    case 'illegal':
+      return {
+        successTitle: 'mail_action.bulk_illegal.successTitle.string',
+        successMessage: 'mail_action.bulk_illegal.successMessage.string',
+        errorTitle: 'mail_action.bulk_illegal.errorTitle.string',
+        errorMessage: 'mail_action.bulk_illegal.errorMessage.string',
+      }
     case 'move':
       return {
         successTitle: 'mail_action.bulk_move.successTitle.string',

@@ -1,17 +1,20 @@
 'use client'
 
 import { Checkbox } from '@/components/ui/checkbox'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListSort from '@/features/mails/components/list/list-sort'
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import MailBulkLabelPickerDialog from '@/features/mails/components/mail/mail-bulk-label-picker-dialog'
+import MailBulkMoreActionsMenu from '@/features/mails/components/mail/mail-bulk-more-actions-menu'
 import MailDetailNavigation from '@/features/mails/components/mail/mail-detail-navigation'
 import MailMoveCopyMenu, {
   type MailMoveCopyMenuMode,
 } from '@/features/mails/components/mail/mail-move-copy-menu'
 import MailMoveDialog from '@/features/mails/components/mail/mail-move-dialog'
+import FeatureIncoming from '@/features/mails/components/sidebars/fast-access/content/feature-incoming'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useMailBatchActions } from '@/features/mails/hooks/use-mail-batch-actions'
@@ -28,15 +31,7 @@ import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '@/features/mails/utils/mail-searc
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
-import {
-  Archive,
-  Inbox,
-  Mail,
-  MailOpen,
-  ShieldX,
-  Tag,
-  Trash2,
-} from 'lucide-react'
+import { Inbox, Mail, MailOpen, ShieldX, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useCallback, useMemo, useState } from 'react'
@@ -114,10 +109,13 @@ const ListToolbar: React.FC = () => {
   const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const {
     batchDelete,
-    batchArchive,
     batchMarkRead,
     batchMarkUnread,
     batchToggleSpam,
+    batchMarkImportant,
+    batchRemoveImportant,
+    batchPhishing,
+    batchIllegal,
     batchMove,
     batchCopy,
     batchApplyLabels,
@@ -130,33 +128,35 @@ const ListToolbar: React.FC = () => {
     folderById,
   })
 
-  const { hasUnreadSelected, hasReadSelected, selectedMailsFlags } =
-    useMemo(() => {
-      const selectedIdSet = new Set(selectedIds)
-      const selectedMails = filteredMails.filter((m) =>
-        selectedIdSet.has(String(m.id))
-      )
-      return {
-        hasUnreadSelected: selectedMails.some((m) => !m.seen),
-        hasReadSelected: selectedMails.some((m) => m.seen),
-        selectedMailsFlags: selectedMails.map((m) => m.flags),
-      }
-    }, [filteredMails, selectedIds])
+  const {
+    hasUnreadSelected,
+    hasReadSelected,
+    hasNotImportantSelected,
+    hasImportantSelected,
+    selectedMailsFlags,
+  } = useMemo(() => {
+    const selectedIdSet = new Set(selectedIds)
+    const selectedMails = filteredMails.filter((m) =>
+      selectedIdSet.has(String(m.id))
+    )
+    return {
+      hasUnreadSelected: selectedMails.some((m) => !m.seen),
+      hasReadSelected: selectedMails.some((m) => m.seen),
+      hasNotImportantSelected: selectedMails.some((m) => !m.flagged),
+      hasImportantSelected: selectedMails.some((m) => m.flagged),
+      selectedMailsFlags: selectedMails.map((m) => m.flags),
+    }
+  }, [filteredMails, selectedIds])
 
   const [labelDialogOpen, setLabelDialogOpen] = useState(false)
+  const [downloadComingSoonOpen, setDownloadComingSoonOpen] = useState(false)
   const [createFolderMode, setCreateFolderMode] =
     useState<MailMoveCopyMenuMode | null>(null)
 
   const handleBulkAction = useCallback(
     async (idx: number) => {
       switch (idx) {
-        case 0:
-          await batchDelete(selectedIds)
-          break
-        case 1:
-          await batchArchive(selectedIds)
-          break
-        case 2: {
+        case 0: {
           const selectedIdSet = new Set(selectedIds)
           const unreadIds = filteredMails
             .filter((m) => selectedIdSet.has(String(m.id)) && !m.seen)
@@ -164,7 +164,7 @@ const ListToolbar: React.FC = () => {
           await batchMarkRead(unreadIds)
           break
         }
-        case 3: {
+        case 1: {
           const selectedIdSet = new Set(selectedIds)
           const readIds = filteredMails
             .filter((m) => selectedIdSet.has(String(m.id)) && m.seen)
@@ -172,13 +172,16 @@ const ListToolbar: React.FC = () => {
           await batchMarkUnread(readIds)
           break
         }
-        case 4:
+        case 2:
+          await batchDelete(selectedIds)
+          break
+        case 3:
           // Splits the selection by each mail's own folder internally, so a
           // cross-folder search selection mixing junk and non-junk mails is
           // still handled correctly.
           await batchToggleSpam(selectedIds)
           break
-        case 5:
+        case 4:
           // Bulk label: keep the selection until the picker dialog resolves.
           setLabelDialogOpen(true)
           return
@@ -191,13 +194,40 @@ const ListToolbar: React.FC = () => {
       filteredMails,
       selectedIds,
       batchDelete,
-      batchArchive,
       batchMarkRead,
       batchMarkUnread,
       batchToggleSpam,
       dispatch,
     ]
   )
+
+  const handleBulkMarkImportant = useCallback(async () => {
+    const selectedIdSet = new Set(selectedIds)
+    const notImportantIds = filteredMails
+      .filter((m) => selectedIdSet.has(String(m.id)) && !m.flagged)
+      .map((m) => String(m.id))
+    await batchMarkImportant(notImportantIds)
+    dispatch(clearSelectedMails())
+  }, [filteredMails, selectedIds, batchMarkImportant, dispatch])
+
+  const handleBulkRemoveImportant = useCallback(async () => {
+    const selectedIdSet = new Set(selectedIds)
+    const importantIds = filteredMails
+      .filter((m) => selectedIdSet.has(String(m.id)) && m.flagged)
+      .map((m) => String(m.id))
+    await batchRemoveImportant(importantIds)
+    dispatch(clearSelectedMails())
+  }, [filteredMails, selectedIds, batchRemoveImportant, dispatch])
+
+  const handleBulkPhishing = useCallback(async () => {
+    await batchPhishing(selectedIds)
+    dispatch(clearSelectedMails())
+  }, [batchPhishing, selectedIds, dispatch])
+
+  const handleBulkIllegal = useCallback(async () => {
+    await batchIllegal(selectedIds)
+    dispatch(clearSelectedMails())
+  }, [batchIllegal, selectedIds, dispatch])
 
   const handleApplyBulkLabels = useCallback(
     async (labels: string[]) => {
@@ -258,18 +288,6 @@ const ListToolbar: React.FC = () => {
               compact
               actions={[
                 {
-                  id: 'bulk-delete',
-                  title: tActions('delete.string'),
-                  icon: <Trash2 size={16} />,
-                  disabled: isBatchActionLoading,
-                },
-                {
-                  id: 'bulk-archive',
-                  title: tActions('archive.string'),
-                  icon: <Archive size={16} />,
-                  disabled: isBatchActionLoading,
-                },
-                {
                   id: 'bulk-mark-read',
                   title: tActions('mark_as_read.string'),
                   icon: <MailOpen size={16} />,
@@ -280,6 +298,12 @@ const ListToolbar: React.FC = () => {
                   title: tActions('mark_as_unread.string'),
                   icon: <Mail size={16} />,
                   disabled: isBatchActionLoading || !hasReadSelected,
+                },
+                {
+                  id: 'bulk-delete',
+                  title: tActions('delete.string'),
+                  icon: <Trash2 size={16} />,
+                  disabled: isBatchActionLoading,
                 },
                 {
                   // Label reflects the currently open folder; the action
@@ -309,6 +333,17 @@ const ListToolbar: React.FC = () => {
                 disabled={isBatchActionLoading}
                 onSelectDestination={handleSelectMoveCopyDestination}
                 onCreateFolder={setCreateFolderMode}
+              />
+              <MailBulkMoreActionsMenu
+                disabled={isBatchActionLoading}
+                showMarkImportant={hasNotImportantSelected}
+                showRemoveImportant={hasImportantSelected}
+                onMarkImportant={() => void handleBulkMarkImportant()}
+                onRemoveImportant={() => void handleBulkRemoveImportant()}
+                onPhishing={() => void handleBulkPhishing()}
+                onIllegal={() => void handleBulkIllegal()}
+                onDownload={() => setDownloadComingSoonOpen(true)}
+                triggerClassName="h-8 w-8 rounded-r-md"
               />
             </MailActionsBar>
           ) : (
@@ -342,6 +377,15 @@ const ListToolbar: React.FC = () => {
         onRemoveLabels={handleRemoveBulkLabels}
         isLoading={isBatchActionLoading}
       />
+
+      <Dialog
+        open={downloadComingSoonOpen}
+        onOpenChange={setDownloadComingSoonOpen}
+      >
+        <DialogContent>
+          <FeatureIncoming />
+        </DialogContent>
+      </Dialog>
 
       <MailMoveDialog
         open={createFolderMode != null}

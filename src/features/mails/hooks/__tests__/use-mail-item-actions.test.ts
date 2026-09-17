@@ -208,6 +208,42 @@ describe('useMailItemActions', () => {
     })
   })
 
+  describe('reportPhishing and reportIllegal', () => {
+    it('reports mail as phishing', async () => {
+      const onRemoved = jest.fn()
+      const { result } = renderHook(() =>
+        useMailItemActions({ ...defaultArgs, onRemoved })
+      )
+      await act(async () => {
+        await result.current.reportPhishing()
+      })
+      expect(mockMailAction).toHaveBeenCalledWith({
+        accountId: '0',
+        folder: 'INBOX',
+        mailId: '42',
+        action: 'phishing',
+      })
+      expect(onRemoved).toHaveBeenCalled()
+    })
+
+    it('reports mail as illegal', async () => {
+      const onRemoved = jest.fn()
+      const { result } = renderHook(() =>
+        useMailItemActions({ ...defaultArgs, onRemoved })
+      )
+      await act(async () => {
+        await result.current.reportIllegal()
+      })
+      expect(mockMailAction).toHaveBeenCalledWith({
+        accountId: '0',
+        folder: 'INBOX',
+        mailId: '42',
+        action: 'illegal',
+      })
+      expect(onRemoved).toHaveBeenCalled()
+    })
+  })
+
   describe('archiveMail', () => {
     it('moves mail to archive destination', async () => {
       const { result } = renderHook(() => useMailItemActions(defaultArgs))

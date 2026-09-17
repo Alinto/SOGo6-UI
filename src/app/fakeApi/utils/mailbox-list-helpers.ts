@@ -13,6 +13,10 @@ import {
 } from '@/app/fakeApi/utils/mailbox-flags-store'
 import { mailDetailByFolderSeed } from '@/app/fakeApi/utils/mailbox-mail-detail-seed'
 import { messagesByFolderSeed } from '@/app/fakeApi/utils/mailbox-messages-seed'
+import {
+  MAIL_MOVES_COOKIE,
+  MailMoveOverrides,
+} from '@/app/fakeApi/utils/mailbox-move-store'
 
 const listDefaults: Pick<
   ImapMessagesList,
@@ -127,6 +131,25 @@ function sortFolderMessages(
   return out
 }
 
+/**
+ * Resolves the seed messages that belong to `folder`, applying demo mail
+ * moves: messages moved out of `folder` are dropped, and messages moved into
+ * `folder` from elsewhere (e.g. report as phishing/illegal → Junk) are added.
+ */
+function resolveFolderMessages(
+  folder: string,
+  moveOverrides: MailMoveOverrides
+): Partial<ImapMessagesList>[] {
+  const own = (messagesByFolderSeed[folder] || []).filter(
+    (m) => !m.id || (moveOverrides[m.id] ?? folder) === folder
+  )
+  const movedIn = Object.entries(messagesByFolderSeed)
+    .filter(([sourceFolder]) => sourceFolder !== folder)
+    .flatMap(([, messages]) => messages)
+    .filter((m) => m.id && moveOverrides[m.id] === folder)
+  return [...own, ...movedIn]
+}
+
 export function buildFolderMessagesListResponse(
   folder: string,
   searchParams: URLSearchParams,
@@ -153,25 +176,30 @@ export function buildFolderMessagesListResponse(
   const flagsOverrides = req
     ? getDemoData<MailFlagsOverrides>(req, MAIL_FLAGS_COOKIE, {})
     : {}
+  const moveOverrides = req
+    ? getDemoData<MailMoveOverrides>(req, MAIL_MOVES_COOKIE, {})
+    : {}
 
-  let messages: ImapMessagesList[] = (messagesByFolderSeed[folder] || []).map(
-    (m) => {
-      const overriddenFlags = m.id
-        ? flagsOverrides[buildMailFlagsKey(folder, m.id)]
-        : undefined
-      return {
-        ...listDefaults,
-        ...m,
-        ...(overriddenFlags
-          ? {
-              flags: overriddenFlags,
-              flagged: overriddenFlags.includes('\\Flagged'),
-              seen: overriddenFlags.includes('\\Seen'),
-            }
-          : {}),
-      } as ImapMessagesList
-    }
-  )
+  let messages: ImapMessagesList[] = resolveFolderMessages(
+    folder,
+    moveOverrides
+  ).map((m) => {
+    const overriddenFlags = m.id
+      ? flagsOverrides[buildMailFlagsKey(folder, m.id)]
+      : undefined
+    return {
+      ...listDefaults,
+      ...m,
+      folder,
+      ...(overriddenFlags
+        ? {
+            flags: overriddenFlags,
+            flagged: overriddenFlags.includes('\\Flagged'),
+            seen: overriddenFlags.includes('\\Seen'),
+          }
+        : {}),
+    } as ImapMessagesList
+  })
 
   messages = sortFolderMessages(messages, sortBy, sortOrder)
 
