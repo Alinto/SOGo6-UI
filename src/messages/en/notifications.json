@@ -51,6 +51,34 @@
                     "string": "Could not restore this message."
                 }
             },
+            "phishing": {
+                "successTitle": {
+                    "string": "Reported as phishing"
+                },
+                "successMessage": {
+                    "string": "The message was reported as phishing and moved to Junk."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not report this message as phishing."
+                }
+            },
+            "illegal": {
+                "successTitle": {
+                    "string": "Reported as illegal"
+                },
+                "successMessage": {
+                    "string": "The message was reported as illegal content and moved to Junk."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not report this message as illegal content."
+                }
+            },
             "move": {
                 "successTitle": {
                     "string": "Message moved"
@@ -259,6 +287,34 @@
                 },
                 "errorMessage": {
                     "string": "Could not remove the important flag."
+                }
+            },
+            "bulk_phishing": {
+                "successTitle": {
+                    "string": "Reported as phishing"
+                },
+                "successMessage": {
+                    "string": "The selected messages were reported as phishing and moved to Junk."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not report the selected messages as phishing."
+                }
+            },
+            "bulk_illegal": {
+                "successTitle": {
+                    "string": "Reported as illegal"
+                },
+                "successMessage": {
+                    "string": "The selected messages were reported as illegal content and moved to Junk."
+                },
+                "errorTitle": {
+                    "string": "Action failed"
+                },
+                "errorMessage": {
+                    "string": "Could not report the selected messages as illegal content."
                 }
             }
         },

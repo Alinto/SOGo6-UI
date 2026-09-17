@@ -1,6 +1,14 @@
 import type { ApiNotificationStrings } from '@/features/notifications/api-notification-handler'
 
-type MailActionType = 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+type MailActionType =
+  | 'tag'
+  | 'untag'
+  | 'move'
+  | 'spam'
+  | 'ham'
+  | 'copy'
+  | 'phishing'
+  | 'illegal'
 
 function normalizeMailActionDataArray(
   data: string | string[] | null | undefined
@@ -61,6 +69,20 @@ export function getMailActionNotificationKeys(arg: {
         successMessage: 'mail_action.ham.successMessage.string',
         errorTitle: 'mail_action.ham.errorTitle.string',
         errorMessage: 'mail_action.ham.errorMessage.string',
+      }
+    case 'phishing':
+      return {
+        successTitle: 'mail_action.phishing.successTitle.string',
+        successMessage: 'mail_action.phishing.successMessage.string',
+        errorTitle: 'mail_action.phishing.errorTitle.string',
+        errorMessage: 'mail_action.phishing.errorMessage.string',
+      }
+    case 'illegal':
+      return {
+        successTitle: 'mail_action.illegal.successTitle.string',
+        successMessage: 'mail_action.illegal.successMessage.string',
+        errorTitle: 'mail_action.illegal.errorTitle.string',
+        errorMessage: 'mail_action.illegal.errorMessage.string',
       }
     case 'move':
       return {

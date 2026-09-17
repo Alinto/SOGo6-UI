@@ -8,7 +8,15 @@ export type ImapFolderType =
   | 'TEMPLATE'
   | 'NORMAL'
 
-export type MailActionType = 'tag' | 'untag' | 'move' | 'spam' | 'ham' | 'copy'
+export type MailActionType =
+  | 'tag'
+  | 'untag'
+  | 'move'
+  | 'spam'
+  | 'ham'
+  | 'copy'
+  | 'phishing'
+  | 'illegal'
 
 export type MailBatchActionType = MailActionType | 'delete'
 

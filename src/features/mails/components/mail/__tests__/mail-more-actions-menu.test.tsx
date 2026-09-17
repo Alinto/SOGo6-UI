@@ -146,7 +146,6 @@ describe('MailMoreActionsMenu', () => {
       const handlers = {
         onMarkUnread: jest.fn(),
         onLabel: jest.fn(),
-        onArchive: jest.fn(),
         onDownload: jest.fn(),
         onSelectDestination: jest.fn(),
         onCreateFolder: jest.fn(),
@@ -158,7 +157,6 @@ describe('MailMoreActionsMenu', () => {
           {...handlers}
           showUnread
           showLabel
-          showArchive
           showDownload
           showMoveCopy
           showPrint
@@ -167,12 +165,36 @@ describe('MailMoreActionsMenu', () => {
       )
       expect(screen.getByText('mark_unread.string')).toBeInTheDocument()
       expect(screen.getByText('label.string')).toBeInTheDocument()
-      expect(screen.getByText('archive.string')).toBeInTheDocument()
       expect(screen.getByText('download.string')).toBeInTheDocument()
       expect(screen.getByText('move.string')).toBeInTheDocument()
       expect(screen.getByText('copy.string')).toBeInTheDocument()
       expect(screen.getByText('print.string')).toBeInTheDocument()
       expect(screen.getByText('view_source.string')).toBeInTheDocument()
+    })
+
+    it('shows phishing and illegal actions when handlers are provided', () => {
+      const onPhishing = jest.fn()
+      const onIllegal = jest.fn()
+      render(
+        <MailMoreActionsMenu onPhishing={onPhishing} onIllegal={onIllegal} />
+      )
+      expect(screen.getByText('report_phishing.string')).toBeInTheDocument()
+      fireEvent.click(screen.getByText('report_phishing.string'))
+      expect(onPhishing).toHaveBeenCalledTimes(1)
+
+      expect(screen.getByText('report_illegal.string')).toBeInTheDocument()
+      fireEvent.click(screen.getByText('report_illegal.string'))
+      expect(onIllegal).toHaveBeenCalledTimes(1)
+    })
+
+    it('hides phishing and illegal actions when handlers are not provided', () => {
+      render(<MailMoreActionsMenu />)
+      expect(
+        screen.queryByText('report_phishing.string')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('report_illegal.string')
+      ).not.toBeInTheDocument()
     })
 
     it('calls onSelectDestination and onCreateFolder from the move/copy submenus', () => {

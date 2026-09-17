@@ -64,11 +64,6 @@ describe('useMailBatchActions', () => {
   })
 
   describe('configuration', () => {
-    it('exposes archive destination from folder tree', () => {
-      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
-      expect(result.current.archiveDestination).toBe('Archive')
-    })
-
     it('detects junk folder state', () => {
       const { result } = renderHook(() =>
         useMailBatchActions({ ...defaultArgs, folder: 'Junk' })
@@ -116,22 +111,6 @@ describe('useMailBatchActions', () => {
         action: 'delete',
         data: undefined,
       })
-    })
-  })
-
-  describe('batchArchive', () => {
-    it('moves the given ids to the archive folder', async () => {
-      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
-      await act(async () => {
-        await result.current.batchArchive(['1', '2'])
-      })
-      expect(mockMailBatchAction).toHaveBeenCalledWith(
-        expect.objectContaining({
-          folders: { INBOX: ['1', '2'] },
-          action: 'move',
-          data: 'Archive',
-        })
-      )
     })
   })
 
@@ -238,6 +217,66 @@ describe('useMailBatchActions', () => {
         expect.objectContaining({
           folders: { Junk: ['1', '2'] },
           action: 'ham',
+        })
+      )
+    })
+  })
+
+  describe('batchMarkImportant', () => {
+    it('tags \\Flagged for the given ids', async () => {
+      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
+      await act(async () => {
+        await result.current.batchMarkImportant(['1', '2'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'tag',
+          data: ['\\Flagged'],
+        })
+      )
+    })
+  })
+
+  describe('batchRemoveImportant', () => {
+    it('untags \\Flagged for the given ids', async () => {
+      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
+      await act(async () => {
+        await result.current.batchRemoveImportant(['1', '2'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'untag',
+          data: ['\\Flagged'],
+        })
+      )
+    })
+  })
+
+  describe('batchPhishing and batchIllegal', () => {
+    it('reports the given ids as phishing', async () => {
+      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
+      await act(async () => {
+        await result.current.batchPhishing(['1', '2'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'phishing',
+        })
+      )
+    })
+
+    it('reports the given ids as illegal content', async () => {
+      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
+      await act(async () => {
+        await result.current.batchIllegal(['1', '2'])
+      })
+      expect(mockMailBatchAction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          folders: { INBOX: ['1', '2'] },
+          action: 'illegal',
         })
       )
     })

@@ -81,7 +81,8 @@ export default function MailDetailActionBar({
     markUnread,
     markSpam,
     markHam,
-    archiveMail,
+    reportPhishing,
+    reportIllegal,
     moveMail,
     copyMail,
     applyLabel,
@@ -255,7 +256,6 @@ export default function MailDetailActionBar({
       isJunk={isJunk}
       markUnreadDisabled={seen === false}
       labelDisabled={!enableLabel}
-      showArchive
       showDownload
       showSpamActions
       showLabel
@@ -270,7 +270,8 @@ export default function MailDetailActionBar({
       onMarkSpam={() => openConfirm('spam')}
       onMarkHam={() => openConfirm('ham')}
       onFolderSpecificAction={handleFolderSpecificAction}
-      onArchive={() => void archiveMail()}
+      onPhishing={() => void reportPhishing()}
+      onIllegal={() => void reportIllegal()}
       onDownload={() => void handleDownload()}
       onViewSource={() => void handleViewSource()}
       onSelectDestination={handleSelectMoveCopyDestination}
@@ -281,11 +282,11 @@ export default function MailDetailActionBar({
   const desktopMoreMenu = enableDesktopMore ? (
     <MailMoreActionsMenu
       disabled={isLoading}
-      showArchive
       showDownload
       showPrint
       showViewSource
-      onArchive={() => void archiveMail()}
+      onPhishing={() => void reportPhishing()}
+      onIllegal={() => void reportIllegal()}
       onDownload={() => void handleDownload()}
       onPrint={onPrint}
       printDisabled={isPrintDisabled}

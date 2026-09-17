@@ -6,7 +6,13 @@ import {
   MailFlagsOverrides,
 } from '@/app/fakeApi/utils/mailbox-flags-store'
 import { mailDetailByFolderSeed } from '@/app/fakeApi/utils/mailbox-mail-detail-seed'
+import {
+  MAIL_MOVES_COOKIE,
+  MailMoveOverrides,
+} from '@/app/fakeApi/utils/mailbox-move-store'
 import { NextRequest, NextResponse } from 'next/server'
+
+const JUNK_FOLDER = 'Junk'
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
@@ -56,6 +62,28 @@ export async function POST(req: NextRequest) {
       error_msg: 'No Error',
     })
     setDemoData(response, MAIL_FLAGS_COOKIE, overrides, req)
+    return response
+  }
+
+  if (action === 'phishing' || action === 'illegal') {
+    const moveOverrides = getDemoData<MailMoveOverrides>(
+      req,
+      MAIL_MOVES_COOKIE,
+      {}
+    )
+    for (const mailId of allMailUids) {
+      moveOverrides[mailId] = JUNK_FOLDER
+    }
+
+    const response = NextResponse.json({
+      data: {
+        action,
+        mail_uid: allMailUids,
+      },
+      error_code: 'S000000',
+      error_msg: 'No Error',
+    })
+    setDemoData(response, MAIL_MOVES_COOKIE, moveOverrides, req)
     return response
   }
 

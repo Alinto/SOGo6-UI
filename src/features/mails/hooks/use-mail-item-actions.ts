@@ -32,6 +32,8 @@ export type UseMailItemActionsReturn = {
   toggleFlag: (targetMailId: string, currentlyFlagged: boolean) => Promise<void>
   markSpam: (targetMailId?: string) => Promise<void>
   markHam: (targetMailId?: string) => Promise<void>
+  reportPhishing: (targetMailId?: string) => Promise<void>
+  reportIllegal: (targetMailId?: string) => Promise<void>
   archiveMail: (targetMailId?: string, dest?: string) => Promise<void>
   moveMail: (destination: string, targetMailId?: string) => Promise<void>
   copyMail: (destination: string, targetMailId?: string) => Promise<void>
@@ -175,6 +177,38 @@ export function useMailItemActions({
     [resolveMailId, runWithRemoval, mailAction, accountKey, folder]
   )
 
+  const reportPhishing = useCallback(
+    async (targetMailId?: string) => {
+      const id = resolveMailId(targetMailId)
+      if (!id) return
+      await runWithRemoval(id, () =>
+        mailAction({
+          accountId: accountKey,
+          folder,
+          mailId: id,
+          action: 'phishing',
+        }).unwrap()
+      )
+    },
+    [resolveMailId, runWithRemoval, mailAction, accountKey, folder]
+  )
+
+  const reportIllegal = useCallback(
+    async (targetMailId?: string) => {
+      const id = resolveMailId(targetMailId)
+      if (!id) return
+      await runWithRemoval(id, () =>
+        mailAction({
+          accountId: accountKey,
+          folder,
+          mailId: id,
+          action: 'illegal',
+        }).unwrap()
+      )
+    },
+    [resolveMailId, runWithRemoval, mailAction, accountKey, folder]
+  )
+
   const archiveMail = useCallback(
     async (targetMailId?: string, dest?: string) => {
       const id = resolveMailId(targetMailId)
@@ -293,6 +327,8 @@ export function useMailItemActions({
     toggleFlag,
     markSpam,
     markHam,
+    reportPhishing,
+    reportIllegal,
     archiveMail,
     moveMail,
     copyMail,
