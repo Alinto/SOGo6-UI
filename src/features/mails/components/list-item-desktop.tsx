@@ -44,7 +44,7 @@ interface ListItemDesktopProps {
   onArchive?: (id: string) => void
   onSpam?: (id: string) => void
   onMoveToInbox?: (id: string) => void
-  onOpenMail?: (id: string) => void | Promise<void>
+  onOpenMail?: (id: string, folder: string) => void | Promise<void>
 }
 
 const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
@@ -106,7 +106,7 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
           })
           if (openedDraft) return
           if (onOpenMail) {
-            await onOpenMail(String(id))
+            await onOpenMail(String(id), mailFolderPath)
             return
           }
           push(

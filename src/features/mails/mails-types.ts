@@ -223,6 +223,13 @@ export interface MailSearchDateRange {
   end?: string
 }
 
+/** Filter by mail size, using the native IMAP LARGER/SMALLER search keys. */
+export interface MailSearchSize {
+  value: number
+  operator: '>' | '<'
+  unit: 'kb' | 'mb' | 'gb'
+}
+
 /** Body accepted by `POST mailboxes/{accountId}/search`. */
 export interface MailSearchParams {
   text?: string
@@ -233,6 +240,7 @@ export interface MailSearchParams {
   has_attachment?: boolean
   attachment_type?: string[]
   date_range?: MailSearchDateRange
+  size?: MailSearchSize
   is_read?: boolean
   is_flagged?: boolean
   folders?: string[]

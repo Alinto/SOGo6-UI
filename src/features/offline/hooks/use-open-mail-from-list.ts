@@ -14,15 +14,17 @@ export function useOpenMailFromList() {
     useOfflineNav()
   const { account, folder } = useParams()
   const accountId = Array.isArray(account) ? account[0] : (account ?? '0')
-  const folderPath =
+  const routeFolderPath =
     folderPathOverride ??
     folderPathFromParams(folder as string | string[] | undefined)
 
   const handleOpen = useCallback(
-    async (mailId: string) => {
-      await openMail(accountId, folderPath, String(mailId))
+    // mailFolder is the mail's actual folder (search results can span
+    // multiple folders); it takes precedence over the route's folder.
+    async (mailId: string, mailFolder?: string) => {
+      await openMail(accountId, mailFolder ?? routeFolderPath, String(mailId))
     },
-    [accountId, folderPath, openMail]
+    [accountId, routeFolderPath, openMail]
   )
 
   return {

@@ -47,7 +47,7 @@ interface ListItemClassicProps {
   onArchive?: (id: string) => void
   onSpam?: (id: string) => void
   onMoveToInbox?: (id: string) => void
-  onOpenMail?: (id: string) => void | Promise<void>
+  onOpenMail?: (id: string, folder: string) => void | Promise<void>
 }
 
 const ListItemClassic: React.FC<ListItemClassicProps> = ({
@@ -121,7 +121,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
           })
           if (openedDraft) return
           if (onOpenMail) {
-            await onOpenMail(String(id))
+            await onOpenMail(String(id), mailFolderPath)
             return
           }
           push(

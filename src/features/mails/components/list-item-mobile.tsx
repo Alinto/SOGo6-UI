@@ -33,7 +33,7 @@ interface ListItemMobileProps {
   data: ImapMessagesList
   isSelected: boolean
   onHandleCheckboxClick: (_e: React.MouseEvent, _item: ImapMessagesList) => void
-  onOpenMail?: (id: string) => void | Promise<void>
+  onOpenMail?: (id: string, folder: string) => void | Promise<void>
   onDelete?: (id: string) => void
 }
 
@@ -189,7 +189,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               })
               if (openedDraft) return
               if (onOpenMail) {
-                await onOpenMail(String(id))
+                await onOpenMail(String(id), mailFolderPath)
                 return
               }
 

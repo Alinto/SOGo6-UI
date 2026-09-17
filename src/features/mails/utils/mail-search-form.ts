@@ -1,6 +1,10 @@
 import { format, subDays, subMonths } from 'date-fns'
 import { z } from 'zod'
-import type { MailSearchFieldScope, MailSearchParams } from '../mails-types'
+import type {
+  MailSearchFieldScope,
+  MailSearchParams,
+  MailSearchSize,
+} from '../mails-types'
 
 export const dateRangePresets = [
   'anytime',
@@ -13,6 +17,9 @@ export const dateRangePresets = [
 ] as const
 
 export type DateRangePreset = (typeof dateRangePresets)[number]
+
+export const sizeUnits = ['kb', 'mb', 'gb'] as const
+export type SizeUnit = (typeof sizeUnits)[number]
 
 export const searchFormSchema = z.object({
   fieldScope: z
@@ -28,6 +35,9 @@ export const searchFormSchema = z.object({
   dateRangePreset: z.enum(dateRangePresets),
   dateFrom: z.string(),
   dateTo: z.string(),
+  sizeOperator: z.enum(['any', '>', '<']),
+  sizeValue: z.string(),
+  sizeUnit: z.enum(sizeUnits),
   isRead: z.enum(['any', 'unread', 'read']),
   isFlagged: z.boolean(),
   folder: z.string(),
@@ -50,6 +60,9 @@ export const defaultSearchFormValues: SearchFormValues = {
   dateRangePreset: 'anytime',
   dateFrom: '',
   dateTo: '',
+  sizeOperator: 'any',
+  sizeValue: '',
+  sizeUnit: 'kb',
   isRead: 'any',
   isFlagged: false,
   folder: 'INBOX',
@@ -121,6 +134,25 @@ function dateRangeToPreset(
   return 'between'
 }
 
+/** Compact `>15kb`-style encoding of a size filter, shared by the advanced
+ * query bar and the shareable URL. */
+function formatSizeToken(size: MailSearchSize): string {
+  return `${size.operator}${size.value}${size.unit}`
+}
+
+const SIZE_TOKEN_RE = /^([<>])(\d+(?:\.\d+)?)(kb|mb|gb)$/i
+
+function parseSizeToken(raw: string): MailSearchSize | undefined {
+  const match = SIZE_TOKEN_RE.exec(raw)
+  if (!match) return undefined
+  const [, operator, value, unit] = match
+  return {
+    operator: operator as '>' | '<',
+    value: Number(value),
+    unit: unit.toLowerCase() as SizeUnit,
+  }
+}
+
 export type SimpleSearchField = 'text' | 'subject' | 'from' | 'to'
 
 /**
@@ -164,6 +196,17 @@ export function buildMailSearchParams(
     values.dateTo
   )
   if (dateRange.start || dateRange.end) params.date_range = dateRange
+  const sizeValue = values.sizeValue.trim()
+  if (values.sizeOperator !== 'any' && sizeValue) {
+    const numericSize = Number(sizeValue)
+    if (!Number.isNaN(numericSize) && numericSize > 0) {
+      params.size = {
+        value: numericSize,
+        operator: values.sizeOperator,
+        unit: values.sizeUnit,
+      }
+    }
+  }
   if (values.isRead !== 'any') params.is_read = values.isRead === 'read'
   if (values.isFlagged) params.is_flagged = true
   params.folders =
@@ -200,6 +243,9 @@ export function mailSearchParamsToFormValues(
     ),
     dateFrom: params.date_range?.start ?? '',
     dateTo: params.date_range?.end ?? '',
+    sizeOperator: params.size?.operator ?? 'any',
+    sizeValue: params.size ? String(params.size.value) : '',
+    sizeUnit: params.size?.unit ?? 'kb',
     isRead:
       params.is_read === undefined ? 'any' : params.is_read ? 'read' : 'unread',
     isFlagged: params.is_flagged ?? false,
@@ -223,6 +269,7 @@ type QueryTokenKey =
   | 'type'
   | 'after'
   | 'before'
+  | 'size'
   | 'is'
   | 'in'
   | 'label'
@@ -231,7 +278,7 @@ type QueryTokenKey =
 
 /** Matches any recognized `key:value` operator anywhere in a string, e.g. "to:jane". */
 export const ADVANCED_QUERY_TOKEN_RE =
-  /\b(from|to|bcc|subject|has|type|after|before|is|in|label|subfolders|match):\S/i
+  /\b(from|to|bcc|subject|has|type|after|before|size|is|in|label|subfolders|match):\S/i
 
 // A single-word value that happens to look like a recognized `key:value`
 // token (e.g. a free-text search for literal "to:5") must also be quoted,
@@ -274,6 +321,7 @@ export function mailSearchParamsToQueryText(params: MailSearchParams): string {
   params.attachment_type?.forEach((type) => push('type', type))
   if (params.date_range?.start) push('after', params.date_range.start)
   if (params.date_range?.end) push('before', params.date_range.end)
+  if (params.size) push('size', formatSizeToken(params.size))
   if (params.is_read !== undefined) {
     filters.push(params.is_read ? 'is:read' : 'is:unread')
   }
@@ -334,6 +382,14 @@ function applyQueryToken(
     case 'before':
       values.dateTo = value
       return true
+    case 'size': {
+      const size = parseSizeToken(value)
+      if (!size) return false
+      values.sizeOperator = size.operator
+      values.sizeValue = String(size.value)
+      values.sizeUnit = size.unit
+      return true
+    }
     case 'is':
       if (value === 'read' || value === 'unread') {
         values.isRead = value
@@ -388,6 +444,9 @@ export function queryTextToSearchFormValues(
     dateRangePreset: 'anytime',
     dateFrom: '',
     dateTo: '',
+    sizeOperator: 'any',
+    sizeValue: '',
+    sizeUnit: 'kb',
     isRead: 'any',
     isFlagged: false,
     includeSubfolders: false,
@@ -473,6 +532,7 @@ export function mailSearchParamsToUrlSearchParams(
   if (params.date_range?.start)
     urlParams.set('date_start', params.date_range.start)
   if (params.date_range?.end) urlParams.set('date_end', params.date_range.end)
+  if (params.size) urlParams.set('size', formatSizeToken(params.size))
   if (params.is_read !== undefined) {
     urlParams.set('is_read', params.is_read ? 'read' : 'unread')
   }
@@ -522,6 +582,11 @@ export function urlSearchParamsToMailSearchParams(
       ...(dateEnd ? { end: dateEnd } : {}),
     }
   }
+  const size = urlParams.get('size')
+  if (size) {
+    const parsedSize = parseSizeToken(size)
+    if (parsedSize) params.size = parsedSize
+  }
   const isRead = urlParams.get('is_read')
   if (isRead === 'read' || isRead === 'unread')
     params.is_read = isRead === 'read'
@@ -556,6 +621,7 @@ export function isSimpleBarCompatible(params: MailSearchParams): boolean {
     (params.attachment_type && params.attachment_type.length > 0) ||
     params.date_range?.start ||
     params.date_range?.end ||
+    params.size ||
     params.is_read !== undefined ||
     params.is_flagged ||
     params.include_subfolders ||
