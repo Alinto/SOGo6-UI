@@ -10,6 +10,8 @@ export type MailLabelBadgeProps = {
   size?: 'sm' | 'md'
   onRemove?: (name: string) => void
   removeAriaLabel?: string
+  onClick?: (name: string) => void
+  clickAriaLabel?: string
 }
 
 export default function MailLabelBadge({
@@ -19,7 +21,21 @@ export default function MailLabelBadge({
   size = 'md',
   onRemove,
   removeAriaLabel,
+  onClick,
+  clickAriaLabel,
 }: MailLabelBadgeProps) {
+  const dot = (
+    <span
+      className={
+        size === 'sm'
+          ? 'h-1.5 w-1.5 shrink-0 rounded-full'
+          : 'h-2 w-2 shrink-0 rounded-full'
+      }
+      style={{ backgroundColor: color }}
+      aria-hidden="true"
+    />
+  )
+
   return (
     <Badge
       variant="outline"
@@ -33,16 +49,22 @@ export default function MailLabelBadge({
         backgroundColor: `color-mix(in srgb, ${color} 15%, hsl(var(--card)))`,
       }}
     >
-      <span
-        className={
-          size === 'sm'
-            ? 'h-1.5 w-1.5 shrink-0 rounded-full'
-            : 'h-2 w-2 shrink-0 rounded-full'
-        }
-        style={{ backgroundColor: color }}
-        aria-hidden="true"
-      />
-      {displayName}
+      {onClick ? (
+        <button
+          type="button"
+          onClick={() => onClick(name)}
+          aria-label={clickAriaLabel}
+          className="flex cursor-pointer items-center gap-1"
+        >
+          {dot}
+          {displayName}
+        </button>
+      ) : (
+        <>
+          {dot}
+          {displayName}
+        </>
+      )}
       {onRemove && (
         <button
           type="button"

@@ -18,6 +18,12 @@ import {
   type SearchFormValues,
 } from '../utils/mail-search-form'
 
+const SIZE_UNIT_OPTIONS = [
+  { value: 'kb', label: 'KB' },
+  { value: 'mb', label: 'MB' },
+  { value: 'gb', label: 'GB' },
+]
+
 const ATTACHMENT_TYPE_OPTIONS = [
   'pdf',
   'doc',
@@ -47,6 +53,13 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
   const { allCategories } = useMailCategoryPicker(open)
   const dateRangePreset = form.watch('dateRangePreset')
   const hasAttachment = form.watch('hasAttachment')
+  const sizeOperator = form.watch('sizeOperator')
+
+  const sizeOperatorOptions = [
+    { value: 'any', label: t('search.size.any.string') },
+    { value: '>', label: t('search.size.larger_than.string') },
+    { value: '<', label: t('search.size.smaller_than.string') },
+  ]
 
   const labelOptions = useMemo(
     () =>
@@ -147,22 +160,72 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
             </FormItem>
           )}
         />
+        <FormItem>
+          <FormLabel>{t('search.size.label.string')}</FormLabel>
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              name="sizeOperator"
+              render={({ field }) => (
+                <div className="w-40 shrink-0">
+                  <SelectForm
+                    options={sizeOperatorOptions}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  />
+                </div>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sizeValue"
+              render={({ field }) => (
+                <FormControl>
+                  <Input
+                    {...field}
+                    type="number"
+                    min="0"
+                    disabled={sizeOperator === 'any'}
+                    className="w-full"
+                  />
+                </FormControl>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="sizeUnit"
+              render={({ field }) => (
+                <div className="w-24 shrink-0">
+                  <SelectForm
+                    options={SIZE_UNIT_OPTIONS}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={sizeOperator === 'any'}
+                  />
+                </div>
+              )}
+            />
+          </div>
+        </FormItem>
       </div>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <FormField
           control={form.control}
           name="hasAttachment"
           render={({ field }) => (
-            <FormItem className="flex items-center space-y-0 space-x-2">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <FormLabel className="cursor-pointer font-normal">
-                {t('search.with_attachments.string')}
-              </FormLabel>
+            <FormItem>
+              <FormLabel>{t('search.attachment.label.string')}</FormLabel>
+              <div className="flex items-center space-x-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="cursor-pointer font-normal">
+                  {t('search.with_attachments.string')}
+                </FormLabel>
+              </div>
             </FormItem>
           )}
         />

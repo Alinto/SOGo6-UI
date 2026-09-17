@@ -4,6 +4,8 @@ import MailSubjectLabels from '../mail-subject-labels'
 
 const mockUseGetUserPreferencesQuery = jest.fn()
 const mockMailAction = jest.fn()
+const mockPush = jest.fn()
+const mockDispatch = jest.fn()
 
 jest.mock('@/features/user-settings/store/user-preferences-api', () => ({
   useGetUserPreferencesQuery: (...args: unknown[]) =>
@@ -12,6 +14,20 @@ jest.mock('@/features/user-settings/store/user-preferences-api', () => ({
 
 jest.mock('@/features/mails/store/mails-api', () => ({
   useMailActionMutation: () => [mockMailAction, { isLoading: false }],
+}))
+
+jest.mock('@/features/mails/store/mail-search-slice', () => ({
+  clearMailSearch: jest.fn(() => ({ type: 'mailSearch/clearMailSearch' })),
+}))
+
+jest.mock('@/lib/i18n/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: mockPush,
+  })),
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: jest.fn(() => mockDispatch),
 }))
 
 jest.mock('next-intl', () => ({
@@ -101,5 +117,24 @@ describe('MailSubjectLabels', () => {
       action: 'untag',
       data: ['Important'],
     })
+  })
+
+  it('clears the active search and navigates to an advanced search on the clicked label', () => {
+    const { clearMailSearch } = jest.requireMock(
+      '@/features/mails/store/mail-search-slice'
+    )
+    render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'label_dialog.search_by_tag.string:Important',
+      })
+    )
+    expect(clearMailSearch).toHaveBeenCalled()
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'mailSearch/clearMailSearch',
+    })
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/0/advanced-search?labels=Important'
+    )
   })
 })

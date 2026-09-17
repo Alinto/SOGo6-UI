@@ -73,6 +73,10 @@
                     "remove_tag": {
                         "string": "Remove {name} tag"
                     },
+                    "search_by_tag": {
+                        "string": "Search for {name} tag",
+                        "description": "Aria label for clicking a label/tag in the mail display view, which opens advanced search filtered by that label"
+                    },
                     "create": {
                         "string": "Create"
                     },
@@ -337,6 +341,12 @@
                 "string": "In message content",
                 "description": "Option to search within the content of messages"
             },
+            "attachment": {
+                "label": {
+                    "string": "Attachment",
+                    "description": "Label for the attachment filter section in email search options"
+                }
+            },
             "with_attachments": {
                 "string": "With Attachments",
                 "description": "Option to filter emails that have attachments"
@@ -414,6 +424,24 @@
             "full_text": {
                 "string": "Includes the words",
                 "description": "Label for the general keyword field in email search options, matching subject, sender, recipients and body"
+            },
+            "size": {
+                "label": {
+                    "string": "Size",
+                    "description": "Label for the message size filter in email search options"
+                },
+                "any": {
+                    "string": "Any size",
+                    "description": "Size filter option: no restriction on message size"
+                },
+                "larger_than": {
+                    "string": "Larger than",
+                    "description": "Size filter option: messages larger than the given size"
+                },
+                "smaller_than": {
+                    "string": "Smaller than",
+                    "description": "Size filter option: messages smaller than the given size"
+                }
             },
             "attachment_type": {
                 "string": "Attachment type",
