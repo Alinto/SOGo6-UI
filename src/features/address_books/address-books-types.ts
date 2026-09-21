@@ -12,6 +12,8 @@ export interface AddressBook {
   type: AddressBookType
   id: string
   default?: boolean
+  /** Email of the address book owner; differs from the connected account when shared. */
+  owner?: string
   created_at?: string
   updated_at?: string
 }

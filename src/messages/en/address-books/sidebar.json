@@ -17,6 +17,9 @@
         "add_personal": {
             "string": "Add address book"
         },
+        "shared": {
+            "string": "Shared address books"
+        },
         "subscriptions": {
             "string": "Subscriptions"
         },

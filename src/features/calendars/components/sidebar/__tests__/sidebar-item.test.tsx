@@ -278,6 +278,65 @@ describe('SidebarItem', () => {
     expect(checkbox).toBeInTheDocument()
   })
 
+  describe('owner of a shared calendar', () => {
+    it('should display the owner email below the calendar name', () => {
+      render(<SidebarItem {...defaultProps} isShared owner="test@tutu.fr" />)
+      expect(screen.getByText('test@tutu.fr')).toBeInTheDocument()
+    })
+
+    it('should add titles on the name and the owner', () => {
+      render(<SidebarItem {...defaultProps} isShared owner="test@tutu.fr" />)
+      expect(screen.getByText('Test Calendar')).toHaveAttribute(
+        'title',
+        'Test Calendar'
+      )
+      expect(screen.getByText('test@tutu.fr')).toHaveAttribute(
+        'title',
+        'test@tutu.fr'
+      )
+      expect(
+        screen.getByTitle('Test Calendar - test@tutu.fr')
+      ).toBeInTheDocument()
+    })
+
+    it('should keep the checkbox centered on the text block when an owner is shown', () => {
+      const { container } = render(
+        <SidebarItem {...defaultProps} isShared owner="test@tutu.fr" />
+      )
+      const row = container.querySelector('.cursor-pointer')
+      expect(row).toHaveClass('items-center', 'min-h-10')
+      expect(row).not.toHaveClass('items-start')
+      expect(row).not.toHaveClass('items-end')
+    })
+
+    it('should keep the checkbox vertically centered without an owner', () => {
+      const { container } = render(<SidebarItem {...defaultProps} />)
+      expect(container.querySelector('.cursor-pointer')).toHaveClass(
+        'items-center'
+      )
+    })
+
+    it('should not display the owner when the calendar is not shared', () => {
+      render(<SidebarItem {...defaultProps} owner="me@tutu.fr" />)
+      expect(screen.queryByText('me@tutu.fr')).not.toBeInTheDocument()
+    })
+
+    it('should hide the Sharing menu item even when the source type is local', () => {
+      render(
+        <SidebarItem
+          {...defaultProps}
+          sourceType="local"
+          isShared
+          owner="test@tutu.fr"
+        />
+      )
+      const sharingItem = screen
+        .getAllByTestId('dropdown-menu-item')
+        .find((item) => item.textContent?.includes('sidebar.sharing.string'))
+      expect(sharingItem).toBeUndefined()
+    })
+  })
+
   describe('sharing action gating', () => {
     it('should show the Sharing menu item for a personal calendar when not disabled', () => {
       render(<SidebarItem {...defaultProps} sourceType={undefined} />)

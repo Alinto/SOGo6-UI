@@ -1,4 +1,7 @@
-import { DEFAULT_ADDRESS_BOOKS } from '@/app/fakeApi/utils/default-data'
+import {
+  DEFAULT_ADDRESS_BOOKS,
+  FAKE_USER_EMAIL,
+} from '@/app/fakeApi/utils/default-data'
 import {
   cleanupOldData,
   getDemoData,
@@ -76,6 +79,7 @@ export async function POST(req: NextRequest) {
     type,
     id,
     default: false,
+    ...(type !== 'global' && { owner: FAKE_USER_EMAIL }),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }

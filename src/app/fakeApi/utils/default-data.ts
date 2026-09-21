@@ -5,6 +5,13 @@ import type {
 import type { CalendarsResponse } from '@/features/calendars/calendars-types'
 
 /**
+ * Email of the fake connected account (same as the uid/email of the fake
+ * login JWT and of the fake profile). Elements whose `owner` differs from it
+ * are displayed as shared.
+ */
+export const FAKE_USER_EMAIL = 'sogo-tests1@example.org'
+
+/**
  * Default data for calendars
  * Used when a user visits the app for the first time
  */
@@ -16,9 +23,10 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       description: 'My personal calendar',
       color: '#3b82f6',
       type: 'personal',
+      source_type: 'local',
       default: true,
       read_only: false,
-      owner: 'user@example.com',
+      owner: FAKE_USER_EMAIL,
       event_duration: 30,
       show_as_busy: true,
       event_notifications: [
@@ -35,9 +43,10 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       description: 'Birthdays and anniversaries',
       color: '#ec4899',
       type: 'personal',
+      source_type: 'local',
       default: false,
       read_only: false,
-      owner: 'user@example.com',
+      owner: FAKE_USER_EMAIL,
       event_duration: 0,
       show_as_busy: false,
       event_notifications: [{ method: 'popup', minutes_before: 0 }],
@@ -53,6 +62,7 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       description: 'Shared team events and meetings',
       color: '#10b981',
       type: 'shared',
+      source_type: 'shared',
       default: false,
       read_only: false,
       owner: 'team-lead@example.com',
@@ -73,6 +83,7 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       description: 'All-hands meetings and announcements',
       color: '#8b5cf6',
       type: 'shared',
+      source_type: 'shared',
       default: false,
       read_only: true,
       owner: 'admin@example.com',
@@ -92,6 +103,7 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       description: 'Weather events subscription',
       color: '#06b6d4',
       type: 'subscription',
+      source_type: 'subscription',
       default: false,
       read_only: true,
       owner: 'weather-service@example.com',
@@ -134,6 +146,7 @@ export const DEFAULT_ADDRESS_BOOKS: AddressBooks = {
       type: 'personal',
       id: 'work',
       default: true,
+      owner: FAKE_USER_EMAIL,
       created_at: '2024-01-01T00:00:00.000Z',
       updated_at: '2024-01-01T00:00:00.000Z',
     },
@@ -142,6 +155,7 @@ export const DEFAULT_ADDRESS_BOOKS: AddressBooks = {
       description: 'Personal contacts',
       type: 'personal',
       id: 'personal',
+      owner: FAKE_USER_EMAIL,
       created_at: '2024-01-01T00:00:00.000Z',
       updated_at: '2024-01-01T00:00:00.000Z',
     },
@@ -152,6 +166,7 @@ export const DEFAULT_ADDRESS_BOOKS: AddressBooks = {
       description: 'A quirky, shared demo address book for otter enthusiasts.',
       type: 'shared',
       id: 'contacts',
+      owner: 'otter-fan@example.org',
       created_at: '2024-02-29T12:34:56.000Z',
       updated_at: '2024-02-29T12:34:56.000Z',
     },

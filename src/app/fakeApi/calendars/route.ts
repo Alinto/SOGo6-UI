@@ -1,5 +1,8 @@
 import { getExternalCalendars } from '@/app/fakeApi/external-calendars/route'
-import { DEFAULT_CALENDARS } from '@/app/fakeApi/utils/default-data'
+import {
+  DEFAULT_CALENDARS,
+  FAKE_USER_EMAIL,
+} from '@/app/fakeApi/utils/default-data'
 import {
   cleanupOldData,
   getDemoData,
@@ -112,9 +115,10 @@ export async function POST(req: NextRequest) {
     description: description || '',
     color: color || '#3b82f6',
     type: type || 'personal',
+    source_type: type === 'personal' ? 'local' : type,
     default: false,
     read_only: false,
-    owner: 'user@example.com',
+    owner: FAKE_USER_EMAIL,
     event_duration: Number(eventDuration) || 30,
     show_as_busy: showBusyStatus ?? true,
     event_notifications: eventNotificationsFormatted,

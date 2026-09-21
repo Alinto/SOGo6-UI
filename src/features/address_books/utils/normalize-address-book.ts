@@ -22,21 +22,25 @@ export function normalizeAddressBook(raw: ApiAddressBook): AddressBook {
     description: raw.description ?? '',
     type: mapSourceTypeToUi(raw.source_type),
     default: raw.is_default ?? false,
+    ...(raw.owner ? { owner: raw.owner } : {}),
   }
 }
 
-function isFakeAddressBooksShape(
-  response: unknown
-): response is AddressBooks {
+function isFakeAddressBooksShape(response: unknown): response is AddressBooks {
   return (
     response !== null &&
     typeof response === 'object' &&
-    ('personals' in response || 'globals' in response || 'subscriptions' in response)
+    ('personals' in response ||
+      'globals' in response ||
+      'subscriptions' in response)
   )
 }
 
 export function normalizeAddressBooksResponse(
-  response: ApiDataResponse<ApiAddressBooksData> | ApiAddressBooksData | AddressBooks
+  response:
+    | ApiDataResponse<ApiAddressBooksData>
+    | ApiAddressBooksData
+    | AddressBooks
 ): AddressBooks {
   if (isFakeAddressBooksShape(response)) {
     return response
@@ -77,5 +81,7 @@ export function normalizeSingleAddressBookResponse(
   ) {
     return response as AddressBook
   }
-  return normalizeAddressBook(unwrapApiData(response as ApiDataResponse<ApiAddressBook>))
+  return normalizeAddressBook(
+    unwrapApiData(response as ApiDataResponse<ApiAddressBook>)
+  )
 }

@@ -197,6 +197,30 @@ describe('SidebarItem', () => {
     expect(queryByText('delete.default.string')).toBeNull()
   })
 
+  it('displays the owner email below the name when provided', () => {
+    const { getByText } = render(
+      <SidebarItem {...defaultProps} owner="test@tutu.fr" />
+    )
+
+    expect(getByText('Test Book')).toBeInTheDocument()
+    expect(getByText('test@tutu.fr')).toBeInTheDocument()
+  })
+
+  it('adds titles on the name and the owner', () => {
+    const { getByText } = render(
+      <SidebarItem {...defaultProps} owner="test@tutu.fr" />
+    )
+
+    expect(getByText('Test Book')).toHaveAttribute('title', 'Test Book')
+    expect(getByText('test@tutu.fr')).toHaveAttribute('title', 'test@tutu.fr')
+  })
+
+  it('does not display any owner when none is provided', () => {
+    const { queryByText } = render(<SidebarItem {...defaultProps} />)
+
+    expect(queryByText(/@/)).toBeNull()
+  })
+
   it('does not render actions when disableActions is true', () => {
     const props = { ...defaultProps, disableActions: true }
     const { queryByTestId } = render(<SidebarItem {...props} />)
