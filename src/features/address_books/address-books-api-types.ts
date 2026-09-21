@@ -18,6 +18,7 @@ export interface ApiAddressBook {
   description?: string | null
   is_default?: boolean
   source_type?: ApiAddressBookSourceType
+  owner?: string
   ctag?: number
 }
 

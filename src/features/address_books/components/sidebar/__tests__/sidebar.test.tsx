@@ -15,6 +15,12 @@ jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
 }))
 
+jest.mock('@/hooks/use-is-other-owner', () => {
+  const isOtherOwner = (owner?: string) =>
+    Boolean(owner) && owner !== 'me@tutu.fr'
+  return { useIsOtherOwner: () => isOtherOwner }
+})
+
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({})),
 }))
@@ -29,8 +35,12 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarGroupContent: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="sidebar-group-content">{children}</div>
   ),
-  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
-  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => (
+    <ul>{children}</ul>
+  ),
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => (
+    <li>{children}</li>
+  ),
   SidebarMenuButton: ({
     children,
     onClick,
@@ -67,8 +77,24 @@ jest.mock('../create-contact-opener', () => ({
 
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
-  default: ({ id, name }: { id: string; name: string }) => (
-    <div data-testid={`sidebar-item-${id}`}>{name}</div>
+  default: ({
+    id,
+    name,
+    owner,
+    sharingAction,
+  }: {
+    id: string
+    name: string
+    owner?: string
+    sharingAction?: boolean
+  }) => (
+    <div
+      data-testid={`sidebar-item-${id}`}
+      data-owner={owner}
+      data-sharing-action={sharingAction}
+    >
+      {name}
+    </div>
   ),
 }))
 
@@ -112,7 +138,9 @@ describe('AddressBooks Sidebar', () => {
       expect(screen.getByText('personals.string')).toBeInTheDocument()
       expect(screen.getByText('subscriptions.string')).toBeInTheDocument()
       expect(screen.getByText('globals.string')).toBeInTheDocument()
-      expect(screen.getByTestId('sidebar-item-p1')).toHaveTextContent('Personal')
+      expect(screen.getByTestId('sidebar-item-p1')).toHaveTextContent(
+        'Personal'
+      )
       expect(screen.getByTestId('sidebar-item-s1')).toHaveTextContent('Shared')
       expect(screen.getByTestId('sidebar-item-g1')).toHaveTextContent('Global')
     })
@@ -144,6 +172,55 @@ describe('AddressBooks Sidebar', () => {
 
       render(<Sidebar />)
       expect(screen.getByText('load_error.list.string')).toBeInTheDocument()
+    })
+  })
+
+  describe('shared address books (owner)', () => {
+    const groupOf = (id: string) =>
+      screen
+        .getByTestId(`sidebar-item-${id}`)
+        .closest('[data-testid="sidebar-group"]')
+        ?.querySelector('[data-testid="sidebar-group-label"]')?.textContent
+
+    beforeEach(() => {
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: {
+          personals: [
+            { id: 'mine', name: 'Mine', owner: 'me@tutu.fr' },
+            { id: 'theirs', name: 'Theirs', owner: 'other@tutu.fr' },
+          ],
+          subscriptions: [
+            { id: 'sub', name: 'Sub', owner: 'me@tutu.fr' },
+            { id: 'sub-theirs', name: 'Sub theirs', owner: 'other@tutu.fr' },
+          ],
+          globals: [],
+        },
+        isFetching: false,
+      })
+    })
+
+    it('keeps books owned by the connected account in their section', () => {
+      render(<Sidebar />)
+      expect(groupOf('mine')).toBe('personals.string')
+      expect(groupOf('sub')).toBe('subscriptions.string')
+    })
+
+    it('lists books owned by someone else under shared, with their owner', () => {
+      render(<Sidebar />)
+      expect(groupOf('theirs')).toBe('shared.string')
+      expect(groupOf('sub-theirs')).toBe('shared.string')
+      expect(screen.getByTestId('sidebar-item-theirs')).toHaveAttribute(
+        'data-owner',
+        'other@tutu.fr'
+      )
+    })
+
+    it('does not offer sharing on shared books', () => {
+      render(<Sidebar />)
+      expect(screen.getByTestId('sidebar-item-theirs')).toHaveAttribute(
+        'data-sharing-action',
+        'false'
+      )
     })
   })
 

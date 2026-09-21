@@ -15,6 +15,7 @@ import WorkInProgress from '@/components/work-in-progress'
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
+import { cn } from '@/lib/utils'
 import { MoreVertical } from 'lucide-react'
 import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
@@ -39,6 +40,7 @@ interface SidebarItemProps {
   exportAction?: boolean
   downloadAction?: boolean
   writable?: boolean
+  owner?: string
   icon?: IconName
   onClick: () => void
 }
@@ -56,6 +58,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   exportAction = true,
   downloadAction = true,
   writable = true,
+  owner,
 }) => {
   const [type, setType] = React.useState('')
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
@@ -69,18 +72,32 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const isMobile = useIsMobile()
   const canShareAddressBook =
     sharingAction && writable && !folderSharingDisabled.includes('contact')
+  const displayName = owner ? `${name} - ${owner}` : name
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
+        className={cn(
+          'align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+          owner ? 'h-auto min-h-10 py-1' : 'h-10'
+        )}
         isActive={isActive}
         onClick={() => push(`/address_books/${id}`)}
-        tooltip={name}
+        tooltip={displayName}
       >
         {icon && <DynamicIcon name={icon} />}
-        <span className="truncate group-data-[collapsible=icon]:hidden">
-          {name}
+        <span className="flex min-w-0 flex-col group-data-[collapsible=icon]:hidden">
+          <span className="truncate" title={name}>
+            {name}
+          </span>
+          {owner && (
+            <span
+              className="truncate text-xs leading-tight opacity-85"
+              title={owner}
+            >
+              {owner}
+            </span>
+          )}
         </span>
       </SidebarMenuButton>
       {!disableActions && (

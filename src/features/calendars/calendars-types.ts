@@ -170,6 +170,8 @@ export type Calendar = {
   // --- UI-only field, never sent to the backend ---
   u_hidden?: boolean
 
+  /** Email of the calendar owner; differs from the connected account when shared. */
+  owner?: string
   owner_uid?: string
   url?: string // For subscription / external ICS calendars
   event_duration?: number // in minutes

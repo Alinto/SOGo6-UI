@@ -54,6 +54,10 @@ interface SidebarItemProps {
   icon?: 'calendar'
   sourceType?: string
   calendarKey?: string
+  /** Owner email, displayed next to the name of a shared calendar. */
+  owner?: string
+  /** Calendar owned by someone else and shared with the connected user. */
+  isShared?: boolean
   onClick: () => void
 }
 
@@ -138,6 +142,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   disableActions,
   sourceType,
   calendarKey,
+  owner,
+  isShared,
 }) => {
   const [type, setType] = React.useState('')
   const [dialogOpen, setDialogOpen] = React.useState(false)
@@ -150,8 +156,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const isReadOnly = isSubscriptionCalendar({ source_type: sourceType })
   const resolvedCalendarKey = calendarKey ?? id
   const canShareCalendar =
+    !isShared &&
     isPersonalCalendar({ source_type: sourceType }) &&
     !folderSharingDisabled.includes('calendar')
+  const sharedOwner = isShared && owner ? owner : null
+  const fullLabel = sharedOwner ? `${name} - ${sharedOwner}` : name
 
   const handleCheckboxChange = (checked: boolean) => {
     setCalendarVisibility(id, checked)
@@ -168,8 +177,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
         <TooltipTrigger asChild>
           <div
             onClick={() => handleCheckboxChange(!isVisible)}
+            title={sidebarState === 'collapsed' ? undefined : fullLabel}
             className={cn(
-              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex h-10 w-full cursor-pointer items-center gap-1 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex w-full cursor-pointer gap-2.5 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+              // With an owner line, the row grows and the checkbox stays
+              // centered on the whole text block
+              sharedOwner
+                ? 'min-h-10 items-center py-1 group-data-[collapsible=icon]:h-10'
+                : 'h-10 items-center',
               !disableActions && 'pr-8'
             )}
           >
@@ -190,19 +205,33 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 }
               />
             </div>
-            <div className="flex min-w-0 flex-1 items-center gap-1.5 group-data-[collapsible=icon]:hidden">
-              <span className="min-w-0 truncate text-sm">{name}</span>
-              {isReadOnly && (
-                <Lock
-                  className="text-muted-foreground h-3 w-3 shrink-0"
-                  aria-label={t('sidebar.readOnlyCalendar.string')}
-                />
-              )}
-              {isIcs && (
-                <InlineSyncStatusIcon
-                  calendarKey={resolvedCalendarKey}
-                  sourceType={sourceType}
-                />
+            <div className="flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
+              <div className="flex min-w-0 items-center gap-1.5">
+                <span className="min-w-0 truncate text-sm" title={name}>
+                  {name}
+                </span>
+                {isReadOnly && (
+                  <Lock
+                    className="text-muted-foreground h-3 w-3 shrink-0"
+                    aria-label={t('sidebar.readOnlyCalendar.string')}
+                  >
+                    <title>{t('sidebar.readOnlyCalendar.string')}</title>
+                  </Lock>
+                )}
+                {isIcs && (
+                  <InlineSyncStatusIcon
+                    calendarKey={resolvedCalendarKey}
+                    sourceType={sourceType}
+                  />
+                )}
+              </div>
+              {sharedOwner && (
+                <span
+                  className="truncate text-xs leading-tight opacity-85"
+                  title={sharedOwner}
+                >
+                  {sharedOwner}
+                </span>
               )}
             </div>
           </div>
@@ -211,7 +240,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           side="right"
           hidden={sidebarState !== 'collapsed' || isMobile}
         >
-          {name}
+          {fullLabel}
         </TooltipContent>
       </Tooltip>
       {!disableActions && (

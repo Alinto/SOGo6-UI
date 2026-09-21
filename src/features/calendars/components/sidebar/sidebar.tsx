@@ -7,11 +7,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import type { Calendar } from '@/features/calendars/calendars-types'
 import {
-  isPersonalCalendar,
   isSharedCalendar,
   isSubscriptionCalendar,
 } from '@/features/calendars/utils/calendar-source-type'
+import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
 import { useGetCalendarsQuery } from '../../store/calendars-api'
@@ -24,15 +25,24 @@ import SidebarSkeleton from './skeleton'
 const Sidebar: React.FC = () => {
   const { data, isFetching } = useGetCalendarsQuery()
   const t = useTranslations('CALENDARS')
+  const isOtherOwner = useIsOtherOwner()
 
   const groupedCalendars = useMemo(() => {
     const calendars = data ?? []
+    // Shared = owned by someone else than the connected account; without an
+    // owner, fall back to the backend source type. Anything that is neither
+    // shared nor a subscription is a personal calendar.
+    const isShared = (calendar: Calendar) =>
+      calendar.owner ? isOtherOwner(calendar.owner) : isSharedCalendar(calendar)
+    const nonSubscriptions = calendars.filter(
+      (calendar) => !isSubscriptionCalendar(calendar)
+    )
     return {
-      personals: calendars.filter(isPersonalCalendar),
-      shared: calendars.filter(isSharedCalendar),
+      personals: nonSubscriptions.filter((calendar) => !isShared(calendar)),
+      shared: nonSubscriptions.filter(isShared),
       subscriptions: calendars.filter(isSubscriptionCalendar),
     }
-  }, [data])
+  }, [data, isOtherOwner])
 
   if (isFetching) {
     return <SidebarSkeleton />
@@ -84,6 +94,8 @@ const Sidebar: React.FC = () => {
               sourceType={calendar.source_type}
               name={calendar.name}
               color={calendar.color}
+              owner={calendar.owner}
+              isShared
               onClick={() => {}}
             />
           ))}

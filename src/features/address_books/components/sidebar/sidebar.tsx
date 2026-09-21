@@ -9,11 +9,13 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
+import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
 import { useRouter } from '@/lib/i18n/navigation'
 import { Contact2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
+import type { AddressBook } from '../../address-books-types'
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import CreateContactOpener from './create-contact-opener'
 import AddAddressBook from './forms/add'
@@ -28,6 +30,20 @@ function Sidebar() {
   const params = useParams()
   const activeBookId =
     typeof params?.book_id === 'string' ? params.book_id : null
+  const isOtherOwner = useIsOtherOwner()
+
+  // Shared = owned by someone else than the connected account
+  const { personals, shared, subscriptions } = useMemo(() => {
+    const all = [...(data?.personals ?? []), ...(data?.subscriptions ?? [])]
+    const isShared = (book: AddressBook) => isOtherOwner(book.owner)
+    return {
+      personals: (data?.personals ?? []).filter((book) => !isShared(book)),
+      shared: all.filter(isShared),
+      subscriptions: (data?.subscriptions ?? []).filter(
+        (book) => !isShared(book)
+      ),
+    }
+  }, [data, isOtherOwner])
 
   if (isFetching) {
     return <SidebarSkeleton />
@@ -41,7 +57,7 @@ function Sidebar() {
     )
   }
 
-  const { globals = [], personals = [], subscriptions = [] } = data || {}
+  const { globals = [] } = data || {}
   return (
     <>
       <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
@@ -79,6 +95,23 @@ function Sidebar() {
             ))}
           </SidebarMenu>
         </SidebarGroupContent>
+      </SidebarGroup>
+      <SidebarGroup className="group-data-[collapsible=icon]:p-0">
+        <SidebarGroupLabel>{t('shared.string')}</SidebarGroupLabel>
+        <SidebarMenu>
+          {shared.map((book) => (
+            <SidebarItem
+              key={book.id}
+              icon="contact-2"
+              isDefault={book.default}
+              sharingAction={false}
+              id={book.id}
+              name={book.name}
+              owner={book.owner}
+              onClick={() => {}}
+            />
+          ))}
+        </SidebarMenu>
       </SidebarGroup>
       <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('subscriptions.string')}</SidebarGroupLabel>

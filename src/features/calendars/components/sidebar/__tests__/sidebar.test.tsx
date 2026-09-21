@@ -32,6 +32,30 @@ jest.mock('../../../store/calendars-api', () => ({
   useGetCalendarsQuery: (...a: unknown[]) => mockGetCalendarsQuery(...a),
 }))
 
+jest.mock('@/hooks/use-is-other-owner', () => {
+  const isOtherOwner = (owner?: string) =>
+    Boolean(owner) && owner !== 'me@tutu.fr'
+  return { useIsOtherOwner: () => isOtherOwner }
+})
+
+jest.mock('@/components/ui/sidebar', () => ({
+  SidebarGroup: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="group">{children}</div>
+  ),
+  SidebarGroupLabel: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="group-label">{children}</div>
+  ),
+  SidebarGroupContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => (
+    <ul>{children}</ul>
+  ),
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => (
+    <li>{children}</li>
+  ),
+}))
+
 jest.mock('../forms/add', () => ({
   __esModule: true,
   default: function MockAddCalendar() {
@@ -48,8 +72,18 @@ jest.mock('../forms/add-external', () => ({
 
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
-  default: function MockSidebarItem({ name }: { name: string }) {
-    return <div data-testid={`item-${name}`}>{name}</div>
+  default: function MockSidebarItem({
+    name,
+    owner,
+  }: {
+    name: string
+    owner?: string
+  }) {
+    return (
+      <div data-testid={`item-${name}`} data-owner={owner}>
+        {name}
+      </div>
+    )
   },
 }))
 
@@ -96,7 +130,9 @@ describe('Sidebar', () => {
         expect(screen.getByText('sidebar.personals.string')).toBeInTheDocument()
       })
       expect(screen.getByText('sidebar.shared.string')).toBeInTheDocument()
-      expect(screen.getByText('sidebar.subscriptions.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('sidebar.subscriptions.string')
+      ).toBeInTheDocument()
     })
 
     it('lists backend local calendars under personals', async () => {
@@ -108,6 +144,66 @@ describe('Sidebar', () => {
       await waitFor(() => {
         expect(screen.getByTestId('item-Backend Local')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('shared calendars (owner)', () => {
+    const groupOf = (name: string) => {
+      const group = screen
+        .getByTestId(`item-${name}`)
+        .closest('[data-testid="group"]')
+      return group?.querySelector('[data-testid="group-label"]')?.textContent
+    }
+
+    beforeEach(() => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: [
+          {
+            key: 'mine',
+            name: 'Mine',
+            source_type: 'local',
+            owner: 'me@tutu.fr',
+          },
+          {
+            key: 'theirs',
+            name: 'Theirs',
+            source_type: 'local',
+            owner: 'other@tutu.fr',
+          },
+          { key: 'legacy', name: 'Legacy shared', source_type: 'shared' },
+          {
+            key: 'mine-shared',
+            name: 'Mine shared type',
+            source_type: 'shared',
+            owner: 'me@tutu.fr',
+          },
+        ],
+        isFetching: false,
+      })
+    })
+
+    it('keeps calendars owned by the connected account in personals', () => {
+      render(<Sidebar />)
+      expect(groupOf('Mine')).toBe('sidebar.personals.string')
+    })
+
+    it('puts calendars owned by someone else in shared and passes the owner', () => {
+      render(<Sidebar />)
+      expect(groupOf('Theirs')).toBe('sidebar.shared.string')
+      expect(screen.getByTestId('item-Theirs')).toHaveAttribute(
+        'data-owner',
+        'other@tutu.fr'
+      )
+    })
+
+    it('trusts the owner over source_type when the owner is the connected account', () => {
+      render(<Sidebar />)
+      expect(groupOf('Mine shared type')).toBe('sidebar.personals.string')
+    })
+
+    it('falls back to source_type when there is no owner', () => {
+      render(<Sidebar />)
+      expect(groupOf('Legacy shared')).toBe('sidebar.shared.string')
     })
   })
 })
