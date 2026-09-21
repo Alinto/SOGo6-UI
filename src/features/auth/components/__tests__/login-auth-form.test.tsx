@@ -93,6 +93,21 @@ describe('LoginAuthForm - Step 2 (Password)', () => {
     })
   })
 
+  it('renders back button to return to email step', () => {
+    renderWithProvider(<LoginAuthForm />)
+    const backButton = screen.getByRole('button', {
+      name: /change_email.string/i,
+    })
+    expect(backButton).toBeInTheDocument()
+    expect(backButton).toHaveAttribute('type', 'button')
+  })
+
+  it('navigates to login page when back button is clicked', () => {
+    renderWithProvider(<LoginAuthForm />)
+    screen.getByRole('button', { name: /change_email.string/i }).click()
+    expect(mockPush).toHaveBeenCalledWith('/auth/login')
+  })
+
   it('renders email label', () => {
     renderWithProvider(<LoginAuthForm />)
     const emailLabel = screen.getByText(/email.label.string/i)

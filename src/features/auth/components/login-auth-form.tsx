@@ -14,7 +14,7 @@ import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
@@ -163,9 +163,22 @@ export function LoginAuthForm({
       )}
 
       <div className="mb-6 grid gap-2">
-        <Label className="text-primary-foreground text-sm">
-          {t('email.label.string')}
-        </Label>
+        <div className="flex items-center justify-between gap-2">
+          <Label className="text-primary-foreground text-sm">
+            {t('email.label.string')}
+          </Label>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => push('/auth/login')}
+            disabled={isLoading}
+            aria-label={t('change_email.string')}
+            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 focus-visible:ring-ring -mr-1.5 size-6"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
+          </Button>
+        </div>
         <p className="text-primary-foreground text-sm font-medium">{email}</p>
         {mode === 'ldap' && (
           <p className="text-primary-foreground/60 text-xs">
