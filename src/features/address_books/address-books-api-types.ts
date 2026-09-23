@@ -1,4 +1,4 @@
-import type { ContactKind } from './address-books-types'
+import type { AddressBookShareRights, ContactKind } from './address-books-types'
 
 export interface ApiDataResponse<T> {
   data: T
@@ -101,6 +101,7 @@ export interface ApiContact {
 
 export interface ApiContactsListData {
   contacts: ApiContact[]
+  rights?: Partial<AddressBookShareRights> //Rights of the connected user on the address book
 }
 
 export interface ApiDistributionList {
@@ -165,6 +166,7 @@ export interface BookEntriesResponse {
   listTotal: number
   page: number
   totalPages: number
+  rights?: AddressBookShareRights ////Rights of the connected user on the address book
 }
 
 export interface ContactCreateBody {

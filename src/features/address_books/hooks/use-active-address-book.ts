@@ -1,11 +1,17 @@
 'use client'
 
+import { useAppSelector } from '@/lib/redux/hooks'
+import { useParams } from 'next/navigation'
+import { useMemo } from 'react'
 import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import type { AddressBook } from '../address-books-types'
 import { useGetAddressBooksQuery } from '../store/address-books-api'
-import { isAddressBookWritable } from '../utils/is-address-book-writable'
-import { useParams } from 'next/navigation'
-import { useMemo } from 'react'
+import { selectBookRights } from '../store/address-books-ui-slice'
+import {
+  getAddressBookPermissions,
+  hasAnyWritePermission,
+  NO_WRITE_PERMISSIONS,
+} from '../utils/address-book-permissions'
 
 function findAddressBook(
   books:
@@ -34,13 +40,21 @@ export function useActiveAddressBookWritable() {
   const params = useParams() ?? {}
   const bookId = typeof params.book_id === 'string' ? params.book_id : null
   const activeBook = useActiveAddressBook()
+  const rights = useAppSelector((state) => selectBookRights(state, bookId))
 
   if (bookId === ALL_CONTACTS_BOOK_ID) {
-    return { writable: false, book: null, bookId }
+    return {
+      writable: false,
+      permissions: NO_WRITE_PERMISSIONS,
+      book: null,
+      bookId,
+    }
   }
 
+  const permissions = getAddressBookPermissions(activeBook, rights)
   return {
-    writable: isAddressBookWritable(activeBook),
+    writable: hasAnyWritePermission(permissions),
+    permissions,
     book: activeBook,
     bookId,
   }

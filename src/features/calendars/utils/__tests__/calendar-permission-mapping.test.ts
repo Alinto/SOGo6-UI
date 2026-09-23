@@ -31,12 +31,11 @@ describe('calendar-permission-mapping', () => {
   })
 
   describe('CALENDAR_SHARE_LEVELS', () => {
-    it('has exactly the 5 permission levels in order', () => {
+    it('has exactly the 4 permission levels in order', () => {
       expect(CALENDAR_SHARE_LEVELS.map((l) => l.value)).toEqual([
         'none',
         'view-date-time',
         'view-all',
-        'respond-to',
         'modify',
       ])
     })

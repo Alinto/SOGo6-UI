@@ -18,7 +18,7 @@ export function NoteField({
   bookId,
   readOnly = false,
 }: NoteFieldProps) {
-  const [isEditing, setIsEditing] = useState(!note)
+  const [isEditing, setIsEditing] = useState(!note && !readOnly)
   const [editedNote, setEditedNote] = useState(note)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [updateVCard, { isLoading }] = useUpdateVCardMutation()
@@ -36,7 +36,9 @@ export function NoteField({
       setIsEditing(false)
       setEditedNote(result.note || '')
     } catch (error) {
-      setSubmitError(tErrors(getContactApiErrorMessageKey(error, 'contact_form')))
+      setSubmitError(
+        tErrors(getContactApiErrorMessageKey(error, 'contact_form'))
+      )
     }
   }
 
@@ -50,7 +52,7 @@ export function NoteField({
     setIsEditing(true)
   }
 
-  if (isEditing) {
+  if (isEditing && !readOnly) {
     return (
       <div className="bg-muted/50 space-y-3 rounded-md p-4">
         {submitError && (
@@ -96,16 +98,17 @@ export function NoteField({
           {t('no_notes.string')}
         </p>
       )}
-      <Button
-        variant="ghost"
-        size="sm"
-        className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
-        onClick={handleEdit}
-        disabled={readOnly}
-        aria-label={t('edit_note.string')}
-      >
-        {note ? t('edit.string') : t('add_note.string')}
-      </Button>
+      {!readOnly && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100"
+          onClick={handleEdit}
+          aria-label={t('edit_note.string')}
+        >
+          {note ? t('edit.string') : t('add_note.string')}
+        </Button>
+      )}
     </div>
   )
 }

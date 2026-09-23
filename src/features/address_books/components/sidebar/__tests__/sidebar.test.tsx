@@ -2,6 +2,12 @@ import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 
 const mockUseGetAddressBooksQuery = jest.fn()
+let mockPermissionsByBook: Record<string, unknown> = {}
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: (selector: (state: unknown) => unknown) =>
+    selector({ addressBooksUi: { rightsByBook: mockPermissionsByBook } }),
+}))
 
 jest.mock('../../../store/address-books-api', () => ({
   useGetAddressBooksQuery: () => mockUseGetAddressBooksQuery(),
@@ -82,16 +88,22 @@ jest.mock('../sidebar-item', () => ({
     name,
     owner,
     sharingAction,
+    canImport,
+    canExport,
   }: {
     id: string
     name: string
     owner?: string
     sharingAction?: boolean
+    canImport?: boolean
+    canExport?: boolean
   }) => (
     <div
       data-testid={`sidebar-item-${id}`}
       data-owner={owner}
       data-sharing-action={sharingAction}
+      data-can-import={canImport}
+      data-can-export={canExport}
     >
       {name}
     </div>
@@ -108,6 +120,7 @@ import Sidebar from '../sidebar'
 
 describe('AddressBooks Sidebar', () => {
   beforeEach(() => {
+    mockPermissionsByBook = {}
     jest.clearAllMocks()
   })
 
@@ -238,6 +251,76 @@ describe('AddressBooks Sidebar', () => {
       render(<Sidebar />)
       expect(screen.getByTestId('sidebar-item-p1')).toBeInTheDocument()
       expect(screen.queryByTestId('droppable-p1')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('address book permissions', () => {
+    const rights = (
+      overrides: Partial<{
+        can_view: boolean
+        can_create_objects: boolean
+        can_edit_objects: boolean
+        can_erase_objects: boolean
+      }>
+    ) => ({
+      can_view: true,
+      can_create_objects: false,
+      can_edit_objects: false,
+      can_erase_objects: false,
+      ...overrides,
+    })
+
+    const books = {
+      personals: [
+        { id: 'mine', name: 'Mine', type: 'personal', owner: 'me@tutu.fr' },
+        {
+          id: 'theirs',
+          name: 'Theirs',
+          type: 'shared',
+          owner: 'other@tutu.fr',
+        },
+      ],
+      subscriptions: [],
+      globals: [],
+    }
+
+    beforeEach(() => {
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: books,
+        isFetching: false,
+      })
+    })
+
+    it('falls back to the book type until permissions are loaded', () => {
+      mockPermissionsByBook = {}
+      render(<Sidebar />)
+      const mine = screen.getByTestId('sidebar-item-mine')
+      const theirs = screen.getByTestId('sidebar-item-theirs')
+      expect(mine).toHaveAttribute('data-can-import', 'true')
+      expect(mine).toHaveAttribute('data-can-export', 'true')
+      expect(theirs).toHaveAttribute('data-can-import', 'false')
+      expect(theirs).toHaveAttribute('data-can-export', 'true')
+    })
+
+    it('allows import on a shared book once the create right is loaded', () => {
+      mockPermissionsByBook = {
+        theirs: rights({ can_create_objects: true }),
+      }
+      render(<Sidebar />)
+      expect(screen.getByTestId('sidebar-item-theirs')).toHaveAttribute(
+        'data-can-import',
+        'true'
+      )
+    })
+
+    it('blocks import and export when loaded permissions grant nothing', () => {
+      mockPermissionsByBook = {
+        mine: rights({ can_view: false }),
+      }
+      render(<Sidebar />)
+      const mine = screen.getByTestId('sidebar-item-mine')
+      expect(mine).toHaveAttribute('data-can-import', 'false')
+      expect(mine).toHaveAttribute('data-can-export', 'false')
     })
   })
 })

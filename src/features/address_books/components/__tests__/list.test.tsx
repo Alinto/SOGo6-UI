@@ -20,7 +20,9 @@ jest.mock('../list-item', () => ({
 
 jest.mock('@/components/dnd/draggable', () => ({
   __esModule: true,
-  default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  default: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 jest.mock('../skeletons/skeleton', () => ({
@@ -33,7 +35,9 @@ jest.mock('../address-book-empty-state', () => ({
   default: ({ variant }: { variant: string }) => (
     <div
       data-testid={
-        variant === 'search' ? 'address-book-search-empty' : 'address-book-empty-state'
+        variant === 'search'
+          ? 'address-book-search-empty'
+          : 'address-book-empty-state'
       }
     />
   ),
@@ -57,7 +61,11 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => jest.fn(),
   useAppSelector: (selector: (state: unknown) => unknown) =>
     selector({
-      addressBooksUi: { searchQuery: '', sortOrder: 'asc', sortBy: 'display_name' },
+      addressBooksUi: {
+        searchQuery: '',
+        sortOrder: 'asc',
+        sortBy: 'display_name',
+      },
     }),
 }))
 
@@ -69,13 +77,30 @@ jest.mock('../../store/address-books-api', () => ({
   useGetAddressBooksQuery: () => ({ data: undefined }),
 }))
 
+const mockPermissions = {
+  current: { canView: true, canCreate: true, canEdit: true, canErase: true },
+}
+
 jest.mock('../../hooks/use-active-address-book', () => ({
-  useActiveAddressBookWritable: () => ({ writable: true, bookId: 'work' }),
+  useActiveAddressBookWritable: () => ({
+    writable: true,
+    permissions: mockPermissions.current,
+    bookId: 'work',
+  }),
 }))
 
 import { VCard } from '../../address-books-types'
 
 describe('AddressBookList Component', () => {
+  beforeEach(() => {
+    mockPermissions.current = {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canErase: true,
+    }
+  })
+
   const mockItems: VCard[] = [
     {
       id: '1',
@@ -149,9 +174,7 @@ describe('AddressBookList Component', () => {
   })
 
   it('updates selectedItems state when a checkbox is clicked', () => {
-    const { getAllByTestId } = render(
-      <AddressBookList items={mockItems} />
-    )
+    const { getAllByTestId } = render(<AddressBookList items={mockItems} />)
     const listItems = getAllByTestId('list-item')
 
     // Simulate clicking the first item
@@ -166,5 +189,75 @@ describe('AddressBookList Component', () => {
   it('renders the correct number of contacts', () => {
     render(<AddressBookList items={mockItems} />)
     expect(screen.getByText('2 contacts')).toBeInTheDocument()
+  })
+
+  describe('permissions', () => {
+    const selectAll = () => {
+      screen
+        .getAllByTestId('list-item')
+        .forEach((item) => fireEvent.click(item))
+    }
+
+    it('offers bulk delete and list creation with all rights', () => {
+      render(<AddressBookList items={mockItems} />)
+      selectAll()
+      expect(
+        screen.getByLabelText('delete_selected.string')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByLabelText('create_list_from_selection.string')
+      ).toBeInTheDocument()
+    })
+
+    it('hides bulk delete without the erase right', () => {
+      mockPermissions.current = {
+        canView: true,
+        canCreate: true,
+        canEdit: false,
+        canErase: false,
+      }
+      render(<AddressBookList items={mockItems} />)
+      selectAll()
+      expect(
+        screen.queryByLabelText('delete_selected.string')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByLabelText('create_list_from_selection.string')
+      ).toBeInTheDocument()
+    })
+
+    it('hides list creation without the create right', () => {
+      mockPermissions.current = {
+        canView: true,
+        canCreate: false,
+        canEdit: false,
+        canErase: true,
+      }
+      render(<AddressBookList items={mockItems} />)
+      selectAll()
+      expect(
+        screen.getByLabelText('delete_selected.string')
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByLabelText('create_list_from_selection.string')
+      ).not.toBeInTheDocument()
+    })
+
+    it('ignores selection when the user can neither create nor erase', () => {
+      mockPermissions.current = {
+        canView: true,
+        canCreate: false,
+        canEdit: true,
+        canErase: false,
+      }
+      render(<AddressBookList items={mockItems} />)
+      fireEvent.click(screen.getAllByTestId('list-item')[0])
+      expect(screen.getAllByTestId('list-item')[0]).not.toHaveTextContent(
+        '(Selected)'
+      )
+      expect(
+        screen.queryByLabelText('delete_selected.string')
+      ).not.toBeInTheDocument()
+    })
   })
 })

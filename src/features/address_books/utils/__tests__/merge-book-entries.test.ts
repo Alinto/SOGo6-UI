@@ -101,6 +101,32 @@ describe('parseContactsAndListsFromBackend', () => {
   })
 })
 
+describe('parseContactsAndListsFromBackend rights', () => {
+  const lists = { data: { lists: [] } }
+  const rights = {
+    can_view: true,
+    can_create_objects: true,
+    can_edit_objects: true,
+    can_erase_objects: false,
+  }
+
+  it('exposes the rights sent with the contacts', () => {
+    const result = parseContactsAndListsFromBackend(
+      { data: { contacts: [], rights } },
+      lists
+    )
+    expect(result.rights).toEqual(rights)
+  })
+
+  it('omits rights when the contacts payload has none', () => {
+    const result = parseContactsAndListsFromBackend(
+      { data: { contacts: [] } },
+      lists
+    )
+    expect('rights' in result).toBe(false)
+  })
+})
+
 describe('parseFakeBookEntries', () => {
   it('wraps fakeApi array into paginated response', () => {
     const result = parseFakeBookEntries([

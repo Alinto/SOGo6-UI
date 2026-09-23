@@ -1,6 +1,10 @@
-import type { ContactSortField } from '../address-books-api-types'
-import type { ContactMember, VCard } from '../address-books-types'
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import type { ContactSortField } from '../address-books-api-types'
+import type {
+  AddressBookShareRights,
+  ContactMember,
+  VCard,
+} from '../address-books-types'
 
 export type ContactSortOrder = 'asc' | 'desc'
 
@@ -19,6 +23,7 @@ export interface AddressBooksUiState {
   sortBy: ContactSortField
   page: number
   pageSize: number
+  rightsByBook: Record<string, AddressBookShareRights> //Rights of the connected user per address book
 }
 
 const initialState: AddressBooksUiState = {
@@ -34,6 +39,7 @@ const initialState: AddressBooksUiState = {
   sortBy: 'display_name',
   page: 1,
   pageSize: DEFAULT_BOOK_PAGE_SIZE,
+  rightsByBook: {},
 }
 
 const addressBooksUiSlice = createSlice({
@@ -59,9 +65,25 @@ const addressBooksUiSlice = createSlice({
       state.pageSize = action.payload
       state.page = 1
     },
+    setBookRights: (
+      state,
+      action: PayloadAction<{
+        bookId: string
+        rights?: AddressBookShareRights
+      }>
+    ) => {
+      const { bookId, rights } = action.payload
+      if (rights) {
+        state.rightsByBook[bookId] = rights
+      } else {
+        delete state.rightsByBook[bookId]
+      }
+    },
     openCreateForm: (
       state,
-      action: PayloadAction<{ bookId?: string; prefill?: Partial<VCard> } | undefined>
+      action: PayloadAction<
+        { bookId?: string; prefill?: Partial<VCard> } | undefined
+      >
     ) => {
       state.isFormOpen = true
       state.editingContactId = null
@@ -123,6 +145,7 @@ export const {
   setSortBy,
   setPage,
   setPageSize,
+  setBookRights,
   openCreateForm,
   openEditForm,
   closeForm,
@@ -135,5 +158,15 @@ export const {
 export const selectAddressBooksUi = (state: {
   addressBooksUi: AddressBooksUiState
 }) => state.addressBooksUi
+
+export const selectBookRights = (
+  state: { addressBooksUi: AddressBooksUiState },
+  bookId: string | null | undefined
+): AddressBookShareRights | undefined =>
+  bookId ? state.addressBooksUi.rightsByBook[bookId] : undefined
+
+export const selectRightsByBook = (state: {
+  addressBooksUi: AddressBooksUiState
+}) => state.addressBooksUi.rightsByBook
 
 export default addressBooksUiSlice.reducer

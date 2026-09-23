@@ -47,10 +47,6 @@ export const CALENDAR_SHARE_LEVELS: CalendarShareLevelDef[] = [
     value: 'view-all',
     labelKey: 'sidebar.sharing.levels.viewAll.label.string',
   },
-  {
-    value: 'respond-to',
-    labelKey: 'sidebar.sharing.levels.respond.label.string',
-  },
   { value: 'modify', labelKey: 'sidebar.sharing.levels.modify.label.string' },
 ]
 

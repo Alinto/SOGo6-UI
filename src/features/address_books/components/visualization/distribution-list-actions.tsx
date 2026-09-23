@@ -20,14 +20,17 @@ type DistributionListActionsProps = {
   bookId: string
 }
 
-function DistributionListActions({ list, bookId }: DistributionListActionsProps) {
+function DistributionListActions({
+  list,
+  bookId,
+}: DistributionListActionsProps) {
   const t = useTranslations('DISTRIBUTION_LIST_FORM')
   const tContact = useTranslations('CONTACT_FORM')
   const dispatch = useAppDispatch()
   const { push } = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
-  const { writable } = useActiveAddressBookWritable()
+  const { permissions } = useActiveAddressBookWritable()
   const [deleteList, { isLoading: isDeleting }] =
     useDeleteVCardFromAddressBookMutation()
 
@@ -78,7 +81,8 @@ function DistributionListActions({ list, bookId }: DistributionListActionsProps)
       exportLabel={tContact('export.string')}
       exportTestId="export-list-button"
       onExportOpen={() => setExportOpen(true)}
-      writable={writable}
+      canEdit={permissions.canEdit}
+      canErase={permissions.canErase}
       editLabel={tContact('edit.string')}
       editTestId="edit-list-button"
       onEdit={handleEdit}

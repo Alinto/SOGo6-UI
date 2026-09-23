@@ -93,6 +93,7 @@ import {
   serializeListPatch,
 } from '../utils/serialize-list'
 import { unwrapApiData } from '../utils/unwrap-api-data'
+import { setBookRights } from './address-books-ui-slice'
 
 const vcardBookTag = (bookId: string) => ({
   type: VCARD_SLICE,
@@ -395,6 +396,15 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             undefined,
             listsPagination
           ),
+        }
+      },
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        const bookId = typeof arg === 'string' ? arg : arg.bookId
+        try {
+          const { data } = await queryFulfilled
+          dispatch(setBookRights({ bookId, rights: data.rights }))
+        } catch {
+          // the query error is surfaced by the consumers of the hook
         }
       },
       providesTags: (result, error, arg) => {

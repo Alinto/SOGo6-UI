@@ -25,7 +25,15 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('../use-active-address-book', () => ({
-  useActiveAddressBookWritable: () => ({ writable: true }),
+  useActiveAddressBookWritable: () => ({
+    writable: true,
+    permissions: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canErase: true,
+    },
+  }),
 }))
 
 import { useCreateContactAction } from '../use-create-contact-action'

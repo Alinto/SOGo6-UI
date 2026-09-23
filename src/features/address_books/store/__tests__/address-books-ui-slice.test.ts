@@ -6,6 +6,8 @@ import reducer, {
   openCreateListForm,
   openEditForm,
   openEditListForm,
+  selectBookRights,
+  setBookRights,
   setPage,
   setPageSize,
   setSearchQuery,
@@ -135,6 +137,46 @@ describe('addressBooksUiSlice', () => {
       state = reducer(state, closeListForm())
       expect(state.isListFormOpen).toBe(false)
       expect(state.editingListId).toBeNull()
+    })
+  })
+
+  describe('book rights', () => {
+    const rights = {
+      can_view: true,
+      can_create_objects: false,
+      can_edit_objects: true,
+      can_erase_objects: false,
+    }
+
+    it('starts without any known rights', () => {
+      const state = reducer(undefined, { type: '@@INIT' })
+      expect(state.rightsByBook).toEqual({})
+    })
+
+    it('stores rights per book', () => {
+      let state = reducer(undefined, setBookRights({ bookId: 'a', rights }))
+      state = reducer(
+        state,
+        setBookRights({
+          bookId: 'b',
+          rights: { ...rights, can_erase_objects: true },
+        })
+      )
+      expect(state.rightsByBook.a).toEqual(rights)
+      expect(state.rightsByBook.b.can_erase_objects).toBe(true)
+    })
+
+    it('removes the entry when a reload carries no rights', () => {
+      let state = reducer(undefined, setBookRights({ bookId: 'a', rights }))
+      state = reducer(state, setBookRights({ bookId: 'a' }))
+      expect(state.rightsByBook).toEqual({})
+    })
+
+    it('selects the rights of a book', () => {
+      const state = reducer(undefined, setBookRights({ bookId: 'a', rights }))
+      expect(selectBookRights({ addressBooksUi: state }, 'a')).toEqual(rights)
+      expect(selectBookRights({ addressBooksUi: state }, 'zzz')).toBeUndefined()
+      expect(selectBookRights({ addressBooksUi: state }, null)).toBeUndefined()
     })
   })
 })

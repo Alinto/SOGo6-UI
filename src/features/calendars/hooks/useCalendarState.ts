@@ -12,7 +12,10 @@ import {
   type CalendarEventUpdateBody,
 } from '@/features/calendars'
 import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
-import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
+import {
+  findCalendarByRef,
+  getEventPermissions,
+} from '@/features/calendars/utils/event-permissions'
 import { singleOccurrenceMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
 import { endOfDay, startOfDay } from 'date-fns'
 import { useLocale } from 'next-intl'
@@ -317,10 +320,8 @@ export function useCalendarState(): UseCalendarStateReturn {
   const handleEventMove = (args: EventInteractionArgs<RBCEvent>) => {
     const { event, start, end } = args
     const calendarRef = event.calendar_id ?? event.calendar_key ?? ''
-    const sourceCalendar = calendarsData?.find(
-      (cal) => (cal.key ?? cal.id) === calendarRef
-    )
-    if (!isCalendarWritable(sourceCalendar)) return
+    const sourceCalendar = findCalendarByRef(calendarsData, calendarRef)
+    if (!getEventPermissions(event, sourceCalendar).canModify) return
 
     const allDay =
       (args as EventInteractionArgs<RBCEvent> & { allDay?: boolean }).allDay ??

@@ -1,4 +1,7 @@
-import { ANY_AUTHENTICATED_UID } from '@/features/calendars/utils/calendar-permission-mapping'
+import {
+  ANY_AUTHENTICATED_UID,
+  defaultCalendarShareRights,
+} from '@/features/calendars/utils/calendar-permission-mapping'
 import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
@@ -26,6 +29,7 @@ import type {
   CalendarEventUpdateBody,
   CalendarEventsResponse,
   CalendarShareData,
+  CalendarShareRights,
   CalendarShareUser,
   CalendarSyncResult,
   CalendarSyncStatus,
@@ -256,10 +260,44 @@ const attendanceSuccessKeys: Record<
   },
 }
 
-function normalizeCalendar(calendar: Calendar): Calendar {
+/**
+ * Rights of the connected user (`rights`). Missing keys default to the most
+ * restrictive value; non-object values are ignored.
+ */
+function normalizeRights(entity: {
+  rights?: unknown
+}): CalendarShareRights | undefined {
+  const raw = entity.rights
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return undefined
+  }
+  return {
+    ...defaultCalendarShareRights(),
+    ...(raw as Partial<CalendarShareRights>),
+  }
+}
+
+/** Copy of the entity without its raw `rights`, so an invalid value never leaks through a spread. */
+function withoutRights<T extends { rights?: unknown }>(
+  entity: T
+): Omit<T, 'rights'> {
+  const copy = { ...entity } as { rights?: unknown }
+  delete copy.rights
+  return copy as Omit<T, 'rights'>
+}
+
+/** Spread-friendly: leaves `rights` absent (not undefined) so it never overrides a merged value. */
+function withRights(entity: { rights?: unknown }): {
+  rights?: CalendarShareRights
+} {
+  const rights = normalizeRights(entity)
+  return rights ? { rights } : {}
+}
+
+export function normalizeCalendar(calendar: Calendar): Calendar {
   const key = calendar.key ?? calendar.id ?? ''
   return {
-    ...calendar,
+    ...withoutRights(calendar),
     key,
     id: calendar.id ?? key,
     color: calendar.color || DEFAULT_CALENDAR_COLOR,
@@ -272,6 +310,7 @@ function normalizeCalendar(calendar: Calendar): Calendar {
     ctag: calendar.ctag ?? 0,
     share_token: calendar.share_token ?? null,
     u_hidden: calendar.u_hidden ?? false,
+    ...withRights(calendar),
   }
 }
 
@@ -299,13 +338,13 @@ function normalizeCalendarResponse(
   return normalizeCalendar('data' in response ? response.data : response)
 }
 
-function normalizeCalendarEvent(event: CalendarEvent): CalendarEvent {
+export function normalizeCalendarEvent(event: CalendarEvent): CalendarEvent {
   const startDate = event.date_start
   const endDate = event.date_end
   const calendarId = event.calendar_id ?? event.calendar_key ?? null
 
   return {
-    ...event,
+    ...withoutRights(event),
     date_start: startDate,
     date_end: endDate,
     recurrence:
@@ -317,6 +356,7 @@ function normalizeCalendarEvent(event: CalendarEvent): CalendarEvent {
       : (event.key ?? event.id ?? event.uid ?? null),
     calendar_id: calendarId,
     calendar_key: event.calendar_key ?? event.calendar_id ?? undefined,
+    ...withRights(event),
   }
 }
 

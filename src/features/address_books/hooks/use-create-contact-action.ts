@@ -17,11 +17,12 @@ export function useCreateContactAction(options?: {
   const { isMobile, setOpenMobile } = useSidebar()
   const dispatch = useAppDispatch()
   const { book_id } = useParams()
-  const { writable } = useActiveAddressBookWritable()
+  const { permissions } = useActiveAddressBookWritable()
+  const canCreate = permissions.canCreate
   const closeMobileSidebar = options?.closeMobileSidebar ?? true
 
   const onClick = useCallback(() => {
-    if (!writable || book_id === ALL_CONTACTS_BOOK_ID) return
+    if (!canCreate || book_id === ALL_CONTACTS_BOOK_ID) return
     if (closeMobileSidebar && isMobile) {
       setOpenMobile(false)
     }
@@ -30,12 +31,19 @@ export function useCreateContactAction(options?: {
         bookId: typeof book_id === 'string' ? book_id : undefined,
       })
     )
-  }, [book_id, closeMobileSidebar, dispatch, isMobile, setOpenMobile, writable])
+  }, [
+    book_id,
+    closeMobileSidebar,
+    dispatch,
+    isMobile,
+    setOpenMobile,
+    canCreate,
+  ])
 
   return {
     onClick,
     label: t('new_contact.string'),
     icon: UserPlus as LucideIcon,
-    disabled: !writable || book_id === ALL_CONTACTS_BOOK_ID,
+    disabled: !canCreate || book_id === ALL_CONTACTS_BOOK_ID,
   }
 }

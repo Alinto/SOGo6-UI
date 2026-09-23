@@ -23,11 +23,16 @@ import {
   RSVP_STATUSES,
   useEventAttendance,
 } from '../../hooks/use-event-attendance'
+import {
+  FULL_EVENT_PERMISSIONS,
+  type EventPermissions,
+} from '../../utils/event-permissions'
 
 interface VisualizationProps {
   data: CalendarEvent
   /** Calendar color; events inherit color from their calendar, not per-event overrides. */
   accentColor?: string
+  permissions?: EventPermissions
 }
 
 const BULLET_SEPARATOR = '·'
@@ -108,7 +113,11 @@ function AttendeeParticipationStatus({
   )
 }
 
-const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
+const Visualization: React.FC<VisualizationProps> = ({
+  data,
+  accentColor,
+  permissions = FULL_EVENT_PERMISSIONS,
+}) => {
   const t = useTranslations('CALENDARS')
   const {
     currentAttendeeStatus,
@@ -180,6 +189,8 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
     organizer !== undefined || otherAttendees.length > 0
 
   const dateTimeLabel = data.all_day ? dateStr : `${dateStr} · ${timeStr}`
+
+  const { canViewDetails } = permissions
 
   const sections = [
     data.location && (
@@ -367,6 +378,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
       </div>
     ),
   ].filter((section): section is React.ReactElement => Boolean(section))
+  const visibleSections = canViewDetails ? sections : []
 
   return (
     <div className="space-y-5">
@@ -377,11 +389,15 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
         }}
       />
       <div className="space-y-2">
-        <h2 className="text-xl font-semibold">{data.title}</h2>
+        <h2 className="text-xl font-semibold">
+          {canViewDetails
+            ? data.title
+            : t('visualization.restricted.title.string')}
+        </h2>
         <p className="text-muted-foreground text-sm">{dateTimeLabel}</p>
       </div>
 
-      {sections.map((section, index) => (
+      {visibleSections.map((section, index) => (
         <React.Fragment key={section.key ?? index}>
           {index > 0 && <Separator className="opacity-50" />}
           {section}

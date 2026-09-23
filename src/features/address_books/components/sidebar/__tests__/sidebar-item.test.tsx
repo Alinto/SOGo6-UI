@@ -197,6 +197,44 @@ describe('SidebarItem', () => {
     expect(queryByText('delete.default.string')).toBeNull()
   })
 
+  describe('import / export permissions', () => {
+    it('offers import and export by default', () => {
+      const { getByTestId, queryByText } = render(
+        <SidebarItem {...defaultProps} />
+      )
+      getByTestId('sidebar-menu-action').click()
+      expect(queryByText('options.import.string')).not.toBeNull()
+      expect(queryByText('options.export.string')).not.toBeNull()
+    })
+
+    it('hides import when canImport is false', () => {
+      const { getByTestId, queryByText } = render(
+        <SidebarItem {...defaultProps} canImport={false} />
+      )
+      getByTestId('sidebar-menu-action').click()
+      expect(queryByText('options.import.string')).toBeNull()
+      expect(queryByText('options.export.string')).not.toBeNull()
+    })
+
+    it('hides export when canExport is false', () => {
+      const { getByTestId, queryByText } = render(
+        <SidebarItem {...defaultProps} canExport={false} />
+      )
+      getByTestId('sidebar-menu-action').click()
+      expect(queryByText('options.export.string')).toBeNull()
+      expect(queryByText('options.import.string')).not.toBeNull()
+    })
+
+    it('defaults canImport and canExport to writable', () => {
+      const { getByTestId, queryByText } = render(
+        <SidebarItem {...defaultProps} writable={false} />
+      )
+      getByTestId('sidebar-menu-action').click()
+      expect(queryByText('options.import.string')).toBeNull()
+      expect(queryByText('options.export.string')).toBeNull()
+    })
+  })
+
   it('displays the owner email below the name when provided', () => {
     const { getByText } = render(
       <SidebarItem {...defaultProps} owner="test@tutu.fr" />

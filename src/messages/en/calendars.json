@@ -286,11 +286,6 @@
               "string": "View all"
             }
           },
-          "respond": {
-            "label": {
-              "string": "Respond to"
-            }
-          },
           "modify": {
             "label": {
               "string": "Modify"
@@ -436,6 +431,11 @@
       },
       "labels": {
         "string": "Labels"
+      },
+      "restricted": {
+        "title": {
+          "string": "Busy"
+        }
       },
       "url": {
         "string": "URL"

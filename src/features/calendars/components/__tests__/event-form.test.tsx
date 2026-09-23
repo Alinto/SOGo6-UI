@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 
 const mockCreate = jest.fn(() => ({
@@ -130,6 +130,111 @@ describe('EventForm', () => {
           name: 'eventForm.calendar.label.string',
         })
       ).not.toBeInTheDocument()
+    })
+
+    describe('calendar options', () => {
+      // Radix Select only mounts its options once opened, and opening it via
+      // userEvent needs pointer-capture APIs jsdom doesn't implement.
+      beforeAll(() => {
+        Element.prototype.hasPointerCapture ??= () => false
+        Element.prototype.releasePointerCapture ??= () => {}
+        Element.prototype.scrollIntoView ??= () => {}
+      })
+
+      const readOnlySubscription: Calendar = {
+        id: 'cal-sub',
+        key: 'cal-sub',
+        name: 'Subscribed',
+        source_type: 'subscription',
+      }
+      const sharedNoCreateRight: Calendar = {
+        id: 'cal-shared-ro',
+        key: 'cal-shared-ro',
+        name: 'Shared (view only)',
+        source_type: 'shared',
+        rights: {
+          public: 'view-all',
+          confidential: 'none',
+          private: 'none',
+          can_create_objects: false,
+          can_erase_objects: false,
+        },
+      }
+      const sharedWithCreateRight: Calendar = {
+        id: 'cal-shared-rw',
+        key: 'cal-shared-rw',
+        name: 'Shared (can create)',
+        source_type: 'shared',
+        rights: {
+          public: 'modify',
+          confidential: 'none',
+          private: 'none',
+          can_create_objects: true,
+          can_erase_objects: false,
+        },
+      }
+      const calendarsWithMixedRights: Calendar[] = [
+        ...mockCalendars,
+        readOnlySubscription,
+        sharedNoCreateRight,
+        sharedWithCreateRight,
+      ]
+
+      const openCalendarSelect = async (
+        user: ReturnType<typeof userEvent.setup>
+      ) => {
+        await user.click(
+          screen.getByRole('combobox', {
+            name: 'eventForm.calendar.label.string',
+          })
+        )
+      }
+
+      it('only lists calendars the user can create events in', async () => {
+        const user = userEvent.setup()
+        render(
+          <EventForm
+            calendarKey="cal-1"
+            calendars={calendarsWithMixedRights}
+            onCancel={onCancel}
+          />
+        )
+        await openCalendarSelect(user)
+        const listbox = within(screen.getByRole('listbox'))
+
+        expect(listbox.getByText('Calendar 1')).toBeInTheDocument()
+        expect(listbox.getByText('Shared (can create)')).toBeInTheDocument()
+        expect(listbox.queryByText('Subscribed')).not.toBeInTheDocument()
+        expect(
+          listbox.queryByText('Shared (view only)')
+        ).not.toBeInTheDocument()
+      })
+
+      it('keeps the full calendar list, with non-writable ones disabled, when editing', async () => {
+        const user = userEvent.setup()
+        render(
+          <EventForm
+            calendarKey="cal-1"
+            calendars={calendarsWithMixedRights}
+            event={mockEvent}
+            onCancel={onCancel}
+          />
+        )
+        await openCalendarSelect(user)
+        const listbox = within(screen.getByRole('listbox'))
+
+        const optionFor = (label: string) =>
+          listbox.getByText(label).closest('[role="option"]')
+
+        expect(optionFor('Subscribed')).toHaveAttribute('aria-disabled', 'true')
+        expect(optionFor('Shared (view only)')).toHaveAttribute(
+          'aria-disabled',
+          'true'
+        )
+        expect(optionFor('Shared (can create)')).not.toHaveAttribute(
+          'aria-disabled'
+        )
+      })
     })
 
     it('renders all event form sections', () => {

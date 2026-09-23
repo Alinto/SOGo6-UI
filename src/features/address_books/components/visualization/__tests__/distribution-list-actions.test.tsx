@@ -25,7 +25,15 @@ jest.mock('../../../store/address-books-api', () => ({
 }))
 
 jest.mock('../../../hooks/use-active-address-book', () => ({
-  useActiveAddressBookWritable: () => ({ writable: true }),
+  useActiveAddressBookWritable: () => ({
+    writable: true,
+    permissions: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canErase: true,
+    },
+  }),
 }))
 
 jest.mock('../../sidebar/actions/export-entry-dialog', () => ({
@@ -33,8 +41,8 @@ jest.mock('../../sidebar/actions/export-entry-dialog', () => ({
   default: () => null,
 }))
 
-import DistributionListActions from '../distribution-list-actions'
 import { openEditListForm } from '../../../store/address-books-ui-slice'
+import DistributionListActions from '../distribution-list-actions'
 
 const list: VCard = {
   id: 'list-1',
