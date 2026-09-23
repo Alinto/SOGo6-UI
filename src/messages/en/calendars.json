@@ -28,9 +28,7 @@
         }
       },
       "error": {
-        "string": {
-          "string": "Failed to update your attendance"
-        }
+        "string": "Failed to update your attendance"
       }
     },
     "recurrenceScope": {

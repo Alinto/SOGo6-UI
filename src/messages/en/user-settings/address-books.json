@@ -28,7 +28,7 @@
             "Friends": "Friends"
         },
         "color": {
-            "title": "Couleur"
+            "title": "Color"
         },
         "validation": {
             "category-name-required": "Category name is required"

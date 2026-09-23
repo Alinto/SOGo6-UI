@@ -398,7 +398,7 @@ const Visualization: React.FC<VisualizationProps> = ({ data, accentColor }) => {
                 disabled={isAttendanceLoading}
                 onClick={() => handleAttendance(s)}
               >
-                {t(`attendance.${s}`)}
+                {t(`attendance.${s}.string`)}
               </Button>
             ))}
           </div>

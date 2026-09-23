@@ -17,9 +17,9 @@
             }
         },
         "categories": {
-            "Work": "Travail",
-            "Family": "Famille",
-            "Friends": "Amis",
+            "Work": "Work",
+            "Family": "Family",
+            "Friends": "Friends",
             "validation": {
                 "category-name-required": "Category name is required"
             }
