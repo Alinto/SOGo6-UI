@@ -40,6 +40,8 @@ interface SidebarItemProps {
   exportAction?: boolean
   downloadAction?: boolean
   writable?: boolean
+  canImport?: boolean
+  canExport?: boolean
   owner?: string
   icon?: IconName
   onClick: () => void
@@ -58,6 +60,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   exportAction = true,
   downloadAction = true,
   writable = true,
+  canImport = writable,
+  canExport = writable,
   owner,
 }) => {
   const [type, setType] = React.useState('')
@@ -147,14 +151,14 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DialogTrigger>
               )}
               <DropdownMenuSeparator />
-              {importAction && writable && (
+              {importAction && canImport && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('import')}>
                     <span>{t('options.import.string')}</span>
                   </DropdownMenuItem>
                 </DialogTrigger>
               )}
-              {exportAction && writable && (
+              {exportAction && canExport && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('export')}>
                     <span>{t('options.export.string')}</span>

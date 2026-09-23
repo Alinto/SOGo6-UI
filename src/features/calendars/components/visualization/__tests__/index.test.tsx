@@ -46,8 +46,52 @@ describe('Visualization', () => {
         location: 'Room A',
       }
       render(<Visualization data={data} />)
-      expect(screen.getByText('visualization.location.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('visualization.location.string')
+      ).toBeInTheDocument()
       expect(screen.getByText('Room A')).toBeInTheDocument()
+    })
+  })
+
+  describe('permissions', () => {
+    const restricted = {
+      level: 'view-date-time' as const,
+      canViewDetails: false,
+      canModify: false,
+      canDelete: false,
+    }
+
+    it('hides title and details when only date/time is viewable', () => {
+      const data: CalendarEvent = {
+        ...baseEvent,
+        location: 'Room A',
+        description: 'Secret agenda',
+      }
+      render(<Visualization data={data} permissions={restricted} />)
+      expect(screen.queryByText('Plan review')).not.toBeInTheDocument()
+      expect(screen.queryByText('Room A')).not.toBeInTheDocument()
+      expect(screen.queryByText('Secret agenda')).not.toBeInTheDocument()
+      expect(
+        screen.getByText('visualization.restricted.title.string')
+      ).toBeInTheDocument()
+    })
+
+    it('shows details when permissions allow viewing them', () => {
+      const data: CalendarEvent = { ...baseEvent, location: 'Room A' }
+      render(
+        <Visualization
+          data={data}
+          permissions={{
+            ...restricted,
+            level: 'view-all',
+            canViewDetails: true,
+          }}
+        />
+      )
+      expect(screen.getByText('Room A')).toBeInTheDocument()
+      expect(
+        screen.queryByText('visualization.restricted.title.string')
+      ).not.toBeInTheDocument()
     })
   })
 

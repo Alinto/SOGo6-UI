@@ -2,6 +2,12 @@ import { renderHook } from '@testing-library/react'
 
 const mockUseGetAddressBooksQuery = jest.fn()
 const mockUseParams = jest.fn()
+let mockPermissionsByBook: Record<string, unknown> = {}
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: (selector: (state: unknown) => unknown) =>
+    selector({ addressBooksUi: { rightsByBook: mockPermissionsByBook } }),
+}))
 
 jest.mock('next/navigation', () => ({
   useParams: () => mockUseParams(),
@@ -17,8 +23,12 @@ import {
 } from '../use-active-address-book'
 
 const books = {
-  personals: [{ id: 'work', name: 'Work', type: 'personal' as const, description: '' }],
-  subscriptions: [{ id: 'sub1', name: 'Shared', type: 'shared' as const, description: '' }],
+  personals: [
+    { id: 'work', name: 'Work', type: 'personal' as const, description: '' },
+  ],
+  subscriptions: [
+    { id: 'sub1', name: 'Shared', type: 'shared' as const, description: '' },
+  ],
   globals: [],
 }
 
@@ -45,6 +55,7 @@ describe('useActiveAddressBook', () => {
 describe('useActiveAddressBookWritable', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockPermissionsByBook = {}
     mockUseGetAddressBooksQuery.mockReturnValue({ data: books })
   })
 
@@ -67,5 +78,47 @@ describe('useActiveAddressBookWritable', () => {
     expect(result.current.writable).toBe(false)
     expect(result.current.book).toBeNull()
     expect(result.current.bookId).toBe('all')
+  })
+
+  it('exposes per-action permissions from the legacy book type', () => {
+    mockUseParams.mockReturnValue({ book_id: 'work' })
+    const { result } = renderHook(() => useActiveAddressBookWritable())
+    expect(result.current.permissions).toEqual({
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canErase: true,
+    })
+  })
+
+  it('applies the permissions loaded with the contacts of a shared book', () => {
+    mockPermissionsByBook = {
+      sub1: {
+        can_view: true,
+        can_create_objects: false,
+        can_edit_objects: true,
+        can_erase_objects: false,
+      },
+    }
+    mockUseParams.mockReturnValue({ book_id: 'sub1' })
+    const { result } = renderHook(() => useActiveAddressBookWritable())
+    expect(result.current.writable).toBe(true)
+    expect(result.current.permissions).toEqual({
+      canView: true,
+      canCreate: false,
+      canEdit: true,
+      canErase: false,
+    })
+  })
+
+  it('has no write permission in the all-contacts view', () => {
+    mockUseParams.mockReturnValue({ book_id: 'all' })
+    const { result } = renderHook(() => useActiveAddressBookWritable())
+    expect(result.current.permissions).toEqual({
+      canView: true,
+      canCreate: false,
+      canEdit: false,
+      canErase: false,
+    })
   })
 })

@@ -9,10 +9,7 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('../../../store/address-books-api', () => ({
-  useUpdateVCardMutation: () => [
-    mockUpdateVCard,
-    { isLoading: false },
-  ],
+  useUpdateVCardMutation: () => [mockUpdateVCard, { isLoading: false }],
 }))
 
 import { NoteField } from '../note-field'
@@ -30,13 +27,36 @@ describe('NoteField', () => {
     expect(screen.getByPlaceholderText('notes.string')).toBeInTheDocument()
   })
 
-  it('disables edit button when readOnly', () => {
-    render(
-      <NoteField contactId="c1" bookId="work" note="Hello" readOnly />
-    )
-    expect(
-      screen.getByRole('button', { name: 'edit_note.string' })
-    ).toBeDisabled()
+  describe('readOnly (no edit right)', () => {
+    it('does not offer editing an existing note', () => {
+      render(<NoteField contactId="c1" bookId="work" note="Hello" readOnly />)
+      expect(screen.getByText('Hello')).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'edit_note.string' })
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows no editor and no save button when the note is empty', () => {
+      render(<NoteField contactId="c1" bookId="work" readOnly />)
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'save.string' })
+      ).not.toBeInTheDocument()
+      expect(screen.getByText('no_notes.string')).toBeInTheDocument()
+    })
+
+    it('closes the editor when the edit right is revoked after the first render', () => {
+      const { rerender } = render(<NoteField contactId="c1" bookId="work" />)
+      expect(
+        screen.getByRole('button', { name: 'save.string' })
+      ).toBeInTheDocument()
+
+      rerender(<NoteField contactId="c1" bookId="work" readOnly />)
+      expect(
+        screen.queryByRole('button', { name: 'save.string' })
+      ).not.toBeInTheDocument()
+      expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    })
   })
 
   it('saves edited note', async () => {
@@ -56,7 +76,11 @@ describe('NoteField', () => {
         note: 'Updated note',
       })
     })
-    expect(screen.queryByRole('button', { name: 'save.string' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'edit_note.string' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'save.string' })
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'edit_note.string' })
+    ).toBeInTheDocument()
   })
 })

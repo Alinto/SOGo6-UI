@@ -20,7 +20,8 @@ const defaultProps = {
   exportLabel: 'Export',
   exportTestId: 'export-entry-button',
   onExportOpen: jest.fn(),
-  writable: true,
+  canEdit: true,
+  canErase: true,
   editLabel: 'Edit',
   editTestId: 'edit-entry-button',
   onEdit: jest.fn(),
@@ -61,9 +62,7 @@ describe('EntryActionsShell', () => {
   })
 
   it('disables the write button when writeMessageDisabled is true', () => {
-    render(
-      <EntryActionsShell {...defaultProps} writeMessageDisabled />
-    )
+    render(<EntryActionsShell {...defaultProps} writeMessageDisabled />)
 
     expect(screen.getByTestId('write-message-button')).toBeDisabled()
   })
@@ -71,13 +70,37 @@ describe('EntryActionsShell', () => {
   it('hides edit and delete actions when the book is read-only', async () => {
     const user = userEvent.setup()
 
-    render(<EntryActionsShell {...defaultProps} writable={false} />)
+    render(
+      <EntryActionsShell {...defaultProps} canEdit={false} canErase={false} />
+    )
 
     await user.click(screen.getByTestId('entry-actions-menu'))
 
     expect(screen.getByTestId('export-entry-button')).toBeInTheDocument()
     expect(screen.queryByTestId('edit-entry-button')).not.toBeInTheDocument()
     expect(screen.queryByTestId('delete-entry-button')).not.toBeInTheDocument()
+  })
+
+  it('shows only edit when the user cannot erase', async () => {
+    const user = userEvent.setup()
+
+    render(<EntryActionsShell {...defaultProps} canErase={false} />)
+
+    await user.click(screen.getByTestId('entry-actions-menu'))
+
+    expect(screen.getByTestId('edit-entry-button')).toBeInTheDocument()
+    expect(screen.queryByTestId('delete-entry-button')).not.toBeInTheDocument()
+  })
+
+  it('shows only delete when the user cannot edit', async () => {
+    const user = userEvent.setup()
+
+    render(<EntryActionsShell {...defaultProps} canEdit={false} />)
+
+    await user.click(screen.getByTestId('entry-actions-menu'))
+
+    expect(screen.queryByTestId('edit-entry-button')).not.toBeInTheDocument()
+    expect(screen.getByTestId('delete-entry-button')).toBeInTheDocument()
   })
 
   it('calls edit and delete handlers from the actions menu', async () => {
@@ -126,7 +149,9 @@ describe('EntryActionsShell', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: 'Confirm delete' })).toBeDisabled()
+    expect(
+      screen.getByRole('button', { name: 'Confirm delete' })
+    ).toBeDisabled()
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDisabled()
   })
 })

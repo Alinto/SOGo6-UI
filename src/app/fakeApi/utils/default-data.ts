@@ -67,6 +67,13 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       read_only: false,
       owner: 'team-lead@example.com',
       permissions: 'readwrite',
+      rights: {
+        public: 'modify',
+        confidential: 'view-date-time',
+        private: 'none',
+        can_create_objects: true,
+        can_erase_objects: true,
+      },
       event_duration: 60,
       show_as_busy: true,
       event_notifications: [
@@ -88,6 +95,13 @@ export const DEFAULT_CALENDARS: CalendarsResponse = {
       read_only: true,
       owner: 'admin@example.com',
       permissions: 'read',
+      rights: {
+        public: 'view-all',
+        confidential: 'view-date-time',
+        private: 'none',
+        can_create_objects: false,
+        can_erase_objects: false,
+      },
       event_duration: 60,
       show_as_busy: true,
       event_notifications: [{ method: 'popup', minutes_before: 0 }],

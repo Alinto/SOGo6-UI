@@ -32,7 +32,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({
   } = data
 
   const { book_id, contact_id } = useParams()
-  const { writable } = useActiveAddressBookWritable()
+  const { permissions } = useActiveAddressBookWritable()
   const t = useTranslations('CONTACT_FORM')
 
   return (
@@ -213,7 +213,7 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({
             note={note}
             contactId={contact_id as string}
             bookId={book_id as string}
-            readOnly={!writable}
+            readOnly={!permissions.canEdit}
           />
         </section>
       </CardContent>

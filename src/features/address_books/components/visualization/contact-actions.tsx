@@ -28,7 +28,7 @@ function ContactActions({
   const { push } = useRouter()
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [exportOpen, setExportOpen] = useState(false)
-  const { writable } = useActiveAddressBookWritable()
+  const { permissions } = useActiveAddressBookWritable()
   const [deleteContact, { isLoading: isDeleting }] =
     useDeleteVCardFromAddressBookMutation()
 
@@ -75,7 +75,8 @@ function ContactActions({
       exportLabel={t('export.string')}
       exportTestId="export-contact-button"
       onExportOpen={() => setExportOpen(true)}
-      writable={writable}
+      canEdit={permissions.canEdit}
+      canErase={permissions.canErase}
       editLabel={t('edit.string')}
       editTestId="edit-contact-button"
       onEdit={handleEdit}

@@ -1,26 +1,26 @@
 export type {
   AddressBook,
-  AddressBooks,
   AddressBookType,
+  AddressBooks,
   ContactKind,
   ContactMember,
   VCard,
 } from './address-books-types'
 
 export {
+  addressBooksApiEndpoints,
   useAddAddressBookMutation,
   useAddVCardToAddressBookMutation,
   useDeleteAddressBookMutation,
   useDeleteVCardFromAddressBookMutation,
-  useGetAddressBookVCardsQuery,
   useGetAddressBookContactPickerQuery,
+  useGetAddressBookVCardsQuery,
   useGetAddressBooksQuery,
   useGetVCardQuery,
+  useLazySearchContactsAutocompleteQuery,
+  useSearchContactsAutocompleteQuery,
   useUpdateAddressBookMutation,
   useUpdateVCardMutation,
-  useSearchContactsAutocompleteQuery,
-  useLazySearchContactsAutocompleteQuery,
-  addressBooksApiEndpoints,
 } from './store/address-books-api'
 
 export {
@@ -31,6 +31,7 @@ export {
   openEditForm,
   openEditListForm,
   selectAddressBooksUi,
+  setBookRights,
   setFormBookId,
   setPage,
   setPageSize,
@@ -66,8 +67,8 @@ export {
 } from './hooks/use-address-book-state'
 
 export {
-  useAddressBookEntries,
   selectBookEntriesItems,
+  useAddressBookEntries,
 } from './hooks/use-address-book-entries'
 
 export { useAddressBookContactPicker } from './hooks/use-address-book-contact-picker'

@@ -6,6 +6,10 @@ import { type Calendar, type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
 import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
+import {
+  findCalendarByRef,
+  getEventPermissions,
+} from '@/features/calendars/utils/event-permissions'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { DATE_LOCALES } from '@/lib/i18n/date-locales'
 import {
@@ -15,7 +19,7 @@ import {
 } from '@/lib/utils/form-dialog-layout'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
 import { useLocale, useTranslations } from 'next-intl'
-import { memo, useEffect } from 'react'
+import { memo, useCallback, useEffect } from 'react'
 import {
   dateFnsLocalizer,
   type DateLocalizer,
@@ -146,6 +150,15 @@ function CalendarView({
   const locale = useLocale()
   const isMobile = useIsMobile()
 
+  const isEventModifiable = useCallback(
+    (event: CalendarEventWithDate) =>
+      getEventPermissions(
+        event,
+        findCalendarByRef(calendars, event.calendar_id ?? event.calendar_key)
+      ).canModify,
+    [calendars]
+  )
+
   // Inject dynamic CSS for calendar colors
   useEffect(() => {
     const STYLE_ID = 'calendar-colors-style'
@@ -186,8 +199,7 @@ function CalendarView({
   }, [defaultColor, calendarColorMap])
 
   const eventStyleGetter = (event: CalendarEventWithDate) => {
-    const color =
-      calendarColorMap[event.calendar_id ?? ''] || defaultColor
+    const color = calendarColorMap[event.calendar_id ?? ''] || defaultColor
 
     return {
       style: {
@@ -270,8 +282,8 @@ function CalendarView({
               view={view}
               onView={onViewChange}
               resizable
-              draggableAccessor={() => true}
-              resizableAccessor={() => true}
+              draggableAccessor={isEventModifiable}
+              resizableAccessor={isEventModifiable}
               events={events}
               onSelectSlot={onSelectSlot}
               onSelectEvent={onSelectEvent}

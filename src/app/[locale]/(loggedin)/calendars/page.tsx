@@ -25,10 +25,7 @@ import {
   type CalendarEvent,
 } from '@/features/calendars'
 import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
-import {
-  DEFAULT_CALENDAR_COLOR,
-  type Calendar,
-} from '@/features/calendars/calendars-types'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { CalendarToolbar } from '@/features/calendars/components/calendar-toolbar'
 import { LazyCalendarView } from '@/features/calendars/components/calendar-view-lazy'
 import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
@@ -41,6 +38,10 @@ import Visualization from '@/features/calendars/components/visualization'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
 import { clearCreateEventRequest } from '@/features/calendars/store/calendar-ui-slice'
+import {
+  findCalendarByRef,
+  getEventPermissions,
+} from '@/features/calendars/utils/event-permissions'
 import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
 import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
@@ -87,17 +88,6 @@ function mergeEventDetailWithListSelection(
       calendarRef || (listEvent.calendar_id ?? detail.calendar_id ?? null),
     calendar_key: calendarRef || listEvent.calendar_key || detail.calendar_key,
   }
-}
-
-function findCalendarByRef(
-  calendars: Calendar[] | undefined,
-  calendarRef: string
-): Calendar | undefined {
-  if (!calendars?.length || !calendarRef.trim()) return undefined
-  const ref = calendarRef.trim()
-  return calendars.find(
-    (cal) => cal.key === ref || cal.id === ref || (cal.key ?? cal.id) === ref
-  )
 }
 
 const CalendarPage = () => {
@@ -225,7 +215,13 @@ const CalendarPage = () => {
     [calendarState.calendarsData, eventCalendarKey]
   )
 
-  const isSelectedEventWritable = isCalendarWritable(selectedEventCalendar)
+  const eventPermissions = useMemo(
+    () =>
+      displayEvent
+        ? getEventPermissions(displayEvent, selectedEventCalendar)
+        : null,
+    [displayEvent, selectedEventCalendar]
+  )
 
   const handleDeleteSelectedEvent = async (scope?: RecurrenceScope) => {
     if (!selectedEvent) return
@@ -328,7 +324,9 @@ const CalendarPage = () => {
           {selectedEvent && displayEvent && dialogMode === 'view' && (
             <>
               <DialogTitle className={cn('sr-only')}>
-                {selectedEvent.title}
+                {eventPermissions?.canViewDetails === false
+                  ? t('visualization.restricted.title.string')
+                  : selectedEvent.title}
               </DialogTitle>
               {isDetailFetching && eventKeyForQuery !== null ? (
                 <div className={cn('flex flex-col gap-3 p-4')}>
@@ -342,6 +340,7 @@ const CalendarPage = () => {
                   accentColor={
                     selectedEventCalendar?.color ?? DEFAULT_CALENDAR_COLOR
                   }
+                  permissions={eventPermissions ?? undefined}
                 />
               )}
               <div
@@ -349,48 +348,47 @@ const CalendarPage = () => {
                   'mt-4 flex flex-wrap items-center justify-between gap-2'
                 )}
               >
-                {isSelectedEventWritable && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isDetailFetching && eventKeyForQuery !== null}
-                      onClick={() => setDialogMode('edit')}
-                    >
-                      <Pencil className={cn('mr-2 h-4 w-4')} />
-                      {t('forms.editEvent.string')}
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="destructive"
-                          disabled={
-                            isDetailFetching && eventKeyForQuery !== null
-                          }
-                        >
+                {eventPermissions?.canModify && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isDetailFetching && eventKeyForQuery !== null}
+                    onClick={() => setDialogMode('edit')}
+                  >
+                    <Pencil className={cn('mr-2 h-4 w-4')} />
+                    {t('forms.editEvent.string')}
+                  </Button>
+                )}
+                {eventPermissions?.canDelete && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="destructive"
+                        className={cn('ml-auto')}
+                        disabled={isDetailFetching && eventKeyForQuery !== null}
+                      >
+                        {t('forms.deleteEvent.confirm.button.string')}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          {t('forms.deleteEvent.confirm.title.string')}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {t('forms.deleteEvent.confirm.description.string')}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>
+                          {t('common.cancel.string')}
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmDeleteClick}>
                           {t('forms.deleteEvent.confirm.button.string')}
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            {t('forms.deleteEvent.confirm.title.string')}
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            {t('forms.deleteEvent.confirm.description.string')}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>
-                            {t('common.cancel.string')}
-                          </AlertDialogCancel>
-                          <AlertDialogAction onClick={handleConfirmDeleteClick}>
-                            {t('forms.deleteEvent.confirm.button.string')}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </>
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 )}
               </div>
             </>

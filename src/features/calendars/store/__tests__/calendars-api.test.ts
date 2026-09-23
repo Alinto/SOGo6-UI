@@ -46,6 +46,69 @@ describe('calendars-api', () => {
     })
   })
 
+  describe('rights normalization', () => {
+    const apiRights = {
+      can_create_objects: false,
+      can_erase_objects: false,
+      confidential: 'none',
+      private: 'none',
+      public: 'view-date-time',
+    }
+    const calendar = { key: 'c1', name: 'C', description: null }
+    const event = {
+      key: 'e1',
+      id: null,
+      calendar_id: 'c1',
+      title: 'T',
+      all_day: false,
+      created_at: '',
+      updated_at: '',
+    }
+
+    it('keeps rights on a calendar', () => {
+      const result = CalendarsApi.normalizeCalendar({
+        ...calendar,
+        rights: apiRights,
+      } as never)
+      expect(result.rights).toEqual(apiRights)
+    })
+
+    it('keeps rights on an event', () => {
+      expect(
+        CalendarsApi.normalizeCalendarEvent({
+          ...event,
+          rights: apiRights,
+        } as never).rights
+      ).toEqual(apiRights)
+    })
+
+    it('fills missing keys with the most restrictive value', () => {
+      const result = CalendarsApi.normalizeCalendarEvent({
+        ...event,
+        rights: { public: 'modify' },
+      } as never)
+      expect(result.rights).toEqual({
+        public: 'modify',
+        confidential: 'none',
+        private: 'none',
+        can_create_objects: false,
+        can_erase_objects: false,
+      })
+    })
+
+    it('ignores non-object rights and omits the rights key', () => {
+      const result = CalendarsApi.normalizeCalendar({
+        ...calendar,
+        rights: 'readwrite',
+      } as never)
+      expect(result.rights).toBeUndefined()
+      expect('rights' in result).toBe(false)
+      expect(
+        'rights' in CalendarsApi.normalizeCalendarEvent(event as never)
+      ).toBe(false)
+    })
+  })
+
   describe('setCalendarShareQuery', () => {
     const baseUser = {
       uid: 'jnadal@snapshot.alinto.org',

@@ -20,8 +20,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Download, Mail, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { memo, type ReactNode } from 'react'
-import ExportEntryDialog from '../sidebar/actions/export-entry-dialog'
 import type { ContactKind } from '../../address-books-types'
+import ExportEntryDialog from '../sidebar/actions/export-entry-dialog'
 
 type EntryActionsShellProps = {
   writeMessageLabel: string
@@ -33,7 +33,8 @@ type EntryActionsShellProps = {
   exportLabel: string
   exportTestId: string
   onExportOpen: () => void
-  writable: boolean
+  canEdit: boolean
+  canErase: boolean
   editLabel: string
   editTestId: string
   onEdit: () => void
@@ -67,7 +68,8 @@ function EntryActionsShell({
   exportLabel,
   exportTestId,
   onExportOpen,
-  writable,
+  canEdit,
+  canErase,
   editLabel,
   editTestId,
   onEdit,
@@ -92,7 +94,7 @@ function EntryActionsShell({
 }: EntryActionsShellProps) {
   return (
     <>
-      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1">
+      <div className="flex max-w-full min-w-0 flex-wrap items-center gap-1">
         <Button
           variant="outline"
           size="sm"
@@ -123,22 +125,22 @@ function EntryActionsShell({
               {exportLabel}
             </DropdownMenuItem>
             {extraMenuItems}
-            {writable && (
-              <>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={onEdit} data-testid={editTestId}>
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {editLabel}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="text-destructive focus:text-destructive"
-                  onClick={onDeleteOpen}
-                  data-testid={deleteTestId}
-                >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  {deleteLabel}
-                </DropdownMenuItem>
-              </>
+            {(canEdit || canErase) && <DropdownMenuSeparator />}
+            {canEdit && (
+              <DropdownMenuItem onClick={onEdit} data-testid={editTestId}>
+                <Pencil className="mr-2 h-4 w-4" />
+                {editLabel}
+              </DropdownMenuItem>
+            )}
+            {canErase && (
+              <DropdownMenuItem
+                className="text-destructive focus:text-destructive"
+                onClick={onDeleteOpen}
+                data-testid={deleteTestId}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                {deleteLabel}
+              </DropdownMenuItem>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
@@ -157,14 +159,15 @@ function EntryActionsShell({
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>{deleteDialogTitle}</AlertDialogTitle>
-            <AlertDialogDescription>{deleteDialogDescription}</AlertDialogDescription>
+            <AlertDialogDescription>
+              {deleteDialogDescription}
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>{cancelLabel}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={onConfirmDelete}
-              disabled={isDeleting}
-            >
+            <AlertDialogCancel disabled={isDeleting}>
+              {cancelLabel}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={onConfirmDelete} disabled={isDeleting}>
               {deleteConfirmLabel}
             </AlertDialogAction>
           </AlertDialogFooter>

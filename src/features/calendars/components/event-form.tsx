@@ -276,6 +276,11 @@ export function EventForm({
     return [active, ...next]
   }, [calendars, resolvedCalendarKey])
 
+  const selectableCalendars = useMemo(() => {
+    const ordered = calendarsForSelect ?? calendars
+    return isEditing ? ordered : ordered?.filter(isCalendarWritable)
+  }, [calendarsForSelect, calendars, isEditing])
+
   const form = useForm<EventFormValues>({
     resolver: zodResolver(schema) as Resolver<EventFormValues>,
     defaultValues: {
@@ -530,7 +535,7 @@ export function EventForm({
         className={cn('flex min-h-0 w-full flex-1 flex-col overflow-hidden')}
       >
         <div className={formDialogBodyClassName}>
-          {calendars && calendars.length > 0 ? (
+          {selectableCalendars && selectableCalendars.length > 0 ? (
             <FormField
               control={form.control}
               name="calendar_key"
@@ -548,7 +553,7 @@ export function EventForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {(calendarsForSelect ?? calendars).map((cal) => {
+                      {selectableCalendars.map((cal) => {
                         const calKey = cal.key ?? cal.id ?? ''
                         if (!calKey) return null
                         const writable = isCalendarWritable(cal)

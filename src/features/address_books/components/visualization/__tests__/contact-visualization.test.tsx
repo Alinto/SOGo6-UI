@@ -26,7 +26,13 @@ jest.mock('../contact-actions', () => ({
 }))
 
 jest.mock('../email-item', () => ({
-  EmailItem: ({ email, displayName }: { email: string; displayName?: string }) => (
+  EmailItem: ({
+    email,
+    displayName,
+  }: {
+    email: string
+    displayName?: string
+  }) => (
     <div data-testid="email-item">
       {email}:{displayName}
     </div>
@@ -38,7 +44,15 @@ jest.mock('../note-field', () => ({
 }))
 
 jest.mock('../../../hooks/use-active-address-book', () => ({
-  useActiveAddressBookWritable: () => ({ writable: true }),
+  useActiveAddressBookWritable: () => ({
+    writable: true,
+    permissions: {
+      canView: true,
+      canCreate: true,
+      canEdit: true,
+      canErase: true,
+    },
+  }),
 }))
 
 import ContactVisualization from '../contact-visualization'

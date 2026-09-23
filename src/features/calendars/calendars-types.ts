@@ -88,6 +88,14 @@ export interface CalendarEvent {
   transparency?: 'opaque' | 'transparent'
   locked?: boolean
   source?: string // URL for imported events
+
+  /**
+   * Rights of the connected user on this event (GET /events/{event_key}).
+   * `public` / `confidential` / `private` hold the level granted for the
+   * event's own classification (`visibility`); when absent, fall back to
+   * the calendar's rights.
+   */
+  rights?: CalendarShareRights
 }
 
 export interface CalendarEventsResponse {
@@ -178,6 +186,7 @@ export type Calendar = {
   event_notifications?: EventReminder[]
   all_day_notifications?: EventReminder[]
   show_as_busy?: boolean
+  rights?: CalendarShareRights
 }
 
 export interface CalendarsResponse {
@@ -336,7 +345,6 @@ export type CalendarShareLevel =
   | 'none'
   | 'view-date-time'
   | 'view-all'
-  | 'respond-to'
   | 'modify'
 
 /**

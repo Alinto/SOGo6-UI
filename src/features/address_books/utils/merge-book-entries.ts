@@ -5,6 +5,7 @@ import type {
   BookEntriesResponse,
 } from '../address-books-api-types'
 import type { VCard } from '../address-books-types'
+import { extractContactsRights } from './address-book-permissions'
 import { isDistributionList } from './distribution-list'
 import { normalizeContact, normalizeContactsList } from './normalize-contact'
 import {
@@ -73,10 +74,14 @@ export function parseContactsAndListsFromBackend(
 
   const listTotal = listsPagination?.total ?? rawLists.length
 
-  return buildBookEntriesResponse(contacts, lists, contactsPagination, {
-    listTotal,
-    listsPagination,
-  })
+  const response = buildBookEntriesResponse(
+    contacts,
+    lists,
+    contactsPagination,
+    { listTotal, listsPagination }
+  )
+  const rights = extractContactsRights(contactsPayload)
+  return rights ? { ...response, rights } : response
 }
 
 export function parseFakeBookEntries(payload: unknown): BookEntriesResponse {
