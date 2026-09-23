@@ -41,6 +41,7 @@ interface ExternalAccountFormProps {
   error: string | null
   mode: typeof MODE_EDIT | typeof MODE_CREATE
   onSuccess?: () => void
+  embedded?: boolean
 }
 
 function ExternalAccountForm({
@@ -50,6 +51,7 @@ function ExternalAccountForm({
   error,
   mode,
   onSuccess,
+  embedded = false,
 }: ExternalAccountFormProps) {
   const t = useTranslations('US_MAIL_EXTERNAL_ACCOUNTS')
   const t_commons = useTranslations('FORM_COMMONS')
@@ -136,15 +138,17 @@ function ExternalAccountForm({
         <Card>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={onBack}
-                aria-label={t('edit.back_button.string')}
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
+              {!embedded && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onBack}
+                  aria-label={t('edit.back_button.string')}
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              )}
               <div>
                 {mode === MODE_EDIT && (
                   <div>
@@ -185,12 +189,11 @@ function ExternalAccountForm({
         </Card>
 
         <FixedFormButtonGroup
+          mode={embedded ? 'inline' : 'floating'}
           onReset={() => data && form.reset()}
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}
           errors={form.formState.errors}
-          // resetLabel={formT('reset.default.string')}
-          // submitLabel={formT('save.default.string')}
         />
       </form>
     </Form>

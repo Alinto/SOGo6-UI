@@ -1,5 +1,9 @@
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
-import { apiSlice, MAILBOXES_SLICE } from '@/lib/redux/api/api-slice'
+import {
+  apiSlice,
+  MAILBOXES_SLICE,
+  PROFILE_SLICE,
+} from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
 import type { Dispatch } from 'redux'
 import {
@@ -55,7 +59,7 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
         method: 'POST',
         body: post,
       }),
-      invalidatesTags: [MAILBOXES_SLICE],
+      invalidatesTags: [MAILBOXES_SLICE, PROFILE_SLICE],
       onQueryStarted: mailboxesOnQueryStarted,
     }),
 

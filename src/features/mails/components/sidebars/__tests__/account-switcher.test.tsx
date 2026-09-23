@@ -40,6 +40,14 @@ jest.mock('@/features/user-profile', () => ({
   useProfile: jest.fn(),
 }))
 
+jest.mock(
+  '@/features/user-settings/mail/external-accounts/components/add-external-account-dialog',
+  () => ({
+    AddExternalAccountDialog: ({ open }: { open: boolean }) =>
+      open ? <div data-testid="add-external-account-dialog" /> : null,
+  })
+)
+
 // --- Imports after mocks ---
 
 import { useProfile } from '@/features/user-profile'
@@ -139,21 +147,26 @@ describe('AccountSwitcher', () => {
       expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
     })
 
-    it('navigates to imap settings when add account is clicked', async () => {
+    it('opens the add account dialog without leaving the inbox', async () => {
       const user = userEvent.setup()
       const mockPush = jest.fn()
       ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
       mockProfile({ canAddExternalAccount: true })
       render(<AccountSwitcher />)
 
+      expect(
+        screen.queryByTestId('add-external-account-dialog')
+      ).not.toBeInTheDocument()
+
       const addBtn = screen
         .getByText('account_switcher.add_account.string')
         .closest('button')!
       await user.click(addBtn)
 
-      expect(mockPush).toHaveBeenCalledWith(
-        '/user_settings/mail/external_accounts'
-      )
+      expect(
+        screen.getByTestId('add-external-account-dialog')
+      ).toBeInTheDocument()
+      expect(mockPush).not.toHaveBeenCalled()
     })
   })
 

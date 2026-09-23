@@ -82,6 +82,7 @@
       }
     },
     "labels": {
+      "sameAsIncoming": "Use the same settings as the incoming server",
       "name": "Name",
       "email": "Email",
       "replyTo": "Reply to",
