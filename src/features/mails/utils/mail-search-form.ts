@@ -27,9 +27,9 @@ export const searchFormSchema = z.object({
     .min(1),
   text: z.string(),
   subject: z.string(),
-  from: z.string(),
-  to: z.string(),
-  bcc: z.string(),
+  from: z.array(z.string()),
+  to: z.array(z.string()),
+  bcc: z.array(z.string()),
   hasAttachment: z.boolean(),
   attachmentType: z.array(z.string()),
   dateRangePreset: z.enum(dateRangePresets),
@@ -52,9 +52,9 @@ export const defaultSearchFormValues: SearchFormValues = {
   fieldScope: ['subject', 'sender'],
   text: '',
   subject: '',
-  from: '',
-  to: '',
-  bcc: '',
+  from: [],
+  to: [],
+  bcc: [],
   hasAttachment: false,
   attachmentType: [],
   dateRangePreset: 'anytime',
@@ -177,15 +177,15 @@ export function buildMailSearchParams(
   const params: MailSearchParams = {}
   const text = values.text.trim()
   const subject = values.subject.trim()
-  const from = values.from.trim()
-  const to = values.to.trim()
-  const bcc = values.bcc.trim()
+  const from = values.from.map((value) => value.trim()).filter(Boolean)
+  const to = values.to.map((value) => value.trim()).filter(Boolean)
+  const bcc = values.bcc.map((value) => value.trim()).filter(Boolean)
 
   if (text) params.text = text
   if (subject) params.subject = subject
-  if (from) params.from = from
-  if (to) params.to = to
-  if (bcc) params.bcc = bcc
+  if (from.length > 0) params.from = from
+  if (to.length > 0) params.to = to
+  if (bcc.length > 0) params.bcc = bcc
   if (values.hasAttachment) params.has_attachment = true
   if (values.attachmentType.length > 0) {
     params.attachment_type = values.attachmentType
@@ -232,9 +232,9 @@ export function mailSearchParamsToFormValues(
     fieldScope: fieldScope.length > 0 ? fieldScope : ['subject', 'sender'],
     text: params.text ?? '',
     subject: params.subject ?? '',
-    from: params.from ?? '',
-    to: params.to ?? '',
-    bcc: params.bcc ?? '',
+    from: params.from ?? [],
+    to: params.to ?? [],
+    bcc: params.bcc ?? [],
     hasAttachment: params.has_attachment ?? false,
     attachmentType: params.attachment_type ?? [],
     dateRangePreset: dateRangeToPreset(
@@ -312,9 +312,9 @@ export function mailSearchParamsToQueryText(params: MailSearchParams): string {
   }
 
   if (params.subject) criteria.push(`subject:${quoteIfNeeded(params.subject)}`)
-  if (params.from) criteria.push(`from:${quoteIfNeeded(params.from)}`)
-  if (params.to) criteria.push(`to:${quoteIfNeeded(params.to)}`)
-  if (params.bcc) criteria.push(`bcc:${quoteIfNeeded(params.bcc)}`)
+  params.from?.forEach((value) => criteria.push(`from:${quoteIfNeeded(value)}`))
+  params.to?.forEach((value) => criteria.push(`to:${quoteIfNeeded(value)}`))
+  params.bcc?.forEach((value) => criteria.push(`bcc:${quoteIfNeeded(value)}`))
   if (params.text) criteria.push(quoteIfNeeded(params.text))
 
   if (params.has_attachment) filters.push('has:attachment')
@@ -358,13 +358,16 @@ function applyQueryToken(
 ): boolean {
   switch (key) {
     case 'from':
-      values.from = value
+      if (!value) return false
+      values.from = [...values.from, value]
       return true
     case 'to':
-      values.to = value
+      if (!value) return false
+      values.to = [...values.to, value]
       return true
     case 'bcc':
-      values.bcc = value
+      if (!value) return false
+      values.bcc = [...values.bcc, value]
       return true
     case 'subject':
       values.subject = value
@@ -436,9 +439,9 @@ export function queryTextToSearchFormValues(
     ...base,
     text: '',
     subject: '',
-    from: '',
-    to: '',
-    bcc: '',
+    from: [],
+    to: [],
+    bcc: [],
     hasAttachment: false,
     attachmentType: [],
     dateRangePreset: 'anytime',
@@ -519,9 +522,15 @@ export function mailSearchParamsToUrlSearchParams(
   const urlParams = new URLSearchParams()
   if (params.text) urlParams.set('text', params.text)
   if (params.subject) urlParams.set('subject', params.subject)
-  if (params.from) urlParams.set('from', params.from)
-  if (params.to) urlParams.set('to', params.to)
-  if (params.bcc) urlParams.set('bcc', params.bcc)
+  if (params.from && params.from.length > 0) {
+    urlParams.set('from', params.from.join(URL_ARRAY_PARAM_SEPARATOR))
+  }
+  if (params.to && params.to.length > 0) {
+    urlParams.set('to', params.to.join(URL_ARRAY_PARAM_SEPARATOR))
+  }
+  if (params.bcc && params.bcc.length > 0) {
+    urlParams.set('bcc', params.bcc.join(URL_ARRAY_PARAM_SEPARATOR))
+  }
   if (params.has_attachment) urlParams.set('has_attachment', '1')
   if (params.attachment_type && params.attachment_type.length > 0) {
     urlParams.set(
@@ -562,11 +571,11 @@ export function urlSearchParamsToMailSearchParams(
   const subject = urlParams.get('subject')
   if (subject) params.subject = subject
   const from = urlParams.get('from')
-  if (from) params.from = from
+  if (from) params.from = from.split(URL_ARRAY_PARAM_SEPARATOR).filter(Boolean)
   const to = urlParams.get('to')
-  if (to) params.to = to
+  if (to) params.to = to.split(URL_ARRAY_PARAM_SEPARATOR).filter(Boolean)
   const bcc = urlParams.get('bcc')
-  if (bcc) params.bcc = bcc
+  if (bcc) params.bcc = bcc.split(URL_ARRAY_PARAM_SEPARATOR).filter(Boolean)
   if (urlParams.get('has_attachment') === '1') params.has_attachment = true
   const attachmentType = urlParams.get('attachment_type')
   if (attachmentType) {
@@ -616,7 +625,7 @@ export function buildAdvancedSearchPath(
 
 export function isSimpleBarCompatible(params: MailSearchParams): boolean {
   const hasAdvancedOnlyFields = Boolean(
-    params.bcc ||
+    (params.bcc && params.bcc.length > 0) ||
     params.has_attachment ||
     (params.attachment_type && params.attachment_type.length > 0) ||
     params.date_range?.start ||
@@ -629,10 +638,17 @@ export function isSimpleBarCompatible(params: MailSearchParams): boolean {
   )
   if (hasAdvancedOnlyFields) return false
 
+  // The simple bar can only ever write a single term into from/to (one
+  // per selected scope) — multiple addresses on either field means the
+  // search can only have come from (or be edited via) the advanced modal.
+  if ((params.from?.length ?? 0) > 1 || (params.to?.length ?? 0) > 1) {
+    return false
+  }
+
   const textFields = [
     params.subject,
-    params.from,
-    params.to,
+    params.from?.[0],
+    params.to?.[0],
     params.text,
   ].filter((value): value is string => Boolean(value))
   if (new Set(textFields).size > 1) return false

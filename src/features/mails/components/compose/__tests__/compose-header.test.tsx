@@ -54,6 +54,16 @@ jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
   })),
 }))
 
+jest.mock(
+  '@/features/address_books/hooks/use-save-recipient-as-contact',
+  () => ({
+    useSaveRecipientAsContact: () => ({
+      saveAsContact: jest.fn(),
+      canSaveAsContact: true,
+    }),
+  })
+)
+
 jest.mock('@/features/mails/store/mail-compose-selectors', () => ({
   selectDraftData: jest.fn(() => () => ({
     toRecipients: [],

@@ -282,14 +282,6 @@ export interface AttendeeInputItem {
   status?: 'needs-action' | 'accepted' | 'declined' | 'tentative'
 }
 
-export interface UserSearchResult {
-  uid: string
-  email: string
-  name: string
-  department?: string
-  avatar_url?: string
-}
-
 export type AttendanceStatus =
   | 'accepted'
   | 'declined'

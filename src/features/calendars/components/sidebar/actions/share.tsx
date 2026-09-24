@@ -10,7 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Select,
@@ -20,6 +19,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import ShareUserPicker, {
+  type SharePickedUser,
+} from '@/features/address_books/components/share-user-picker'
 import {
   useGetCalendarShareQuery,
   useSetCalendarShareMutation,
@@ -31,14 +33,7 @@ import {
   defaultCalendarShareRights,
 } from '@/features/calendars/utils/calendar-permission-mapping'
 import { useProfile } from '@/features/user-profile'
-import {
-  Calendar,
-  ChevronDown,
-  Loader2,
-  Plus,
-  Trash2,
-  Users,
-} from 'lucide-react'
+import { Calendar, ChevronDown, Loader2, Trash2, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { memo } from 'react'
 import type {
@@ -55,8 +50,6 @@ interface ShareCalendarActionProps {
   /** Hides the "add user" input/button — used when only editing/removing existing grants is allowed. */
   allowAddUsers?: boolean
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function getInitials(email?: string): string {
   if (email) {
@@ -78,8 +71,6 @@ const ShareCalendarAction: React.FC<ShareCalendarActionProps> = ({
 
   const [localUsers, setLocalUsers] = React.useState<CalendarShareUser[]>([])
   const [expandedUid, setExpandedUid] = React.useState<string | null>(null)
-  const [newUserEmail, setNewUserEmail] = React.useState('')
-  const [emailError, setEmailError] = React.useState<string | null>(null)
 
   const { data, isLoading } = useGetCalendarShareQuery({ calendarKey })
   const [setCalendarShare, { isLoading: isSaving }] =
@@ -114,35 +105,23 @@ const ShareCalendarAction: React.FC<ShareCalendarActionProps> = ({
     (id) => id.isDefault
   )?.mail
 
-  const handleAddUser = (): void => {
-    const trimmed = newUserEmail.trim()
-
-    if (!EMAIL_REGEX.test(trimmed)) {
-      setEmailError(t('sidebar.sharing.addUser.error.invalid.string'))
-      return
-    }
-
-    const alreadyExists = localUsers.some(
+  const isAlreadyShared = ({ uid, email }: SharePickedUser): boolean =>
+    localUsers.some(
       (u) =>
-        u.uid.toLowerCase() === trimmed.toLowerCase() ||
-        u.c_email?.toLowerCase() === trimmed.toLowerCase()
+        u.uid.toLowerCase() === uid.toLowerCase() ||
+        u.c_email?.toLowerCase() === email.toLowerCase()
     )
-    if (alreadyExists) {
-      setEmailError(t('sidebar.sharing.addUser.error.duplicate.string'))
-      return
-    }
 
+  const handleAddUser = ({ uid, email }: SharePickedUser): void => {
     const newUser: CalendarShareUser = {
-      uid: trimmed,
-      c_email: trimmed,
+      uid,
+      c_email: email,
       userClass: 'normal-user',
       rights: defaultCalendarShareRights(),
     }
 
     setLocalUsers((prev) => [...prev, newUser])
-    setExpandedUid(trimmed)
-    setNewUserEmail('')
-    setEmailError(null)
+    setExpandedUid(uid)
   }
 
   const handleRemoveUser = (uid: string): void => {
@@ -167,13 +146,6 @@ const ShareCalendarAction: React.FC<ShareCalendarActionProps> = ({
       onClose?.()
     } catch {
       // Error handled by createApiNotificationHandler
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddUser()
     }
   }
 
@@ -362,37 +334,16 @@ const ShareCalendarAction: React.FC<ShareCalendarActionProps> = ({
           <>
             <Separator />
 
-            <div className="shrink-0 space-y-2">
-              <p className="text-sm font-medium">
-                {t('sidebar.sharing.addUser.label.string')}
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  value={newUserEmail}
-                  onChange={(e) => {
-                    setNewUserEmail(e.target.value)
-                    if (emailError) setEmailError(null)
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder={t('sidebar.sharing.addUser.placeholder.string')}
-                  className="h-8 flex-1 text-sm"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  className="h-8 shrink-0"
-                  onClick={handleAddUser}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="sr-only">
-                    {t('sidebar.sharing.addUser.button.string')}
-                  </span>
-                </Button>
-              </div>
-              {emailError && (
-                <p className="text-destructive text-xs">{emailError}</p>
+            <ShareUserPicker
+              label={t('sidebar.sharing.addUser.label.string')}
+              placeholder={t('sidebar.sharing.addUser.placeholder.string')}
+              loadingLabel={t('sidebar.sharing.addUser.loading.string')}
+              duplicateError={t(
+                'sidebar.sharing.addUser.error.duplicate.string'
               )}
-            </div>
+              isDuplicate={isAlreadyShared}
+              onAdd={handleAddUser}
+            />
           </>
         )}
       </div>

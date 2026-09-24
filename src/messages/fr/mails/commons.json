@@ -527,22 +527,13 @@
                         "label": {
                             "string": "Ajouter un utilisateur"
                         },
-                        "placeholder": {
-                            "string": "email@domaine.com"
-                        },
-                        "button": {
-                            "string": "Ajouter"
+                        "loading": {
+                            "string": "Recherche des utilisateurs…"
                         },
                         "searchPlaceholder": {
                             "string": "Rechercher par nom ou email…"
                         },
-                        "addDirect": {
-                            "string": "Ajouter \"{email}\""
-                        },
                         "error": {
-                            "invalid": {
-                                "string": "Veuillez saisir une adresse email valide."
-                            },
                             "duplicate": {
                                 "string": "Cet utilisateur a déjà accès."
                             }

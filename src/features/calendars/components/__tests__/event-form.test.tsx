@@ -31,10 +31,6 @@ jest.mock('@/features/calendars/store/calendars-api', () => ({
     data: undefined,
     isFetching: false,
   })),
-  useSearchUsersQuery: jest.fn(() => ({
-    data: [],
-    isFetching: false,
-  })),
 }))
 
 jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({

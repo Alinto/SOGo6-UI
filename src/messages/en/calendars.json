@@ -241,15 +241,12 @@
             "string": "Add a user"
           },
           "placeholder": {
-            "string": "email@domain.com"
+            "string": "Search by name or email…"
           },
-          "button": {
-            "string": "Add"
+          "loading": {
+            "string": "Searching users…"
           },
           "error": {
-            "invalid": {
-              "string": "Please enter a valid email address."
-            },
             "duplicate": {
               "string": "This user already has access."
             }

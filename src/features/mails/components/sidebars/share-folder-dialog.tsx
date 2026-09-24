@@ -11,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -20,8 +19,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import ShareUserPicker, {
+  type SharePickedUser,
+} from '@/features/address_books/components/share-user-picker'
 import { useProfile } from '@/features/user-profile'
-import { ChevronDown, Loader2, Mail, Plus, Trash2, Users } from 'lucide-react'
+import { ChevronDown, Loader2, Mail, Trash2, Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import type { FolderShareUser } from '../../mails-types'
@@ -42,8 +44,6 @@ interface ShareFolderDialogProps {
   /** Hides the "add user" input/button — used when only editing/removing existing grants is allowed. */
   allowAddUsers?: boolean
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function getInitials(email?: string): string {
   if (email) {
@@ -67,9 +67,6 @@ export function ShareFolderDialog({
 
   const [localUsers, setLocalUsers] = React.useState<FolderShareUser[]>([])
   const [expandedUid, setExpandedUid] = React.useState<string | null>(null)
-
-  const [newUserEmail, setNewUserEmail] = React.useState('')
-  const [emailError, setEmailError] = React.useState<string | null>(null)
 
   const { data, isLoading } = useGetFolderShareQuery(
     { accountId, folderPath },
@@ -109,8 +106,6 @@ export function ShareFolderDialog({
   React.useEffect(() => {
     if (!open) {
       setExpandedUid(null)
-      setNewUserEmail('')
-      setEmailError(null)
     }
   }, [open])
 
@@ -118,27 +113,17 @@ export function ShareFolderDialog({
     (id) => id.isDefault
   )?.mail
 
-  const handleAddUser = (): void => {
-    const trimmed = newUserEmail.trim()
-
-    if (!EMAIL_REGEX.test(trimmed)) {
-      setEmailError(t('folders.actions.sharing.addUser.error.invalid.string'))
-      return
-    }
-
-    const alreadyExists = localUsers.some(
+  const isAlreadyShared = ({ uid, email }: SharePickedUser): boolean =>
+    localUsers.some(
       (u) =>
-        u.uid.toLowerCase() === trimmed.toLowerCase() ||
-        u.c_email?.toLowerCase() === trimmed.toLowerCase()
+        u.uid.toLowerCase() === uid.toLowerCase() ||
+        u.c_email?.toLowerCase() === email.toLowerCase()
     )
-    if (alreadyExists) {
-      setEmailError(t('folders.actions.sharing.addUser.error.duplicate.string'))
-      return
-    }
 
+  const handleAddUser = ({ uid, email }: SharePickedUser): void => {
     const newUser: FolderShareUser = {
-      uid: trimmed,
-      c_email: trimmed,
+      uid,
+      c_email: email,
       userClass: 'normal-user',
       rights: {},
       permissions: [],
@@ -146,9 +131,7 @@ export function ShareFolderDialog({
     }
 
     setLocalUsers((prev) => [...prev, newUser])
-    setExpandedUid(trimmed)
-    setNewUserEmail('')
-    setEmailError(null)
+    setExpandedUid(uid)
   }
 
   const handleRemoveUser = (uid: string): void => {
@@ -184,13 +167,6 @@ export function ShareFolderDialog({
       onOpenChange(false)
     } catch {
       // Error handled by createApiNotificationHandler
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddUser()
     }
   }
 
@@ -373,39 +349,20 @@ export function ShareFolderDialog({
               <Separator />
 
               {/* Add user section */}
-              <div className="shrink-0 space-y-2">
-                <p className="text-sm font-medium">
-                  {t('folders.actions.sharing.addUser.label.string')}
-                </p>
-                <div className="flex gap-2">
-                  <Input
-                    value={newUserEmail}
-                    onChange={(e) => {
-                      setNewUserEmail(e.target.value)
-                      if (emailError) setEmailError(null)
-                    }}
-                    onKeyDown={handleKeyDown}
-                    placeholder={t(
-                      'folders.actions.sharing.addUser.placeholder.string'
-                    )}
-                    className="h-8 flex-1 text-sm"
-                  />
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="h-8 shrink-0"
-                    onClick={handleAddUser}
-                  >
-                    <Plus className="h-4 w-4" />
-                    <span className="sr-only">
-                      {t('folders.actions.sharing.addUser.button.string')}
-                    </span>
-                  </Button>
-                </div>
-                {emailError && (
-                  <p className="text-destructive text-xs">{emailError}</p>
+              <ShareUserPicker
+                label={t('folders.actions.sharing.addUser.label.string')}
+                placeholder={t(
+                  'folders.actions.sharing.addUser.searchPlaceholder.string'
                 )}
-              </div>
+                loadingLabel={t(
+                  'folders.actions.sharing.addUser.loading.string'
+                )}
+                duplicateError={t(
+                  'folders.actions.sharing.addUser.error.duplicate.string'
+                )}
+                isDuplicate={isAlreadyShared}
+                onAdd={handleAddUser}
+              />
             </>
           )}
         </div>

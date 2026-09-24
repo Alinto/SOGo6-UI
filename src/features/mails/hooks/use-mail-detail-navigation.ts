@@ -141,13 +141,17 @@ export function useMailDetailNavigation() {
     mailNavigation.page,
   ])
 
-  // Mirrors the page-boundary logic above: a mail opened from the
-  // advanced-search results must return to that search (criteria + page),
-  // not to its own real folder, when the user clicks the "back to list"
-  // button rather than paging past the list's edge.
+  // Mirrors the page-boundary logic above: the "back to list" button must
+  // land on the list page the mail was opened from. A mail opened from the
+  // advanced-search results must also return to that search (criteria +
+  // page), not to its own real folder.
   const returnToListUrl = useMemo(() => {
-    if (listFolder !== ADVANCED_SEARCH_ROUTE_SEGMENT) return null
-    return buildListPageUrl(isNavigationValid ? mailNavigation.page : 1)
+    const page = isNavigationValid ? mailNavigation.page : 1
+    if (listFolder === ADVANCED_SEARCH_ROUTE_SEGMENT) {
+      return buildListPageUrl(page)
+    }
+    if (page <= 1) return null
+    return buildListPageUrl(page)
   }, [listFolder, buildListPageUrl, isNavigationValid, mailNavigation.page])
 
   const navigationContext: MailNavigationContext = mailNavigation

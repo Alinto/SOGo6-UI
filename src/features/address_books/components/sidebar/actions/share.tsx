@@ -10,11 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
+import ShareUserPicker, {
+  type SharePickedUser,
+} from '@/features/address_books/components/share-user-picker'
 import {
   useGetAddressBookShareQuery,
   useSetAddressBookShareMutation,
@@ -33,7 +35,6 @@ import {
   ChevronDown,
   Contact2,
   Loader2,
-  Plus,
   Trash2,
   Users,
 } from 'lucide-react'
@@ -51,8 +52,6 @@ interface ShareAddressBookActionProps {
   /** Hides the "add user" input/button — used when only editing/removing existing grants is allowed. */
   allowAddUsers?: boolean
 }
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
 function getInitials(email?: string): string {
   if (email) {
@@ -74,8 +73,6 @@ const ShareAddressBookAction: React.FC<ShareAddressBookActionProps> = ({
 
   const [localUsers, setLocalUsers] = React.useState<AddressBookShareUser[]>([])
   const [expandedUid, setExpandedUid] = React.useState<string | null>(null)
-  const [newUserEmail, setNewUserEmail] = React.useState('')
-  const [emailError, setEmailError] = React.useState<string | null>(null)
   const [subscribingUid, setSubscribingUid] = React.useState<string | null>(
     null
   )
@@ -118,36 +115,24 @@ const ShareAddressBookAction: React.FC<ShareAddressBookActionProps> = ({
     (identity) => identity.isDefault
   )?.mail
 
-  const handleAddUser = (): void => {
-    const trimmed = newUserEmail.trim()
-
-    if (!EMAIL_REGEX.test(trimmed)) {
-      setEmailError(t('sharing.addUser.error.invalid.string'))
-      return
-    }
-
-    const alreadyExists = localUsers.some(
+  const isAlreadyShared = ({ uid, email }: SharePickedUser): boolean =>
+    localUsers.some(
       (u) =>
-        u.uid.toLowerCase() === trimmed.toLowerCase() ||
-        u.c_email?.toLowerCase() === trimmed.toLowerCase()
+        u.uid.toLowerCase() === uid.toLowerCase() ||
+        u.c_email?.toLowerCase() === email.toLowerCase()
     )
-    if (alreadyExists) {
-      setEmailError(t('sharing.addUser.error.duplicate.string'))
-      return
-    }
 
+  const handleAddUser = ({ uid, email }: SharePickedUser): void => {
     const newUser: AddressBookShareUser = {
-      uid: trimmed,
-      c_email: trimmed,
+      uid,
+      c_email: email,
       userClass: 'normal-user',
       rights: defaultAddressBookShareRights(),
       subscribed: false,
     }
 
     setLocalUsers((prev) => [...prev, newUser])
-    setExpandedUid(trimmed)
-    setNewUserEmail('')
-    setEmailError(null)
+    setExpandedUid(uid)
   }
 
   const handleRemoveUser = (uid: string): void => {
@@ -192,13 +177,6 @@ const ShareAddressBookAction: React.FC<ShareAddressBookActionProps> = ({
       onClose?.()
     } catch {
       // Error handled by createContactApiNotificationHandler
-    }
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddUser()
     }
   }
 
@@ -404,37 +382,14 @@ const ShareAddressBookAction: React.FC<ShareAddressBookActionProps> = ({
           <>
             <Separator />
 
-            <div className="shrink-0 space-y-2">
-              <p className="text-sm font-medium">
-                {t('sharing.addUser.label.string')}
-              </p>
-              <div className="flex gap-2">
-                <Input
-                  value={newUserEmail}
-                  onChange={(e) => {
-                    setNewUserEmail(e.target.value)
-                    if (emailError) setEmailError(null)
-                  }}
-                  onKeyDown={handleKeyDown}
-                  placeholder={t('sharing.addUser.placeholder.string')}
-                  className="h-8 flex-1 text-sm"
-                />
-                <Button
-                  type="button"
-                  size="sm"
-                  className="h-8 shrink-0"
-                  onClick={handleAddUser}
-                >
-                  <Plus className="h-4 w-4" />
-                  <span className="sr-only">
-                    {t('sharing.addUser.button.string')}
-                  </span>
-                </Button>
-              </div>
-              {emailError && (
-                <p className="text-destructive text-xs">{emailError}</p>
-              )}
-            </div>
+            <ShareUserPicker
+              label={t('sharing.addUser.label.string')}
+              placeholder={t('sharing.addUser.placeholder.string')}
+              loadingLabel={t('sharing.addUser.loading.string')}
+              duplicateError={t('sharing.addUser.error.duplicate.string')}
+              isDuplicate={isAlreadyShared}
+              onAdd={handleAddUser}
+            />
           </>
         )}
       </div>

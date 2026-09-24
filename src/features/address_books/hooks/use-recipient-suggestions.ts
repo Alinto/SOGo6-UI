@@ -1,25 +1,19 @@
 'use client'
 
-import { useSearchUsersQuery } from '@/features/calendars/store/calendars-api'
 import { useMemo } from 'react'
 import { useSearchContactsAutocompleteQuery } from '../store/address-books-api'
 
 export type RecipientSuggestionItem = {
   email: string
   name?: string
-  source: 'user' | 'contact' | 'list'
+  source: 'contact' | 'list'
 }
 
 export function useRecipientSuggestions(query: string) {
   const trimmed = query.trim()
   const enabled = trimmed.length >= 2
 
-  const { data: users = [], isFetching: usersLoading } = useSearchUsersQuery(
-    { q: trimmed },
-    { skip: !enabled }
-  )
-
-  const { data: contacts = [], isFetching: contactsLoading } =
+  const { data: contacts = [], isFetching } =
     useSearchContactsAutocompleteQuery({ q: trimmed }, { skip: !enabled })
 
   const suggestions = useMemo(() => {
@@ -31,14 +25,6 @@ export function useRecipientSuggestions(query: string) {
       if (!item.email || seen.has(key)) return
       seen.add(key)
       merged.push(item)
-    }
-
-    for (const user of users) {
-      pushUnique({
-        email: user.email,
-        name: user.name,
-        source: 'user',
-      })
     }
 
     for (const suggestion of contacts) {
@@ -64,10 +50,7 @@ export function useRecipientSuggestions(query: string) {
     }
 
     return merged
-  }, [users, contacts])
+  }, [contacts])
 
-  return {
-    suggestions,
-    isFetching: usersLoading || contactsLoading,
-  }
+  return { suggestions, isFetching }
 }

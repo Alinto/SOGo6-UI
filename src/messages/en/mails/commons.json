@@ -552,6 +552,16 @@
             "string": "Bcc",
             "description": "Label for the 'Bcc' field in email search options"
         },
+        "recipient_search": {
+            "loading": {
+                "string": "Searching recipients…",
+                "description": "Loading state while searching contacts and users for the search from/to/bcc autocomplete fields"
+            },
+            "add_direct": {
+                "string": "Add \"{email}\"",
+                "description": "Add a typed email address directly as a search value"
+            }
+        },
         "subject": {
             "string": "Subject",
             "description": "Label for the 'Subject' field in email search options"
@@ -701,22 +711,13 @@
                         "label": {
                             "string": "Add a user"
                         },
-                        "placeholder": {
-                            "string": "email@domain.com"
-                        },
-                        "button": {
-                            "string": "Add"
+                        "loading": {
+                            "string": "Searching users…"
                         },
                         "searchPlaceholder": {
                             "string": "Search by name or email…"
                         },
-                        "addDirect": {
-                            "string": "Add \"{email}\""
-                        },
                         "error": {
-                            "invalid": {
-                                "string": "Please enter a valid email address."
-                            },
                             "duplicate": {
                                 "string": "This user already has access."
                             }

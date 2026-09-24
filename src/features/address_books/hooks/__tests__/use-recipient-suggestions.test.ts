@@ -1,11 +1,6 @@
 import { renderHook } from '@testing-library/react'
 
-const mockUseSearchUsersQuery = jest.fn()
 const mockUseSearchContactsAutocompleteQuery = jest.fn()
-
-jest.mock('@/features/calendars/store/calendars-api', () => ({
-  useSearchUsersQuery: (...args: unknown[]) => mockUseSearchUsersQuery(...args),
-}))
 
 jest.mock('../../store/address-books-api', () => ({
   useSearchContactsAutocompleteQuery: (...args: unknown[]) =>
@@ -17,10 +12,6 @@ import { useRecipientSuggestions } from '../use-recipient-suggestions'
 describe('useRecipientSuggestions', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockUseSearchUsersQuery.mockReturnValue({
-      data: [],
-      isFetching: false,
-    })
     mockUseSearchContactsAutocompleteQuery.mockReturnValue({
       data: [],
       isFetching: false,
@@ -28,16 +19,16 @@ describe('useRecipientSuggestions', () => {
   })
 
   describe('basic rendering', () => {
-    it('returns empty suggestions for short queries', () => {
+    it('skips the autocomplete query for short queries', () => {
       const { result } = renderHook(() => useRecipientSuggestions('a'))
       expect(result.current.suggestions).toEqual([])
+      expect(mockUseSearchContactsAutocompleteQuery).toHaveBeenCalledWith(
+        { q: 'a' },
+        { skip: true }
+      )
     })
 
-    it('merges users and contact suggestions', () => {
-      mockUseSearchUsersQuery.mockReturnValue({
-        data: [{ uid: 'u1', email: 'user@example.com', name: 'User One' }],
-        isFetching: false,
-      })
+    it('returns contact suggestions from the autocomplete API', () => {
       mockUseSearchContactsAutocompleteQuery.mockReturnValue({
         data: [
           {
@@ -49,9 +40,12 @@ describe('useRecipientSuggestions', () => {
         isFetching: false,
       })
 
-      const { result } = renderHook(() => useRecipientSuggestions('al'))
+      const { result } = renderHook(() => useRecipientSuggestions(' al '))
+      expect(mockUseSearchContactsAutocompleteQuery).toHaveBeenCalledWith(
+        { q: 'al' },
+        { skip: false }
+      )
       expect(result.current.suggestions).toEqual([
-        { email: 'user@example.com', name: 'User One', source: 'user' },
         { email: 'alice@example.com', name: 'Alice Martin', source: 'contact' },
       ])
     })
@@ -81,13 +75,14 @@ describe('useRecipientSuggestions', () => {
     })
 
     it('deduplicates emails case-insensitively', () => {
-      mockUseSearchUsersQuery.mockReturnValue({
-        data: [{ uid: 'u1', email: 'dup@example.com', name: 'User' }],
-        isFetching: false,
-      })
       mockUseSearchContactsAutocompleteQuery.mockReturnValue({
         data: [
-          { type: 'contact', name: 'Dup', email: 'DUP@example.com' },
+          { type: 'contact', name: 'Dup', email: 'dup@example.com' },
+          {
+            type: 'list',
+            name: 'Team',
+            members: [{ name: 'Dup', email: 'DUP@example.com' }],
+          },
         ],
         isFetching: false,
       })
@@ -96,8 +91,8 @@ describe('useRecipientSuggestions', () => {
       expect(result.current.suggestions).toHaveLength(1)
     })
 
-    it('reports fetching when either query is loading', () => {
-      mockUseSearchUsersQuery.mockReturnValue({
+    it('reports fetching while the autocomplete query is loading', () => {
+      mockUseSearchContactsAutocompleteQuery.mockReturnValue({
         data: [],
         isFetching: true,
       })

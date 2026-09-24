@@ -55,6 +55,8 @@ jest.mock('@/components/ui/dialog', () => ({
   ),
 }))
 
+jest.mock('@/features/address_books/components/share-user-picker')
+
 // --- Imports after mocks ---
 
 import {
@@ -484,29 +486,6 @@ describe('ShareAddressBookAction', () => {
   })
 
   describe('add user', () => {
-    it('should show invalid email error when adding invalid email', async () => {
-      const user = userEvent.setup()
-      ;(useGetAddressBookShareQuery as jest.Mock).mockReturnValue(
-        mockShareData({})
-      )
-      render(<ShareAddressBookAction {...defaultProps} />)
-
-      const input = screen.getByPlaceholderText(
-        'sharing.addUser.placeholder.string'
-      )
-      await user.type(input, 'invalid-email')
-      const addButton = screen.getByRole('button', {
-        name: 'sharing.addUser.button.string',
-      })
-      await user.click(addButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('sharing.addUser.error.invalid.string')
-        ).toBeInTheDocument()
-      })
-    })
-
     it('should add a user with all rights off by default when a valid email is entered', async () => {
       const user = userEvent.setup()
       ;(useGetAddressBookShareQuery as jest.Mock).mockReturnValue(
@@ -518,10 +497,7 @@ describe('ShareAddressBookAction', () => {
         'sharing.addUser.placeholder.string'
       )
       await user.type(input, 'newuser@domain.com')
-      const addButton = screen.getByRole('button', {
-        name: 'sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       await waitFor(() => {
         expect(screen.getByText('newuser@domain.com')).toBeInTheDocument()
@@ -555,10 +531,7 @@ describe('ShareAddressBookAction', () => {
         'sharing.addUser.placeholder.string'
       )
       await user.type(input, 'existing@example.com')
-      const addButton = screen.getByRole('button', {
-        name: 'sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       await waitFor(() => {
         expect(

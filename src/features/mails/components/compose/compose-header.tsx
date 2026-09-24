@@ -17,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import RecipientAutocompleteField from '@/features/address_books/components/recipient-autocomplete-field'
+import { useSaveRecipientAsContact } from '@/features/address_books/hooks/use-save-recipient-as-contact'
 import { useOfflineIdentities } from '@/features/offline/hooks/use-offline-identities'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
@@ -32,7 +34,6 @@ import {
   updateSelectedSignatureKey,
   updateSubject,
 } from '../../store/mail-compose-slice'
-import ComposeRecipientField from './compose-recipient-field'
 
 interface ComposeHeaderProps {
   draftId: string
@@ -50,6 +51,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   const t = useTranslations('COMPOSE')
 
   const dispatch = useAppDispatch()
+  const { saveAsContact } = useSaveRecipientAsContact()
   const subject = useAppSelector(
     (state) => state.mailCompose.drafts[draftId]?.subject ?? ''
   )
@@ -374,13 +376,18 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       )}
       <div className="mt-2 flex w-full items-stretch">
         <div className="min-w-0 flex-1">
-          <ComposeRecipientField
+          <RecipientAutocompleteField
             tags={toTags}
             remove={toHandlers.remove}
             handleAdd={toHandlers.handleAdd}
             name="to"
             placeholder={t('to.string')}
             disabled={isOverLimit}
+            loadingLabel={t('recipient_search.loading.string')}
+            getAddDirectLabel={(email) =>
+              t('recipient_search.add_direct.string', { email })
+            }
+            onAddDirect={saveAsContact}
           />
         </div>
 
@@ -408,26 +415,36 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
 
       {showCc && (
         <div className="mt-2">
-          <ComposeRecipientField
+          <RecipientAutocompleteField
             tags={ccTags}
             remove={ccHandlers.remove}
             handleAdd={ccHandlers.handleAdd}
             name="cc"
             placeholder={t('cc.string')}
             disabled={isOverLimit}
+            loadingLabel={t('recipient_search.loading.string')}
+            getAddDirectLabel={(email) =>
+              t('recipient_search.add_direct.string', { email })
+            }
+            onAddDirect={saveAsContact}
           />
         </div>
       )}
 
       {showBcc && (
         <div className="mt-2">
-          <ComposeRecipientField
+          <RecipientAutocompleteField
             tags={bccTags}
             remove={bccHandlers.remove}
             handleAdd={bccHandlers.handleAdd}
             name="bcc"
             placeholder={t('bcc.string')}
             disabled={isOverLimit}
+            loadingLabel={t('recipient_search.loading.string')}
+            getAddDirectLabel={(email) =>
+              t('recipient_search.add_direct.string', { email })
+            }
+            onAddDirect={saveAsContact}
           />
         </div>
       )}

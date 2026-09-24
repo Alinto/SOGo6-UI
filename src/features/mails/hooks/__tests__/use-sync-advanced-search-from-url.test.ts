@@ -57,7 +57,7 @@ describe('useSyncAdvancedSearchFromUrl', () => {
     expect(mockDispatch).toHaveBeenCalledWith(
       setMailSearch({
         accountId: '0',
-        params: { from: 'jane', folders: ['all'] },
+        params: { from: ['jane'], folders: ['all'] },
         folder: 'advanced-search',
       })
     )
@@ -67,7 +67,7 @@ describe('useSyncAdvancedSearchFromUrl', () => {
     mockMailSearchState.isActive = true
     mockMailSearchState.accountId = '0'
     mockMailSearchState.folder = 'advanced-search'
-    mockMailSearchState.params = { from: 'jane', folders: ['all'] }
+    mockMailSearchState.params = { from: ['jane'], folders: ['all'] }
 
     renderHook(() => useSyncAdvancedSearchFromUrl())
 
@@ -78,7 +78,7 @@ describe('useSyncAdvancedSearchFromUrl', () => {
     mockMailSearchState.isActive = true
     mockMailSearchState.accountId = '0'
     mockMailSearchState.folder = 'advanced-search'
-    mockMailSearchState.params = { from: 'jane', folders: ['all'] }
+    mockMailSearchState.params = { from: ['jane'], folders: ['all'] }
 
     const { rerender } = renderHook(() => useSyncAdvancedSearchFromUrl())
     expect(mockDispatch).not.toHaveBeenCalled()
@@ -89,7 +89,7 @@ describe('useSyncAdvancedSearchFromUrl', () => {
     expect(mockDispatch).toHaveBeenCalledWith(
       setMailSearch({
         accountId: '0',
-        params: { from: 'john', folders: ['all'] },
+        params: { from: ['john'], folders: ['all'] },
         folder: 'advanced-search',
       })
     )
