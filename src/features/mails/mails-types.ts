@@ -253,9 +253,9 @@ export interface MailSearchSize {
 /** Body accepted by `POST mailboxes/{accountId}/search`. */
 export interface MailSearchParams {
   text?: string
-  from?: string
-  to?: string
-  bcc?: string
+  from?: string[]
+  to?: string[]
+  bcc?: string[]
   subject?: string
   has_attachment?: boolean
   attachment_type?: string[]

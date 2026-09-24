@@ -166,13 +166,18 @@ describe('mailSearchParamsToFormValues — includeSubfolders', () => {
 
 describe('mailSearchParamsToQueryText', () => {
   it('renders known fields as space-separated key:value tokens', () => {
-    const params: MailSearchParams = { to: 'jane', subject: 'invoice' }
+    const params: MailSearchParams = { to: ['jane'], subject: 'invoice' }
     expect(mailSearchParamsToQueryText(params)).toBe('subject:invoice to:jane')
   })
 
   it('quotes values containing whitespace', () => {
-    const params: MailSearchParams = { from: 'John Doe' }
+    const params: MailSearchParams = { from: ['John Doe'] }
     expect(mailSearchParamsToQueryText(params)).toBe('from:"John Doe"')
+  })
+
+  it('renders one token per entry for a multi-value field', () => {
+    const params: MailSearchParams = { to: ['jane', 'bob'] }
+    expect(mailSearchParamsToQueryText(params)).toBe('to:jane to:bob')
   })
 
   it('renders has:attachment, is:read/unread/flagged, dates, labels and attachment types', () => {
@@ -192,7 +197,7 @@ describe('mailSearchParamsToQueryText', () => {
   it('prefixes a match:any token when the operator is OR with multiple criteria', () => {
     const params: MailSearchParams = {
       subject: 'invoice',
-      from: 'invoice',
+      from: ['invoice'],
       operator: 'OR',
     }
     expect(mailSearchParamsToQueryText(params)).toBe(
@@ -212,7 +217,7 @@ describe('mailSearchParamsToQueryText', () => {
     // alternative match, but it's always an AND constraint on top of the
     // (possibly OR'd) criteria — it must not follow "OR".
     const params: MailSearchParams = {
-      from: 'test',
+      from: ['test'],
       operator: 'OR',
       folders: ['INBOX'],
     }
@@ -224,7 +229,7 @@ describe('mailSearchParamsToQueryText', () => {
   it('only marks the criteria as match:any, appending filters as plain AND constraints', () => {
     const params: MailSearchParams = {
       subject: 'invoice',
-      from: 'invoice',
+      from: ['invoice'],
       operator: 'OR',
       is_flagged: true,
       folders: ['INBOX'],
@@ -282,7 +287,7 @@ describe('queryTextToSearchFormValues', () => {
 
   it('parses key:value tokens into their matching fields', () => {
     const values = queryTextToSearchFormValues('to:jane subject:invoice', base)
-    expect(values.to).toBe('jane')
+    expect(values.to).toEqual(['jane'])
     expect(values.subject).toBe('invoice')
     expect(values.operator).toBe('AND')
   })
@@ -292,8 +297,18 @@ describe('queryTextToSearchFormValues', () => {
       'from:"John Doe" subject:"Q1 report"',
       base
     )
-    expect(values.from).toBe('John Doe')
+    expect(values.from).toEqual(['John Doe'])
     expect(values.subject).toBe('Q1 report')
+  })
+
+  it('accumulates repeated from:/to:/bcc: tokens into arrays', () => {
+    const values = queryTextToSearchFormValues(
+      'to:jane to:bob from:alice bcc:ops',
+      base
+    )
+    expect(values.to).toEqual(['jane', 'bob'])
+    expect(values.from).toEqual(['alice'])
+    expect(values.bcc).toEqual(['ops'])
   })
 
   it('sets operator to OR when a literal OR token is present', () => {
@@ -302,7 +317,7 @@ describe('queryTextToSearchFormValues', () => {
       base
     )
     expect(values.operator).toBe('OR')
-    expect(values.to).toBe('jane')
+    expect(values.to).toEqual(['jane'])
     expect(values.subject).toBe('invoice')
   })
 
@@ -404,7 +419,7 @@ describe('queryTextToSearchFormValues', () => {
   it('round-trips through mailSearchParamsToQueryText for a mixed query', () => {
     const text = 'to:jane subject:invoice has:attachment is:flagged'
     const values = queryTextToSearchFormValues(text, base)
-    expect(values.to).toBe('jane')
+    expect(values.to).toEqual(['jane'])
     expect(values.subject).toBe('invoice')
     expect(values.hasAttachment).toBe(true)
     expect(values.isFlagged).toBe(true)
@@ -434,9 +449,16 @@ describe('ADVANCED_QUERY_TOKEN_RE', () => {
 
 describe('mailSearchParamsToUrlSearchParams', () => {
   it('serializes simple text fields', () => {
-    const params: MailSearchParams = { subject: 'invoice', from: 'jane' }
+    const params: MailSearchParams = { subject: 'invoice', from: ['jane'] }
     expect(mailSearchParamsToUrlSearchParams(params).toString()).toBe(
       'subject=invoice&from=jane'
+    )
+  })
+
+  it('comma-joins a multi-value from/to/bcc field', () => {
+    const params: MailSearchParams = { from: ['jane', 'bob'] }
+    expect(mailSearchParamsToUrlSearchParams(params).get('from')).toBe(
+      'jane,bob'
     )
   })
 
@@ -493,9 +515,9 @@ describe('urlSearchParamsToMailSearchParams', () => {
     const params: MailSearchParams = {
       text: 'quarterly',
       subject: 'invoice',
-      from: 'jane',
-      to: 'john',
-      bcc: 'ops',
+      from: ['jane', 'bob'],
+      to: ['john'],
+      bcc: ['ops'],
       has_attachment: true,
       attachment_type: ['pdf', 'png'],
       date_range: { start: '2024-01-01', end: '2024-02-01' },
@@ -532,7 +554,7 @@ describe('buildAdvancedSearchPath', () => {
   })
 
   it('appends the serialized params as a query string', () => {
-    expect(buildAdvancedSearchPath('0', { from: 'jane', to: 'john' })).toBe(
+    expect(buildAdvancedSearchPath('0', { from: ['jane'], to: ['john'] })).toBe(
       `/u/0/${ADVANCED_SEARCH_ROUTE_SEGMENT}?from=jane&to=john`
     )
   })
@@ -557,7 +579,7 @@ describe('isSimpleBarCompatible', () => {
     expect(
       isSimpleBarCompatible({
         subject: 'invoice',
-        from: 'invoice',
+        from: ['invoice'],
         operator: 'OR',
       })
     ).toBe(true)
@@ -567,17 +589,26 @@ describe('isSimpleBarCompatible', () => {
     expect(
       isSimpleBarCompatible({
         subject: 'invoice',
-        from: 'jane',
+        from: ['jane'],
         operator: 'OR',
       })
     ).toBe(false)
   })
 
   it('is false when any advanced-only field is set', () => {
-    expect(isSimpleBarCompatible({ bcc: 'jane', operator: 'OR' })).toBe(false)
+    expect(isSimpleBarCompatible({ bcc: ['jane'], operator: 'OR' })).toBe(false)
     expect(isSimpleBarCompatible({ has_attachment: true })).toBe(false)
     expect(isSimpleBarCompatible({ is_flagged: true })).toBe(false)
     expect(isSimpleBarCompatible({ labels: ['Work'] })).toBe(false)
     expect(isSimpleBarCompatible({ include_subfolders: true })).toBe(false)
+  })
+
+  it('is false when from or to holds more than one entry, even under OR', () => {
+    expect(
+      isSimpleBarCompatible({ from: ['jane', 'bob'], operator: 'OR' })
+    ).toBe(false)
+    expect(isSimpleBarCompatible({ to: ['jane', 'bob'], operator: 'OR' })).toBe(
+      false
+    )
   })
 })

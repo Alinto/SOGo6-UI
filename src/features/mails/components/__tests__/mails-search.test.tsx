@@ -28,9 +28,9 @@ const mockMailSearchState: {
   params: {
     text?: string
     subject?: string
-    from?: string
-    to?: string
-    bcc?: string
+    from?: string[]
+    to?: string[]
+    bcc?: string[]
     folders?: string[]
     operator?: 'AND' | 'OR'
   } | null
@@ -142,7 +142,7 @@ describe('MailsSearch', () => {
     mockMailSearchState.accountId = '0'
     mockMailSearchState.params = {
       subject: 'invoice',
-      from: 'invoice',
+      from: ['invoice'],
       operator: 'OR',
     }
 
@@ -238,7 +238,7 @@ describe('MailsSearch', () => {
           accountId: '0',
           params: expect.objectContaining({
             subject: 'invoice',
-            from: 'invoice',
+            from: ['invoice'],
             operator: 'OR',
             folders: ['INBOX'],
           }),
@@ -334,7 +334,7 @@ describe('MailsSearch', () => {
       expect.objectContaining({
         payload: expect.objectContaining({
           accountId: '0',
-          params: expect.objectContaining({ to: 'jane' }),
+          params: expect.objectContaining({ to: ['jane'] }),
           folder: 'INBOX',
         }),
       })
@@ -369,7 +369,10 @@ describe('MailsSearch', () => {
   it('shows the advanced query bar, formatted as key:value tokens, for an active search the simple bar cannot represent', () => {
     mockMailSearchState.isActive = true
     mockMailSearchState.accountId = '0'
-    mockMailSearchState.params = { subject: 'invoice', bcc: 'jane@example.com' }
+    mockMailSearchState.params = {
+      subject: 'invoice',
+      bcc: ['jane@example.com'],
+    }
 
     render(<MailsSearch />)
 
@@ -394,7 +397,7 @@ describe('MailsSearch', () => {
     mockMailSearchState.accountId = '0'
     mockMailSearchState.params = {
       subject: 'tutu',
-      from: 'tutu',
+      from: ['tutu'],
       operator: 'OR',
       folders: ['INBOX'],
     }
@@ -443,7 +446,7 @@ describe('MailsSearch', () => {
       mockUseParams.mockReturnValue({ account: '0', folder: 'advanced-search' })
       mockMailSearchState.isActive = true
       mockMailSearchState.accountId = '0'
-      mockMailSearchState.params = { from: 'jane' }
+      mockMailSearchState.params = { from: ['jane'] }
       const user = userEvent.setup()
       render(<MailsSearch />)
 

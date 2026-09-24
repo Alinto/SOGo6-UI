@@ -163,7 +163,7 @@ describe('useMailDetailNavigation', () => {
         isActive: true,
         accountId: '0',
         folder: 'advanced-search',
-        params: { from: 'jane' },
+        params: { from: ['jane'] },
       })
     })
 
@@ -191,7 +191,7 @@ describe('useMailDetailNavigation', () => {
     })
   })
 
-  it('exposes a null returnToListUrl outside of advanced search', () => {
+  it('exposes a null returnToListUrl on the first page of a folder', () => {
     const { usePathname } = require('@/lib/i18n/navigation')
     const { useParams } = require('next/navigation')
     usePathname.mockReturnValue(mockPathname)
@@ -200,5 +200,19 @@ describe('useMailDetailNavigation', () => {
     const { result } = renderHook(() => useMailDetailNavigation())
 
     expect(result.current.returnToListUrl).toBeNull()
+  })
+
+  it('exposes a returnToListUrl keeping the current page of a folder', () => {
+    const { usePathname } = require('@/lib/i18n/navigation')
+    const { useParams } = require('next/navigation')
+    usePathname.mockReturnValue(mockPathname)
+    useParams.mockReturnValue({ account: '0', folder: 'INBOX', mail_id: '2' })
+    const originalPage = mockMailNavigation.page
+    mockMailNavigation.page = 2
+
+    const { result } = renderHook(() => useMailDetailNavigation())
+
+    expect(result.current.returnToListUrl).toBe('/u/0/INBOX?page=2')
+    mockMailNavigation.page = originalPage
   })
 })

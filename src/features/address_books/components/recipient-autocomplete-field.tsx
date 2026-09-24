@@ -1,34 +1,55 @@
 'use client'
 
 import InputWithTags from '@/components/ui/inputs/input-with-tags'
-import { useRecipientSuggestions } from '@/features/address_books/hooks/use-recipient-suggestions'
+import {
+  type RecipientSuggestionItem,
+  useRecipientSuggestions,
+} from '@/features/address_books/hooks/use-recipient-suggestions'
 import { cn } from '@/lib/utils'
 import { Loader2, UserPlus } from 'lucide-react'
-import { useTranslations } from 'next-intl'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
 type RecipientTag = { id: string; value: string }
 
-type ComposeRecipientFieldProps = {
+type RecipientAutocompleteFieldProps = {
   tags: RecipientTag[]
   remove: (index: number) => void
-  handleAdd: (value: string) => void
+  // `suggestion` is set when the value was picked from the autocomplete list.
+  handleAdd: (value: string, suggestion?: RecipientSuggestionItem) => void
   name: string
   placeholder: string
   disabled?: boolean
+  loadingLabel: string
+  getAddDirectLabel?: (email: string) => string
+  // Called only when the "add as typed" row is clicked (not on Enter/blur),
+  // e.g. to also save the typed address as a contact.
+  onAddDirect?: (email: string) => void
+  // When true, the "add as typed"/blur-to-add affordance accepts any
+  // non-empty text instead of requiring a full email address — used by
+  // search fields, which can filter on a partial address or name, but not
+  // by compose, which only ever sends to real email addresses.
+  allowFreeText?: boolean
+  // When true, only entries returned by the contacts autocomplete API can be
+  // added: no "add as typed" row, no blur-to-add, and Enter picks the first
+  // suggestion — used by sharing dialogs.
+  suggestionsOnly?: boolean
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
-const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
+const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
   tags,
   remove,
   handleAdd,
   name,
   placeholder,
   disabled,
+  loadingLabel,
+  getAddDirectLabel,
+  onAddDirect,
+  allowFreeText = false,
+  suggestionsOnly = false,
 }) => {
-  const t = useTranslations('COMPOSE')
   const [draft, setDraft] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
   const [open, setOpen] = useState(false)
@@ -40,6 +61,10 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
   }, [draft])
 
   const { suggestions, isFetching } = useRecipientSuggestions(debouncedQ)
+
+  const isAddableDraft = (value: string) =>
+    !suggestionsOnly &&
+    (allowFreeText ? value.length > 0 : EMAIL_RE.test(value))
 
   const filteredSuggestions = useMemo(
     () =>
@@ -56,8 +81,10 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
     open &&
     debouncedQ.length >= 2 &&
     (filteredSuggestions.length > 0 ||
-      (EMAIL_RE.test(debouncedQ) &&
-        !tags.some((tag) => tag.value.toLowerCase() === debouncedQ.toLowerCase())))
+      (isAddableDraft(debouncedQ) &&
+        !tags.some(
+          (tag) => tag.value.toLowerCase() === debouncedQ.toLowerCase()
+        )))
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -72,8 +99,11 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
     return () => document.removeEventListener('mousedown', onClick)
   }, [])
 
-  const pickSuggestion = (email: string) => {
-    handleAdd(email)
+  const pickSuggestion = (
+    email: string,
+    suggestion?: RecipientSuggestionItem
+  ) => {
+    handleAdd(email, suggestion)
     setDraft('')
     setOpen(false)
   }
@@ -88,6 +118,17 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
           setDraft('')
           setOpen(false)
         }}
+        {...(suggestionsOnly && {
+          // Overrides InputWithTags' Enter handler so typed text is never
+          // added as is.
+          onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
+            if (event.key !== 'Enter') return
+            event.preventDefault()
+            event.stopPropagation()
+            const first = showPanel ? filteredSuggestions[0] : undefined
+            if (first) pickSuggestion(first.email, first)
+          },
+        })}
         name={name}
         placeholder={placeholder}
         disabled={disabled}
@@ -98,7 +139,7 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
         }}
         onFocus={() => setOpen(true)}
         onBlur={() => {
-          if (draft.trim() && EMAIL_RE.test(draft.trim())) {
+          if (draft.trim() && isAddableDraft(draft.trim())) {
             handleAdd(draft.trim())
             setDraft('')
           }
@@ -111,7 +152,7 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
           {isFetching && (
             <div className="text-muted-foreground flex items-center gap-2 px-3 py-2 text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />
-              {t('recipient_search.loading.string')}
+              {loadingLabel}
             </div>
           )}
           {filteredSuggestions.map((suggestion) => (
@@ -123,7 +164,7 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
               )}
               onMouseDown={(event) => {
                 event.preventDefault()
-                pickSuggestion(suggestion.email)
+                pickSuggestion(suggestion.email, suggestion)
               }}
             >
               <UserPlus className="text-muted-foreground h-4 w-4 shrink-0" />
@@ -139,7 +180,8 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
               </span>
             </button>
           ))}
-          {EMAIL_RE.test(debouncedQ) &&
+          {getAddDirectLabel &&
+            isAddableDraft(debouncedQ) &&
             !filteredSuggestions.some(
               (suggestion) =>
                 suggestion.email.toLowerCase() === debouncedQ.toLowerCase()
@@ -150,10 +192,11 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
                 onMouseDown={(event) => {
                   event.preventDefault()
                   pickSuggestion(debouncedQ)
+                  onAddDirect?.(debouncedQ)
                 }}
               >
                 <UserPlus className="h-4 w-4 shrink-0" />
-                {t('recipient_search.add_direct.string', { email: debouncedQ })}
+                {getAddDirectLabel(debouncedQ)}
               </button>
             )}
         </div>
@@ -162,4 +205,4 @@ const ComposeRecipientField: React.FC<ComposeRecipientFieldProps> = ({
   )
 }
 
-export default ComposeRecipientField
+export default RecipientAutocompleteField

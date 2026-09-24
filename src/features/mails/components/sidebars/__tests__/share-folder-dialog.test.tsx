@@ -48,6 +48,8 @@ jest.mock('react-dom', () => ({
   ),
 }))
 
+jest.mock('@/features/address_books/components/share-user-picker')
+
 // --- Imports after mocks ---
 
 import {
@@ -132,7 +134,7 @@ describe('ShareFolderDialog', () => {
       ).toBeInTheDocument()
       expect(
         screen.getByPlaceholderText(
-          'folders.actions.sharing.addUser.placeholder.string'
+          'folders.actions.sharing.addUser.searchPlaceholder.string'
         )
       ).toBeInTheDocument()
     })
@@ -144,7 +146,7 @@ describe('ShareFolderDialog', () => {
       ).not.toBeInTheDocument()
       expect(
         screen.queryByPlaceholderText(
-          'folders.actions.sharing.addUser.placeholder.string'
+          'folders.actions.sharing.addUser.searchPlaceholder.string'
         )
       ).not.toBeInTheDocument()
     })
@@ -566,31 +568,6 @@ describe('ShareFolderDialog', () => {
   })
 
   describe('add user', () => {
-    it('should show invalid email error when adding invalid email', async () => {
-      const user = userEvent.setup()
-      ;(useGetFolderShareQuery as jest.Mock).mockReturnValue(
-        mockFolderShareData({})
-      )
-      render(<ShareFolderDialog {...defaultProps} />)
-
-      const input = screen.getByPlaceholderText(
-        'folders.actions.sharing.addUser.placeholder.string'
-      )
-      await user.type(input, 'invalid-email')
-      const addButton = screen.getByRole('button', {
-        name: 'folders.actions.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(
-            'folders.actions.sharing.addUser.error.invalid.string'
-          )
-        ).toBeInTheDocument()
-      })
-    })
-
     it('should add user when valid email is entered', async () => {
       const user = userEvent.setup()
       ;(useGetFolderShareQuery as jest.Mock).mockReturnValue(
@@ -599,13 +576,10 @@ describe('ShareFolderDialog', () => {
       render(<ShareFolderDialog {...defaultProps} />)
 
       const input = screen.getByPlaceholderText(
-        'folders.actions.sharing.addUser.placeholder.string'
+        'folders.actions.sharing.addUser.searchPlaceholder.string'
       )
       await user.type(input, 'newuser@domain.com')
-      const addButton = screen.getByRole('button', {
-        name: 'folders.actions.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       await waitFor(() => {
         expect(screen.getByText('newuser@domain.com')).toBeInTheDocument()
@@ -620,13 +594,10 @@ describe('ShareFolderDialog', () => {
       render(<ShareFolderDialog {...defaultProps} />)
 
       const input = screen.getByPlaceholderText(
-        'folders.actions.sharing.addUser.placeholder.string'
+        'folders.actions.sharing.addUser.searchPlaceholder.string'
       )
       await user.type(input, 'newuser@domain.com')
-      const addButton = screen.getByRole('button', {
-        name: 'folders.actions.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       // Panel auto-opens in standard view without needing to click the row.
       const readLabel = await screen.findByText(
@@ -662,13 +633,10 @@ describe('ShareFolderDialog', () => {
       })
 
       const input = screen.getByPlaceholderText(
-        'folders.actions.sharing.addUser.placeholder.string'
+        'folders.actions.sharing.addUser.searchPlaceholder.string'
       )
       await user.type(input, 'existing@example.com')
-      const addButton = screen.getByRole('button', {
-        name: 'folders.actions.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       await waitFor(() => {
         expect(

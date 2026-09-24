@@ -10,7 +10,6 @@ import {
   CALENDAR_EVENTS_SLICE,
   CALENDAR_SHARE_SLICE,
   CALENDAR_SYNC_SLICE,
-  USER_SEARCH_SLICE,
   apiSlice,
 } from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
@@ -40,12 +39,9 @@ import type {
   ExternalCalendarUpdateBody,
   FreeBusyApiResponse,
   FreeBusyRequest,
-  UserSearchResult,
 } from '../calendars-types'
 import { DEFAULT_CALENDAR_COLOR } from '../calendars-types'
 import { patchEventInCachedTimeRangeQueries } from './calendars-events-cache'
-
-const userSearchUrl = () => 'users/search'
 
 const calendarUrl = (key: string) => `calendars/${encodeURIComponent(key)}`
 const calendarShareUrl = (key: string) => `${calendarUrl(key)}/share`
@@ -881,20 +877,6 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
     }),
-    searchUsers: builder.query<
-      UserSearchResult[],
-      { q: string; limit?: number }
-    >({
-      query: ({ q, limit = 10 }) => ({
-        url: userSearchUrl(),
-        params: { q, limit },
-      }),
-      transformResponse: (response: { data: { users: UserSearchResult[] } }) =>
-        response.data.users,
-      providesTags: (result, error, { q, limit = 10 }) => [
-        { type: USER_SEARCH_SLICE, id: `${q}:${limit}` },
-      ],
-    }),
     updateCalendarVisibility: builder.mutation<
       null,
       { id: string; hidden: boolean }
@@ -954,7 +936,6 @@ export const {
   useSearchEventsQuery,
   useUpdateCalendarVisibilityMutation,
   useGetFreeBusyQuery,
-  useSearchUsersQuery,
   useCreateExternalCalendarMutation,
   useGetExternalCalendarQuery,
   useUpdateExternalCalendarMutation,

@@ -81,6 +81,8 @@ jest.mock('@/components/ui/select', () => ({
   }) => <option value={value}>{children}</option>,
 }))
 
+jest.mock('@/features/address_books/components/share-user-picker')
+
 // --- Imports after mocks ---
 
 import {
@@ -360,29 +362,6 @@ describe('ShareCalendarAction', () => {
   })
 
   describe('add user', () => {
-    it('should show invalid email error when adding invalid email', async () => {
-      const user = userEvent.setup()
-      ;(useGetCalendarShareQuery as jest.Mock).mockReturnValue(
-        mockCalendarShareData({})
-      )
-      render(<ShareCalendarAction {...defaultProps} />)
-
-      const input = screen.getByPlaceholderText(
-        'sidebar.sharing.addUser.placeholder.string'
-      )
-      await user.type(input, 'invalid-email')
-      const addButton = screen.getByRole('button', {
-        name: 'sidebar.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
-
-      await waitFor(() => {
-        expect(
-          screen.getByText('sidebar.sharing.addUser.error.invalid.string')
-        ).toBeInTheDocument()
-      })
-    })
-
     it('should add a user with default "none" rights when a valid email is entered', async () => {
       const user = userEvent.setup()
       ;(useGetCalendarShareQuery as jest.Mock).mockReturnValue(
@@ -394,10 +373,7 @@ describe('ShareCalendarAction', () => {
         'sidebar.sharing.addUser.placeholder.string'
       )
       await user.type(input, 'newuser@domain.com')
-      const addButton = screen.getByRole('button', {
-        name: 'sidebar.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       await waitFor(() => {
         expect(screen.getByText('newuser@domain.com')).toBeInTheDocument()
@@ -431,10 +407,7 @@ describe('ShareCalendarAction', () => {
         'sidebar.sharing.addUser.placeholder.string'
       )
       await user.type(input, 'existing@example.com')
-      const addButton = screen.getByRole('button', {
-        name: 'sidebar.sharing.addUser.button.string',
-      })
-      await user.click(addButton)
+      await user.keyboard('{Enter}')
 
       await waitFor(() => {
         expect(

@@ -9,6 +9,7 @@ import {
 import RadioGroupForm from '@/components/ui/forms/radio-group-form'
 import SelectForm from '@/components/ui/forms/select-form'
 import { Input } from '@/components/ui/input'
+import RecipientAutocompleteField from '@/features/address_books/components/recipient-autocomplete-field'
 import { useTranslations } from 'next-intl'
 import React, { useMemo } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
@@ -51,6 +52,28 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
 }) => {
   const t = useTranslations('MAILS_COMMONS')
   const { allCategories } = useMailCategoryPicker(open)
+  const loadingLabel = t('recipient_search.loading.string')
+  const getAddDirectLabel = (email: string) =>
+    t('recipient_search.add_direct.string', { email })
+
+  const makeRecipientFieldHandlers = (
+    value: string[],
+    onChange: (next: string[]) => void
+  ) => ({
+    tags: value.map((email) => ({ id: email, value: email })),
+    remove: (index: number) => {
+      onChange(value.filter((_, i) => i !== index))
+    },
+    handleAdd: (rawValue: string) => {
+      // Search values don't have to be full email addresses — a partial
+      // address or a name is a valid filter — so only trim/dedupe here.
+      const trimmed = rawValue.trim()
+      if (!trimmed) return
+      if (value.some((entry) => entry.toLowerCase() === trimmed.toLowerCase()))
+        return
+      onChange([...value, trimmed])
+    },
+  })
   const dateRangePreset = form.watch('dateRangePreset')
   const hasAttachment = form.watch('hasAttachment')
   const sizeOperator = form.watch('sizeOperator')
@@ -97,42 +120,81 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
           </FormItem>
         )}
       />
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4">
         <FormField
           control={form.control}
           name="from"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('from.string')}</FormLabel>
-              <FormControl>
-                <Input {...field} className="w-full" />
-              </FormControl>
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const handlers = makeRecipientFieldHandlers(
+              field.value,
+              field.onChange
+            )
+            return (
+              <FormItem>
+                <FormLabel>{t('from.string')}</FormLabel>
+                <FormControl>
+                  <RecipientAutocompleteField
+                    {...handlers}
+                    name={field.name}
+                    placeholder={t('from.string')}
+                    loadingLabel={loadingLabel}
+                    getAddDirectLabel={getAddDirectLabel}
+                    allowFreeText
+                  />
+                </FormControl>
+              </FormItem>
+            )
+          }}
         />
         <FormField
           control={form.control}
           name="to"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('search.to_or_cc.string')}</FormLabel>
-              <FormControl>
-                <Input {...field} className="w-full" />
-              </FormControl>
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const handlers = makeRecipientFieldHandlers(
+              field.value,
+              field.onChange
+            )
+            return (
+              <FormItem>
+                <FormLabel>{t('search.to_or_cc.string')}</FormLabel>
+                <FormControl>
+                  <RecipientAutocompleteField
+                    {...handlers}
+                    name={field.name}
+                    placeholder={t('search.to_or_cc.string')}
+                    loadingLabel={loadingLabel}
+                    getAddDirectLabel={getAddDirectLabel}
+                    allowFreeText
+                  />
+                </FormControl>
+              </FormItem>
+            )
+          }}
         />
         <FormField
           control={form.control}
           name="bcc"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('bcc.string')}</FormLabel>
-              <FormControl>
-                <Input {...field} className="w-full" />
-              </FormControl>
-            </FormItem>
-          )}
+          render={({ field }) => {
+            const handlers = makeRecipientFieldHandlers(
+              field.value,
+              field.onChange
+            )
+            return (
+              <FormItem>
+                <FormLabel>{t('bcc.string')}</FormLabel>
+                <FormControl>
+                  <RecipientAutocompleteField
+                    {...handlers}
+                    name={field.name}
+                    placeholder={t('bcc.string')}
+                    loadingLabel={loadingLabel}
+                    getAddDirectLabel={getAddDirectLabel}
+                    allowFreeText
+                  />
+                </FormControl>
+              </FormItem>
+            )
+          }}
         />
       </div>
       <div className="grid grid-cols-1 gap-4">

@@ -222,10 +222,23 @@ export function MailsSearch() {
   )
   const readField =
     READ_PRIORITY.find((field) => activeTargets.includes(field)) ?? 'text'
-  const activeValue = useWatch({ control: simpleForm.control, name: readField })
+  const activeValueRaw = useWatch({
+    control: simpleForm.control,
+    name: readField,
+  })
+  // `from`/`to` are multi-value fields (autocomplete tags in the advanced
+  // modal), but the simple bar is a single plain-text input — it only ever
+  // reads/writes their first (and only, while simple-bar-compatible) entry.
+  const activeValue = Array.isArray(activeValueRaw)
+    ? (activeValueRaw[0] ?? '')
+    : activeValueRaw
 
   const setSimpleSearchField = (field: SimpleSearchField, value: string) => {
-    simpleForm.setValue(field, value, { shouldDirty: true })
+    if (field === 'from' || field === 'to') {
+      simpleForm.setValue(field, value ? [value] : [], { shouldDirty: true })
+    } else {
+      simpleForm.setValue(field, value, { shouldDirty: true })
+    }
   }
 
   const handleActiveValueChange = (value: string) => {
