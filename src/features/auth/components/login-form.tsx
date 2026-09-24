@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Languages, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -61,6 +62,7 @@ export function LoginForm({
   const [isLoading, setIsLoading] = React.useState(false)
   const [serverError, setServerError] = React.useState<string | null>(null)
   const [systemTimedOut, setSystemTimedOut] = React.useState(false)
+  const searchParams = useSearchParams()
 
   const {
     data: systemData,
@@ -72,6 +74,12 @@ export function LoginForm({
   const { envVars } = useEnvVars()
 
   const loginSchema = React.useMemo(() => createLoginSchema(t), [t])
+
+  React.useEffect(() => {
+    if (searchParams.get('reason') === 'session') {
+      setServerError(t('error.session_expired.string'))
+    }
+  }, [searchParams, t])
 
   const {
     register,

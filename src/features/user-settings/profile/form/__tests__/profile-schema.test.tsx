@@ -62,6 +62,98 @@ describe('profile-schema', () => {
       expect(() => schema.parse(noDefault)).toThrow()
     })
 
+    it('accepts an unchanged identity when custom fields are disabled', () => {
+      const locked = createProfileSchema(
+        t as any,
+        t as any,
+        {
+          SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED: false,
+          SOGO_D_IDENTITIES_CUSTOM_NAME_ENABLED: false,
+          SOGO_D_IDENTITIES_CUSTOM_REPLY_TO_ENABLED: false,
+        },
+        [
+          {
+            mail: 'john@example.com',
+            name: 'John',
+            replyTo: 'john@example.com',
+          },
+        ]
+      )
+      expect(() =>
+        locked.parse({
+          profilePictureSource: PP_DEFAULT,
+          identities: [
+            {
+              mail: 'john@example.com',
+              name: 'John',
+              replyTo: 'john@example.com',
+              isDefault: true,
+            },
+          ],
+        })
+      ).not.toThrow()
+    })
+
+    it('rejects a changed From when custom from is disabled', () => {
+      const locked = createProfileSchema(
+        t as any,
+        t as any,
+        {
+          SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED: false,
+        },
+        [
+          {
+            mail: 'john@example.com',
+            name: 'John',
+            replyTo: 'john@example.com',
+          },
+        ]
+      )
+      expect(() =>
+        locked.parse({
+          profilePictureSource: PP_DEFAULT,
+          identities: [
+            {
+              mail: 'other@example.com',
+              name: 'John',
+              replyTo: 'john@example.com',
+              isDefault: true,
+            },
+          ],
+        })
+      ).toThrow()
+    })
+
+    it('accepts a changed From when custom from is enabled', () => {
+      const unlocked = createProfileSchema(
+        t as any,
+        t as any,
+        {
+          SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED: true,
+        },
+        [
+          {
+            mail: 'john@example.com',
+            name: 'John',
+            replyTo: 'john@example.com',
+          },
+        ]
+      )
+      expect(() =>
+        unlocked.parse({
+          profilePictureSource: PP_DEFAULT,
+          identities: [
+            {
+              mail: 'other@example.com',
+              name: 'John',
+              replyTo: 'john@example.com',
+              isDefault: true,
+            },
+          ],
+        })
+      ).not.toThrow()
+    })
+
     it('should reject an invalid profilePictureSource', () => {
       const invalidSource = {
         profilePictureSource: 'invalid-source',

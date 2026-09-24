@@ -11,6 +11,13 @@ describe('resolveLogoutRedirect', () => {
     })
   })
 
+  it('pushes login with a session reason', () => {
+    expect(resolveLogoutRedirect(false, '', 'session')).toEqual({
+      mode: 'push',
+      href: '/auth/login?reason=session',
+    })
+  })
+
   it('replaces the URL with the locale-prefixed login path when navigation must be skipped', () => {
     expect(
       resolveLogoutRedirect(true, 'https://sogo.example/fr/u/0/INBOX')

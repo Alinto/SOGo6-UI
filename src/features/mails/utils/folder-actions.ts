@@ -32,6 +32,7 @@ export interface FolderActionDefinition {
 export interface GetFolderActionsOptions {
   mailPurgeAllow?: boolean
   folderSharingDisabled?: boolean
+  folderExportDisabled?: boolean
 }
 
 const ACTION_UNAVAILABLE_KEY = 'folders.actions.action_unavailable.string'
@@ -45,7 +46,9 @@ const BACKEND_BLOCKED_ACTIONS = new Set<FolderActionId>([
 ])
 
 function isNormalOnlyAction(id: FolderActionId): boolean {
-  return id === 'rename' || id === 'move_to' || id === 'delete' || id === 'set_as'
+  return (
+    id === 'rename' || id === 'move_to' || id === 'delete' || id === 'set_as'
+  )
 }
 
 function buildAction(
@@ -70,7 +73,11 @@ export function getFolderActions(
   folder: Pick<ImapFolder, 'type' | 'selectable' | 'default'>,
   options: GetFolderActionsOptions = {}
 ): FolderActionDefinition[] {
-  const { mailPurgeAllow = false, folderSharingDisabled = false } = options
+  const {
+    mailPurgeAllow = false,
+    folderSharingDisabled = false,
+    folderExportDisabled = false,
+  } = options
 
   if (isVirtualFolder(folder)) {
     return [
@@ -98,11 +105,13 @@ export function getFolderActions(
     )
   }
 
-  actions.push(
-    buildAction('export', 'folders.actions.export.string', {
-      separatorBefore: !folderSharingDisabled,
-    })
-  )
+  if (!folderExportDisabled) {
+    actions.push(
+      buildAction('export', 'folders.actions.export.string', {
+        separatorBefore: !folderSharingDisabled,
+      })
+    )
+  }
 
   if (mailPurgeAllow) {
     actions.push(

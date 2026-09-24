@@ -64,6 +64,22 @@ describe('getFolderActions', () => {
     })
   })
 
+  it('hides sharing when mail sharing is disabled', () => {
+    const actions = getFolderActions(baseFolder({ type: 'INBOX' }), {
+      folderSharingDisabled: true,
+    })
+    expect(actions.some((action) => action.id === 'sharing')).toBe(false)
+    expect(actions.some((action) => action.id === 'export')).toBe(true)
+  })
+
+  it('hides export when mail export is disabled', () => {
+    const actions = getFolderActions(baseFolder({ type: 'INBOX' }), {
+      folderExportDisabled: true,
+    })
+    expect(actions.some((action) => action.id === 'export')).toBe(false)
+    expect(actions.some((action) => action.id === 'sharing')).toBe(true)
+  })
+
   it('disables backend-blocked actions', () => {
     const actions = getFolderActions(baseFolder({ type: 'NORMAL' }))
     const blocked = actions.filter((action) => action.disabled)

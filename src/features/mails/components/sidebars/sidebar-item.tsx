@@ -76,7 +76,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const [activeAction, setActiveAction] = React.useState<FolderActionId | null>(
     null
   )
-  const { mailPurgeAllow, folderSharingDisabled } = useProfile()
+  const { mailPurgeAllow, folderSharingDisabled, folderExportDisabled } =
+    useProfile()
   const t = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
 
@@ -86,7 +87,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       selectable,
       default: isDefault,
     },
-    { mailPurgeAllow, folderSharingDisabled }
+    { mailPurgeAllow, folderSharingDisabled, folderExportDisabled }
   )
 
   const showUnseenCount =

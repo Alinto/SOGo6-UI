@@ -21,6 +21,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useLogoutMutation } from '@/features/auth/components/store/auth.api'
 import { logout } from '@/features/auth/components/store/auth.slice'
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import { redirectAfterLogout } from '@/features/offline/auth/redirect-after-logout'
@@ -58,6 +59,7 @@ const HeaderDropdown: React.FC = () => {
   const { user, isLoading, isError, preferences } = useProfile()
   const { pendingCount } = useOutboxList()
   const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
+  const [revokeSession] = useLogoutMutation()
 
   // Fallback to auth.user if profile API failed
   const authUser = useAppSelector((state) => state.auth.user)
@@ -71,11 +73,25 @@ const HeaderDropdown: React.FC = () => {
     preferences?.USER_GENERAL?.SOGO_U_PROFILE_PICTURE || PP_DEFAULT
 
   const performLogout = useCallback(() => {
-    void wipeOnLogout(authUser?.uid).finally(() => {
-      dispatch(logout())
-      redirectAfterLogout(push)
-    })
-  }, [authUser?.uid, dispatch, push])
+    const finishLocalLogout = () => {
+      void wipeOnLogout(authUser?.uid).finally(() => {
+        dispatch(logout())
+        redirectAfterLogout(push)
+      })
+    }
+
+    const online =
+      typeof navigator === 'undefined' || navigator.onLine !== false
+    if (!online) {
+      finishLocalLogout()
+      return
+    }
+
+    void revokeSession()
+      .unwrap()
+      .catch(() => undefined)
+      .finally(finishLocalLogout)
+  }, [authUser?.uid, dispatch, push, revokeSession])
 
   const handleLogoutClick = async () => {
     let count = pendingCount

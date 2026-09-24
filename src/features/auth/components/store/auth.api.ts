@@ -23,6 +23,12 @@ export interface SystemResponse {
   error_msg: string
 }
 
+export interface LogoutResponse {
+  data: null
+  error_code: string
+  error_msg: string
+}
+
 export const authApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<LoginResponse, LoginRequest>({
@@ -47,6 +53,13 @@ export const authApi = apiSlice.injectEndpoints({
       // Configuration statique définie par l'admin, cache 1h
       keepUnusedDataFor: 3600,
     }),
+
+    logout: builder.mutation<LogoutResponse, void>({
+      query: () => ({
+        url: 'auth/logout',
+        method: 'POST',
+      }),
+    }),
   }),
 })
 
@@ -55,4 +68,5 @@ export const {
   useGetAuthModeQuery,
   useLazyGetAuthModeQuery,
   useGetSystemQuery,
+  useLogoutMutation,
 } = authApi

@@ -40,7 +40,12 @@ const ProfileFormCore = () => {
 
   // Create schema with UI config from API
   const uiConfig = uiSettings
-  const schema = createProfileSchema(t, formT, uiConfig)
+  const schema = createProfileSchema(
+    t,
+    formT,
+    uiConfig,
+    mainAccount?.identities
+  )
 
   // Default values from API
   // TODO get data (uid,mail,cn...) from API when available

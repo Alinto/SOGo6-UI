@@ -14,6 +14,10 @@ jest.mock('@/lib/i18n/config', () => ({
 const mockPush = jest.fn()
 const mockPathname = '/en/auth/login'
 
+jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
+}))
+
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
   usePathname: () => mockPathname,

@@ -118,9 +118,9 @@ export interface DomainUISettings {
 
   // User Module
   SOGO_D_MODULE_ACCESS?: string[]
-  SOGO_D_FOLDER_DISABLE_EXPORT?: boolean | null
-  SOGO_D_FOLDER_DISABLE_SHARING?: boolean | null
-  SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH?: boolean | null
+  SOGO_D_FOLDER_DISABLE_EXPORT?: string[] | null
+  SOGO_D_FOLDER_DISABLE_SHARING?: string[] | null
+  SOGO_D_FOLDER_DISABLE_SHARING_ANY_AUTH?: string[] | null
   SOGO_D_AUTOCOMPLETION_MIN_LEN?: number
   SOGO_D_IDENTITIES_ENABLED?: boolean
   SOGO_D_IDENTITIES_CUSTOM_FROM_ENABLED?: boolean

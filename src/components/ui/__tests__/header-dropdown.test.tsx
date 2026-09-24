@@ -30,7 +30,14 @@ jest.mock('@/hooks/use-mobile', () => ({
 
 const mockPush = jest.fn()
 const mockDispatch = jest.fn()
+const mockRevokeSession = jest.fn(() => ({
+  unwrap: () => Promise.resolve(),
+}))
 let mockPendingCount = 0
+
+jest.mock('@/features/auth/components/store/auth.api', () => ({
+  useLogoutMutation: () => [mockRevokeSession],
+}))
 
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(),
@@ -418,6 +425,10 @@ describe('HeaderDropdown component', () => {
     mockPendingCount = 0
     mockPush.mockReset()
     mockDispatch.mockReset()
+    mockRevokeSession.mockClear()
+    mockRevokeSession.mockImplementation(() => ({
+      unwrap: () => Promise.resolve(),
+    }))
     ;(wipeOnLogout as jest.Mock).mockClear()
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
     ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
@@ -470,6 +481,7 @@ describe('HeaderDropdown component', () => {
 
     expect(screen.queryByTestId('logout-outbox-dialog')).not.toBeInTheDocument()
     await waitFor(() => {
+      expect(mockRevokeSession).toHaveBeenCalled()
       expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
       expect(mockDispatch).toHaveBeenCalled()
       expect(mockPush).toHaveBeenCalledWith('/auth/login')
@@ -498,8 +510,8 @@ describe('HeaderDropdown component', () => {
       expect(screen.getByTestId('logout-outbox-dialog')).toBeInTheDocument()
     })
     fireEvent.click(screen.getByText('logout_outbox_confirm_action.string'))
-    expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
     await waitFor(() => {
+      expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
       expect(mockPush).toHaveBeenCalledWith('/auth/login')
     })
   })

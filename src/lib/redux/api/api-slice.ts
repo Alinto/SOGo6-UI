@@ -1,8 +1,14 @@
+import { logout } from '@/features/auth/components/store/auth.slice'
+import {
+  redirectAfterLogout,
+  SESSION_EXPIRED_REASON,
+} from '@/features/offline/auth/redirect-after-logout'
 import { clearEnvCache, fetchEnvVars } from '@/lib/env-service'
 import type { RootState } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { withApiFetchSemaphore } from './fetch-semaphore'
+import { shouldEndSession } from './session-expired'
 
 export const ADDRESS_BOOKS_SETTINGS_SLICE = 'address_books_settings'
 export const GENERAL_SETTINGS_SLICE = 'general_settings'
@@ -96,11 +102,15 @@ const ENV_RESOLVE_MS = 6000
 export const API_FETCH_TIMEOUT_MS = 20_000
 
 /** RTK endpoint names that must not send Authorization (pre-login / public). */
-const PUBLIC_AUTH_ENDPOINTS = new Set([
-  'getSystem',
-  'getAuthMode',
-  'login',
-])
+const PUBLIC_AUTH_ENDPOINTS = new Set(['getSystem', 'getAuthMode', 'login'])
+
+let sessionRedirectStarted = false
+
+function navigateToLogin(href: string) {
+  if (typeof window === 'undefined') return
+  const locale = window.location.pathname.split('/')[1] || 'en'
+  window.location.assign(`/${locale}${href}`)
+}
 
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
   if (!cachedBaseUrl) {
@@ -130,10 +140,7 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
         throw error
       }
 
-      console.warn(
-        '⚠️ Could not resolve API base URL, using /fakeApi',
-        error
-      )
+      console.warn('⚠️ Could not resolve API base URL, using /fakeApi', error)
       cachedBaseUrl = '/fakeApi'
       clearEnvCache()
     }
@@ -156,7 +163,22 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
     },
   })
 
-  return withApiFetchSemaphore(() => baseQuery(args, api, extraOptions))
+  const result = await withApiFetchSemaphore(() =>
+    baseQuery(args, api, extraOptions)
+  )
+
+  const status =
+    result && typeof result === 'object' && 'error' in result
+      ? (result.error as { status?: unknown } | undefined)?.status
+      : undefined
+
+  if (!sessionRedirectStarted && shouldEndSession(api.endpoint, status)) {
+    sessionRedirectStarted = true
+    api.dispatch(logout())
+    redirectAfterLogout(navigateToLogin, SESSION_EXPIRED_REASON)
+  }
+
+  return result
 }
 
 export const apiSlice = createApi({
