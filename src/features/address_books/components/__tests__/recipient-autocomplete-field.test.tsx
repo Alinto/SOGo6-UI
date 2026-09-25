@@ -21,7 +21,9 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
     onBlur,
     onKeyDown,
     disabled,
+    tags,
   }: {
+    tags: { id: string; value: string; label?: string }[]
     name: string
     placeholder: string
     value?: string
@@ -31,16 +33,23 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
     onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void
     disabled?: boolean
   }) => (
-    <input
-      data-testid={name}
-      placeholder={placeholder}
-      value={value ?? ''}
-      onChange={onChange}
-      onFocus={onFocus}
-      onBlur={onBlur}
-      onKeyDown={onKeyDown}
-      disabled={disabled}
-    />
+    <>
+      {tags.map((tag) => (
+        <span key={tag.id} data-testid="tag">
+          {tag.label ?? tag.value}
+        </span>
+      ))}
+      <input
+        data-testid={name}
+        placeholder={placeholder}
+        value={value ?? ''}
+        onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
+        disabled={disabled}
+      />
+    </>
   ),
 }))
 
@@ -78,6 +87,26 @@ describe('RecipientAutocompleteField', () => {
       expect(screen.getByTestId('to')).toBeInTheDocument()
       expect(screen.getByPlaceholderText('to.string')).toBeInTheDocument()
     })
+
+    it('shows the name between chevrons next to the email of added tags', () => {
+      render(
+        <RecipientAutocompleteField
+          tags={[
+            { id: '1', value: 'bob@example.com', name: 'Bob' },
+            { id: '2', value: 'typed@example.com' },
+          ]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="to"
+          placeholder="to.string"
+          {...defaultProps}
+        />
+      )
+      const tags = screen.getAllByTestId('tag')
+      expect(tags[0]).toHaveTextContent('bob@example.com <Bob>')
+      expect(tags[1]).toHaveTextContent('typed@example.com')
+      expect(tags[1]).not.toHaveTextContent('<')
+    })
   })
 
   describe('integration', () => {
@@ -114,7 +143,7 @@ describe('RecipientAutocompleteField', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Alice')).toBeInTheDocument()
+        expect(screen.getByText('<Alice>')).toBeInTheDocument()
       })
     })
 
@@ -147,10 +176,10 @@ describe('RecipientAutocompleteField', () => {
       })
 
       await waitFor(() => {
-        expect(screen.getByText('Bob')).toBeInTheDocument()
+        expect(screen.getByText('<Bob>')).toBeInTheDocument()
       })
 
-      fireEvent.mouseDown(screen.getByText('Bob'))
+      fireEvent.mouseDown(screen.getByText('<Bob>'))
       expect(mockHandleAdd).toHaveBeenCalledWith('bob@example.com', {
         email: 'bob@example.com',
         name: 'Bob',
@@ -293,7 +322,7 @@ describe('RecipientAutocompleteField', () => {
         jest.advanceTimersByTime(300)
       })
 
-      fireEvent.mouseDown(await screen.findByText('Bob'))
+      fireEvent.mouseDown(await screen.findByText('<Bob>'))
       expect(mockHandleAdd).toHaveBeenCalled()
       expect(onAddDirect).not.toHaveBeenCalled()
     })
@@ -323,6 +352,34 @@ describe('RecipientAutocompleteField', () => {
 
       fireEvent.blur(screen.getByTestId('to'))
       expect(mockHandleAdd).not.toHaveBeenCalled()
+    })
+
+    it('shows no panel when getAddDirectLabel is not set and nothing matches', async () => {
+      const { container } = render(
+        <RecipientAutocompleteField
+          tags={[]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="from"
+          placeholder="from.string"
+          loadingLabel="Searching recipients…"
+          allowFreeText
+        />
+      )
+
+      fireEvent.change(screen.getByTestId('from'), {
+        target: { value: 'new@example.com' },
+      })
+      fireEvent.focus(screen.getByTestId('from'))
+
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+
+      expect(container.querySelector('.bg-popover')).not.toBeInTheDocument()
+
+      fireEvent.blur(screen.getByTestId('from'))
+      expect(mockHandleAdd).toHaveBeenCalledWith('new@example.com')
     })
 
     it('offers to add a non-email value when allowFreeText is set (used by search fields)', async () => {
@@ -443,7 +500,7 @@ describe('RecipientAutocompleteField', () => {
       await typeAndWait('bo')
 
       await waitFor(() => {
-        expect(screen.getByText('Bob')).toBeInTheDocument()
+        expect(screen.getByText('<Bob>')).toBeInTheDocument()
       })
       fireEvent.keyDown(screen.getByTestId('share'), { key: 'Enter' })
       expect(mockHandleAdd).toHaveBeenCalledWith('bob@example.com', bob)

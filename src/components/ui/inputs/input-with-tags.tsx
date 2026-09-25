@@ -4,7 +4,7 @@ import Tag from '../tag'
 import InputWithError from './input-with-error'
 
 interface InputWithTagsProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  tags: { id: string; value: string }[]
+  tags: { id: string; value: string; label?: string }[]
   remove: (_index: number) => void
   handleAdd: (_value: string) => void
   errors?: FieldErrors
@@ -24,8 +24,8 @@ const InputWithTags: React.FC<InputWithTagsProps> = ({
       {tags.map((tag, i) => (
         <Tag
           key={tag.id}
-          value={tag.value}
-          tooltip={tag.value}
+          value={tag.label ?? tag.value}
+          tooltip={tag.label ?? tag.value}
           icon={'trash-2'}
           action={() => remove(i)}
           className={i === 0 ? 'ml-2' : ''}

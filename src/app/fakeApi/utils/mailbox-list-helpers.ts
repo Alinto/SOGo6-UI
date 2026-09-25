@@ -1,8 +1,10 @@
 import { NextRequest } from 'next/server'
 
 import type {
+  ImapMessages,
   ImapMessagesList,
   MailSearchParams,
+  MailSearchSize,
 } from '@/features/mails/mails-types'
 
 import { getDemoData } from '@/app/fakeApi/utils/demo-storage'
@@ -150,6 +152,31 @@ function resolveFolderMessages(
   return [...own, ...movedIn]
 }
 
+/** Seed messages of `folder` with demo moves and flag overrides applied. */
+function loadFolderMessages(
+  folder: string,
+  flagsOverrides: MailFlagsOverrides,
+  moveOverrides: MailMoveOverrides
+): ImapMessagesList[] {
+  return resolveFolderMessages(folder, moveOverrides).map((m) => {
+    const overriddenFlags = m.id
+      ? flagsOverrides[buildMailFlagsKey(folder, m.id)]
+      : undefined
+    return {
+      ...listDefaults,
+      ...m,
+      folder,
+      ...(overriddenFlags
+        ? {
+            flags: overriddenFlags,
+            flagged: overriddenFlags.includes('\\Flagged'),
+            seen: overriddenFlags.includes('\\Seen'),
+          }
+        : {}),
+    } as ImapMessagesList
+  })
+}
+
 export function buildFolderMessagesListResponse(
   folder: string,
   searchParams: URLSearchParams,
@@ -180,26 +207,7 @@ export function buildFolderMessagesListResponse(
     ? getDemoData<MailMoveOverrides>(req, MAIL_MOVES_COOKIE, {})
     : {}
 
-  let messages: ImapMessagesList[] = resolveFolderMessages(
-    folder,
-    moveOverrides
-  ).map((m) => {
-    const overriddenFlags = m.id
-      ? flagsOverrides[buildMailFlagsKey(folder, m.id)]
-      : undefined
-    return {
-      ...listDefaults,
-      ...m,
-      folder,
-      ...(overriddenFlags
-        ? {
-            flags: overriddenFlags,
-            flagged: overriddenFlags.includes('\\Flagged'),
-            seen: overriddenFlags.includes('\\Seen'),
-          }
-        : {}),
-    } as ImapMessagesList
-  })
+  let messages = loadFolderMessages(folder, flagsOverrides, moveOverrides)
 
   messages = sortFolderMessages(messages, sortBy, sortOrder)
 
@@ -241,37 +249,76 @@ function matchesText(value: string | undefined, needle: string): boolean {
   return (value || '').toLowerCase().includes(needle.toLowerCase())
 }
 
+/** Detail seed entry of a list message (list items lack cc/bcc/body/attachments). */
+function findMessageDetail(
+  message: ImapMessagesList
+): ImapMessages | undefined {
+  if (!message.folder) return undefined
+  return (mailDetailByFolderSeed[message.folder] || []).find(
+    (m) => m.id === message.id
+  )
+}
+
+/**
+ * Detail seed addresses are raw `"Name <email>"` strings despite the
+ * `{ name, email }` type — accept both shapes.
+ */
+function addressText(address: unknown): string {
+  if (typeof address === 'string') return address
+  if (address && typeof address === 'object') {
+    const { name, email } = address as { name?: string; email?: string }
+    return `${name ?? ''} <${email ?? ''}>`
+  }
+  return ''
+}
+
+function anyAddressMatches(addresses: unknown[], needles: string[]): boolean {
+  return addresses.some((address) =>
+    needles.some((needle) => matchesText(addressText(address), needle))
+  )
+}
+
+function stripHtml(html: string | undefined): string {
+  return (html || '').replace(/<[^>]+>/g, ' ')
+}
+
 /**
  * Mirrors `buildMailSearchParams`'s criteria semantics: subject/from/to/bcc/
  * text are combined with `operator` (default AND); everything else below is
- * a plain AND filter on top, regardless of `operator`.
+ * a plain AND filter on top, regardless of `operator`. Within one address
+ * field, any of its values may match.
  */
 function messageMatchesCriteria(
   message: ImapMessagesList,
   params: MailSearchParams
 ): boolean {
+  const detail = findMessageDetail(message)
   const checks: boolean[] = []
   if (params.subject) checks.push(matchesText(message.subject, params.subject))
-  if (params.from) {
-    checks.push(
-      matchesText(message.from?.email, params.from) ||
-        matchesText(message.from?.name, params.from)
-    )
+  if (params.from && params.from.length > 0) {
+    checks.push(anyAddressMatches([message.from], params.from))
   }
-  if (params.to) {
+  if (params.to && params.to.length > 0) {
     checks.push(
-      (message.to || []).some(
-        (r) =>
-          matchesText(r.email, params.to!) || matchesText(r.name, params.to!)
+      anyAddressMatches(
+        [...(message.to || []), ...(detail?.cc || [])],
+        params.to
       )
     )
   }
-  // bcc isn't modeled on the fake seed data, so it never matches.
-  if (params.bcc) checks.push(false)
+  if (params.bcc && params.bcc.length > 0) {
+    checks.push(anyAddressMatches(detail?.bcc || [], params.bcc))
+  }
   if (params.text) {
+    const text = params.text
     checks.push(
-      matchesText(message.subject, params.text) ||
-        matchesText(message.snippet, params.text)
+      matchesText(message.subject, text) ||
+        matchesText(message.snippet, text) ||
+        matchesText(stripHtml(detail?.body), text) ||
+        anyAddressMatches(
+          [message.from, ...(message.to || []), ...(detail?.cc || [])],
+          [text]
+        )
     )
   }
 
@@ -281,15 +328,27 @@ function messageMatchesCriteria(
 
 /** Extensions of the message's attachments, resolved from the detail seed (list items only carry `hasAttachment`). */
 function messageAttachmentExtensions(message: ImapMessagesList): string[] {
-  if (!message.folder) return []
-  const detail = (mailDetailByFolderSeed[message.folder] || []).find(
-    (m) => m.id === message.id
-  )
-  const attachments = detail?.attachments
+  const attachments = findMessageDetail(message)?.attachments
   if (!Array.isArray(attachments)) return []
   return attachments
     .map((a) => a.extension)
     .filter((ext): ext is string => Boolean(ext))
+}
+
+const SIZE_UNIT_BYTES: Record<MailSearchSize['unit'], number> = {
+  kb: 1024,
+  mb: 1024 ** 2,
+  gb: 1024 ** 3,
+}
+
+/** Same semantics as the IMAP LARGER/SMALLER search keys. */
+function messageMatchesSize(
+  message: ImapMessagesList,
+  size: MailSearchSize
+): boolean {
+  const limit = size.value * SIZE_UNIT_BYTES[size.unit]
+  const messageSize = message.size ?? 0
+  return size.operator === '>' ? messageSize > limit : messageSize < limit
 }
 
 function messageMatchesFilters(
@@ -311,6 +370,7 @@ function messageMatchesFilters(
     const flags = message.flags || []
     if (!params.labels.every((label) => flags.includes(label))) return false
   }
+  if (params.size && !messageMatchesSize(message, params.size)) return false
   const { start, end } = params.date_range || {}
   if (start || end) {
     const time = parseListItemDate(message)
@@ -334,7 +394,8 @@ function foldersToSearch(params: MailSearchParams): string[] {
 
 export function buildMailSearchResponse(
   body: MailSearchParams,
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
+  req?: NextRequest
 ): {
   mails: RawMailListItemSeed[]
   total: number
@@ -351,11 +412,16 @@ export function buildMailSearchResponse(
     ? Math.max(1, Math.min(100, parseInt(pageSizeParam, 10) || 20))
     : 20
 
+  const flagsOverrides = req
+    ? getDemoData<MailFlagsOverrides>(req, MAIL_FLAGS_COOKIE, {})
+    : {}
+  const moveOverrides = req
+    ? getDemoData<MailMoveOverrides>(req, MAIL_MOVES_COOKIE, {})
+    : {}
+
   const folders = foldersToSearch(body)
-  let messages: ImapMessagesList[] = folders.flatMap((folder) =>
-    (messagesByFolderSeed[folder] || []).map(
-      (m) => ({ ...listDefaults, ...m, folder }) as ImapMessagesList
-    )
+  let messages = folders.flatMap((folder) =>
+    loadFolderMessages(folder, flagsOverrides, moveOverrides)
   )
 
   messages = messages.filter(

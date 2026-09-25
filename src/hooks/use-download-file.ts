@@ -4,6 +4,7 @@ import { addNotification } from '@/features/notifications'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useCallback, useState } from 'react'
 
+/** Translation keys in the `NOTIFICATIONS` namespace (translated by NotificationProvider). */
 export type DownloadFileErrorCopy = {
   title: string
   message: string

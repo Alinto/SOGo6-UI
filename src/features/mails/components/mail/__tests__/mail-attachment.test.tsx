@@ -157,8 +157,8 @@ describe('MailAttachment', () => {
     )
     expect(store.getState().notifications.items[0]).toMatchObject({
       type: 'error',
-      title: 'mail_display.content.download_error.title.string',
-      message: 'mail_display.content.download_error.message.string',
+      title: 'mail_attachment.download_error.title.string',
+      message: 'mail_attachment.download_error.message.string',
     })
   })
 })

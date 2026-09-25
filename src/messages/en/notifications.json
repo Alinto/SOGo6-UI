@@ -328,6 +328,18 @@
                 }
             }
         },
+        "mail_attachment": {
+            "download_error": {
+                "title": {
+                    "string": "Download failed",
+                    "description": "Title of the error toast shown when an attachment fails to download"
+                },
+                "message": {
+                    "string": "The attachment could not be downloaded. Please try again.",
+                    "description": "Message of the error toast shown when an attachment fails to download"
+                }
+            }
+        },
         "folders_purge": {
             "successTitle": {
                 "string": "Folder purged"

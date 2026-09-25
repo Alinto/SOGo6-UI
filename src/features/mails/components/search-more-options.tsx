@@ -53,8 +53,6 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
   const t = useTranslations('MAILS_COMMONS')
   const { allCategories } = useMailCategoryPicker(open)
   const loadingLabel = t('recipient_search.loading.string')
-  const getAddDirectLabel = (email: string) =>
-    t('recipient_search.add_direct.string', { email })
 
   const makeRecipientFieldHandlers = (
     value: string[],
@@ -138,7 +136,6 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
                     name={field.name}
                     placeholder={t('from.string')}
                     loadingLabel={loadingLabel}
-                    getAddDirectLabel={getAddDirectLabel}
                     allowFreeText
                   />
                 </FormControl>
@@ -163,7 +160,6 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
                     name={field.name}
                     placeholder={t('search.to_or_cc.string')}
                     loadingLabel={loadingLabel}
-                    getAddDirectLabel={getAddDirectLabel}
                     allowFreeText
                   />
                 </FormControl>
@@ -188,7 +184,6 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
                     name={field.name}
                     placeholder={t('bcc.string')}
                     loadingLabel={loadingLabel}
-                    getAddDirectLabel={getAddDirectLabel}
                     allowFreeText
                   />
                 </FormControl>

@@ -66,7 +66,7 @@ describe('getFolderActions', () => {
 
   it('hides sharing when mail sharing is disabled', () => {
     const actions = getFolderActions(baseFolder({ type: 'INBOX' }), {
-      folderSharingDisabled: true,
+      folderSharingDisabled: ['mail'],
     })
     expect(actions.some((action) => action.id === 'sharing')).toBe(false)
     expect(actions.some((action) => action.id === 'export')).toBe(true)

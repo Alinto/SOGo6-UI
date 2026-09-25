@@ -392,7 +392,7 @@ export const mailDetailByFolderSeed = {
       from: { name: 'John Paul', email: 'sogo-tests1@example.org' },
       to: ['Claire Martin <c.martin@sogomail.eu>'],
       cc: [] as string[],
-      bcc: [] as string[],
+      bcc: ['Direction commerciale <direction@sogomail.eu>'],
       size: 18800,
       imageBlocked: false,
       flags: ['\\Seen'],

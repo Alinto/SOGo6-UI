@@ -20,17 +20,18 @@ jest.mock('@/components/ui/tag', () => ({
 // Mock the InputWithError component
 jest.mock('../input-with-error', () => ({
   __esModule: true,
-  default: React.forwardRef(
-    ({ errorName, errors, ...props }: any, ref: any) => {
-      // Filter out react-hook-form specific props that shouldn't go to DOM
-      const {
-        errorName: _,
-        errors: __,
-        ...domProps
-      } = { errorName, errors, ...props }
-      return <input ref={ref} data-testid="input-with-error" {...domProps} />
-    }
-  ),
+  default: React.forwardRef(function MockInputWithError(
+    { errorName, errors, ...props }: any,
+    ref: any
+  ) {
+    // Filter out react-hook-form specific props that shouldn't go to DOM
+    const {
+      errorName: _,
+      errors: __,
+      ...domProps
+    } = { errorName, errors, ...props }
+    return <input ref={ref} data-testid="input-with-error" {...domProps} />
+  }),
 }))
 
 // Mock next-intl
@@ -81,6 +82,25 @@ describe('InputWithTags Component', () => {
       expect(tags).toHaveLength(2)
       expect(screen.getByText('tag1@example.com')).toBeInTheDocument()
       expect(screen.getByText('tag2@example.com')).toBeInTheDocument()
+    })
+
+    it('should render the tag label instead of the value when provided', () => {
+      render(
+        <FormWrapper>
+          <InputWithTags
+            {...defaultProps}
+            tags={[
+              {
+                id: '1',
+                value: 'bob@example.com',
+                label: 'bob@example.com <Bob>',
+              },
+            ]}
+          />
+        </FormWrapper>
+      )
+
+      expect(screen.getByText('bob@example.com <Bob>')).toBeInTheDocument()
     })
 
     it('should render input with error component', () => {

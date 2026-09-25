@@ -1,0 +1,16 @@
+{
+    "NOTIFICATIONS": {
+        "mail_attachment": {
+            "download_error": {
+                "title": {
+                    "string": "Échec du téléchargement",
+                    "description": "Title of the error toast shown when an attachment fails to download"
+                },
+                "message": {
+                    "string": "La pièce jointe n'a pas pu être téléchargée. Veuillez réessayer.",
+                    "description": "Message of the error toast shown when an attachment fails to download"
+                }
+            }
+        }
+    }
+}

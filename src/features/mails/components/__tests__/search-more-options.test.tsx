@@ -37,6 +37,7 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
     value,
     onChange,
     onFocus,
+    onBlur,
     tags,
     remove,
   }: {
@@ -45,6 +46,7 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
     value?: string
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void
     onFocus?: () => void
+    onBlur?: () => void
     tags: { id: string; value: string }[]
     remove: (index: number) => void
   }) => (
@@ -63,6 +65,7 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
         value={value ?? ''}
         onChange={onChange}
         onFocus={onFocus}
+        onBlur={onBlur}
       />
     </div>
   ),
@@ -130,7 +133,7 @@ describe('SearchMoreOptions — from/to/bcc autocomplete', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Alice')).toBeInTheDocument()
+      expect(screen.getByText('<Alice>')).toBeInTheDocument()
     })
   })
 
@@ -154,10 +157,10 @@ describe('SearchMoreOptions — from/to/bcc autocomplete', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Bob')).toBeInTheDocument()
+      expect(screen.getByText('<Bob>')).toBeInTheDocument()
     })
 
-    fireEvent.mouseDown(screen.getByText('Bob'))
+    fireEvent.mouseDown(screen.getByText('<Bob>'))
 
     await waitFor(() => {
       expect(screen.getByText('bob@example.com')).toBeInTheDocument()
@@ -176,13 +179,34 @@ describe('SearchMoreOptions — from/to/bcc autocomplete', () => {
       jest.advanceTimersByTime(300)
     })
 
-    const addAsTyped = await screen.findByText(
-      'recipient_search.add_direct.string:jane'
-    )
-    fireEvent.mouseDown(addAsTyped)
+    fireEvent.blur(fromInput)
 
     await waitFor(() => {
       expect(screen.getByText('jane')).toBeInTheDocument()
     })
+  })
+
+  it('does not offer to add an unknown address as typed', async () => {
+    render(<TestHost />)
+
+    for (const placeholder of [
+      'from.string',
+      'search.to_or_cc.string',
+      'bcc.string',
+    ]) {
+      const input = screen.getByPlaceholderText(placeholder)
+      fireEvent.change(input, { target: { value: 'unknown@example.com' } })
+      fireEvent.focus(input)
+
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+
+      expect(
+        screen.queryByText(
+          'recipient_search.add_direct.string:unknown@example.com'
+        )
+      ).not.toBeInTheDocument()
+    }
   })
 })

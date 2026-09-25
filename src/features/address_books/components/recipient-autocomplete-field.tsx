@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils'
 import { Loader2, UserPlus } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 
-type RecipientTag = { id: string; value: string }
+type RecipientTag = { id: string; value: string; name?: string }
 
 type RecipientAutocompleteFieldProps = {
   tags: RecipientTag[]
@@ -36,6 +36,8 @@ type RecipientAutocompleteFieldProps = {
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+const formatSuggestionName = (name: string) => `<${name}>`
 
 const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
   tags,
@@ -77,11 +79,23 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
     [suggestions, tags]
   )
 
+  const labelledTags = useMemo(
+    () =>
+      tags.map((tag) => ({
+        ...tag,
+        label: tag.name
+          ? `${tag.value} ${formatSuggestionName(tag.name)}`
+          : undefined,
+      })),
+    [tags]
+  )
+
   const showPanel =
     open &&
     debouncedQ.length >= 2 &&
     (filteredSuggestions.length > 0 ||
-      (isAddableDraft(debouncedQ) &&
+      (!!getAddDirectLabel &&
+        isAddableDraft(debouncedQ) &&
         !tags.some(
           (tag) => tag.value.toLowerCase() === debouncedQ.toLowerCase()
         )))
@@ -111,7 +125,7 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
   return (
     <div ref={containerRef} className="relative">
       <InputWithTags
-        tags={tags}
+        tags={labelledTags}
         remove={remove}
         handleAdd={(value) => {
           handleAdd(value)
@@ -168,13 +182,11 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
               }}
             >
               <UserPlus className="text-muted-foreground h-4 w-4 shrink-0" />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate font-medium">
-                  {suggestion.name ?? suggestion.email}
-                </span>
+              <span className="flex min-w-0 flex-1 items-baseline gap-1">
+                <span className="truncate font-medium">{suggestion.email}</span>
                 {suggestion.name && (
-                  <span className="text-muted-foreground block truncate text-xs">
-                    {suggestion.email}
+                  <span className="text-muted-foreground truncate">
+                    {formatSuggestionName(suggestion.name)}
                   </span>
                 )}
               </span>

@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import RecipientAutocompleteField from '@/features/address_books/components/recipient-autocomplete-field'
+import type { RecipientSuggestionItem } from '@/features/address_books/hooks/use-recipient-suggestions'
 import { useSaveRecipientAsContact } from '@/features/address_books/hooks/use-save-recipient-as-contact'
 import { useOfflineIdentities } from '@/features/offline/hooks/use-offline-identities'
 import { useProfile } from '@/features/user-profile'
@@ -39,7 +40,7 @@ interface ComposeHeaderProps {
   draftId: string
 }
 
-type RecipientTag = { id: string; value: string }
+type RecipientTag = { id: string; value: string; name?: string }
 type RecipientField = 'to' | 'cc' | 'bcc'
 
 const isValidEmail = (value: string): boolean =>
@@ -97,18 +98,21 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       toRecipients?.map((r: MailComposeRecipient) => ({
         id: createClientId(),
         value: r.email,
+        name: r.name,
       }))
     )
     setCcTags(
       ccRecipients?.map((r: MailComposeRecipient) => ({
         id: createClientId(),
         value: r.email,
+        name: r.name,
       }))
     )
     setBccTags(
       bccRecipients?.map((r: MailComposeRecipient) => ({
         id: createClientId(),
         value: r.email,
+        name: r.name,
       }))
     )
     if (ccRecipients?.length > 0) setShowCc(true)
@@ -121,7 +125,10 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
         updateRecipients({
           draftId,
           field,
-          recipients: tags.map((tag) => ({ email: tag.value })),
+          recipients: tags.map((tag) => ({
+            email: tag.value,
+            ...(tag.name ? { name: tag.name } : {}),
+          })),
         })
       )
     },
@@ -134,14 +141,17 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       tags: RecipientTag[],
       setTags: React.Dispatch<React.SetStateAction<RecipientTag[]>>
     ) => ({
-      handleAdd: (value: string) => {
+      handleAdd: (value: string, suggestion?: RecipientSuggestionItem) => {
         const trimmed = value.trim()
         if (!trimmed || !isValidEmail(trimmed)) return
         if (
           tags.some((tag) => tag.value.toLowerCase() === trimmed.toLowerCase())
         )
           return
-        const newTags = [...tags, { id: createClientId(), value: trimmed }]
+        const newTags = [
+          ...tags,
+          { id: createClientId(), value: trimmed, name: suggestion?.name },
+        ]
         setTags(newTags)
         dispatchRecipients(field, newTags)
       },
