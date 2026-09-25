@@ -12,7 +12,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubItem,
 } from '@/components/ui/sidebar'
-import { Link } from '@/lib/i18n/navigation'
+import { Link, usePathname } from '@/lib/i18n/navigation'
 import { NavItems } from '@/types'
 import { ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -23,8 +23,14 @@ interface RecursiveNavItemProps {
   item: NavItems
 }
 
+function isCurrentPath(pathname: string, url?: string) {
+  if (!url) return false
+  return pathname === url || pathname.startsWith(`${url}/`)
+}
+
 function RecursiveNavItem({ item }: RecursiveNavItemProps) {
   const t = useTranslations()
+  const pathname = usePathname()
 
   return (
     <Collapsible
@@ -47,7 +53,9 @@ function RecursiveNavItem({ item }: RecursiveNavItemProps) {
               <SidebarMenuSubItem className="pt-2" key={subItem.title}>
                 {subItem.url ? (
                   <Link href={subItem.url}>
-                    <SidebarMenuButton>
+                    <SidebarMenuButton
+                      isActive={isCurrentPath(pathname, subItem.url)}
+                    >
                       {subItem.icon && <subItem.icon size={24} />}
                       <span>{t(subItem.title)}</span>
                     </SidebarMenuButton>

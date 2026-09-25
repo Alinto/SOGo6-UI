@@ -163,10 +163,7 @@ export function LoginAuthForm({
       )}
 
       <div className="mb-6 grid gap-2">
-        <div className="flex items-center justify-between gap-2">
-          <Label className="text-primary-foreground text-sm">
-            {t('email.label.string')}
-          </Label>
+        <div className="flex items-center gap-1">
           <Button
             type="button"
             variant="ghost"
@@ -174,10 +171,13 @@ export function LoginAuthForm({
             onClick={() => push('/auth/login')}
             disabled={isLoading}
             aria-label={t('change_email.string')}
-            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 focus-visible:ring-ring -mr-1.5 size-6"
+            className="text-primary-foreground/70 hover:text-primary-foreground hover:bg-primary-foreground/10 focus-visible:ring-ring -ml-1.5 size-6"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
           </Button>
+          <Label className="text-primary-foreground text-sm">
+            {t('email.label.string')}
+          </Label>
         </div>
         <p className="text-primary-foreground text-sm font-medium">{email}</p>
         {mode === 'ldap' && (
@@ -239,7 +239,7 @@ export function LoginAuthForm({
           size="lg"
           variant="outline"
           disabled={isLoading || isOffline}
-          className="bg-background border-primary-foreground/20 text-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/40 focus-visible:ring-ring w-full border-2 shadow-md transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2"
+          className="bg-background border-primary-foreground/20 text-foreground hover:bg-primary-foreground/10 hover:border-primary-foreground/40 focus-visible:ring-ring w-full border-2 shadow-md transition-all hover:shadow-lg focus-visible:ring-2 focus-visible:ring-offset-2 dark:bg-white dark:text-neutral-950 dark:hover:bg-neutral-100 dark:hover:text-neutral-950"
         >
           {isLoading ? t('login.loading.string') : t('login.string')}
         </Button>
