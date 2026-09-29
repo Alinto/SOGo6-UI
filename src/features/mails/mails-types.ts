@@ -38,6 +38,12 @@ export interface ImapFolder {
   selectable: boolean
   default?: boolean
   type?: ImapFolderType
+  /**
+   * Rights of the connected user on this folder (IMAP ACL). `undefined` means
+   * the backend did not send any (legacy/fake API): treated as full rights.
+   * An empty object means no right at all.
+   */
+  rights?: FolderShareRights
   subfolders?: ImapFolder[]
   children?: ImapFolder[]
 }
@@ -64,6 +70,8 @@ export interface ImapMessagesList {
   flags?: string[]
   /** Folder the message actually lives in. Only set on search results, which can span multiple folders. */
   folder?: string
+  /** Rights of the connected user on the message's folder, when sent by the backend. */
+  rights?: FolderShareRights
 }
 
 export interface ImapAttachmentPart {
@@ -136,6 +144,8 @@ export interface ImapMessages {
   mailType?: string[]
   mail_type_data?: MailTypeDataItem[]
   mailTypeData?: MailTypeDataItem[]
+  /** Rights of the connected user on the message's folder, when sent by the backend. */
+  rights?: FolderShareRights
 }
 
 export interface ImapMessagesAPIResponse {

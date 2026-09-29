@@ -15,6 +15,7 @@ import { useMemo, useState } from 'react'
 import { AutoSizer, List } from 'react-virtualized'
 import { ImapFolder } from '../mails-types'
 import { useGetFoldersQuery } from '../store/mails-api'
+import { getPermissionsForFolder } from '../utils/folder-permissions'
 import { iconSelectorByType } from './utils'
 
 export interface FlattenedFolder extends ImapFolder {
@@ -29,7 +30,13 @@ export function flattenFolders(
 ): FlattenedFolder[] {
   let result: FlattenedFolder[] = []
   for (const f of folders) {
-    result.push({ ...f, level, key: f.path || `${parentPath}/${f.name}` })
+    // A real folder the user can't read (no `l`/`r` right) can't be searched.
+    // Non-selectable folders stay: they are only parents of searchable ones.
+    const isSearchable =
+      f.selectable === false || getPermissionsForFolder(f).canRead
+    if (isSearchable) {
+      result.push({ ...f, level, key: f.path || `${parentPath}/${f.name}` })
+    }
     if (f.subfolders?.length) {
       result = result.concat(
         flattenFolders(f.subfolders, level + 1, f.path || f.name)

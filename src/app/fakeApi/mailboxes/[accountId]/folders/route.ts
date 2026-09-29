@@ -36,6 +36,19 @@ export async function POST(
     delimiter: '/',
     readOnly: false,
     selectable: true,
+    rights: {
+      userCanViewFolder: 1,
+      userCanReadMails: 1,
+      userCanMarkMailsRead: 1,
+      userCanWriteMails: 1,
+      userCanInsertMails: 1,
+      userCanPostMails: 1,
+      userCanCreateSubfolders: 1,
+      userCanRemoveFolder: 1,
+      userCanEraseMails: 1,
+      userCanExpungeFolder: 1,
+      userIsAdministrator: 1,
+    },
     subfolders: [],
   }
   addMailboxDemoFolder(newFolder)

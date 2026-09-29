@@ -35,15 +35,22 @@ export function canDropMailOnFolder({
   destPath,
   destType,
   destSelectable = true,
+  sourceCanMoveOut = true,
+  destCanInsert = true,
 }: {
   sourcePath: string
   sourceType?: ImapFolderType
   destPath: string
   destType?: ImapFolderType
   destSelectable?: boolean
+  /** Rights on the source folder allow moving mails out of it. */
+  sourceCanMoveOut?: boolean
+  /** Rights on the destination folder allow inserting mails into it. */
+  destCanInsert?: boolean
 }): boolean {
   if (!destPath || destPath === sourcePath) return false
   if (destSelectable === false) return false
+  if (!sourceCanMoveOut || !destCanInsert) return false
 
   const source = normalizeFolderType(sourceType)
   const dest = normalizeFolderType(destType)
@@ -60,10 +67,14 @@ export function canDropMailOnFolder({
 }
 
 export function getMailDropTargetState(
-  source: { folder: string; folderType?: ImapFolderType } | null | undefined,
+  source:
+    | { folder: string; folderType?: ImapFolderType; canMoveOut?: boolean }
+    | null
+    | undefined,
   dest: {
     folderPath: string
     folderType?: ImapFolderType
+    canInsert?: boolean
   } | null
 ): MailDropTargetState {
   if (!source || !dest) return 'none'
@@ -72,6 +83,8 @@ export function getMailDropTargetState(
     sourceType: source.folderType,
     destPath: dest.folderPath,
     destType: dest.folderType,
+    sourceCanMoveOut: source.canMoveOut,
+    destCanInsert: dest.canInsert,
   })
     ? 'allowed'
     : 'forbidden'
@@ -121,6 +134,8 @@ export function resolveMailFolderDrop(
       sourceType: activeData.folderType,
       destPath: overData.folderPath,
       destType: overData.folderType,
+      sourceCanMoveOut: activeData.canMoveOut,
+      destCanInsert: overData.canInsert,
     })
   ) {
     return { kind: 'noop' }

@@ -120,6 +120,7 @@ const ListToolbar: React.FC = () => {
     batchCopy,
     batchApplyLabels,
     batchRemoveLabels,
+    getPermissionsForIds,
     isJunk,
     isLoading: isBatchActionLoading,
   } = useMailBatchActions({
@@ -127,6 +128,12 @@ const ListToolbar: React.FC = () => {
     folder: folderPath,
     folderById,
   })
+
+  // A bulk action is allowed only if the rights allow it on every selected folder.
+  const permissions = useMemo(
+    () => getPermissionsForIds(selectedIds),
+    [getPermissionsForIds, selectedIds]
+  )
 
   const {
     hasUnreadSelected,
@@ -291,19 +298,25 @@ const ListToolbar: React.FC = () => {
                   id: 'bulk-mark-read',
                   title: tActions('mark_as_read.string'),
                   icon: <MailOpen size={16} />,
-                  disabled: isBatchActionLoading || !hasUnreadSelected,
+                  disabled:
+                    isBatchActionLoading ||
+                    !hasUnreadSelected ||
+                    !permissions.canMarkRead,
                 },
                 {
                   id: 'bulk-mark-unread',
                   title: tActions('mark_as_unread.string'),
                   icon: <Mail size={16} />,
-                  disabled: isBatchActionLoading || !hasReadSelected,
+                  disabled:
+                    isBatchActionLoading ||
+                    !hasReadSelected ||
+                    !permissions.canMarkRead,
                 },
                 {
                   id: 'bulk-delete',
                   title: tActions('delete.string'),
                   icon: <Trash2 size={16} />,
-                  disabled: isBatchActionLoading,
+                  disabled: isBatchActionLoading || !permissions.canDelete,
                 },
                 {
                   // Label reflects the currently open folder; the action
@@ -314,13 +327,13 @@ const ListToolbar: React.FC = () => {
                     ? tBar('report_not_spam.string')
                     : tBar('report_spam.string'),
                   icon: isJunk ? <Inbox size={16} /> : <ShieldX size={16} />,
-                  disabled: isBatchActionLoading,
+                  disabled: isBatchActionLoading || !permissions.canMoveOut,
                 },
                 {
                   id: 'bulk-label',
                   title: tBar('label.string'),
                   icon: <Tag size={16} />,
-                  disabled: isBatchActionLoading,
+                  disabled: isBatchActionLoading || !permissions.canWriteFlags,
                 },
               ]}
               onAction={(idx) => {
@@ -331,13 +344,20 @@ const ListToolbar: React.FC = () => {
                 accountId={accountString}
                 currentFolder={folderPath}
                 disabled={isBatchActionLoading}
+                moveDisabled={!permissions.canMoveOut}
+                copyDisabled={!permissions.canCopyOut}
                 onSelectDestination={handleSelectMoveCopyDestination}
                 onCreateFolder={setCreateFolderMode}
               />
               <MailBulkMoreActionsMenu
                 disabled={isBatchActionLoading}
-                showMarkImportant={hasNotImportantSelected}
-                showRemoveImportant={hasImportantSelected}
+                moveDisabled={!permissions.canMoveOut}
+                showMarkImportant={
+                  hasNotImportantSelected && permissions.canWriteFlags
+                }
+                showRemoveImportant={
+                  hasImportantSelected && permissions.canWriteFlags
+                }
                 onMarkImportant={() => void handleBulkMarkImportant()}
                 onRemoveImportant={() => void handleBulkRemoveImportant()}
                 onPhishing={() => void handleBulkPhishing()}

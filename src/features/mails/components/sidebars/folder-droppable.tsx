@@ -25,6 +25,8 @@ interface FolderDroppableProps {
   selectable?: boolean
   isVirtual?: boolean
   hasSubfolders?: boolean
+  /** Rights on this folder allow inserting mails into it. */
+  canInsert?: boolean
   onDwellExpand?: () => void
   children: React.ReactNode
 }
@@ -36,6 +38,7 @@ const FolderDroppable: React.FC<FolderDroppableProps> = ({
   selectable = true,
   isVirtual = false,
   hasSubfolders = false,
+  canInsert = true,
   onDwellExpand,
   children,
 }) => {
@@ -51,6 +54,7 @@ const FolderDroppable: React.FC<FolderDroppableProps> = ({
     folderPath,
     folderType,
     folderName,
+    canInsert,
   }
 
   const overData = over?.data.current
@@ -63,6 +67,7 @@ const FolderDroppable: React.FC<FolderDroppableProps> = ({
     ? getMailDropTargetState(activeData, {
         folderPath,
         folderType,
+        canInsert,
       })
     : 'none'
   const canAccept = dropState === 'allowed'

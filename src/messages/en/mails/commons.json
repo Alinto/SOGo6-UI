@@ -624,6 +624,10 @@
                     "string": "This action is not available yet",
                     "description": "Tooltip shown when a folder action is disabled because the backend is not ready"
                 },
+                "permission_denied": {
+                    "string": "You don't have the right to do this on this folder",
+                    "description": "Tooltip shown when a folder action is disabled because the user lacks the required folder rights"
+                },
                 "empty_folder_dialog": {
                     "title": {
                         "string": "Empty folder"

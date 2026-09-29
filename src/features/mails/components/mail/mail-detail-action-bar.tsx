@@ -8,6 +8,7 @@ import {
   useDownloadMailMutation,
   useLazyGetMailRawQuery,
 } from '@/features/mails/store/mails-api'
+import { getFolderPermissions } from '@/features/mails/utils/folder-permissions'
 import { useRouter } from '@/lib/i18n/navigation'
 import { Inbox, Mail, ShieldX, Star, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -56,8 +57,11 @@ export default function MailDetailActionBar({
 }: MailDetailActionBarProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const { push } = useRouter()
-  const { folderType: resolvedFolderType } = useCurrentFolder(folder, accountId)
+  const { folderType: resolvedFolderType, folder: folderNode } =
+    useCurrentFolder(folder, accountId)
   const folderType = folderTypeProp ?? resolvedFolderType
+  // Rights sent with the opened mail win over the ones of the folder tree.
+  const permissions = getFolderPermissions(mail?.rights ?? folderNode?.rights)
   const { folderSpecificActions, handleFolderSpecificAction } =
     useMailDetailFolderActions({
       folderType,
@@ -204,13 +208,13 @@ export default function MailDetailActionBar({
         id: ActionId.HAM,
         icon: <Inbox size={18} />,
         title: t('report_not_spam.string'),
-        disabled: isLoading,
+        disabled: isLoading || !permissions.canMoveOut,
       }
     : {
         id: ActionId.SPAM,
         icon: <ShieldX size={18} />,
         title: t('report_spam.string'),
-        disabled: isLoading,
+        disabled: isLoading || !permissions.canMoveOut,
       }
 
   const desktopActions: Action[] = [
@@ -226,19 +230,19 @@ export default function MailDetailActionBar({
       title: flagged
         ? t('unmark_important.string')
         : t('mark_important.string'),
-      disabled: isLoading,
+      disabled: isLoading || !permissions.canWriteFlags,
     },
     {
       id: ActionId.MARK_UNREAD,
       icon: <Mail size={18} />,
       title: t('mark_unread.string'),
-      disabled: isLoading || seen === false,
+      disabled: isLoading || seen === false || !permissions.canMarkRead,
     },
     {
       id: ActionId.DELETE,
       icon: <Trash2 size={18} />,
       title: t('delete.string'),
-      disabled: isLoading,
+      disabled: isLoading || !permissions.canDelete,
     },
     spamOrHamAction,
 
@@ -246,7 +250,7 @@ export default function MailDetailActionBar({
       id: ActionId.LABEL,
       icon: <Tag size={18} />,
       title: t('label.string'),
-      disabled: isLoading || !enableLabel,
+      disabled: isLoading || !enableLabel || !permissions.canWriteFlags,
     },
   ]
 
@@ -254,8 +258,10 @@ export default function MailDetailActionBar({
     <MailMoreActionsMenu
       disabled={isLoading}
       isJunk={isJunk}
-      markUnreadDisabled={seen === false}
-      labelDisabled={!enableLabel}
+      markUnreadDisabled={seen === false || !permissions.canMarkRead}
+      labelDisabled={!enableLabel || !permissions.canWriteFlags}
+      moveDisabled={!permissions.canMoveOut}
+      copyDisabled={!permissions.canCopyOut}
       showDownload
       showSpamActions
       showLabel
@@ -282,6 +288,7 @@ export default function MailDetailActionBar({
   const desktopMoreMenu = enableDesktopMore ? (
     <MailMoreActionsMenu
       disabled={isLoading}
+      moveDisabled={!permissions.canMoveOut}
       showDownload
       showPrint
       showViewSource
@@ -304,13 +311,13 @@ export default function MailDetailActionBar({
               id: ActionId.MARK_UNREAD,
               icon: <Mail size={18} />,
               title: t('mark_unread.string'),
-              disabled: isLoading || seen === false,
+              disabled: isLoading || seen === false || !permissions.canMarkRead,
             },
             {
               id: ActionId.DELETE,
               icon: <Trash2 size={18} />,
               title: t('delete.string'),
-              disabled: isLoading,
+              disabled: isLoading || !permissions.canDelete,
             },
           ]}
           onAction={(_idx, action) => {
@@ -326,6 +333,8 @@ export default function MailDetailActionBar({
             accountId={accountId}
             currentFolder={folder}
             disabled={isLoading}
+            moveDisabled={!permissions.canMoveOut}
+            copyDisabled={!permissions.canCopyOut}
             onSelectDestination={handleSelectMoveCopyDestination}
             onCreateFolder={setCreateFolderMode}
             triggerClassName={desktopMoreMenu ? undefined : 'rounded-r-md'}

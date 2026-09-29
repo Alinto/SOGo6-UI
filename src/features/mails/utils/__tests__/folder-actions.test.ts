@@ -8,7 +8,7 @@ const describeWhenRenameApiEnabled = FOLDER_RENAME_API_ENABLED
 
 const baseFolder = (
   overrides: Partial<ImapFolder> = {}
-): Pick<ImapFolder, 'type' | 'selectable' | 'default'> => ({
+): Pick<ImapFolder, 'type' | 'selectable' | 'default' | 'rights'> => ({
   type: 'NORMAL',
   selectable: true,
   default: false,
@@ -78,6 +78,73 @@ describe('getFolderActions', () => {
     })
     expect(actions.some((action) => action.id === 'export')).toBe(false)
     expect(actions.some((action) => action.id === 'sharing')).toBe(true)
+  })
+
+  describe('folder rights', () => {
+    const disabledIds = (folder: ReturnType<typeof baseFolder>) =>
+      getFolderActions(folder, { mailPurgeAllow: true })
+        .filter((action) => action.disabled)
+        .map((action) => action.id)
+
+    it('does not restrict folders without rights', () => {
+      expect(disabledIds(baseFolder({ type: 'NORMAL' }))).toEqual([
+        'mark_as_read',
+        'export',
+        'move_to',
+        'set_as',
+      ])
+    })
+
+    it('disables every right-gated action for a read-only folder', () => {
+      const actions = getFolderActions(
+        baseFolder({
+          type: 'NORMAL',
+          rights: { userCanViewFolder: 1, userCanReadMails: 1 },
+        }),
+        { mailPurgeAllow: true }
+      )
+      const byId = Object.fromEntries(
+        actions.map((action) => [action.id, action])
+      )
+      for (const id of ['new_subfolder', 'sharing', 'purge', 'expunge']) {
+        expect(byId[id].disabled).toBe(true)
+        expect(byId[id].disabledReasonKey).toBe(
+          'folders.actions.permission_denied.string'
+        )
+      }
+      expect(byId.delete.disabled).toBe(true)
+      expect(byId.export.disabledReasonKey).toBe(
+        'folders.actions.action_unavailable.string'
+      )
+    })
+
+    it('enables sharing only with the administer right', () => {
+      const sharing = (rights: ImapFolder['rights']) =>
+        getFolderActions(baseFolder({ type: 'INBOX', rights })).find(
+          (action) => action.id === 'sharing'
+        )
+      expect(sharing({ userIsAdministrator: 1 })?.disabled).toBeFalsy()
+      expect(sharing({ userCanReadMails: 1 })?.disabled).toBe(true)
+    })
+
+    it('needs t and e to empty trash', () => {
+      const emptyAction = (rights: ImapFolder['rights']) =>
+        getFolderActions(baseFolder({ type: 'TRASH', rights })).find(
+          (action) => action.id === 'empty_folder'
+        )
+      expect(emptyAction({ userCanEraseMails: 1 })?.disabled).toBe(true)
+      expect(
+        emptyAction({ userCanEraseMails: 1, userCanExpungeFolder: 1 })?.disabled
+      ).toBeFalsy()
+    })
+
+    it('does not restrict the delete action of virtual folders', () => {
+      const actions = getFolderActions(
+        baseFolder({ selectable: false, rights: {} })
+      )
+      expect(actions).toHaveLength(1)
+      expect(actions[0].disabled).toBeFalsy()
+    })
   })
 
   it('disables backend-blocked actions', () => {

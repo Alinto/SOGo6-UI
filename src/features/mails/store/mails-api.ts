@@ -23,6 +23,7 @@ import type {
   MailSearchParams,
   UpdateFolderBody,
 } from '../mails-types'
+import { getFolderPermissions } from '../utils/folder-permissions'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
 import { getMailBatchActionNotificationKeys } from '../utils/get-mail-batch-action-notification-keys'
 import {
@@ -382,6 +383,9 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           arg.mailId
         )
         if (!listItem || listItem.seen) return
+        // Opening a mail only marks it read when the user has the `s` right
+        // on its folder (e.g. not on a read-only shared folder).
+        if (!getFolderPermissions(listItem.rights).canMarkRead) return
 
         const optimisticPatches = dispatchSeenPatchOnAllFolderMessageCaches(
           dispatch,

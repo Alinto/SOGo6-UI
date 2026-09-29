@@ -57,6 +57,14 @@ jest.mock('../../hooks/use-mail-item-actions', () => ({
     markHam: jest.fn(),
   })),
 }))
+jest.mock('../../hooks/use-folder-permissions', () => ({
+  useFolderPermissionsResolver: () => ({
+    forFolder: () =>
+      require('../../utils/folder-permissions').FULL_FOLDER_PERMISSIONS,
+    forFolders: () =>
+      require('../../utils/folder-permissions').FULL_FOLDER_PERMISSIONS,
+  }),
+}))
 jest.mock('../list-item', () => ({
   __esModule: true,
   default: ({ data }: any) => <div data-testid="list-item" data-id={data.id} />,

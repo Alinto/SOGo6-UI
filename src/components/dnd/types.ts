@@ -9,6 +9,8 @@ export type MailDragData = {
   subject: string
   from: string
   count: number
+  /** Rights on the source folder allow moving mails out (defaults to true). */
+  canMoveOut?: boolean
 }
 
 export type FolderDragData = {
@@ -16,6 +18,8 @@ export type FolderDragData = {
   folderPath: string
   folderType?: ImapFolderType
   folderName?: string
+  /** Rights on the folder allow inserting mails into it (defaults to true). */
+  canInsert?: boolean
 }
 
 export type ContactDragData = {

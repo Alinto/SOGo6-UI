@@ -17,11 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useGetFoldersQuery, useMoveFolderMutation } from '../../store/mails-api'
-import type { ImapFolder } from '../../mails-types'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
+import type { ImapFolder } from '../../mails-types'
+import {
+  useGetFoldersQuery,
+  useMoveFolderMutation,
+} from '../../store/mails-api'
+import { getPermissionsForFolder } from '../../utils/folder-permissions'
 
 export interface MoveFolderDialogProps {
   open: boolean
@@ -44,7 +48,11 @@ function flattenFolderPaths(
     if (folder.path.startsWith(`${excludePath}/`)) continue
 
     const label = prefix ? `${prefix} / ${folder.name}` : folder.name
-    if (folder.selectable !== false) {
+    // Moving under a folder creates a subfolder there: needs the `k` right.
+    if (
+      folder.selectable !== false &&
+      getPermissionsForFolder(folder).canCreateSubfolder
+    ) {
       result.push({ path: folder.path, label })
     }
 

@@ -94,5 +94,53 @@
     "readOnly": false,
     "selectable": true,
     "default": false
+  },
+  {
+    "name": "Shared",
+    "path": "Shared",
+    "type": "NORMAL",
+    "unseen_count": 0,
+    "messages": 0,
+    "flags": ["\\HasChildren", "\\Noselect"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": false,
+    "default": false,
+    "rights": {}
+  },
+  {
+    "name": "ReadOnly",
+    "path": "Shared/ReadOnly",
+    "type": "NORMAL",
+    "unseen_count": 0,
+    "messages": 0,
+    "flags": ["\\HasNoChildren"],
+    "delimiter": "/",
+    "readOnly": true,
+    "selectable": true,
+    "default": false,
+    "rights": {
+      "userCanViewFolder": 1,
+      "userCanReadMails": 1
+    }
+  },
+  {
+    "name": "Contrib",
+    "path": "Shared/Contrib",
+    "type": "NORMAL",
+    "unseen_count": 0,
+    "messages": 0,
+    "flags": ["\\HasNoChildren"],
+    "delimiter": "/",
+    "readOnly": false,
+    "selectable": true,
+    "default": false,
+    "rights": {
+      "userCanViewFolder": 1,
+      "userCanReadMails": 1,
+      "userCanMarkMailsRead": 1,
+      "userCanWriteMails": 1,
+      "userCanInsertMails": 1
+    }
   }
 ]

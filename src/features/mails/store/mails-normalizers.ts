@@ -1,4 +1,5 @@
 import type {
+  FolderShareRights,
   ImapAttachments,
   ImapFolder,
   ImapMessages,
@@ -7,6 +8,7 @@ import type {
   ImapMessagesList,
   MailTypeDataItem,
 } from '../mails-types'
+import { ADVANCED_PERMISSIONS } from '../utils/permission-mapping'
 
 /** Backend wraps every response in `{ data, error_code, error_msg }`. */
 export interface BackendResponse<T> {
@@ -25,10 +27,15 @@ export interface PaginationHeader {
 }
 
 /** Folder payloads may still use legacy `unseen` instead of `unseen_count`. */
-export type RawImapFolder = Omit<ImapFolder, 'unseen_count' | 'selectable'> & {
+export type RawImapFolder = Omit<
+  ImapFolder,
+  'unseen_count' | 'selectable' | 'rights'
+> & {
   unseen_count?: number
   unseen?: number
   selectable?: boolean
+  /** camelCase (folders) or snake_case (mails) map of granted rights. */
+  rights?: unknown
   subfolders?: RawImapFolder[]
   children?: RawImapFolder[]
 }
@@ -56,14 +63,49 @@ export interface RawMailListItem {
   mailType?: string[]
   flags?: string[]
   folder?: string
+  /** Rights of the user on the mail's folder (snake_case, granted only). */
+  rights?: unknown
+}
+
+const FOLDER_RIGHT_FIELDS = new Set<string>(
+  ADVANCED_PERMISSIONS.map((def) => def.field)
+)
+
+function snakeToCamel(key: string): string {
+  return key.replace(/_([a-z])/g, (_, char: string) => char.toUpperCase())
+}
+
+/**
+ * Normalizes the rights map sent by the backend into `FolderShareRights`.
+ * Folders send camelCase keys, mails send snake_case ones; only granted
+ * rights are present. Returns `undefined` when no rights object was sent
+ * (legacy backend / fake API), which callers treat as full rights, while an
+ * empty object means "no right at all".
+ */
+export function normalizeFolderRights(
+  raw: unknown
+): FolderShareRights | undefined {
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return undefined
+  }
+  const rights: FolderShareRights = {}
+  for (const [key, value] of Object.entries(raw)) {
+    const field = snakeToCamel(key)
+    if (!FOLDER_RIGHT_FIELDS.has(field)) continue
+    if (value === 1 || value === true) {
+      rights[field as keyof FolderShareRights] = 1
+    }
+  }
+  return rights
 }
 
 export function normalizeImapFolder(folder: RawImapFolder): ImapFolder {
-  const { unseen, subfolders, children, ...rest } = folder
+  const { unseen, subfolders, children, rights, ...rest } = folder
   const unseen_count = folder.unseen_count ?? unseen ?? 0
   const selectable = folder.selectable ?? true
   return {
     ...rest,
+    rights: normalizeFolderRights(rights),
     unseen_count,
     selectable,
     subfolders: subfolders?.map(normalizeImapFolder),
@@ -125,6 +167,7 @@ export function mapMailToListItem(mail: RawMailListItem): ImapMessagesList {
     ),
     flags: Array.isArray(mail.flags) ? mail.flags : [],
     folder: mail.folder,
+    rights: normalizeFolderRights(mail.rights),
   }
 }
 
@@ -160,6 +203,7 @@ export function normalizeMailDetail(mail: ImapMessages): ImapMessages {
     mailType,
     mail_type_data: mailTypeData,
     mailTypeData,
+    rights: normalizeFolderRights(mail.rights),
   }
 }
 

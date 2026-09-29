@@ -16,6 +16,10 @@ import {
   isJunkFolderPath,
   isTrashFolderPath,
 } from '../utils/find-folder-by-path'
+import {
+  getPermissionsForFolder,
+  type FolderPermissions,
+} from '../utils/folder-permissions'
 
 export type UseMailItemActionsArgs = {
   accountId: string
@@ -42,6 +46,8 @@ export type UseMailItemActionsReturn = {
   markImportant: () => Promise<void>
   removeImportant: () => Promise<void>
   archiveDestination: string
+  /** Rights of the user on the folder the mail lives in. */
+  permissions: FolderPermissions
   isJunk: boolean
   isTrash: boolean
   folderType: ImapFolderType | undefined
@@ -337,6 +343,7 @@ export function useMailItemActions({
     markImportant,
     removeImportant,
     archiveDestination,
+    permissions: getPermissionsForFolder(currentFolder),
     isJunk,
     isTrash,
     folderType,

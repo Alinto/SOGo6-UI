@@ -15,6 +15,8 @@ interface MailListDraggableProps {
   accountId: string
   folder: string
   folderType?: ImapFolderType
+  /** Rights on the mail's folder allow moving it out (defaults to true). */
+  canMoveOut?: boolean
   selectedIds: string[]
   children: React.ReactNode
 }
@@ -24,6 +26,7 @@ const MailListDraggable: React.FC<MailListDraggableProps> = ({
   accountId,
   folder,
   folderType,
+  canMoveOut = true,
   selectedIds,
   children,
 }) => {
@@ -44,6 +47,7 @@ const MailListDraggable: React.FC<MailListDraggableProps> = ({
     subject: item.subject,
     from: getListDisplayContact(item, folderType),
     count: 1,
+    canMoveOut,
   }
 
   return (

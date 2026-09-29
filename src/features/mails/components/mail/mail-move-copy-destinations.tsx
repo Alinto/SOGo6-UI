@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { ImapFolder } from '@/features/mails/mails-types'
 import { useGetFoldersQuery } from '@/features/mails/store/mails-api'
+import { getPermissionsForFolder } from '@/features/mails/utils/folder-permissions'
 import { Copy, FolderInput, FolderPlus } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
@@ -24,7 +25,11 @@ export function flattenSelectableFolders(
 
   for (const folder of folders) {
     const label = prefix ? `${prefix} / ${folder.name}` : folder.name
-    if (folder.selectable !== false && folder.path !== excludePath) {
+    if (
+      folder.selectable !== false &&
+      folder.path !== excludePath &&
+      getPermissionsForFolder(folder).canInsert
+    ) {
       result.push({ path: folder.path, label })
     }
 
@@ -56,6 +61,7 @@ export type MailMoveCopySubmenuProps = {
   onSelectDestination: (mode: MailMoveCopyMenuMode, destination: string) => void
   onCreateFolder: (mode: MailMoveCopyMenuMode) => void
   triggerTestId?: string
+  disabled?: boolean
 }
 
 export function MailMoveCopySubmenu({
@@ -64,12 +70,13 @@ export function MailMoveCopySubmenu({
   onSelectDestination,
   onCreateFolder,
   triggerTestId,
+  disabled = false,
 }: MailMoveCopySubmenuProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger data-testid={triggerTestId}>
+      <DropdownMenuSubTrigger data-testid={triggerTestId} disabled={disabled}>
         {mode === 'move' ? (
           <FolderInput className="mr-2 h-4 w-4" />
         ) : (

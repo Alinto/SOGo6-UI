@@ -18,6 +18,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
 import { folderPathFromParams } from '../../utils/folder-path-from-params'
+import { getPermissionsForFolder } from '../../utils/folder-permissions'
 import {
   getFolderTranslationKey,
   isVirtualFolder,
@@ -50,6 +51,9 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const activeFolder = folderPathOverride ?? urlFolder
   const isActive = activeFolder === folder.path
   const isVirtual = isVirtualFolder(folder)
+  const permissions = getPermissionsForFolder(folder)
+  // A folder the user can see (`l`) but not read (`r`) is listed, but can't be opened.
+  const isOpenable = !isVirtual && permissions.canRead
 
   const hasSubfolders =
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0
@@ -66,7 +70,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const displayName = typeTranslationKey ? t(typeTranslationKey) : folder.name
 
   const navigateToFolder = () => {
-    if (isVirtual) return
+    if (!isOpenable) return
     void openFolder(String(account ?? '0'), folder.path, displayName)
   }
 
@@ -75,7 +79,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   }
 
   const handleClick = () => {
-    if (isVirtual) {
+    if (!isOpenable) {
       if (hasSubfolders) toggleExpand()
       return
     }
@@ -95,6 +99,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
       selectable={folder.selectable}
       isVirtual={isVirtual}
       hasSubfolders={hasSubfolders}
+      canInsert={permissions.canInsert}
       onDwellExpand={hasSubfolders ? expandFolder : undefined}
     >
       <SidebarItem
@@ -121,6 +126,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
         unseenCount={folder.unseen_count}
         folderType={folder.type}
         folderDelimiter={folder.delimiter}
+        folderRights={folder.rights}
       />
     </FolderDroppable>
   )

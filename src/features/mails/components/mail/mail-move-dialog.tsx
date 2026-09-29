@@ -21,6 +21,7 @@ import {
   useCreateFolderMutation,
   useGetFoldersQuery,
 } from '@/features/mails/store/mails-api'
+import { getPermissionsForFolder } from '@/features/mails/utils/folder-permissions'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useMemo, useState } from 'react'
@@ -44,7 +45,11 @@ function flattenSelectableFolders(
 
   for (const folder of folders) {
     const label = prefix ? `${prefix} / ${folder.name}` : folder.name
-    if (folder.selectable !== false && folder.path !== excludePath) {
+    if (
+      folder.selectable !== false &&
+      folder.path !== excludePath &&
+      getPermissionsForFolder(folder).canInsert
+    ) {
       result.push({ path: folder.path, label })
     }
 

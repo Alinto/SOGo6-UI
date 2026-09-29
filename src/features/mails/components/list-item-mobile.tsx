@@ -9,6 +9,7 @@ import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { getPermissionsForFolder } from '@/features/mails/utils/folder-permissions'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
 import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
@@ -56,7 +57,11 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const mailFolderPath = data.folder ?? folderString
   const [onDelete] = useMoveToTrashMutation()
   const [mailAction] = useMailActionMutation()
-  const { folderType } = useCurrentFolder(mailFolderPath, accountString)
+  const { folderType, folder: mailFolder } = useCurrentFolder(
+    mailFolderPath,
+    accountString
+  )
+  const { canMarkRead, canWriteFlags } = getPermissionsForFolder(mailFolder)
   const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
   const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
@@ -129,7 +134,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   }, [id, onDelete, onDeleteOverride, mailFolderPath, accountString])
 
   const handleMarkAsSeen = useCallback(() => {
-    if (onDeleteOverride || data.seen) return
+    if (onDeleteOverride || data.seen || !canMarkRead) return
     mailAction({
       accountId: accountString || '0',
       folder: mailFolderPath,
@@ -144,9 +149,11 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
     mailFolderPath,
     id,
     onDeleteOverride,
+    canMarkRead,
   ])
 
   const handleToggleFlag = useCallback(() => {
+    if (!canWriteFlags) return
     mailAction({
       accountId: accountString || '0',
       folder: mailFolderPath,
@@ -154,7 +161,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
       action: flagged ? 'untag' : 'tag',
       data: ['\\Flagged'],
     })
-  }, [flagged, mailAction, accountString, mailFolderPath, id])
+  }, [flagged, mailAction, accountString, mailFolderPath, id, canWriteFlags])
 
   return (
     <>
@@ -301,7 +308,10 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                   <div>
                     <Star
                       fill={flagged ? 'yellow' : 'white'}
-                      className="h-5 w-5 shrink-0 cursor-pointer transition-all duration-200 hover:h-5 hover:w-5"
+                      className={cn(
+                        'h-5 w-5 shrink-0 transition-all duration-200 hover:h-5 hover:w-5',
+                        canWriteFlags ? 'cursor-pointer' : 'cursor-default'
+                      )}
                       strokeWidth={1}
                       onClick={(e) => {
                         e.stopPropagation()

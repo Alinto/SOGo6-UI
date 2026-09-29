@@ -8,6 +8,10 @@ import {
 
 import type { SogoModule } from '@/features/user-profile/profile-types'
 import { canRenameFolder } from './can-rename-folder'
+import {
+  getPermissionsForFolder,
+  type FolderPermissions,
+} from './folder-permissions'
 
 export type FolderActionId =
   | 'rename'
@@ -38,6 +42,7 @@ export interface GetFolderActionsOptions {
 }
 
 const ACTION_UNAVAILABLE_KEY = 'folders.actions.action_unavailable.string'
+const PERMISSION_DENIED_KEY = 'folders.actions.permission_denied.string'
 
 /** Backend PATCH folders / mark-as-read / export are not implemented yet. */
 const BACKEND_BLOCKED_ACTIONS = new Set<FolderActionId>([
@@ -46,6 +51,35 @@ const BACKEND_BLOCKED_ACTIONS = new Set<FolderActionId>([
   'move_to',
   'set_as',
 ])
+
+/** Whether the user's rights on the folder allow the given action. */
+function isActionPermitted(
+  id: FolderActionId,
+  permissions: FolderPermissions
+): boolean {
+  switch (id) {
+    case 'mark_as_read':
+      return permissions.canMarkRead
+    case 'new_subfolder':
+      return permissions.canCreateSubfolder
+    case 'sharing':
+      return permissions.canAdmin
+    case 'export':
+      return permissions.canRead
+    case 'purge':
+    case 'expunge':
+      return permissions.canExpunge
+    case 'empty_folder':
+      return permissions.canEmpty
+    case 'rename':
+    case 'move_to':
+      return permissions.canRename
+    case 'delete':
+      return permissions.canRemoveFolder
+    case 'set_as':
+      return true
+  }
+}
 
 function isNormalOnlyAction(id: FolderActionId): boolean {
   return (
@@ -56,23 +90,31 @@ function isNormalOnlyAction(id: FolderActionId): boolean {
 function buildAction(
   id: FolderActionId,
   translationKey: string,
-  options?: Partial<FolderActionDefinition>
+  options?: Partial<FolderActionDefinition> & {
+    permissions?: FolderPermissions
+  }
 ): FolderActionDefinition {
   const backendBlocked = BACKEND_BLOCKED_ACTIONS.has(id)
+  const permissionDenied =
+    !backendBlocked &&
+    options?.permissions != null &&
+    !isActionPermitted(id, options.permissions)
   return {
     id,
     translationKey,
-    disabled: backendBlocked || options?.disabled,
+    disabled: backendBlocked || permissionDenied || options?.disabled,
     disabledReasonKey: backendBlocked
       ? ACTION_UNAVAILABLE_KEY
-      : options?.disabledReasonKey,
+      : permissionDenied
+        ? PERMISSION_DENIED_KEY
+        : options?.disabledReasonKey,
     destructive: options?.destructive,
     separatorBefore: options?.separatorBefore,
   }
 }
 
 export function getFolderActions(
-  folder: Pick<ImapFolder, 'type' | 'selectable' | 'default'>,
+  folder: Pick<ImapFolder, 'type' | 'selectable' | 'default' | 'rights'>,
   options: GetFolderActionsOptions = {}
 ): FolderActionDefinition[] {
   const {
@@ -81,6 +123,7 @@ export function getFolderActions(
     folderExportDisabled,
   } = options
   const isSharingDisabled = folderSharingDisabled.includes('mail')
+  const permissions = getPermissionsForFolder(folder)
 
   if (isVirtualFolder(folder)) {
     return [
@@ -95,14 +138,20 @@ export function getFolderActions(
   const isTrashOrJunk =
     isTrashFolderType(folderType) || isJunkFolderType(folderType)
 
+  const build = (
+    id: FolderActionId,
+    translationKey: string,
+    actionOptions?: Partial<FolderActionDefinition>
+  ) => buildAction(id, translationKey, { ...actionOptions, permissions })
+
   const actions: FolderActionDefinition[] = [
-    buildAction('mark_as_read', 'folders.actions.mark_as_read.string'),
-    buildAction('new_subfolder', 'folders.actions.new_subfolder.string'),
+    build('mark_as_read', 'folders.actions.mark_as_read.string'),
+    build('new_subfolder', 'folders.actions.new_subfolder.string'),
   ]
 
   if (!isSharingDisabled) {
     actions.push(
-      buildAction('sharing', 'folders.actions.sharing.string', {
+      build('sharing', 'folders.actions.sharing.string', {
         separatorBefore: true,
       })
     )
@@ -110,7 +159,7 @@ export function getFolderActions(
 
   if (!folderExportDisabled) {
     actions.push(
-      buildAction('export', 'folders.actions.export.string', {
+      build('export', 'folders.actions.export.string', {
         separatorBefore: !isSharingDisabled,
       })
     )
@@ -118,21 +167,21 @@ export function getFolderActions(
 
   if (mailPurgeAllow) {
     actions.push(
-      buildAction('purge', 'folders.actions.purge.string', {
+      build('purge', 'folders.actions.purge.string', {
         separatorBefore: true,
       })
     )
   }
 
   actions.push(
-    buildAction('expunge', 'folders.actions.expunge.string', {
+    build('expunge', 'folders.actions.expunge.string', {
       separatorBefore: !mailPurgeAllow,
     })
   )
 
   if (isTrashOrJunk) {
     actions.push(
-      buildAction('empty_folder', 'folders.actions.empty_folder.string', {
+      build('empty_folder', 'folders.actions.empty_folder.string', {
         separatorBefore: true,
       })
     )
@@ -142,15 +191,15 @@ export function getFolderActions(
     const renameAllowed = canRenameFolder(folder)
     if (renameAllowed) {
       actions.push(
-        buildAction('rename', 'folders.actions.rename.string', {
+        build('rename', 'folders.actions.rename.string', {
           separatorBefore: true,
         })
       )
     }
     actions.push(
-      buildAction('move_to', 'folders.actions.move_to.string'),
-      buildAction('set_as', 'folders.actions.set_as.string'),
-      buildAction('delete', 'folders.actions.delete.string', {
+      build('move_to', 'folders.actions.move_to.string'),
+      build('set_as', 'folders.actions.set_as.string'),
+      build('delete', 'folders.actions.delete.string', {
         destructive: true,
         separatorBefore: true,
       })
