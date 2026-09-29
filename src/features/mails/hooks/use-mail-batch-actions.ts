@@ -11,6 +11,8 @@ import {
   isJunkFolderPath,
   isTrashFolderPath,
 } from '../utils/find-folder-by-path'
+import type { FolderPermissions } from '../utils/folder-permissions'
+import { useFolderPermissionsResolver } from './use-folder-permissions'
 
 export type UseMailBatchActionsArgs = {
   accountId: string
@@ -44,6 +46,12 @@ export type UseMailBatchActionsReturn = {
   batchCopy: (mailIds: string[], destination: string) => Promise<void>
   batchApplyLabels: (mailIds: string[], labels: string[]) => Promise<void>
   batchRemoveLabels: (mailIds: string[], labels: string[]) => Promise<void>
+  /**
+   * Permissions common to the folders of the given mails (each id resolved
+   * through `folderById`, falling back to the open folder): an action is
+   * allowed only if it is allowed on every one of them.
+   */
+  getPermissionsForIds: (mailIds: string[]) => FolderPermissions
   isJunk: boolean
   isTrash: boolean
   folderType: ImapFolderType | undefined
@@ -69,6 +77,13 @@ export function useMailBatchActions({
 
   const [mailBatchAction, mailBatchActionState] = useMailBatchActionMutation()
   const isLoading = mailBatchActionState.isLoading
+
+  const { forFolders } = useFolderPermissionsResolver(accountKey)
+  const getPermissionsForIds = useCallback(
+    (mailIds: string[]) =>
+      forFolders(mailIds.map((id) => folderById?.[id] ?? folder)),
+    [forFolders, folderById, folder]
+  )
 
   const runBatch = useCallback(
     async (
@@ -203,6 +218,7 @@ export function useMailBatchActions({
     batchCopy,
     batchApplyLabels,
     batchRemoveLabels,
+    getPermissionsForIds,
     isJunk,
     isTrash,
     folderType,

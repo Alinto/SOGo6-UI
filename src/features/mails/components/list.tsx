@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React, { useCallback, useEffect } from 'react'
+import { useFolderPermissionsResolver } from '../hooks/use-folder-permissions'
 import { useMailItemActions } from '../hooks/use-mail-item-actions'
 import type { ImapMessagesList } from '../mails-types'
 import { folderPathFromParams } from '../utils/folder-path-from-params'
@@ -111,6 +112,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
   )
 
   const { openMail } = useOpenMailFromList()
+  const permissionsResolver = useFolderPermissionsResolver(accountIdStr)
 
   const selectedIds = useAppSelector(
     (state: RootState) => state.mailLayout.selectedMailIds
@@ -156,18 +158,31 @@ const MessagesList: React.FC<MessagesListProps> = ({
           )}
           {items.length > 0 &&
             items.map((item) => {
+              // Search results can span folders: each mail is judged on its own folder.
+              const permissions = permissionsResolver.forFolder(
+                item.folder ?? folderStr
+              )
+              const onMoveOut = permissions.canMoveOut
+              const actionProps = {
+                onToggleRead: permissions.canMarkRead
+                  ? handleToggleRead
+                  : undefined,
+                onToggleFlag: permissions.canWriteFlags
+                  ? handleToggleFlag
+                  : undefined,
+                onDelete: permissions.canDelete ? handleDelete : undefined,
+                onArchive: onMoveOut ? handleArchive : undefined,
+                onSpam: isJunk || !onMoveOut ? undefined : handleSpam,
+                onMoveToInbox:
+                  isJunk && onMoveOut ? handleMoveToInbox : undefined,
+              }
               const listItemComponent =
                 type === 'classic' ? (
                   <ListItemClassic
                     data={item}
                     onHandleCheckboxClick={handleCheckboxClick}
                     isSelected={selectedIds.includes(String(item.id))}
-                    onToggleRead={handleToggleRead}
-                    onToggleFlag={handleToggleFlag}
-                    onDelete={handleDelete}
-                    onArchive={handleArchive}
-                    onSpam={isJunk ? undefined : handleSpam}
-                    onMoveToInbox={isJunk ? handleMoveToInbox : undefined}
+                    {...actionProps}
                     onOpenMail={openMail}
                   />
                 ) : (
@@ -175,12 +190,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
                     data={item}
                     onHandleCheckboxClick={handleCheckboxClick}
                     isSelected={selectedIds.includes(String(item.id))}
-                    onToggleRead={handleToggleRead}
-                    onToggleFlag={handleToggleFlag}
-                    onDelete={handleDelete}
-                    onArchive={handleArchive}
-                    onSpam={isJunk ? undefined : handleSpam}
-                    onMoveToInbox={isJunk ? handleMoveToInbox : undefined}
+                    {...actionProps}
                     onOpenMail={openMail}
                   />
                 )
@@ -194,6 +204,7 @@ const MessagesList: React.FC<MessagesListProps> = ({
                       accountId={accountIdStr}
                       folder={folderStr}
                       folderType={folderType}
+                      canMoveOut={onMoveOut}
                       selectedIds={selectedIds}
                     >
                       {listItemComponent}

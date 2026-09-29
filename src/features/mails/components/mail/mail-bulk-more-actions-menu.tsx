@@ -17,6 +17,8 @@ import { useTranslations } from 'next-intl'
 
 export type MailBulkMoreActionsMenuProps = {
   disabled?: boolean
+  /** Rights forbid moving the selected mails out of their folder (reports). */
+  moveDisabled?: boolean
   showMarkImportant?: boolean
   showRemoveImportant?: boolean
   onMarkImportant?: () => void
@@ -29,6 +31,7 @@ export type MailBulkMoreActionsMenuProps = {
 
 export default function MailBulkMoreActionsMenu({
   disabled = false,
+  moveDisabled = false,
   showMarkImportant = false,
   showRemoveImportant = false,
   onMarkImportant,
@@ -73,11 +76,11 @@ export default function MailBulkMoreActionsMenu({
             {t('unmark_important.string')}
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem onClick={onPhishing}>
+        <DropdownMenuItem disabled={moveDisabled} onClick={onPhishing}>
           <FishingHook className="mr-2 h-4 w-4" />
           {t('report_phishing.string')}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={onIllegal}>
+        <DropdownMenuItem disabled={moveDisabled} onClick={onIllegal}>
           <Flag className="mr-2 h-4 w-4" />
           {t('report_illegal.string')}
         </DropdownMenuItem>

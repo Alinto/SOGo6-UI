@@ -1,7 +1,15 @@
 import '@testing-library/jest-dom'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import {
+  FULL_FOLDER_PERMISSIONS,
+  NO_FOLDER_PERMISSIONS,
+  type FolderPermissions,
+} from '../../../utils/folder-permissions'
 import ListToolbar from '../list-toolbar'
 
+const mockGetPermissionsForIds = jest.fn(
+  (_ids: string[]): FolderPermissions => FULL_FOLDER_PERMISSIONS
+)
 const mockBatchDelete = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkRead = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkUnread = jest.fn().mockResolvedValue(undefined)
@@ -27,6 +35,7 @@ const mockUseMailBatchActions = jest.fn(() => ({
   batchIllegal: mockBatchIllegal,
   batchMarkImportant: mockBatchMarkImportant,
   batchRemoveImportant: mockBatchRemoveImportant,
+  getPermissionsForIds: mockGetPermissionsForIds,
   isJunk: false,
   isLoading: false,
 }))
@@ -295,9 +304,11 @@ describe('ListToolbar', () => {
       batchIllegal: mockBatchIllegal,
       batchMarkImportant: mockBatchMarkImportant,
       batchRemoveImportant: mockBatchRemoveImportant,
+      getPermissionsForIds: mockGetPermissionsForIds,
       isJunk: false,
       isLoading: false,
     })
+    mockGetPermissionsForIds.mockReturnValue(FULL_FOLDER_PERMISSIONS)
     const { useAppSelector } = require('@/lib/redux/hooks')
     useAppSelector.mockImplementation(mockUseAppSelector)
   })
@@ -505,6 +516,7 @@ describe('ListToolbar', () => {
         batchIllegal: mockBatchIllegal,
         batchMarkImportant: mockBatchMarkImportant,
         batchRemoveImportant: mockBatchRemoveImportant,
+        getPermissionsForIds: mockGetPermissionsForIds,
         isJunk: true,
         isLoading: false,
       })
@@ -621,6 +633,38 @@ describe('ListToolbar', () => {
         expect(mockBatchIllegal).toHaveBeenCalledWith(['1', '2'])
       )
       expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('disables every write action when the rights forbid them', () => {
+      mockGetPermissionsForIds.mockReturnValue(NO_FOLDER_PERMISSIONS)
+      render(<ListToolbar />)
+      for (const id of [
+        'bulk-mark-read',
+        'bulk-mark-unread',
+        'bulk-delete',
+        'bulk-spam',
+        'bulk-label',
+      ]) {
+        expect(screen.getByTestId(`mock-bulk-action-${id}`)).toBeDisabled()
+      }
+      expect(
+        screen.queryByTestId('mock-bulk-mark-important')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('mock-bulk-remove-important')
+      ).not.toBeInTheDocument()
+    })
+
+    it('only disables delete when the erase right is missing', () => {
+      mockGetPermissionsForIds.mockReturnValue({
+        ...FULL_FOLDER_PERMISSIONS,
+        canDelete: false,
+      })
+      render(<ListToolbar />)
+      expect(screen.getByTestId('mock-bulk-action-bulk-delete')).toBeDisabled()
+      expect(
+        screen.getByTestId('mock-bulk-action-bulk-mark-unread')
+      ).not.toBeDisabled()
     })
 
     it('opens the download coming-soon dialog without clearing the selection', () => {

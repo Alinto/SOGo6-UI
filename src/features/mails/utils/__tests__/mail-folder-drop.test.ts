@@ -159,6 +159,63 @@ describe('resolveMailFolderDrop', () => {
   })
 })
 
+describe('folder rights on drop', () => {
+  it('refuses dropping when the source folder does not allow moving out', () => {
+    expect(
+      canDropMailOnFolder({
+        sourcePath: 'Shared/ReadOnly',
+        sourceType: 'NORMAL',
+        destPath: 'Archive',
+        destType: 'NORMAL',
+        sourceCanMoveOut: false,
+      })
+    ).toBe(false)
+  })
+
+  it('refuses dropping when the destination does not allow inserting', () => {
+    expect(
+      canDropMailOnFolder({
+        sourcePath: 'INBOX',
+        sourceType: 'INBOX',
+        destPath: 'Shared/ReadOnly',
+        destType: 'NORMAL',
+        destCanInsert: false,
+      })
+    ).toBe(false)
+  })
+
+  it('allows dropping when rights are not restricted', () => {
+    expect(
+      canDropMailOnFolder({
+        sourcePath: 'INBOX',
+        sourceType: 'INBOX',
+        destPath: 'Archive',
+        destType: 'NORMAL',
+        sourceCanMoveOut: true,
+        destCanInsert: true,
+      })
+    ).toBe(true)
+  })
+
+  it('no-ops a drag end towards a folder that refuses inserts', () => {
+    expect(
+      resolveMailFolderDrop(
+        event(mailData(), folderData({ canInsert: false })),
+        []
+      )
+    ).toEqual({ kind: 'noop' })
+  })
+
+  it('no-ops a drag end of a mail that cannot leave its folder', () => {
+    expect(
+      resolveMailFolderDrop(
+        event(mailData({ canMoveOut: false }), folderData()),
+        []
+      )
+    ).toEqual({ kind: 'noop' })
+  })
+})
+
 describe('canDropMailOnFolder', () => {
   it('allows inbox mail to custom folders, trash and junk', () => {
     const fromInbox = {

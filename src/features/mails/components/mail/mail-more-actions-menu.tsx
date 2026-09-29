@@ -38,6 +38,10 @@ export type MailMoreActionsMenuProps = {
   isJunk?: boolean
   markUnreadDisabled?: boolean
   labelDisabled?: boolean
+  /** Rights forbid moving mails out of the folder (spam, ham, reports, move). */
+  moveDisabled?: boolean
+  /** Rights forbid copying mails out of the folder. */
+  copyDisabled?: boolean
   showSpamActions?: boolean
   showUnread?: boolean
   showLabel?: boolean
@@ -72,6 +76,8 @@ export default function MailMoreActionsMenu({
   isJunk = false,
   markUnreadDisabled = false,
   labelDisabled = false,
+  moveDisabled = false,
+  copyDisabled = false,
   showSpamActions = false,
   showUnread = false,
   showLabel = false,
@@ -127,7 +133,7 @@ export default function MailMoreActionsMenu({
       </Tooltip>
       <DropdownMenuContent align="start">
         {showSpamActions && isJunk && onMarkHam && (
-          <DropdownMenuItem onClick={onMarkHam}>
+          <DropdownMenuItem disabled={moveDisabled} onClick={onMarkHam}>
             <Inbox className="mr-2 h-4 w-4" />
             {t('report_not_spam.string')}
           </DropdownMenuItem>
@@ -168,6 +174,7 @@ export default function MailMoreActionsMenu({
               onSelectDestination={onSelectDestination}
               onCreateFolder={onCreateFolder}
               triggerTestId="mail-action-more-move-submenu"
+              disabled={moveDisabled}
             />
             <MailMoveCopySubmenu
               mode="copy"
@@ -175,6 +182,7 @@ export default function MailMoreActionsMenu({
               onSelectDestination={onSelectDestination}
               onCreateFolder={onCreateFolder}
               triggerTestId="mail-action-more-copy-submenu"
+              disabled={copyDisabled}
             />
           </>
         )}
@@ -185,19 +193,19 @@ export default function MailMoreActionsMenu({
           </DropdownMenuItem>
         )}
         {showSpamActions && !isJunk && onMarkSpam && (
-          <DropdownMenuItem onClick={onMarkSpam}>
+          <DropdownMenuItem disabled={moveDisabled} onClick={onMarkSpam}>
             <ShieldX className="mr-2 h-4 w-4" />
             {t('report_spam.string')}
           </DropdownMenuItem>
         )}
         {onPhishing && (
-          <DropdownMenuItem onClick={onPhishing}>
+          <DropdownMenuItem disabled={moveDisabled} onClick={onPhishing}>
             <FishingHook className="mr-2 h-4 w-4" />
             {t('report_phishing.string')}
           </DropdownMenuItem>
         )}
         {onIllegal && (
-          <DropdownMenuItem onClick={onIllegal}>
+          <DropdownMenuItem disabled={moveDisabled} onClick={onIllegal}>
             <Flag className="mr-2 h-4 w-4" />
             {t('report_illegal.string')}
           </DropdownMenuItem>

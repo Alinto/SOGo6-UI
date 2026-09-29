@@ -1,8 +1,92 @@
 import type { ImapMessagesBackendResponse } from '../../mails-types'
 import {
+  mapMailToListItem,
+  normalizeFolderRights,
+  normalizeImapFolder,
   recomputePagination,
   transformFolderMessagesResponse,
 } from '../mails-normalizers'
+
+describe('normalizeFolderRights', () => {
+  it('returns undefined when no rights object was sent', () => {
+    expect(normalizeFolderRights(undefined)).toBeUndefined()
+    expect(normalizeFolderRights(null)).toBeUndefined()
+    expect(normalizeFolderRights('lr')).toBeUndefined()
+    expect(normalizeFolderRights([])).toBeUndefined()
+  })
+
+  it('keeps an empty object as "no right at all"', () => {
+    expect(normalizeFolderRights({})).toEqual({})
+  })
+
+  it('reads camelCase rights sent on folders', () => {
+    expect(
+      normalizeFolderRights({ userCanViewFolder: 1, userCanReadMails: 1 })
+    ).toEqual({ userCanViewFolder: 1, userCanReadMails: 1 })
+  })
+
+  it('reads snake_case rights sent on mails', () => {
+    expect(
+      normalizeFolderRights({
+        user_can_view_folder: 1,
+        user_can_mark_mails_read: 1,
+      })
+    ).toEqual({ userCanViewFolder: 1, userCanMarkMailsRead: 1 })
+  })
+
+  it('drops unknown keys and non-granted values', () => {
+    expect(
+      normalizeFolderRights({
+        userCanViewFolder: 1,
+        userCanReadMails: 0,
+        somethingElse: 1,
+      })
+    ).toEqual({ userCanViewFolder: 1 })
+  })
+})
+
+describe('rights in normalized payloads', () => {
+  const baseFolder = {
+    name: 'Shared',
+    path: 'Shared',
+    messages: 0,
+    flags: [],
+    delimiter: '/',
+    readOnly: false,
+  }
+
+  it('normalizes folder rights recursively', () => {
+    const folder = normalizeImapFolder({
+      ...baseFolder,
+      rights: { userCanViewFolder: 1 },
+      children: [
+        {
+          ...baseFolder,
+          path: 'Shared/Sub',
+          rights: { user_can_read_mails: 1 },
+        },
+      ],
+    })
+    expect(folder.rights).toEqual({ userCanViewFolder: 1 })
+    expect(folder.children?.[0].rights).toEqual({ userCanReadMails: 1 })
+  })
+
+  it('leaves rights undefined on folders without rights', () => {
+    expect(normalizeImapFolder(baseFolder).rights).toBeUndefined()
+  })
+
+  it('keeps mail rights on list items', () => {
+    const item = mapMailToListItem({
+      uid: '1',
+      folder: 'Shared',
+      rights: { user_can_view_folder: 1, user_can_read_mails: 1 },
+    })
+    expect(item.rights).toEqual({
+      userCanViewFolder: 1,
+      userCanReadMails: 1,
+    })
+  })
+})
 
 function metaWithPagination(pagination?: object) {
   const headers = {

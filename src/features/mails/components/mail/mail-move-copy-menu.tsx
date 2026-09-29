@@ -26,6 +26,10 @@ export type MailMoveCopyMenuProps = {
   accountId: string
   currentFolder: string
   disabled?: boolean
+  /** Rights on the source folder forbid moving mails out of it. */
+  moveDisabled?: boolean
+  /** Rights on the source folder forbid copying mails out of it. */
+  copyDisabled?: boolean
   onSelectDestination: (mode: MailMoveCopyMenuMode, destination: string) => void
   onCreateFolder: (mode: MailMoveCopyMenuMode) => void
   triggerClassName?: string
@@ -34,13 +38,16 @@ export type MailMoveCopyMenuProps = {
 export default function MailMoveCopyMenu({
   accountId,
   currentFolder,
-  disabled = false,
+  disabled: disabledProp = false,
+  moveDisabled = false,
+  copyDisabled = false,
   onSelectDestination,
   onCreateFolder,
   triggerClassName,
 }: MailMoveCopyMenuProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const [open, setOpen] = useState(false)
+  const disabled = disabledProp || (moveDisabled && copyDisabled)
   const options = useMailMoveCopyDestinations(accountId, currentFolder, !open)
 
   return (
@@ -70,6 +77,7 @@ export default function MailMoveCopyMenu({
           onSelectDestination={onSelectDestination}
           onCreateFolder={onCreateFolder}
           triggerTestId="mail-action-move-submenu"
+          disabled={moveDisabled}
         />
         <MailMoveCopySubmenu
           mode="copy"
@@ -77,6 +85,7 @@ export default function MailMoveCopyMenu({
           onSelectDestination={onSelectDestination}
           onCreateFolder={onCreateFolder}
           triggerTestId="mail-action-copy-submenu"
+          disabled={copyDisabled}
         />
       </DropdownMenuContent>
     </DropdownMenu>

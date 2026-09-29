@@ -63,6 +63,40 @@ describe('useMailBatchActions', () => {
     mockMailBatchAction.mockReturnValue({ unwrap: () => Promise.resolve() })
   })
 
+  describe('getPermissionsForIds', () => {
+    const sharedFolders: ImapFolder[] = [
+      ...folders,
+      {
+        ...folders[1],
+        name: 'Shared',
+        path: 'Shared',
+        rights: { userCanViewFolder: 1, userCanReadMails: 1 },
+      },
+    ]
+
+    it('is unrestricted for folders without rights', () => {
+      const { result } = renderHook(() => useMailBatchActions(defaultArgs))
+      expect(result.current.getPermissionsForIds(['1', '2']).canDelete).toBe(
+        true
+      )
+    })
+
+    it('resolves each mail through its own folder and intersects the rights', () => {
+      mockUseGetFoldersQuery.mockReturnValue({ data: sharedFolders })
+      const { result } = renderHook(() =>
+        useMailBatchActions({
+          ...defaultArgs,
+          folderById: { '1': 'INBOX', '2': 'Shared' },
+        })
+      )
+      expect(result.current.getPermissionsForIds(['1']).canDelete).toBe(true)
+      const mixed = result.current.getPermissionsForIds(['1', '2'])
+      expect(mixed.canRead).toBe(true)
+      expect(mixed.canDelete).toBe(false)
+      expect(mixed.canMarkRead).toBe(false)
+    })
+  })
+
   describe('configuration', () => {
     it('detects junk folder state', () => {
       const { result } = renderHook(() =>

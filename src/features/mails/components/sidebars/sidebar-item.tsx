@@ -17,7 +17,7 @@ import type { IconName } from 'lucide-react/dynamic'
 import { DynamicIcon } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import React from 'react'
-import type { ImapFolderType } from '../../mails-types'
+import type { FolderShareRights, ImapFolderType } from '../../mails-types'
 import {
   getFolderActions,
   type FolderActionId,
@@ -52,6 +52,7 @@ interface SidebarItemProps {
   unseenCount?: number
   folderType?: ImapFolderType
   folderDelimiter?: string
+  folderRights?: FolderShareRights
 }
 
 const SidebarItem: React.FC<SidebarItemProps> = ({
@@ -72,6 +73,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   unseenCount = 0,
   folderType,
   folderDelimiter = '/',
+  folderRights,
 }) => {
   const [activeAction, setActiveAction] = React.useState<FolderActionId | null>(
     null
@@ -86,6 +88,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       type: folderType,
       selectable,
       default: isDefault,
+      rights: folderRights,
     },
     { mailPurgeAllow, folderSharingDisabled, folderExportDisabled }
   )
