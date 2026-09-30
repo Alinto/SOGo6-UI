@@ -55,6 +55,57 @@ describe('findFolderByPath', () => {
   it('returns undefined when not found', () => {
     expect(findFolderByPath(tree, 'Missing')).toBeUndefined()
   })
+
+  it('does not resolve a full path to another folder with the same name', () => {
+    const withDuplicate: ImapFolder[] = [
+      ...tree,
+      {
+        name: 'Lecture',
+        path: 'Lecture',
+        type: 'NORMAL',
+        unseen_count: 0,
+        messages: 0,
+        flags: [],
+        delimiter: '/',
+        readOnly: false,
+        selectable: true,
+        rights: {
+          userCanViewFolder: 1,
+          userCanReadMails: 1,
+          userCanInsertMails: 1,
+        },
+      },
+      {
+        name: 'shared',
+        path: 'shared',
+        type: 'NORMAL',
+        unseen_count: 0,
+        messages: 0,
+        flags: [],
+        delimiter: '/',
+        readOnly: false,
+        selectable: false,
+        subfolders: [
+          {
+            name: 'Lecture',
+            path: 'shared/sogo-tests1@example.org/Lecture',
+            type: 'NORMAL',
+            unseen_count: 0,
+            messages: 0,
+            flags: [],
+            delimiter: '/',
+            readOnly: true,
+            selectable: true,
+            rights: { userCanViewFolder: 1, userCanReadMails: 1 },
+          },
+        ],
+      },
+    ]
+    expect(
+      findFolderByPath(withDuplicate, 'shared/sogo-tests1@example.org/Lecture')
+        ?.path
+    ).toBe('shared/sogo-tests1@example.org/Lecture')
+  })
 })
 
 describe('isJunkFolderPath', () => {
