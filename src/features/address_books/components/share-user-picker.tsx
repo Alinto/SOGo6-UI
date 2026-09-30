@@ -16,8 +16,8 @@ type ShareUserPickerProps = {
 }
 
 /**
- * "Add a user" field of the sharing dialogs: a user picked from the contacts
- * autocomplete API is granted access right away.
+ * "Add a user" field of the sharing dialogs: a user picked from the directory
+ * autocomplete is granted access right away.
  */
 const ShareUserPicker: React.FC<ShareUserPickerProps> = ({
   label,
@@ -34,7 +34,10 @@ const ShareUserPicker: React.FC<ShareUserPickerProps> = ({
     suggestion?: RecipientSuggestionItem
   ) => {
     if (!suggestion) return
-    const user = { uid: suggestion.email, email: suggestion.email }
+    const user = {
+      uid: suggestion.uid ?? suggestion.email,
+      email: suggestion.email,
+    }
     if (isDuplicate(user)) {
       setError(duplicateError)
       return
@@ -55,6 +58,7 @@ const ShareUserPicker: React.FC<ShareUserPickerProps> = ({
         loadingLabel={loadingLabel}
         suggestionsOnly
         panelSide="top"
+        suggestionSource="gab"
       />
       {error && <p className="text-destructive text-xs">{error}</p>}
     </div>

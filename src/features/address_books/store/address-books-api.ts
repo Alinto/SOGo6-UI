@@ -6,6 +6,7 @@ import {
   ADDRESS_BOOKS_SLICE,
   ADDRESS_BOOK_SHARE_SLICE,
   CONTACTS_AUTOCOMPLETE_SLICE,
+  GAB_AUTOCOMPLETE_SLICE,
   VCARD_SLICE,
   apiSlice,
 } from '@/lib/redux/api/api-slice'
@@ -52,6 +53,7 @@ import {
   allContactsPath,
   buildListQueryParams,
   contactsAutocompletePath,
+  contactsGabAutocompletePath,
   isLegacyAddressBooksApi,
   legacyAddressBookEntriesPath,
   legacyVCardPath,
@@ -826,6 +828,17 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       providesTags: [CONTACTS_AUTOCOMPLETE_SLICE],
     }),
 
+    searchGabAutocomplete: builder.query<ContactSuggestion[], { q: string }>({
+      query: ({ q }) => ({
+        url: contactsGabAutocompletePath(),
+        params: { q },
+      }),
+      transformResponse: (response: unknown) =>
+        normalizeAutocompleteResponse(response as never),
+      keepUnusedDataFor: 30,
+      providesTags: [GAB_AUTOCOMPLETE_SLICE],
+    }),
+
     getAddressBookContactPicker: builder.query<VCard[], string>({
       async queryFn(bookId, api, _extraOptions, baseQuery) {
         const { signal } = api
@@ -1047,6 +1060,8 @@ export const {
   useSubscribeAddressBookUserMutation,
   useSearchContactsAutocompleteQuery,
   useLazySearchContactsAutocompleteQuery,
+  useSearchGabAutocompleteQuery,
+  useLazySearchGabAutocompleteQuery,
   useGetAddressBookContactPickerQuery,
   useSearchAllContactsQuery,
   useImportAddressBookDocumentMutation,

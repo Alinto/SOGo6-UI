@@ -50,6 +50,7 @@ export const AUTH_MODE_SLICE = 'auth/mode'
 export const MAILBOXES_SLICE = 'mailboxes'
 export const FOLDER_SHARE_SLICE = 'folder/share'
 export const CONTACTS_AUTOCOMPLETE_SLICE = 'contacts_autocomplete'
+export const GAB_AUTOCOMPLETE_SLICE = 'contacts_gab_autocomplete'
 export const JOBS_SLICE = 'jobs'
 
 // ---------------------------------------------------------------------------
@@ -94,6 +95,7 @@ const tagTypes = [
   MAILBOXES_SLICE,
   FOLDER_SHARE_SLICE,
   CONTACTS_AUTOCOMPLETE_SLICE,
+  GAB_AUTOCOMPLETE_SLICE,
   JOBS_SLICE,
 ] as const
 

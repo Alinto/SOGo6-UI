@@ -119,6 +119,7 @@ describe('API Slice', () => {
         'adminConfig/domain',
         'adminConfig/rules',
         'contacts_autocomplete',
+        'contacts_gab_autocomplete',
         'tasks',
         'jobs',
       ]
@@ -135,7 +136,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(39)
+      expect(tagTypes).toHaveLength(40)
     })
 
     it('should use readonly tag types array', async () => {

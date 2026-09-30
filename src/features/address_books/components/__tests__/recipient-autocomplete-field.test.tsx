@@ -3,11 +3,17 @@ import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import RecipientAutocompleteField from '../recipient-autocomplete-field'
 
 const mockUseRecipientSuggestions = jest.fn()
+const mockUseShareUserSuggestions = jest.fn()
 const mockHandleAdd = jest.fn()
 
 jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
   useRecipientSuggestions: (...args: unknown[]) =>
     mockUseRecipientSuggestions(...args),
+}))
+
+jest.mock('@/features/address_books/hooks/use-share-user-suggestions', () => ({
+  useShareUserSuggestions: (...args: unknown[]) =>
+    mockUseShareUserSuggestions(...args),
 }))
 
 jest.mock('@/components/ui/inputs/input-with-tags', () => ({
@@ -63,6 +69,10 @@ describe('RecipientAutocompleteField', () => {
     jest.clearAllMocks()
     jest.useFakeTimers()
     mockUseRecipientSuggestions.mockReturnValue({
+      suggestions: [],
+      isFetching: false,
+    })
+    mockUseShareUserSuggestions.mockReturnValue({
       suggestions: [],
       isFetching: false,
     })
@@ -468,7 +478,8 @@ describe('RecipientAutocompleteField', () => {
     it('queries suggestions with the typed text', async () => {
       renderSuggestionsOnly()
       await typeAndWait('bo')
-      expect(mockUseRecipientSuggestions).toHaveBeenLastCalledWith('bo')
+      expect(mockUseRecipientSuggestions).toHaveBeenLastCalledWith('bo', false)
+      expect(mockUseShareUserSuggestions).toHaveBeenLastCalledWith('bo', true)
     })
 
     it('never offers to add the typed text, nor adds it on blur', async () => {
@@ -504,6 +515,53 @@ describe('RecipientAutocompleteField', () => {
       })
       fireEvent.keyDown(screen.getByTestId('share'), { key: 'Enter' })
       expect(mockHandleAdd).toHaveBeenCalledWith('bob@example.com', bob)
+    })
+  })
+
+  describe('suggestionSource gab', () => {
+    it('queries the directory hook and passes the account uid', async () => {
+      const directoryUser = {
+        uid: 'jdupont',
+        email: 'jean.dupont@sogo.eu',
+        name: 'Jean Dupont',
+      }
+      mockUseShareUserSuggestions.mockReturnValue({
+        suggestions: [directoryUser],
+        isFetching: false,
+      })
+
+      render(
+        <RecipientAutocompleteField
+          tags={[]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="share"
+          placeholder="share.placeholder"
+          suggestionsOnly
+          suggestionSource="gab"
+          {...defaultProps}
+        />
+      )
+
+      fireEvent.change(screen.getByTestId('share'), { target: { value: 'je' } })
+      fireEvent.focus(screen.getByTestId('share'))
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+
+      expect(mockUseShareUserSuggestions).toHaveBeenLastCalledWith('je', false)
+      expect(mockUseRecipientSuggestions).toHaveBeenLastCalledWith('je', true)
+
+      await waitFor(() => {
+        expect(screen.getByText('<Jean Dupont>')).toBeInTheDocument()
+      })
+      fireEvent.mouseDown(screen.getByText('<Jean Dupont>'))
+      expect(mockHandleAdd).toHaveBeenCalledWith('jean.dupont@sogo.eu', {
+        email: 'jean.dupont@sogo.eu',
+        name: 'Jean Dupont',
+        source: 'contact',
+        uid: 'jdupont',
+      })
     })
   })
 })

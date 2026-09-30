@@ -10,10 +10,15 @@ describe('address-books-api', () => {
     expect(typeof AddressBooksApi.useSearchContactsAutocompleteQuery).toBe(
       'function'
     )
+    expect(typeof AddressBooksApi.useSearchGabAutocompleteQuery).toBe(
+      'function'
+    )
   })
 
   it('exports address book mutations', () => {
-    expect(typeof AddressBooksApi.useAddVCardToAddressBookMutation).toBe('function')
+    expect(typeof AddressBooksApi.useAddVCardToAddressBookMutation).toBe(
+      'function'
+    )
     expect(typeof AddressBooksApi.useUpdateVCardMutation).toBe('function')
     expect(typeof AddressBooksApi.useDeleteVCardFromAddressBookMutation).toBe(
       'function'
@@ -21,12 +26,24 @@ describe('address-books-api', () => {
     expect(typeof AddressBooksApi.useAddAddressBookMutation).toBe('function')
     expect(typeof AddressBooksApi.useUpdateAddressBookMutation).toBe('function')
     expect(typeof AddressBooksApi.useDeleteAddressBookMutation).toBe('function')
-    expect(typeof AddressBooksApi.useImportAddressBookDocumentMutation).toBe('function')
-    expect(typeof AddressBooksApi.useImportContactsDocumentMutation).toBe('function')
-    expect(typeof AddressBooksApi.useImportListsDocumentMutation).toBe('function')
-    expect(typeof AddressBooksApi.useExportAddressBookDocumentMutation).toBe('function')
-    expect(typeof AddressBooksApi.useExportContactDocumentMutation).toBe('function')
-    expect(typeof AddressBooksApi.useExportListDocumentMutation).toBe('function')
+    expect(typeof AddressBooksApi.useImportAddressBookDocumentMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useImportContactsDocumentMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useImportListsDocumentMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useExportAddressBookDocumentMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useExportContactDocumentMutation).toBe(
+      'function'
+    )
+    expect(typeof AddressBooksApi.useExportListDocumentMutation).toBe(
+      'function'
+    )
   })
 
   it('exports addressBooksApiEndpoints', () => {
@@ -35,7 +52,11 @@ describe('address-books-api', () => {
       AddressBooksApi.addressBooksApiEndpoints.endpoints.addVCardToAddressBook
     ).toBeDefined()
     expect(
-      AddressBooksApi.addressBooksApiEndpoints.endpoints.searchContactsAutocomplete
+      AddressBooksApi.addressBooksApiEndpoints.endpoints
+        .searchContactsAutocomplete
+    ).toBeDefined()
+    expect(
+      AddressBooksApi.addressBooksApiEndpoints.endpoints.searchGabAutocomplete
     ).toBeDefined()
   })
 })

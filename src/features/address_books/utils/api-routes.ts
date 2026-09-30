@@ -30,6 +30,8 @@ export const addressBookListPath = (bookKey: string, listKey: string) =>
 
 export const contactsAutocompletePath = () => 'contacts/autocomplete'
 
+export const contactsGabAutocompletePath = () => 'contacts/gab/autocomplete'
+
 export const allContactsPath = () => 'contacts'
 
 export const addressBookImportPath = () =>

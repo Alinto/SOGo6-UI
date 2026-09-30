@@ -13,7 +13,7 @@ jest.mock(
     default: (props: {
       handleAdd: (
         value: string,
-        suggestion?: { email: string; source: string }
+        suggestion?: { email: string; source: string; uid?: string }
       ) => void
     }) => {
       mockFieldProps(props)
@@ -25,10 +25,22 @@ jest.mock(
               props.handleAdd('jdupont@alinto.eu', {
                 email: 'jdupont@alinto.eu',
                 source: 'contact',
+                uid: 'jdupont',
               })
             }
           >
             pick
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              props.handleAdd('legacy@alinto.eu', {
+                email: 'legacy@alinto.eu',
+                source: 'contact',
+              })
+            }
+          >
+            pick-legacy
           </button>
           <button
             type="button"
@@ -69,6 +81,7 @@ describe('ShareUserPicker', () => {
         tags: [],
         suggestionsOnly: true,
         panelSide: 'top',
+        suggestionSource: 'gab',
         placeholder: 'Search by name or email…',
         loadingLabel: 'Searching users…',
       })
@@ -88,8 +101,26 @@ describe('ShareUserPicker', () => {
     fireEvent.click(screen.getByText('pick'))
 
     expect(onAdd).toHaveBeenCalledWith({
-      uid: 'jdupont@alinto.eu',
+      uid: 'jdupont',
       email: 'jdupont@alinto.eu',
+    })
+  })
+
+  it('falls back to the email when the suggestion has no uid', () => {
+    const onAdd = jest.fn()
+    render(
+      <ShareUserPicker
+        {...defaultProps}
+        isDuplicate={() => false}
+        onAdd={onAdd}
+      />
+    )
+
+    fireEvent.click(screen.getByText('pick-legacy'))
+
+    expect(onAdd).toHaveBeenCalledWith({
+      uid: 'legacy@alinto.eu',
+      email: 'legacy@alinto.eu',
     })
   })
 
