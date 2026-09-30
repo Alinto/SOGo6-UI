@@ -54,6 +54,13 @@ jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
   })),
 }))
 
+jest.mock('@/features/address_books/hooks/use-share-user-suggestions', () => ({
+  useShareUserSuggestions: jest.fn(() => ({
+    suggestions: [],
+    isFetching: false,
+  })),
+}))
+
 jest.mock(
   '@/features/address_books/hooks/use-save-recipient-as-contact',
   () => ({

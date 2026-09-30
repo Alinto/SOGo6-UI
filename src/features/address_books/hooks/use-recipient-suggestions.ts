@@ -7,11 +7,12 @@ export type RecipientSuggestionItem = {
   email: string
   name?: string
   source: 'contact' | 'list'
+  uid?: string
 }
 
-export function useRecipientSuggestions(query: string) {
+export function useRecipientSuggestions(query: string, skip = false) {
   const trimmed = query.trim()
-  const enabled = trimmed.length >= 2
+  const enabled = !skip && trimmed.length >= 2
 
   const { data: contacts = [], isFetching } =
     useSearchContactsAutocompleteQuery({ q: trimmed }, { skip: !enabled })

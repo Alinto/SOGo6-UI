@@ -7,9 +7,10 @@ import {
   addressBooksCollectionPath,
   buildListQueryParams,
   contactsAutocompletePath,
+  contactsGabAutocompletePath,
+  isLegacyAddressBooksApi,
   legacyAddressBookEntriesPath,
   legacyVCardPath,
-  isLegacyAddressBooksApi,
 } from '../api-routes'
 
 jest.mock('@/lib/env-service', () => ({
@@ -94,7 +95,10 @@ describe('api-routes', () => {
 
     it('omits short search when omitShortSearch is enabled', () => {
       expect(
-        buildListQueryParams({ search: 'a', page: 1 }, { omitShortSearch: true })
+        buildListQueryParams(
+          { search: 'a', page: 1 },
+          { omitShortSearch: true }
+        )
       ).toEqual({ page: 1 })
     })
 
@@ -106,6 +110,10 @@ describe('api-routes', () => {
   describe('autocomplete path', () => {
     it('uses contacts autocomplete endpoint', () => {
       expect(contactsAutocompletePath()).toBe('contacts/autocomplete')
+    })
+
+    it('uses the directory autocomplete endpoint for sharing', () => {
+      expect(contactsGabAutocompletePath()).toBe('contacts/gab/autocomplete')
     })
   })
 })

@@ -25,6 +25,10 @@ jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
     mockUseRecipientSuggestions(...args),
 }))
 
+jest.mock('@/features/address_books/hooks/use-share-user-suggestions', () => ({
+  useShareUserSuggestions: () => ({ suggestions: [], isFetching: false }),
+}))
+
 // The real Tag/InputWithTags chain pulls in lucide-react's dynamic-icon
 // entrypoint, which is ESM-only and unparseable under this project's Jest
 // transform config — swap in a plain-DOM stand-in, same as

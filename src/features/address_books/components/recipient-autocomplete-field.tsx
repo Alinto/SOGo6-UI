@@ -5,6 +5,7 @@ import {
   type RecipientSuggestionItem,
   useRecipientSuggestions,
 } from '@/features/address_books/hooks/use-recipient-suggestions'
+import { useShareUserSuggestions } from '@/features/address_books/hooks/use-share-user-suggestions'
 import { cn } from '@/lib/utils'
 import { Loader2, UserPlus } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -36,6 +37,9 @@ type RecipientAutocompleteFieldProps = {
   // Sharing dialogs place the field at the bottom of an overflow-hidden
   // dialog, so the list has to open upward to stay visible.
   panelSide?: 'top' | 'bottom'
+  // `gab` searches directory accounts (sharing). `recipients` searches
+  // personal contacts, lists and the directory (compose and mail search).
+  suggestionSource?: 'recipients' | 'gab'
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -55,18 +59,37 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
   allowFreeText = false,
   suggestionsOnly = false,
   panelSide = 'bottom',
+  suggestionSource = 'recipients',
 }) => {
   const [draft, setDraft] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
+  const useGab = suggestionSource === 'gab'
 
   useEffect(() => {
     const timer = window.setTimeout(() => setDebouncedQ(draft.trim()), 300)
     return () => window.clearTimeout(timer)
   }, [draft])
 
-  const { suggestions, isFetching } = useRecipientSuggestions(debouncedQ)
+  const { suggestions: recipientSuggestions, isFetching: recipientFetching } =
+    useRecipientSuggestions(debouncedQ, useGab)
+  const { suggestions: shareSuggestions, isFetching: shareFetching } =
+    useShareUserSuggestions(debouncedQ, !useGab)
+
+  const suggestions = useMemo<RecipientSuggestionItem[]>(
+    () =>
+      useGab
+        ? shareSuggestions.map((item) => ({
+            email: item.email,
+            name: item.name,
+            source: 'contact' as const,
+            uid: item.uid,
+          }))
+        : recipientSuggestions,
+    [recipientSuggestions, shareSuggestions, useGab]
+  )
+  const isFetching = useGab ? shareFetching : recipientFetching
 
   const isAddableDraft = (value: string) =>
     !suggestionsOnly &&
@@ -181,7 +204,7 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
           )}
           {filteredSuggestions.map((suggestion) => (
             <button
-              key={suggestion.email}
+              key={suggestion.uid ?? suggestion.email}
               type="button"
               className={cn(
                 'text-foreground hover:bg-muted/70 flex w-full items-center gap-3 px-3 py-2 text-left text-sm'
