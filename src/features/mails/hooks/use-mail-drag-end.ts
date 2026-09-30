@@ -22,8 +22,7 @@ export function useMailDragEnd() {
 
       const payload = {
         accountId: action.accountId,
-        folder: action.folder,
-        uids: action.mailIds,
+        folders: { [action.folder]: action.mailIds },
       }
 
       if (action.kind === 'spam') {

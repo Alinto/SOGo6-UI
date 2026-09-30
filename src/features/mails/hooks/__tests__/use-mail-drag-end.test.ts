@@ -74,8 +74,7 @@ describe('useMailDragEnd', () => {
     })
     expect(mockMailBatchAction).toHaveBeenCalledWith({
       accountId: '0',
-      folder: 'INBOX',
-      uids: ['1'],
+      folders: { INBOX: ['1'] },
       action: 'move',
       data: 'Archive',
     })
@@ -96,8 +95,7 @@ describe('useMailDragEnd', () => {
     })
     expect(mockMailBatchAction).toHaveBeenCalledWith({
       accountId: '0',
-      folder: 'INBOX',
-      uids: ['1', '2'],
+      folders: { INBOX: ['1', '2'] },
       action: 'move',
       data: 'Archive',
     })
@@ -119,8 +117,7 @@ describe('useMailDragEnd', () => {
     })
     expect(mockMailBatchAction).toHaveBeenCalledWith({
       accountId: '0',
-      folder: 'INBOX',
-      uids: ['1'],
+      folders: { INBOX: ['1'] },
       action: 'spam',
     })
   })
@@ -138,8 +135,7 @@ describe('useMailDragEnd', () => {
     })
     expect(mockMailBatchAction).toHaveBeenCalledWith({
       accountId: '0',
-      folder: 'INBOX',
-      uids: ['1'],
+      folders: { INBOX: ['1'] },
       action: 'delete',
     })
   })
