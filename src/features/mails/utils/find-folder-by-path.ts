@@ -1,13 +1,12 @@
 import type { ImapFolder } from '../mails-types'
 
 function matchesFolderPath(folder: ImapFolder, path: string): boolean {
-  if (folder.path === path) return true
-  const lastSegment = path.split('/').pop()?.toLowerCase()
-  return (
-    folder.path.toLowerCase() === path.toLowerCase() ||
-    folder.name.toLowerCase() === path.toLowerCase() ||
-    (lastSegment != null && folder.name.toLowerCase() === lastSegment)
-  )
+  if (folder.path.toLowerCase() === path.toLowerCase()) return true
+  // A single segment ("Junk", "INBOX") may match the folder name.
+  // A full path must match folder.path only, so two folders that share a
+  // name (a personal "Lecture" and shared/.../Lecture) are not confused.
+  if (path.includes('/')) return false
+  return folder.name.toLowerCase() === path.toLowerCase()
 }
 
 /**
