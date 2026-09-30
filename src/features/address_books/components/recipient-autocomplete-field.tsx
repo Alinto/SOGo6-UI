@@ -33,6 +33,9 @@ type RecipientAutocompleteFieldProps = {
   // added: no "add as typed" row, no blur-to-add, and Enter picks the first
   // suggestion — used by sharing dialogs.
   suggestionsOnly?: boolean
+  // Sharing dialogs place the field at the bottom of an overflow-hidden
+  // dialog, so the list has to open upward to stay visible.
+  panelSide?: 'top' | 'bottom'
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -51,6 +54,7 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
   onAddDirect,
   allowFreeText = false,
   suggestionsOnly = false,
+  panelSide = 'bottom',
 }) => {
   const [draft, setDraft] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
@@ -162,7 +166,13 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
       />
 
       {showPanel && (
-        <div className="border-border bg-popover absolute z-50 mt-1 w-full overflow-hidden rounded-lg border shadow-lg">
+        <div
+          className={cn(
+            'border-border bg-popover absolute z-50 max-h-60 w-full overflow-y-auto rounded-lg border shadow-lg',
+            panelSide === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
+          )}
+          onMouseDown={(event) => event.preventDefault()}
+        >
           {isFetching && (
             <div className="text-muted-foreground flex items-center gap-2 px-3 py-2 text-sm">
               <Loader2 className="h-4 w-4 animate-spin" />

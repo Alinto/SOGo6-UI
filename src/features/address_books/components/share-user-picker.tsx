@@ -54,6 +54,7 @@ const ShareUserPicker: React.FC<ShareUserPickerProps> = ({
         placeholder={placeholder}
         loadingLabel={loadingLabel}
         suggestionsOnly
+        panelSide="top"
       />
       {error && <p className="text-destructive text-xs">{error}</p>}
     </div>

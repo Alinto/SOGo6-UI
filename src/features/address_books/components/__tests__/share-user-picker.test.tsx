@@ -68,6 +68,7 @@ describe('ShareUserPicker', () => {
       expect.objectContaining({
         tags: [],
         suggestionsOnly: true,
+        panelSide: 'top',
         placeholder: 'Search by name or email…',
         loadingLabel: 'Searching users…',
       })
