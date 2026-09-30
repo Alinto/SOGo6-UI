@@ -95,6 +95,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
 
   const showUnseenCount =
     unseenCount != null && unseenCount > 0 && !shouldHideUnseenCount(folderType)
+  const unseenLabel = unseenCount > 99 ? '99+' : String(unseenCount)
+  const hasMenu = !disableActions && folderActions.length > 0
 
   const closeAction = () => setActiveAction(null)
 
@@ -123,9 +125,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     <>
       <SidebarMenuButton
         className={cn(
-          `h-10 align-middle ${
-            !isDefault ? 'group-data-[collapsible=icon]:hidden' : ''
-          } group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none`
+          'relative h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+          !isDefault && 'group-data-[collapsible=icon]:hidden',
+          hasMenu && 'pr-8'
         )}
         tooltip={name}
         isActive={isActive}
@@ -179,20 +181,26 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             />
           ) : null}
           {showUnseenCount && (
-            <span className="shrink-0 text-xs leading-none font-medium text-inherit tabular-nums">
-              {unseenCount > 99 ? '99+' : unseenCount}
+            <span
+              className={cn(
+                'shrink-0 text-xs leading-none font-medium text-inherit tabular-nums',
+                hasMenu &&
+                  'md:pointer-events-none md:absolute md:top-1/2 md:right-2 md:z-10 md:-translate-y-1/2 md:transition-opacity md:group-focus-within/menu-item:opacity-0 md:group-hover/menu-item:opacity-0 md:group-has-data-[state=open]/menu-item:opacity-0'
+              )}
+            >
+              {unseenLabel}
             </span>
           )}
         </div>
       </SidebarMenuButton>
 
-      {!disableActions && folderActions.length > 0 && (
+      {hasMenu && (
         <>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuAction
-                dataSidebar={`menu-button-${name}`}
                 showOnHover
+                className="md:pointer-events-none md:group-focus-within/menu-item:pointer-events-auto md:group-hover/menu-item:pointer-events-auto md:data-[state=open]:pointer-events-auto"
               >
                 <MoreVertical />
               </SidebarMenuAction>

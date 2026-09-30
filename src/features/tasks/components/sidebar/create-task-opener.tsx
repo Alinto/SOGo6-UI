@@ -1,7 +1,6 @@
 'use client'
 
 import { SidebarMenuButton } from '@/components/ui/sidebar'
-import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import { memo } from 'react'
 import { useCreateTaskAction } from '../../hooks/use-create-task-action'
@@ -14,12 +13,10 @@ function CreateTaskOpener() {
     <SidebarMenuButton
       onClick={onClick}
       tooltip={t('new_task.string')}
-      className={cn(
-        'h-10 justify-center rounded-lg border-2 text-lg group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none'
-      )}
+      className="bg-sidebar-foreground text-sidebar hover:bg-sidebar-foreground/90 hover:text-sidebar h-10 justify-center gap-2 rounded-lg border-2 border-transparent text-sm group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
     >
       <span className="sr-only">{t('new_task.string')}</span>
-      <Icon className="hidden h-5 w-5 group-data-[collapsible=icon]:flex" />
+      <Icon className="h-4 w-4 shrink-0 transition-transform" />
       <span className="truncate group-data-[collapsible=icon]:hidden">
         {t('new_task.string')}
       </span>

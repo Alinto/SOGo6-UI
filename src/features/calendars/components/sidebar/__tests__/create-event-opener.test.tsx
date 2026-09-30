@@ -73,7 +73,9 @@ describe('CreateEventOpener', () => {
     it('renders a sidebar menu button with label text', () => {
       render(<CreateEventOpener />)
       expect(screen.getByTestId('sidebar-menu-button')).toBeInTheDocument()
-      expect(screen.getAllByText('Create Event').length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByText('Create Event').length).toBeGreaterThanOrEqual(
+        1
+      )
     })
 
     it('renders calendar plus icon', () => {
@@ -87,11 +89,14 @@ describe('CreateEventOpener', () => {
       render(<CreateEventOpener />)
       const btn = screen.getByTestId('sidebar-menu-button')
       expect(btn).toHaveClass(
+        'bg-sidebar-foreground',
+        'text-sidebar',
         'h-10',
         'justify-center',
         'rounded-lg',
         'border-2',
-        'text-lg'
+        'border-transparent',
+        'text-sm'
       )
       expect(btn.className).toContain('group-data-[collapsible=icon]')
     })

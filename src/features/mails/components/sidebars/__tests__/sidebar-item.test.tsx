@@ -39,9 +39,13 @@ jest.mock('@/components/ui/dropdown-menu', () => ({
 }))
 
 jest.mock('@/components/ui/sidebar', () => ({
-  SidebarMenuAction: ({ children }: any) => <div>{children}</div>,
-  SidebarMenuButton: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
+  SidebarMenuAction: ({ children, className }: any) => (
+    <div className={className}>{children}</div>
+  ),
+  SidebarMenuButton: ({ children, onClick, className }: any) => (
+    <button onClick={onClick} className={className}>
+      {children}
+    </button>
   ),
 }))
 
@@ -181,6 +185,31 @@ describe('SidebarItem', () => {
       expect(
         screen.queryByText('folders.actions.rename.string')
       ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Unread count', () => {
+    it('keeps a long folder name clear of the actions menu', () => {
+      mockProfile()
+      render(
+        <SidebarItem
+          {...defaultProps}
+          name="sogo-tests1@example.org"
+          unseenCount={34}
+          folderPath="INBOX/sogo-tests1@example.org"
+          folderName="sogo-tests1@example.org"
+          accountId="0"
+        />
+      )
+
+      const button = screen.getByRole('button', {
+        name: /sogo-tests1@example.org/,
+      })
+      expect(button).toHaveClass('pr-8')
+
+      const count = screen.getByText('34')
+      expect(count).toHaveClass('md:absolute', 'md:right-2')
+      expect(count.className).toContain('md:group-hover/menu-item:opacity-0')
     })
   })
 
