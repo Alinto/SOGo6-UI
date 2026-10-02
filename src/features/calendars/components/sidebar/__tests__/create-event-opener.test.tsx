@@ -43,6 +43,47 @@ jest.mock('lucide-react', () => ({
   CalendarPlus: ({ className }: { className?: string }) => (
     <span data-testid="calendar-plus-icon" className={className} />
   ),
+  ChevronDown: ({ className }: { className?: string }) => (
+    <span data-testid="chevron-icon" className={className} />
+  ),
+}))
+
+jest.mock('@/features/mails/hooks/use-compose-action', () => ({
+  useComposeAction: () => ({
+    onClick: jest.fn(),
+    label: 'New message',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/tasks/hooks/use-create-task-action', () => ({
+  useCreateTaskAction: () => ({
+    onClick: jest.fn(),
+    label: 'New task',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/address_books/hooks/use-create-contact-action', () => ({
+  useCreateContactAction: () => ({
+    onClick: jest.fn(),
+    label: 'New contact',
+    icon: () => null,
+    disabled: false,
+  }),
+}))
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => ({ moduleAccess: [], isLoading: false }),
+}))
+
+jest.mock('@/features/calendars', () => ({
+  useGetCalendarsQuery: () => ({
+    data: [
+      { name: 'Personal', description: null, key: 'cal-1', is_default: true },
+    ],
+    isLoading: false,
+  }),
 }))
 
 jest.mock('next-intl', () => ({
@@ -65,6 +106,7 @@ describe('CreateEventOpener', () => {
     jest.clearAllMocks()
     useSidebarMock.mockReturnValue({
       isMobile: false,
+      state: 'expanded',
       setOpenMobile: mockSetOpenMobile,
     } as ReturnType<typeof useSidebar>)
   })
@@ -72,7 +114,9 @@ describe('CreateEventOpener', () => {
   describe('basic rendering', () => {
     it('renders a sidebar menu button with label text', () => {
       render(<CreateEventOpener />)
-      expect(screen.getByTestId('sidebar-menu-button')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /Create Event/ })
+      ).toBeInTheDocument()
       expect(screen.getAllByText('Create Event').length).toBeGreaterThanOrEqual(
         1
       )
@@ -85,20 +129,18 @@ describe('CreateEventOpener', () => {
   })
 
   describe('configuration', () => {
-    it('passes expected layout classes to SidebarMenuButton', () => {
+    it('passes expected layout classes to the split group', () => {
       render(<CreateEventOpener />)
-      const btn = screen.getByTestId('sidebar-menu-button')
-      expect(btn).toHaveClass(
+      const group = screen.getByRole('group')
+      expect(group).toHaveClass(
         'bg-sidebar-foreground',
         'text-sidebar',
         'h-10',
-        'justify-center',
         'rounded-lg',
         'border-2',
         'border-transparent',
         'text-sm'
       )
-      expect(btn.className).toContain('group-data-[collapsible=icon]')
     })
   })
 
@@ -121,7 +163,7 @@ describe('CreateEventOpener', () => {
     it('dispatches requestCreateEvent on click when not mobile', async () => {
       const user = userEvent.setup()
       render(<CreateEventOpener />)
-      await user.click(screen.getByTestId('sidebar-menu-button'))
+      await user.click(screen.getByRole('button', { name: /Create Event/ }))
       await waitFor(() => {
         expect(mockDispatch).toHaveBeenCalledTimes(1)
         expect(mockDispatch).toHaveBeenCalledWith(requestCreateEvent())
@@ -133,10 +175,11 @@ describe('CreateEventOpener', () => {
       const user = userEvent.setup()
       useSidebarMock.mockReturnValue({
         isMobile: true,
+        state: 'expanded',
         setOpenMobile: mockSetOpenMobile,
       } as ReturnType<typeof useSidebar>)
       render(<CreateEventOpener />)
-      await user.click(screen.getByTestId('sidebar-menu-button'))
+      await user.click(screen.getByRole('button', { name: /Create Event/ }))
       await waitFor(() => {
         expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
         expect(mockDispatch).toHaveBeenCalledWith(requestCreateEvent())
@@ -147,10 +190,14 @@ describe('CreateEventOpener', () => {
   describe('component stability', () => {
     it('renders consistently across two mounts', () => {
       const { unmount } = render(<CreateEventOpener />)
-      expect(screen.getByTestId('sidebar-menu-button')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /Create Event/ })
+      ).toBeInTheDocument()
       unmount()
       render(<CreateEventOpener />)
-      expect(screen.getByTestId('sidebar-menu-button')).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /Create Event/ })
+      ).toBeInTheDocument()
     })
   })
 })

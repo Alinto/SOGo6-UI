@@ -301,12 +301,14 @@ describe('MailSidebar Component', () => {
   })
 
   describe('Sidebar Structure', () => {
-    it('should have account switcher group at top', () => {
+    it('should have compose opener group at top', () => {
       const { container } = render(<MailSidebar />)
 
       const groups = container.querySelectorAll('[data-testid="sidebar-group"]')
       const firstGroup = groups[0]
-      expect(firstGroup?.textContent).toContain('Account Switcher')
+      expect(
+        firstGroup?.querySelector('[data-testid="compose-opener"]')
+      ).toBeInTheDocument()
     })
 
     it('should have sticky compose opener group', () => {

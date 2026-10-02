@@ -10,13 +10,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { useTaskSelection } from '../hooks/use-task-selection'
-import { useTaskState } from '../hooks/use-task-state'
-import { useGetTaskByIdQuery } from '../store/tasks-api'
-import { skipToken } from '@reduxjs/toolkit/query'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
-import TaskForm from './task-form'
+import { useTaskSelection } from '../hooks/use-task-selection'
+import { useTaskState } from '../hooks/use-task-state'
 import TaskList from './task-list'
 import TaskSelectionToolbar from './task-selection-toolbar'
 
@@ -26,15 +23,11 @@ function TasksPage() {
     tasks,
     isLoading,
     calendars,
-    writableCalendars,
     ui,
     handleToggleComplete,
-    createTask,
-    updateTask,
     deleteTask,
     openCreateForm,
     openEditForm,
-    closeForm,
   } = useTaskState()
 
   const {
@@ -53,11 +46,6 @@ function TasksPage() {
 
   const [deleteKey, setDeleteKey] = useState<string | null>(null)
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
-
-  const editingKey = ui.editingTaskKey
-  const { currentData: editingTask } = useGetTaskByIdQuery(
-    editingKey ?? skipToken
-  )
 
   const pageSubtitle = useMemo(() => {
     const labels: Record<typeof ui.statusFilter, string> = {
@@ -82,25 +70,6 @@ function TasksPage() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleExitSelectionMode, selectionMode])
-
-  const handleFormSubmit = useCallback(
-    async ({
-      calendarKey,
-      body,
-      taskKey,
-    }: {
-      calendarKey: string
-      body: Parameters<typeof createTask>[0]['body']
-      taskKey?: string
-    }) => {
-      if (taskKey) {
-        await updateTask({ taskKey, body }).unwrap()
-      } else {
-        await createTask({ calendarKey, body }).unwrap()
-      }
-    },
-    [createTask, updateTask]
-  )
 
   const handleConfirmDelete = useCallback(async () => {
     if (!deleteKey) return
@@ -154,28 +123,23 @@ function TasksPage() {
         </div>
       </div>
 
-      <TaskForm
-        open={ui.isFormOpen}
-        calendars={writableCalendars}
-        task={editingKey ? (editingTask ?? null) : null}
-        defaultCalendarKey={ui.selectedCalendarKey}
-        onClose={closeForm}
-        onSubmit={handleFormSubmit}
-      />
-
       <AlertDialog
         open={deleteKey !== null}
         onOpenChange={(open) => !open && setDeleteKey(null)}
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('delete_dialog.title.string')}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {t('delete_dialog.title.string')}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {t('delete_dialog.description.string')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>{t('delete_dialog.cancel.string')}</AlertDialogCancel>
+            <AlertDialogCancel>
+              {t('delete_dialog.cancel.string')}
+            </AlertDialogCancel>
             <AlertDialogAction onClick={handleConfirmDelete}>
               {t('delete_dialog.confirm.string')}
             </AlertDialogAction>

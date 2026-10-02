@@ -54,6 +54,47 @@ jest.mock('../../../hooks/use-active-address-book', () => ({
   }),
 }))
 
+jest.mock('../../../store/address-books-api', () => ({
+  useGetAddressBooksQuery: () => ({ data: undefined, isLoading: false }),
+}))
+
+jest.mock('@/features/mails/hooks/use-compose-action', () => ({
+  useComposeAction: () => ({
+    onClick: jest.fn(),
+    label: 'New message',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/calendars/hooks/use-create-event-action', () => ({
+  useCreateEventAction: () => ({
+    onClick: jest.fn(),
+    label: 'Create Event',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/tasks/hooks/use-create-task-action', () => ({
+  useCreateTaskAction: () => ({
+    onClick: jest.fn(),
+    label: 'New task',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => ({ moduleAccess: [], isLoading: false }),
+}))
+
+jest.mock('@/features/calendars', () => ({
+  useGetCalendarsQuery: () => ({
+    data: [
+      { name: 'Personal', description: null, key: 'cal-1', is_default: true },
+    ],
+    isLoading: false,
+  }),
+}))
+
 import { useSidebar } from '@/components/ui/sidebar'
 import { openCreateForm } from '../../../store/address-books-ui-slice'
 import CreateContactOpener from '../create-contact-opener'
@@ -65,6 +106,7 @@ describe('CreateContactOpener', () => {
     jest.clearAllMocks()
     mockUseSidebar.mockReturnValue({
       isMobile: false,
+      state: 'expanded',
       setOpenMobile: mockSetOpenMobile,
     })
   })
@@ -77,7 +119,9 @@ describe('CreateContactOpener', () => {
   it('dispatches openCreateForm with book id on click', async () => {
     const user = userEvent.setup()
     render(<CreateContactOpener />)
-    await user.click(screen.getByTestId('create-contact-button'))
+    await user.click(
+      screen.getByRole('button', { name: /new_contact\.string/ })
+    )
     expect(mockDispatch).toHaveBeenCalledWith(
       openCreateForm({ bookId: 'work' })
     )
@@ -87,10 +131,13 @@ describe('CreateContactOpener', () => {
     const user = userEvent.setup()
     mockUseSidebar.mockReturnValue({
       isMobile: true,
+      state: 'expanded',
       setOpenMobile: mockSetOpenMobile,
     })
     render(<CreateContactOpener />)
-    await user.click(screen.getByTestId('create-contact-button'))
+    await user.click(
+      screen.getByRole('button', { name: /new_contact\.string/ })
+    )
     expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
   })
 })

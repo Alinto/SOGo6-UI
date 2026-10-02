@@ -26,7 +26,10 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import type { VCard } from '@/features/address_books/address-books-types'
+import type {
+  AddressBook,
+  VCard,
+} from '@/features/address_books/address-books-types'
 import { CONTACT_PHOTO_MAX_BYTES } from '@/features/address_books/utils/serialize-contact'
 import { mapApiToContactGeneralSettings } from '@/features/user-settings/address-books/store/address-books-utils'
 import { useGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
@@ -91,6 +94,7 @@ const phoneFieldTypeSchema = z.enum([
 
 const contactFormSchema = z
   .object({
+    bookId: z.string().optional(),
     contactKind: z.enum(['individual', 'org']),
     firstName: z.string().max(100),
     lastName: z.string().max(100),
@@ -154,6 +158,8 @@ const contactFormSchema = z
 
 export type ContactFormValues = z.infer<typeof contactFormSchema>
 
+const EMPTY_ADDRESS_BOOKS: Pick<AddressBook, 'id' | 'name'>[] = []
+
 type ContactFormProps = {
   open: boolean
   isEditMode?: boolean
@@ -162,6 +168,8 @@ type ContactFormProps = {
   isSubmitting?: boolean
   contact?: VCard | null
   prefill?: Partial<VCard> | null
+  addressBooks?: Pick<AddressBook, 'id' | 'name'>[]
+  defaultBookId?: string | null
   submitError?: string | null
   onClose: () => void
   onSubmit: (values: ContactFormValues, contactId?: string) => Promise<void>
@@ -265,6 +273,8 @@ function ContactForm({
   isSubmitting = false,
   contact,
   prefill,
+  addressBooks = EMPTY_ADDRESS_BOOKS,
+  defaultBookId,
   submitError,
   onClose,
   onSubmit,
@@ -282,6 +292,7 @@ function ContactForm({
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
+      bookId: defaultBookId ?? '',
       contactKind: 'individual',
       firstName: '',
       lastName: '',
@@ -354,8 +365,8 @@ function ContactForm({
   const formResetKey = useMemo(() => {
     if (!open) return null
     if (contact) return `edit:${contact.id}:${contact.updated_at ?? ''}`
-    return `create:${prefill?.firstName ?? ''}:${prefill?.lastName ?? ''}`
-  }, [open, contact, prefill])
+    return `create:${defaultBookId ?? ''}:${prefill?.firstName ?? ''}:${prefill?.lastName ?? ''}`
+  }, [open, contact, prefill, defaultBookId])
 
   useEffect(() => {
     return () => {
@@ -372,6 +383,7 @@ function ContactForm({
 
     if (contact) {
       form.reset({
+        bookId: defaultBookId ?? '',
         contactKind: contact.kind === 'org' ? 'org' : 'individual',
         firstName: contact.firstName,
         lastName: contact.lastName,
@@ -403,6 +415,7 @@ function ContactForm({
     }
 
     form.reset({
+      bookId: defaultBookId ?? addressBooks[0]?.id ?? '',
       contactKind: 'individual',
       firstName: prefill?.firstName ?? '',
       lastName: prefill?.lastName ?? '',
@@ -436,6 +449,8 @@ function ContactForm({
     prefill,
     form,
     revokePhotoObjectUrl,
+    defaultBookId,
+    addressBooks,
   ])
 
   const handlePhotoPick = () => {
@@ -560,6 +575,36 @@ function ContactForm({
               className="flex min-h-0 flex-1 flex-col overflow-hidden"
             >
               <div className={formDialogBodyClassName}>
+                {!isEdit && addressBooks.length > 0 ? (
+                  <FormField
+                    control={form.control}
+                    name="bookId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('fields.address_book.string')}</FormLabel>
+                        <Select
+                          value={field.value || addressBooks[0]?.id}
+                          onValueChange={field.onChange}
+                          disabled={addressBooks.length < 2}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="contact-book-select">
+                              <SelectValue />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {addressBooks.map((book) => (
+                              <SelectItem key={book.id} value={book.id}>
+                                {book.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                ) : null}
                 {submitError && (
                   <p
                     className="text-destructive text-sm"

@@ -1,48 +1,53 @@
 {
-    "COMMONS": {
-        "close": {
-            "string": "Close"
-        },
-        "workInProgress": {
-            "description": {
-                "string": "This feature is currently under development."
-            },
-            "message": {
-                "string": "We're working hard to bring you this feature."
-            },
-            "comingSoon": {
-                "string": "Coming soon! Stay tuned."
-            }
-        }
+  "COMMONS": {
+    "close": {
+      "string": "Close"
     },
-    "COMMON": {
-        "demo": {
-            "warning": {
-                "title": {
-                    "string": "Demo Version"
-                },
-                "description": {
-                    "string": "You are currently using a demo version of the application. Some features may be limited."
-                },
-                "action": {
-                    "string": "Got it"
-                }
-            }
-        },
-        "language": {
-            "english": "English",
-            "french": "Français"
-        },
-        "serviceUnavailable": {
-            "title": {
-                "string": "Service unavailable"
-            },
-            "description": {
-                "string": "The application could not connect to the server. Please try again later or contact your administrator."
-            },
-            "retry": {
-                "string": "Try again"
-            }
-        }
+    "workInProgress": {
+      "description": {
+        "string": "This feature is currently under development."
+      },
+      "message": {
+        "string": "We're working hard to bring you this feature."
+      },
+      "comingSoon": {
+        "string": "Coming soon! Stay tuned."
+      }
     }
+  },
+  "COMMON": {
+    "demo": {
+      "warning": {
+        "title": {
+          "string": "Demo Version"
+        },
+        "description": {
+          "string": "You are currently using a demo version of the application. Some features may be limited."
+        },
+        "action": {
+          "string": "Got it"
+        }
+      }
+    },
+    "language": {
+      "english": "English",
+      "french": "Français"
+    },
+    "create_menu": {
+      "aria_label": {
+        "string": "More create actions"
+      }
+    },
+    "serviceUnavailable": {
+      "title": {
+        "string": "Service unavailable"
+      },
+      "description": {
+        "string": "The application could not connect to the server. Please try again later or contact your administrator."
+      },
+      "retry": {
+        "string": "Try again"
+      }
+    }
+  }
 }

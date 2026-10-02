@@ -36,7 +36,17 @@ jest.mock('../use-active-address-book', () => ({
   }),
 }))
 
+jest.mock('../../store/address-books-api', () => ({
+  useGetAddressBooksQuery: jest.fn(() => ({
+    data: undefined,
+    isLoading: false,
+  })),
+}))
+
+import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import { useCreateContactAction } from '../use-create-contact-action'
+
+const mockUseGetAddressBooksQuery = useGetAddressBooksQuery as jest.Mock
 
 describe('useCreateContactAction', () => {
   beforeEach(() => {
@@ -46,6 +56,10 @@ describe('useCreateContactAction', () => {
       setOpenMobile: mockSetOpenMobile,
     })
     mockUseParams.mockReturnValue({ book_id: 'book-1' })
+    mockUseGetAddressBooksQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+    })
   })
 
   describe('configuration', () => {
@@ -69,8 +83,24 @@ describe('useCreateContactAction', () => {
       )
     })
 
-    it('dispatches openCreateForm without book id when param is not a string', () => {
-      mockUseParams.mockReturnValue({ book_id: ['book-1'] })
+    it('dispatches openCreateForm with the default personal book outside a book route', () => {
+      mockUseParams.mockReturnValue({})
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: {
+          personals: [
+            {
+              id: 'personal-1',
+              name: 'Personal',
+              description: '',
+              type: 'personal',
+              default: true,
+            },
+          ],
+          subscriptions: [],
+          globals: [],
+        },
+        isLoading: false,
+      })
       const { result } = renderHook(() => useCreateContactAction())
 
       act(() => {
@@ -78,8 +108,38 @@ describe('useCreateContactAction', () => {
       })
 
       expect(mockDispatch).toHaveBeenCalledWith(
-        openCreateForm({ bookId: undefined })
+        openCreateForm({ bookId: 'personal-1' })
       )
+    })
+
+    it('does not dispatch on the all-contacts book', () => {
+      mockUseParams.mockReturnValue({ book_id: 'all' })
+      const { result } = renderHook(() => useCreateContactAction())
+
+      expect(result.current.disabled).toBe(true)
+
+      act(() => {
+        result.current.onClick()
+      })
+
+      expect(mockDispatch).not.toHaveBeenCalled()
+    })
+
+    it('stays disabled when no personal book exists', () => {
+      mockUseParams.mockReturnValue({})
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: { personals: [], subscriptions: [], globals: [] },
+        isLoading: false,
+      })
+      const { result } = renderHook(() => useCreateContactAction())
+
+      expect(result.current.disabled).toBe(true)
+
+      act(() => {
+        result.current.onClick()
+      })
+
+      expect(mockDispatch).not.toHaveBeenCalled()
     })
   })
 

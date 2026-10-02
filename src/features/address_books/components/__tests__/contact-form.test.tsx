@@ -56,6 +56,44 @@ describe('ContactForm', () => {
       expect(screen.getByText('new_contact.string')).toBeInTheDocument()
     })
 
+    it('shows the address book field when creating', () => {
+      render(
+        <ContactForm
+          open
+          defaultBookId="home"
+          addressBooks={[
+            { id: 'home', name: 'Home' },
+            { id: 'work', name: 'Work' },
+          ]}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      )
+
+      expect(screen.getByText('fields.address_book.string')).toBeInTheDocument()
+      expect(screen.getByTestId('contact-book-select')).toBeInTheDocument()
+    })
+
+    it('hides the address book field when editing', () => {
+      render(
+        <ContactForm
+          open
+          contact={contact}
+          defaultBookId="home"
+          addressBooks={[
+            { id: 'home', name: 'Home' },
+            { id: 'work', name: 'Work' },
+          ]}
+          onClose={jest.fn()}
+          onSubmit={jest.fn()}
+        />
+      )
+
+      expect(
+        screen.queryByText('fields.address_book.string')
+      ).not.toBeInTheDocument()
+    })
+
     it('does not render when closed', () => {
       render(
         <ContactForm open={false} onClose={jest.fn()} onSubmit={jest.fn()} />

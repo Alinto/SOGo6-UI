@@ -37,14 +37,12 @@ import {
 import Visualization from '@/features/calendars/components/visualization'
 import { useCalendarState } from '@/features/calendars/hooks/useCalendarState'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
-import { clearCreateEventRequest } from '@/features/calendars/store/calendar-ui-slice'
 import {
   findCalendarByRef,
   getEventPermissions,
 } from '@/features/calendars/utils/event-permissions'
 import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
 import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import {
   formDialogContentClassName,
@@ -97,10 +95,6 @@ const CalendarPage = () => {
   const deepLinkEventKey = searchParams.get('event')
   const calendarState = useCalendarState()
   const { isCalendarVisible } = useCalendarVisibility()
-  const dispatch = useAppDispatch()
-  const createEventRequested = useAppSelector(
-    (state) => state.calendarUi.createEventRequested
-  )
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
   const [dialogMode, setDialogMode] = useState<'view' | 'edit'>('view')
   const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false)
@@ -154,20 +148,6 @@ const CalendarPage = () => {
     router,
     searchParams,
   ])
-
-  useEffect(() => {
-    if (createEventRequested) {
-      if (isCalendarWritable(calendarState.defaultCalendar)) {
-        calendarState.setSelectedSlot({
-          start: new Date(),
-          end: new Date(),
-          slots: [],
-          action: 'click',
-        })
-      }
-      dispatch(clearCreateEventRequest())
-    }
-  }, [calendarState, createEventRequested, dispatch])
 
   const handleSelectSlot = useCallback(
     (slotInfo: SlotInfo) => {

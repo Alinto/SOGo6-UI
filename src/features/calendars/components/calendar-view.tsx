@@ -1,10 +1,8 @@
 'use client'
 
 import ShadcnBigCalendar from '@/components/calendar'
-import { Dialog, DialogContent, DialogHeader } from '@/components/ui/dialog'
 import { type Calendar, type CalendarEvent } from '@/features/calendars'
 import { AgendaView } from '@/features/calendars/components/agenda-view'
-import { LazyEventForm } from '@/features/calendars/components/event-form-lazy'
 import { MobileCalendarView } from '@/features/calendars/components/mobile-calendar-view'
 import {
   findCalendarByRef,
@@ -12,13 +10,8 @@ import {
 } from '@/features/calendars/utils/event-permissions'
 import { useIsMobile } from '@/hooks/useMediaQuery'
 import { DATE_LOCALES } from '@/lib/i18n/date-locales'
-import {
-  formDialogContentClassName,
-  formDialogHeaderClassName,
-  formDialogTitleClassName,
-} from '@/lib/utils/form-dialog-layout'
 import { format, getDay, parse, startOfWeek } from 'date-fns'
-import { useLocale, useTranslations } from 'next-intl'
+import { useLocale } from 'next-intl'
 import { memo, useCallback, useEffect } from 'react'
 import {
   dateFnsLocalizer,
@@ -32,6 +25,7 @@ import withDragAndDrop, {
 } from 'react-big-calendar/lib/addons/dragAndDrop'
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+import EventCreateDialog from './event-create-dialog'
 
 type CalendarEventWithDate = CalendarEvent & {
   start: Date
@@ -90,44 +84,6 @@ export interface CalendarViewProps {
   onDeleteEvent?: (event: CalendarEventWithDate) => Promise<void>
   onEventDrop: (args: EventInteractionArgs<CalendarEventWithDate>) => void
   onEventResize: (args: EventInteractionArgs<CalendarEventWithDate>) => void
-}
-
-// Extracted dialog component to avoid duplication
-function EventDialog({
-  selectedSlot,
-  calendarKey,
-  calendars,
-  onClose,
-}: {
-  selectedSlot: SlotInfo | null
-  calendarKey: string
-  calendars: Calendar[]
-  onClose: () => void
-}) {
-  const t = useTranslations('CALENDARS')
-
-  return (
-    <Dialog open={selectedSlot !== null} onOpenChange={onClose}>
-      <DialogContent className={formDialogContentClassName('2xl')}>
-        <DialogHeader className={formDialogHeaderClassName}>
-          <h2 className={formDialogTitleClassName}>
-            {t('events.create.string')}
-          </h2>
-        </DialogHeader>
-        {selectedSlot && (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <LazyEventForm
-              calendarKey={calendarKey}
-              calendars={calendars}
-              start={selectedSlot.start}
-              end={selectedSlot.end}
-              onCancel={onClose}
-            />
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  )
 }
 
 function CalendarView({
@@ -218,7 +174,7 @@ function CalendarView({
   if (isMobile) {
     return (
       <div className="flex h-full flex-col">
-        <EventDialog
+        <EventCreateDialog
           selectedSlot={selectedSlot}
           calendarKey={defaultCalendarId ?? ''}
           calendars={calendars}
@@ -253,7 +209,7 @@ function CalendarView({
   // Desktop view rendering
   return (
     <div className="flex h-full flex-col">
-      <EventDialog
+      <EventCreateDialog
         selectedSlot={selectedSlot}
         calendarKey={defaultCalendarId ?? ''}
         calendars={calendars}

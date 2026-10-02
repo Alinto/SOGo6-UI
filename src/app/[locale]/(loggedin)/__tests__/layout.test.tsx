@@ -97,6 +97,18 @@ jest.mock('@/features/address_books/components/contact-form-host', () => {
   }
 })
 
+jest.mock('@/features/calendars/components/event-create-host', () => {
+  return function MockEventCreateHost() {
+    return <div data-testid="event-create-host">Event Create Host</div>
+  }
+})
+
+jest.mock('@/features/tasks/components/task-form-host', () => {
+  return function MockTaskFormHost() {
+    return <div data-testid="task-form-host">Task Form Host</div>
+  }
+})
+
 jest.mock(
   '@/features/address_books/components/distribution-list-form-host',
   () => {
@@ -293,6 +305,8 @@ describe('Layout Component', () => {
 
     expect(screen.getByTestId('floating-compose-container')).toBeInTheDocument()
     expect(screen.getByText('Floating Compose Container')).toBeInTheDocument()
+    expect(screen.getByTestId('event-create-host')).toBeInTheDocument()
+    expect(screen.getByTestId('task-form-host')).toBeInTheDocument()
   })
 
   it('should render children content', () => {

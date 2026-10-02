@@ -12,6 +12,7 @@ import DistributionListFormHost from '@/features/address_books/components/distri
 import { useAddressBookDragEnd } from '@/features/address_books/hooks/use-address-book-drag-end'
 import { LoginForm } from '@/features/auth/components/login-form'
 import LoginShell from '@/features/auth/components/login-shell'
+import EventCreateHost from '@/features/calendars/components/event-create-host'
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import MailDragOverlay from '@/features/mails/components/mail-drag-overlay'
 import MailDragSession from '@/features/mails/components/mail-drag-session'
@@ -28,6 +29,7 @@ import { useComposeDeepLink } from '@/features/offline/hooks/use-compose-deep-li
 import { cacheIdentities } from '@/features/offline/hooks/use-offline-draft-sync'
 import { shouldSkipDocumentNav } from '@/features/offline/network/skip-document-nav'
 import { useInboxPrefetch } from '@/features/offline/prefetch/use-inbox-prefetch'
+import TaskFormHost from '@/features/tasks/components/task-form-host'
 import { useGetUserProfileQuery, useProfile } from '@/features/user-profile'
 import { fetchEnvVars } from '@/lib/env-service'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -221,6 +223,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <FloatingComposeContainer />
       <ContactFormHost />
       <DistributionListFormHost />
+      <EventCreateHost />
+      <TaskFormHost />
     </OfflineProvider>
   )
 }

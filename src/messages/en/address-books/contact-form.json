@@ -165,6 +165,9 @@
       "context": "Generic submit error shown in contact form"
     },
     "fields": {
+      "address_book": {
+        "string": "Address book"
+      },
       "first_name": {
         "string": "First name"
       },

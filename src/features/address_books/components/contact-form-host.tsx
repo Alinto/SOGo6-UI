@@ -1,9 +1,9 @@
 'use client'
 
 import { useRouter } from '@/lib/i18n/navigation'
-import { useAppDispatch } from '@/lib/redux/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useTranslations } from 'next-intl'
-import { memo, useCallback, useState } from 'react'
+import { memo, useCallback, useMemo, useState } from 'react'
 import type { VCard } from '../address-books-types'
 import {
   useAddressBookEditState,
@@ -13,7 +13,8 @@ import {
   useAddVCardToAddressBookMutation,
   useUpdateVCardMutation,
 } from '../store/address-books-api'
-import { closeForm } from '../store/address-books-ui-slice'
+import { closeForm, selectRightsByBook } from '../store/address-books-ui-slice'
+import { listCreatableAddressBooks } from '../utils/list-creatable-address-books'
 import { getContactApiErrorMessageKey } from '../utils/map-contact-api-error'
 import { serializeContactFromForm } from '../utils/serialize-contact'
 import ContactForm, {
@@ -25,7 +26,15 @@ function ContactFormHost() {
   const dispatch = useAppDispatch()
   const { push } = useRouter()
   const tErrors = useTranslations('ADDRESS_BOOKS_ERRORS')
-  const { activeBookId, ui } = useAddressBookState()
+  const { activeBookId, ui, addressBooks } = useAddressBookState()
+  const rightsByBook = useAppSelector(selectRightsByBook)
+  const creatableBooks = useMemo(
+    () => listCreatableAddressBooks(addressBooks, rightsByBook),
+    [addressBooks, rightsByBook]
+  )
+  const defaultBookId = creatableBooks.some((book) => book.id === activeBookId)
+    ? activeBookId
+    : (creatableBooks[0]?.id ?? null)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const [addContact, { isLoading: isCreating }] =
@@ -69,7 +78,10 @@ function ContactFormHost() {
 
   const handleSubmit = useCallback(
     async (values: ContactFormValues, contactId?: string) => {
-      if (!activeBookId) return
+      const bookId = contactId
+        ? activeBookId
+        : values.bookId || defaultBookId || activeBookId
+      if (!bookId) return
 
       setSubmitError(null)
       const payload = buildVCardPayload(values)
@@ -78,7 +90,7 @@ function ContactFormHost() {
       try {
         if (contactId) {
           await updateContact({
-            book_id: activeBookId,
+            book_id: bookId,
             id: contactId,
             kind: 'individual',
             ...payload,
@@ -88,13 +100,13 @@ function ContactFormHost() {
         }
 
         const created = await addContact({
-          id: activeBookId,
+          id: bookId,
           vCard: payload as VCard,
           createBody: serializedBody,
         }).unwrap()
 
         if (created?.id) {
-          push(`/address_books/${activeBookId}/${created.id}`)
+          push(`/address_books/${bookId}/${created.id}`)
         }
       } catch (error) {
         setSubmitError(
@@ -102,7 +114,15 @@ function ContactFormHost() {
         )
       }
     },
-    [activeBookId, addContact, buildVCardPayload, push, tErrors, updateContact]
+    [
+      activeBookId,
+      addContact,
+      buildVCardPayload,
+      defaultBookId,
+      push,
+      tErrors,
+      updateContact,
+    ]
   )
 
   if (!activeBookId && ui.isFormOpen) {
@@ -118,6 +138,8 @@ function ContactFormHost() {
       isSubmitting={isCreating || isUpdating}
       contact={editingContactId ? (editingContact ?? null) : null}
       prefill={ui.prefillContact}
+      addressBooks={creatableBooks}
+      defaultBookId={defaultBookId}
       submitError={submitError}
       onClose={handleClose}
       onSubmit={handleSubmit}

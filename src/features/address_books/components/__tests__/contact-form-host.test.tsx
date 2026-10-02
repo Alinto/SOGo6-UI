@@ -27,6 +27,11 @@ jest.mock('../contact-form', () => ({
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => jest.fn(),
+  useAppSelector: (
+    selector: (state: {
+      addressBooksUi: { rightsByBook: Record<string, never> }
+    }) => unknown
+  ) => selector({ addressBooksUi: { rightsByBook: {} } }),
 }))
 
 jest.mock('@/lib/i18n/navigation', () => ({

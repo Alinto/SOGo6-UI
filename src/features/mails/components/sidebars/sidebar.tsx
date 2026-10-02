@@ -177,18 +177,18 @@ export function MailSidebar() {
 
   return (
     <>
-      <SidebarGroup className="py-0 group-data-[collapsible=icon]:p-0">
-        <SidebarMenu>
-          <AccountSwitcher />
-        </SidebarMenu>
-        <MailboxQuota />
-      </SidebarGroup>
-      <SidebarGroup className="sticky top-0 z-10 ml-0 py-0 group-data-[collapsible=icon]:p-0">
+      <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
         <SidebarMenu>
           <SidebarMenuItem>
             <ComposeOpener />
           </SidebarMenuItem>
         </SidebarMenu>
+      </SidebarGroup>
+      <SidebarGroup className="py-0 group-data-[collapsible=icon]:p-0">
+        <SidebarMenu>
+          <AccountSwitcher />
+        </SidebarMenu>
+        <MailboxQuota />
       </SidebarGroup>
       <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto group-data-[collapsible=icon]:p-0">
         <SidebarMenu>

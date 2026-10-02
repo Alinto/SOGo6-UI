@@ -33,6 +33,44 @@ jest.mock('sonner', () => ({
   },
 }))
 
+jest.mock('@/features/calendars/hooks/use-create-event-action', () => ({
+  useCreateEventAction: () => ({
+    onClick: jest.fn(),
+    label: 'createEvent.string',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/tasks/hooks/use-create-task-action', () => ({
+  useCreateTaskAction: () => ({
+    onClick: jest.fn(),
+    label: 'new_task.string',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/address_books/hooks/use-create-contact-action', () => ({
+  useCreateContactAction: () => ({
+    onClick: jest.fn(),
+    label: 'new_contact.string',
+    icon: () => null,
+    disabled: false,
+  }),
+}))
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => ({ moduleAccess: [], isLoading: false }),
+}))
+
+jest.mock('@/features/calendars', () => ({
+  useGetCalendarsQuery: () => ({
+    data: [
+      { name: 'Personal', description: null, key: 'cal-1', is_default: true },
+    ],
+    isLoading: false,
+  }),
+}))
+
 import { useSidebar } from '@/components/ui/sidebar'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useTranslations } from 'next-intl'
@@ -70,6 +108,7 @@ describe('ComposeOpener Component', () => {
     mockSetOpenMobile = jest.fn()
     mockStore = createMockStore()
     ;(useSidebar as jest.Mock).mockReturnValue({
+      state: 'expanded',
       setOpenMobile: mockSetOpenMobile,
     })
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
@@ -88,7 +127,7 @@ describe('ComposeOpener Component', () => {
     it('should render the compose button', () => {
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       expect(button).toBeInTheDocument()
     })
 
@@ -112,12 +151,14 @@ describe('ComposeOpener Component', () => {
     it('should have proper styling classes', () => {
       renderWithProvider()
 
-      const button = screen.getByRole('button')
-      expect(button).toHaveClass('h-10')
-      expect(button).toHaveClass('justify-center')
-      expect(button).toHaveClass('rounded-lg')
-      expect(button).toHaveClass('border-2')
-      expect(button).toHaveClass('text-sm')
+      const group = screen.getByRole('group')
+      expect(group).toHaveClass('h-10')
+      expect(group).toHaveClass('rounded-lg')
+      expect(group).toHaveClass('border-2')
+      expect(group).toHaveClass('text-sm')
+      expect(
+        screen.getByRole('button', { name: /new_message\.string/ })
+      ).toHaveClass('justify-center')
     })
 
     it('should render Pencil icon', () => {
@@ -128,9 +169,13 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have proper group data attributes for collapsible state', () => {
+      ;(useSidebar as jest.Mock).mockReturnValue({
+        state: 'collapsed',
+        setOpenMobile: mockSetOpenMobile,
+      })
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       expect(button).toHaveClass('group-data-[collapsible=icon]:justify-center')
       expect(button).toHaveClass('group-data-[collapsible=icon]:rounded-none')
     })
@@ -197,6 +242,10 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have group-data attributes on label', () => {
+      ;(useSidebar as jest.Mock).mockReturnValue({
+        state: 'collapsed',
+        setOpenMobile: mockSetOpenMobile,
+      })
       renderWithProvider()
 
       const textSpans = document.querySelectorAll('span')
@@ -221,7 +270,7 @@ describe('ComposeOpener Component', () => {
 
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       await user.click(button)
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
@@ -242,7 +291,7 @@ describe('ComposeOpener Component', () => {
 
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       await user.click(button)
 
       expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
@@ -254,7 +303,7 @@ describe('ComposeOpener Component', () => {
 
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       await user.click(button)
 
       expect(mockSetOpenMobile).not.toHaveBeenCalled()
@@ -266,7 +315,7 @@ describe('ComposeOpener Component', () => {
 
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       await user.click(button)
 
       expect(mockStore.dispatch).toHaveBeenCalledWith(
@@ -285,7 +334,7 @@ describe('ComposeOpener Component', () => {
 
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       await user.click(button)
 
       expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
@@ -306,7 +355,9 @@ describe('ComposeOpener Component', () => {
 
       renderWithProvider()
 
-      await user.click(screen.getByRole('button'))
+      await user.click(
+        screen.getByRole('button', { name: /new_message\.string/ })
+      )
 
       expect(toast.error).toHaveBeenCalled()
       expect(mockStore.dispatch).not.toHaveBeenCalledWith(
@@ -319,7 +370,7 @@ describe('ComposeOpener Component', () => {
     it('should have proper button role', () => {
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       expect(button).toBeInTheDocument()
     })
 
@@ -378,7 +429,7 @@ describe('ComposeOpener Component', () => {
       const user = userEvent.setup()
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       expect(button).not.toBeDisabled()
 
       await user.click(button)
@@ -395,7 +446,7 @@ describe('ComposeOpener Component', () => {
     it('should not have disabled attribute', () => {
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       expect(button).not.toBeDisabled()
     })
 
@@ -403,7 +454,7 @@ describe('ComposeOpener Component', () => {
       const user = userEvent.setup()
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       await user.click(button)
       await user.click(button)
 
@@ -415,18 +466,15 @@ describe('ComposeOpener Component', () => {
     it('should have consistent button styling classes', () => {
       renderWithProvider()
 
-      const button = screen.getByRole('button')
-      const expectedClasses = [
-        'h-10',
-        'justify-center',
-        'rounded-lg',
-        'border-2',
-        'text-sm',
-      ]
+      const group = screen.getByRole('group')
+      const expectedClasses = ['h-10', 'rounded-lg', 'border-2', 'text-sm']
 
       expectedClasses.forEach((className) => {
-        expect(button).toHaveClass(className)
+        expect(group).toHaveClass(className)
       })
+      expect(
+        screen.getByRole('button', { name: /new_message\.string/ })
+      ).toHaveClass('justify-center')
     })
 
     it('should have consistent icon styling classes', () => {
@@ -442,9 +490,13 @@ describe('ComposeOpener Component', () => {
     })
 
     it('should have proper responsive classes for collapsible sidebar', () => {
+      ;(useSidebar as jest.Mock).mockReturnValue({
+        state: 'collapsed',
+        setOpenMobile: mockSetOpenMobile,
+      })
       renderWithProvider()
 
-      const button = screen.getByRole('button')
+      const button = screen.getByRole('button', { name: /new_message\.string/ })
       const responsiveClasses = [
         'group-data-[collapsible=icon]:justify-center',
         'group-data-[collapsible=icon]:rounded-none',
@@ -464,11 +516,12 @@ describe('ComposeOpener Component', () => {
       expect(button).toBeInTheDocument()
     })
 
-    it('should have single button element as main child', () => {
+    it('should have the split group as main child', () => {
       const { container } = renderWithProvider()
 
-      const buttons = container.querySelectorAll(':scope > button')
-      expect(buttons.length).toBeGreaterThan(0)
+      expect(
+        container.querySelector(':scope > [role="group"]')
+      ).toBeInTheDocument()
     })
   })
 })

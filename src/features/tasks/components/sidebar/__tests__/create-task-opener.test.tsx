@@ -23,7 +23,12 @@ jest.mock('@/components/ui/sidebar', () => ({
     onClick?: () => void
     className?: string
   }) => (
-    <button type="button" data-testid="create-task-button" onClick={onClick} className={className}>
+    <button
+      type="button"
+      data-testid="create-task-button"
+      onClick={onClick}
+      className={className}
+    >
       {children}
     </button>
   ),
@@ -33,9 +38,47 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+jest.mock('@/features/mails/hooks/use-compose-action', () => ({
+  useComposeAction: () => ({
+    onClick: jest.fn(),
+    label: 'New message',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/calendars/hooks/use-create-event-action', () => ({
+  useCreateEventAction: () => ({
+    onClick: jest.fn(),
+    label: 'Create Event',
+    icon: () => null,
+  }),
+}))
+
+jest.mock('@/features/address_books/hooks/use-create-contact-action', () => ({
+  useCreateContactAction: () => ({
+    onClick: jest.fn(),
+    label: 'New contact',
+    icon: () => null,
+    disabled: false,
+  }),
+}))
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => ({ moduleAccess: [], isLoading: false }),
+}))
+
+jest.mock('@/features/calendars', () => ({
+  useGetCalendarsQuery: () => ({
+    data: [
+      { name: 'Personal', description: null, key: 'cal-1', is_default: true },
+    ],
+    isLoading: false,
+  }),
+}))
+
 import { useSidebar } from '@/components/ui/sidebar'
-import CreateTaskOpener from '../create-task-opener'
 import { openCreateForm } from '../../../store/tasks-ui-slice'
+import CreateTaskOpener from '../create-task-opener'
 
 const mockUseSidebar = useSidebar as jest.Mock
 
@@ -44,6 +87,7 @@ describe('CreateTaskOpener', () => {
     jest.clearAllMocks()
     mockUseSidebar.mockReturnValue({
       isMobile: false,
+      state: 'expanded',
       setOpenMobile: mockSetOpenMobile,
     })
   })
@@ -59,7 +103,7 @@ describe('CreateTaskOpener', () => {
     it('dispatches openCreateForm on click', async () => {
       const user = userEvent.setup()
       render(<CreateTaskOpener />)
-      await user.click(screen.getByTestId('create-task-button'))
+      await user.click(screen.getByRole('button', { name: /new_task\.string/ }))
       expect(mockDispatch).toHaveBeenCalledWith(openCreateForm())
     })
 
@@ -67,10 +111,11 @@ describe('CreateTaskOpener', () => {
       const user = userEvent.setup()
       mockUseSidebar.mockReturnValue({
         isMobile: true,
+        state: 'expanded',
         setOpenMobile: mockSetOpenMobile,
       })
       render(<CreateTaskOpener />)
-      await user.click(screen.getByTestId('create-task-button'))
+      await user.click(screen.getByRole('button', { name: /new_task\.string/ }))
       expect(mockSetOpenMobile).toHaveBeenCalledWith(false)
       expect(mockDispatch).toHaveBeenCalledWith(openCreateForm())
     })
@@ -79,7 +124,7 @@ describe('CreateTaskOpener', () => {
   describe('custom styling', () => {
     it('applies h-10 button classes', () => {
       render(<CreateTaskOpener />)
-      expect(screen.getByTestId('create-task-button')).toHaveClass('h-10')
+      expect(screen.getByRole('group')).toHaveClass('h-10')
     })
   })
 })
