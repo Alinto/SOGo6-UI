@@ -10,6 +10,7 @@ import { tasksUiReducer } from '@/features/tasks'
 import { configureStore, EnhancedStore } from '@reduxjs/toolkit'
 import { apiSlice } from './api/api-slice'
 import { listenerMiddleware } from './listener-middleware'
+import './listeners/reset-cache-on-logout'
 import {
   loadAuthFromStorage,
   localStorageSyncMiddleware,

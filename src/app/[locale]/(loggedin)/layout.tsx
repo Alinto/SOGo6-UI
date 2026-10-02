@@ -32,7 +32,8 @@ import { useInboxPrefetch } from '@/features/offline/prefetch/use-inbox-prefetch
 import TaskFormHost from '@/features/tasks/components/task-form-host'
 import { useGetUserProfileQuery, useProfile } from '@/features/user-profile'
 import { fetchEnvVars } from '@/lib/env-service'
-import { useAppSelector } from '@/lib/redux/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import { clearAuthenticatedApiCache } from '@/lib/redux/listeners/reset-cache-on-logout'
 import {
   getSSEConfigForEnvironment,
   useConnectSSEMutation,
@@ -79,6 +80,7 @@ function ProfilePrefetch() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const token = useAppSelector((state) => state.auth.token)
+  const dispatch = useAppDispatch()
   const router = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
 
@@ -90,9 +92,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isHydrated || token) return
+    // Children unsubscribe their queries during this commit, before this
+    // effect. Clearing earlier would refetch the previous account.
+    clearAuthenticatedApiCache(dispatch)
     if (shouldSkipDocumentNav(navigator.onLine, false)) return
     redirectAfterLogout((href) => router.push(href))
-  }, [isHydrated, token, router])
+  }, [isHydrated, token, dispatch, router])
 
   const mouseSensor = useSensor(MouseSensor, {
     activationConstraint: {
