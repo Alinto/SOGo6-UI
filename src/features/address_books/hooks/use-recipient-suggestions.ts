@@ -22,9 +22,14 @@ export function useRecipientSuggestions(query: string, skip = false) {
     const merged: RecipientSuggestionItem[] = []
 
     const pushUnique = (item: RecipientSuggestionItem) => {
-      const key = item.email.toLowerCase()
-      if (!item.email || seen.has(key)) return
-      seen.add(key)
+      if (!item.email) return
+      // Same card repeated with the same address collapses. Distinct cards
+      // that share an address each stay visible.
+      if (item.uid) {
+        const key = `${item.uid.toLowerCase()}\0${item.email.toLowerCase()}`
+        if (seen.has(key)) return
+        seen.add(key)
+      }
       merged.push(item)
     }
 
@@ -34,6 +39,7 @@ export function useRecipientSuggestions(query: string, skip = false) {
           email: suggestion.email,
           name: suggestion.name,
           source: 'contact',
+          ...(suggestion.contactKey ? { uid: suggestion.contactKey } : {}),
         })
         continue
       }
@@ -43,8 +49,9 @@ export function useRecipientSuggestions(query: string, skip = false) {
           if (!member.email) continue
           pushUnique({
             email: member.email,
-            name: member.name ?? suggestion.name,
+            name: member.name ?? suggestion.name ?? undefined,
             source: 'list',
+            ...(member.contact_key ? { uid: member.contact_key } : {}),
           })
         }
       }

@@ -69,26 +69,90 @@ describe('useRecipientSuggestions', () => {
 
       const { result } = renderHook(() => useRecipientSuggestions('sa'))
       expect(result.current.suggestions).toEqual([
-        { email: 'bob@example.com', name: 'Bob', source: 'list' },
-        { email: 'carol@example.com', name: 'Carol', source: 'list' },
+        {
+          email: 'bob@example.com',
+          name: 'Bob',
+          source: 'list',
+          uid: 'c1',
+        },
+        {
+          email: 'carol@example.com',
+          name: 'Carol',
+          source: 'list',
+          uid: 'c2',
+        },
       ])
     })
 
-    it('deduplicates emails case-insensitively', () => {
+    it('keeps distinct cards that share an email', () => {
       mockUseSearchContactsAutocompleteQuery.mockReturnValue({
         data: [
-          { type: 'contact', name: 'Dup', email: 'dup@example.com' },
           {
-            type: 'list',
-            name: 'Team',
-            members: [{ name: 'Dup', email: 'DUP@example.com' }],
+            type: 'contact',
+            name: 'Alice',
+            email: 'sogo-tests1@example.org',
+            contactKey: 'c1',
+          },
+          {
+            type: 'contact',
+            name: 'Bob',
+            email: 'SOGO-TESTS1@example.org',
+            contactKey: 'c2',
           },
         ],
         isFetching: false,
       })
 
-      const { result } = renderHook(() => useRecipientSuggestions('du'))
-      expect(result.current.suggestions).toHaveLength(1)
+      const { result } = renderHook(() => useRecipientSuggestions('so'))
+      expect(result.current.suggestions).toEqual([
+        {
+          email: 'sogo-tests1@example.org',
+          name: 'Alice',
+          source: 'contact',
+          uid: 'c1',
+        },
+        {
+          email: 'SOGO-TESTS1@example.org',
+          name: 'Bob',
+          source: 'contact',
+          uid: 'c2',
+        },
+      ])
+    })
+
+    it('collapses the same card when it is returned twice with the same email', () => {
+      mockUseSearchContactsAutocompleteQuery.mockReturnValue({
+        data: [
+          {
+            type: 'contact',
+            name: 'Alice',
+            email: 'alice@example.com',
+            contactKey: 'c1',
+          },
+          {
+            type: 'list',
+            name: 'Team',
+            members: [
+              {
+                contact_key: 'c1',
+                name: 'Alice',
+                email: 'ALICE@example.com',
+              },
+            ],
+          },
+        ],
+        isFetching: false,
+      })
+
+      const { result } = renderHook(() => useRecipientSuggestions('al'))
+      expect(result.current.suggestions).toEqual([
+        {
+          email: 'alice@example.com',
+          name: 'Alice',
+          source: 'contact',
+          uid: 'c1',
+        },
+      ])
     })
 
     it('reports fetching while the autocomplete query is loading', () => {

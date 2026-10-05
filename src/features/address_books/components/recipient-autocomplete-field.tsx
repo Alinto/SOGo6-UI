@@ -202,9 +202,9 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
               {loadingLabel}
             </div>
           )}
-          {filteredSuggestions.map((suggestion) => (
+          {filteredSuggestions.map((suggestion, index) => (
             <button
-              key={suggestion.uid ?? suggestion.email}
+              key={`${suggestion.uid ?? suggestion.source}:${suggestion.email}:${index}`}
               type="button"
               className={cn(
                 'text-foreground hover:bg-muted/70 flex w-full items-center gap-3 px-3 py-2 text-left text-sm'
