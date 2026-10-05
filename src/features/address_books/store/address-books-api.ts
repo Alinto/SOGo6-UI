@@ -84,6 +84,7 @@ import {
   normalizeContactsList,
 } from '../utils/normalize-contact'
 import { parseXPaginationFromMeta } from '../utils/parse-x-pagination'
+import { resolveListsQueryResult } from '../utils/resolve-lists-query-result'
 import {
   serializeAddressBookCreate,
   serializeAddressBookPatch,
@@ -381,22 +382,21 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         ])
 
         if (contactsResult.error) return { error: contactsResult.error }
-        if (listsResult.error) return { error: listsResult.error }
 
+        // A global (LDAP) book has no distribution lists. A lists failure must
+        // not hide contacts that were loaded successfully.
+        const lists = resolveListsQueryResult(listsResult)
         const contactsPagination = parseXPaginationFromMeta(
           contactsResult.meta as { response?: Response }
-        )
-        const listsPagination = parseXPaginationFromMeta(
-          listsResult.meta as { response?: Response }
         )
 
         return {
           data: parseContactsAndListsFromBackend(
             contactsResult.data,
-            listsResult.data,
+            lists.payload,
             contactsPagination,
             undefined,
-            listsPagination
+            lists.pagination
           ),
         }
       },
