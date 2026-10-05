@@ -12,6 +12,7 @@ import {
   hasAnyWritePermission,
   NO_WRITE_PERMISSIONS,
 } from '../utils/address-book-permissions'
+import { routeParam } from '../utils/route-param'
 
 function findAddressBook(
   books:
@@ -30,7 +31,7 @@ function findAddressBook(
 
 export function useActiveAddressBook() {
   const params = useParams() ?? {}
-  const bookId = typeof params.book_id === 'string' ? params.book_id : null
+  const bookId = routeParam(params.book_id) ?? null
   const { data } = useGetAddressBooksQuery()
 
   return useMemo(() => findAddressBook(data, bookId), [bookId, data])
@@ -38,7 +39,7 @@ export function useActiveAddressBook() {
 
 export function useActiveAddressBookWritable() {
   const params = useParams() ?? {}
-  const bookId = typeof params.book_id === 'string' ? params.book_id : null
+  const bookId = routeParam(params.book_id) ?? null
   const activeBook = useActiveAddressBook()
   const rights = useAppSelector((state) => selectBookRights(state, bookId))
 

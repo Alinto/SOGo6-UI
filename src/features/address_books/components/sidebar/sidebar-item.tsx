@@ -21,6 +21,7 @@ import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
+import { routeParam } from '../../utils/route-param'
 import DeleteAction from './actions/delete'
 import ExportDialog from './actions/export-dialog'
 import ImportDialog from './actions/import-dialog'
@@ -70,8 +71,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   const { push } = useRouter()
   const params = useParams()
   const { folderSharingDisabled } = useProfile()
-  const activeBookId =
-    typeof params?.book_id === 'string' ? params.book_id : null
+  const activeBookId = routeParam(params?.book_id) ?? null
   const isActive = activeBookId === id
   const isMobile = useIsMobile()
   const canShareAddressBook =

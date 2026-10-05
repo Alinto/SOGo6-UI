@@ -1,15 +1,18 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
-import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
 import {
   AddressBookEntriesProvider,
   useAddressBookEntriesContext,
 } from '@/features/address_books/hooks/address-book-entries-context'
 import { setSearchQuery } from '@/features/address_books/store/address-books-ui-slice'
+import {
+  decodeRouteParam,
+  routeParam,
+} from '@/features/address_books/utils/route-param'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
-import { cn } from '@/lib/utils'
 import { useAppDispatch } from '@/lib/redux/hooks'
+import { cn } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
@@ -24,17 +27,16 @@ function AddressBookLayoutShell({
 }) {
   const pathname = usePathname()
   const { push } = useRouter()
-  const { book_id } = useParams()
+  const bookId = routeParam(useParams().book_id) ?? ''
   const t = useTranslations('CONTACT_FORM')
 
   const { contactTotal, listTotal, isFetching } = useAddressBookEntriesContext()
-  const isBookEmpty =
-    !isFetching && contactTotal === 0 && listTotal === 0
+  const isBookEmpty = !isFetching && contactTotal === 0 && listTotal === 0
 
-  const resolvedBookId = typeof book_id === 'string' ? book_id : null
-  const basePath = `/address_books/${book_id}`
+  const basePath = `/address_books/${bookId}`
+  const decodedPathname = decodeRouteParam(pathname)
   const isContactSelected =
-    pathname !== basePath && pathname.startsWith(`${basePath}/`)
+    decodedPathname !== basePath && decodedPathname.startsWith(`${basePath}/`)
 
   const handleBack = () => {
     push(basePath)
@@ -47,9 +49,7 @@ function AddressBookLayoutShell({
       <div
         className={cn(
           'w-full min-w-0 md:rounded',
-          showVisualizationPanel
-            ? 'md:w-1/2 lg:w-2/5'
-            : 'md:w-full lg:w-full',
+          showVisualizationPanel ? 'md:w-1/2 lg:w-2/5' : 'md:w-full lg:w-full',
           isContactSelected ? 'hidden md:block' : 'block'
         )}
       >
@@ -92,14 +92,13 @@ export default function Layout({
   visualization: React.ReactNode
 }) {
   const dispatch = useAppDispatch()
-  const { book_id } = useParams()
-  const resolvedBookId = typeof book_id === 'string' ? book_id : null
+  const resolvedBookId = routeParam(useParams().book_id) ?? null
 
   useEffect(() => {
-    if (typeof book_id === 'string') {
+    if (resolvedBookId) {
       dispatch(setSearchQuery(''))
     }
-  }, [book_id, dispatch])
+  }, [resolvedBookId, dispatch])
 
   return (
     <AddressBookEntriesProvider bookId={resolvedBookId}>

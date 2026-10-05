@@ -18,6 +18,7 @@ import {
   getDistributionListMemberCount,
   isDistributionList,
 } from '../utils/distribution-list'
+import { routeParam } from '../utils/route-param'
 
 interface ListItemProps {
   data: VCard
@@ -52,7 +53,8 @@ function ListItem({
   onHandleCheckboxClick,
 }: ListItemProps) {
   const { push } = useRouter()
-  const { book_id } = useParams()
+  const params = useParams()
+  const book_id = routeParam(params.book_id)
   const { firstName, lastName, id } = data
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const [isHovered, setIsHovered] = useState(false)

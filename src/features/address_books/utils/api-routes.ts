@@ -1,4 +1,5 @@
 import { isUsingFakeApi } from '@/lib/env-service'
+import { encodePathSegment } from './route-param'
 
 export function isLegacyAddressBooksApi(): boolean {
   return isUsingFakeApi()
@@ -8,25 +9,25 @@ export const addressBooksCollectionPath = () =>
   isUsingFakeApi() ? 'address_books' : 'addressbooks'
 
 export const addressBookPath = (key: string) =>
-  `${addressBooksCollectionPath()}/${encodeURIComponent(key)}`
+  `${addressBooksCollectionPath()}/${encodePathSegment(key)}`
 
 export const addressBookContactsPath = (key: string) =>
   `${addressBookPath(key)}/contacts`
 
 export const addressBookContactPath = (bookKey: string, contactKey: string) =>
-  `${addressBookContactsPath(bookKey)}/${encodeURIComponent(contactKey)}`
+  `${addressBookContactsPath(bookKey)}/${encodePathSegment(contactKey)}`
 
 export const addressBookShareUrl = (key: string) =>
   `${addressBookPath(key)}/share`
 
 export const addressBookShareSubscribeUrl = (key: string, uid: string) =>
-  `${addressBookShareUrl(key)}/${encodeURIComponent(uid)}/subscribe`
+  `${addressBookShareUrl(key)}/${encodePathSegment(uid)}/subscribe`
 
 export const addressBookListsPath = (key: string) =>
   `${addressBookPath(key)}/lists`
 
 export const addressBookListPath = (bookKey: string, listKey: string) =>
-  `${addressBookListsPath(bookKey)}/${encodeURIComponent(listKey)}`
+  `${addressBookListsPath(bookKey)}/${encodePathSegment(listKey)}`
 
 export const contactsAutocompletePath = () => 'contacts/autocomplete'
 
@@ -55,10 +56,10 @@ export const addressBookListExportPath = (bookKey: string, listKey: string) =>
   `${addressBookListPath(bookKey, listKey)}/export`
 
 export const legacyAddressBookEntriesPath = (bookId: string) =>
-  `address_books/${encodeURIComponent(bookId)}`
+  `address_books/${encodePathSegment(bookId)}`
 
 export const legacyVCardPath = (bookId: string, entryId: string) =>
-  `address_books/${encodeURIComponent(bookId)}/${encodeURIComponent(entryId)}`
+  `address_books/${encodePathSegment(bookId)}/${encodePathSegment(entryId)}`
 
 import type {
   ContactSortField,

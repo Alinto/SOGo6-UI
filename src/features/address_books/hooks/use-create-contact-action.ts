@@ -11,6 +11,7 @@ import { useGetAddressBooksQuery } from '../store/address-books-api'
 import { openCreateForm } from '../store/address-books-ui-slice'
 import { getAddressBookPermissions } from '../utils/address-book-permissions'
 import { resolveDefaultBookId } from '../utils/resolve-default-book'
+import { routeParam } from '../utils/route-param'
 import { useActiveAddressBookWritable } from './use-active-address-book'
 
 export function useCreateContactAction(options?: {
@@ -19,8 +20,7 @@ export function useCreateContactAction(options?: {
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   const { isMobile, setOpenMobile } = useSidebar()
   const dispatch = useAppDispatch()
-  const { book_id: rawBookId } = useParams()
-  const routeBookId = typeof rawBookId === 'string' ? rawBookId : null
+  const routeBookId = routeParam(useParams().book_id) ?? null
   const hasRouteBook = routeBookId !== null
   const isAllContacts = routeBookId === ALL_CONTACTS_BOOK_ID
   const { permissions } = useActiveAddressBookWritable()

@@ -52,6 +52,18 @@ describe('api-routes', () => {
       )
     })
 
+    it('encodes an email key once', () => {
+      expect(addressBookContactPath('ab-1', 'sogo-tests2@example.org')).toBe(
+        'addressbooks/ab-1/contacts/sogo-tests2%40example.org'
+      )
+    })
+
+    it('does not encode an email key a second time', () => {
+      expect(addressBookContactPath('ab-1', 'sogo-tests2%40example.org')).toBe(
+        'addressbooks/ab-1/contacts/sogo-tests2%40example.org'
+      )
+    })
+
     it('returns false for legacy mode', () => {
       expect(isLegacyAddressBooksApi()).toBe(false)
     })

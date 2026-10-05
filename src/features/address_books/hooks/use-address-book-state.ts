@@ -4,18 +4,21 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { skipToken } from '@reduxjs/toolkit/query'
 import { useParams } from 'next/navigation'
 import { useEffect, useMemo } from 'react'
-import { useGetAddressBooksQuery, useGetVCardQuery } from '../store/address-books-api'
+import {
+  useGetAddressBooksQuery,
+  useGetVCardQuery,
+} from '../store/address-books-api'
 import {
   selectAddressBooksUi,
   setFormBookId,
 } from '../store/address-books-ui-slice'
 import { resolveDefaultBookId } from '../utils/resolve-default-book'
+import { routeParam } from '../utils/route-param'
 
 export function useAddressBookState() {
   const dispatch = useAppDispatch()
   const params = useParams()
-  const routeBookId =
-    typeof params?.book_id === 'string' ? params.book_id : null
+  const routeBookId = routeParam(params?.book_id) ?? null
 
   const ui = useAppSelector(selectAddressBooksUi)
   const {

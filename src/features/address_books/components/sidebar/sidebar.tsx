@@ -23,6 +23,7 @@ import type {
 import { useGetAddressBooksQuery } from '../../store/address-books-api'
 import { selectRightsByBook } from '../../store/address-books-ui-slice'
 import { getAddressBookPermissions } from '../../utils/address-book-permissions'
+import { routeParam } from '../../utils/route-param'
 import CreateContactOpener from './create-contact-opener'
 import AddAddressBook from './forms/add'
 import SidebarItem from './sidebar-item'
@@ -50,8 +51,7 @@ function Sidebar() {
   const tForm = useTranslations('CONTACT_FORM')
   const { push } = useRouter()
   const params = useParams()
-  const activeBookId =
-    typeof params?.book_id === 'string' ? params.book_id : null
+  const activeBookId = routeParam(params?.book_id) ?? null
   const isOtherOwner = useIsOtherOwner()
   const rightsByBook = useAppSelector(selectRightsByBook)
 

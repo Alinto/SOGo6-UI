@@ -43,6 +43,7 @@ import {
   isIndividualContact,
   membersFromContacts,
 } from '../utils/distribution-list'
+import { routeParam } from '../utils/route-param'
 import AddressBookEmptyState from './address-book-empty-state'
 import AddressBookListPagination from './list-pagination'
 import ListSection from './list-section'
@@ -104,8 +105,8 @@ function AddressBookList({
   const { permissions } = useActiveAddressBookWritable()
   const params = useParams()
   const dispatch = useAppDispatch()
-  const contact_id = params?.contact_id as string | undefined
-  const book_id = params?.book_id as string
+  const contact_id = routeParam(params?.contact_id)
+  const book_id = routeParam(params?.book_id) ?? ''
 
   const { searchQuery, sortOrder, sortBy } =
     useAppSelector(selectAddressBooksUi)

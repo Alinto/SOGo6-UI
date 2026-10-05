@@ -15,6 +15,7 @@ import {
   getDistributionListName,
   getMemberDisplayLabel,
 } from '../../utils/distribution-list'
+import { routeParam } from '../../utils/route-param'
 import DistributionListActions from './distribution-list-actions'
 
 interface DistributionListVisualizationProps {
@@ -26,8 +27,7 @@ function DistributionListVisualization({
 }: DistributionListVisualizationProps) {
   const t = useTranslations('DISTRIBUTION_LIST_FORM')
   const { push } = useRouter()
-  const { book_id } = useParams()
-  const bookId = book_id as string
+  const bookId = routeParam(useParams().book_id) ?? ''
   const memberCount = getDistributionListMemberCount(data)
 
   const handleMemberClick = (contactId?: string) => {

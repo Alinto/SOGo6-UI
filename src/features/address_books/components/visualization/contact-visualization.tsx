@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation'
 import React from 'react'
 import { VCard } from '../../address-books-types'
 import { useActiveAddressBookWritable } from '../../hooks/use-active-address-book'
+import { routeParam } from '../../utils/route-param'
 import ContactActions from './contact-actions'
 import { ContactFieldRow } from './contact-field-row'
 import { ContactHeader } from './contact-header'
@@ -31,7 +32,9 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({
     urls,
   } = data
 
-  const { book_id, contact_id } = useParams()
+  const params = useParams()
+  const bookId = routeParam(params.book_id)
+  const contactId = routeParam(params.contact_id)
   const { permissions } = useActiveAddressBookWritable()
   const t = useTranslations('CONTACT_FORM')
 
@@ -48,11 +51,11 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({
               photo={photo}
             />
           </div>
-          {book_id && contact_id && (
+          {bookId && contactId && (
             <div className="flex w-full min-w-0 shrink-0 flex-wrap items-center gap-2 xl:w-auto">
               <ContactActions
-                contactId={contact_id as string}
-                bookId={book_id as string}
+                contactId={contactId}
+                bookId={bookId}
                 emails={emails}
                 displayName={[firstName, lastName].filter(Boolean).join(' ')}
               />
@@ -211,8 +214,8 @@ const ContactVisualization: React.FC<ContactVisualizationProps> = ({
           </h2>
           <NoteField
             note={note}
-            contactId={contact_id as string}
-            bookId={book_id as string}
+            contactId={contactId ?? ''}
+            bookId={bookId ?? ''}
             readOnly={!permissions.canEdit}
           />
         </section>
