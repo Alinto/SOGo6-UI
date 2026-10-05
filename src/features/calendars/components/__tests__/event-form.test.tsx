@@ -673,6 +673,81 @@ describe('EventForm', () => {
     })
   })
 
+  describe('attendees', () => {
+    it('renders existing attendees when editing', () => {
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          event={{
+            ...mockEvent,
+            attendees: [
+              {
+                email: 'sogo-tests2@example.org',
+                name: 'Hewill',
+                status: 'accepted',
+                role: 'required',
+              },
+            ],
+          }}
+          onCancel={onCancel}
+        />
+      )
+
+      expect(screen.getByText('Hewill')).toBeInTheDocument()
+    })
+
+    it('keeps existing attendees when adding another', async () => {
+      const user = userEvent.setup()
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          calendars={mockCalendars}
+          event={{
+            ...mockEvent,
+            attendees: [
+              {
+                email: 'sogo-tests2@example.org',
+                name: 'Hewill',
+                status: 'accepted',
+                role: 'required',
+              },
+            ],
+          }}
+          onCancel={onCancel}
+        />
+      )
+
+      const attendeeInput = screen.getByPlaceholderText(
+        'eventForm.attendees.search_placeholder.string'
+      )
+      await user.type(attendeeInput, 'sogo-db3@example.org')
+      await user.keyboard('{Enter}')
+
+      await user.click(
+        screen.getByRole('button', { name: 'eventForm.update.string' })
+      )
+
+      await waitFor(() => {
+        expect(mockUpdate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            eventKey: 'event-1',
+            body: expect.objectContaining({
+              attendees: [
+                {
+                  email: 'sogo-tests2@example.org',
+                  name: 'Hewill',
+                  status: 'accepted',
+                  role: 'required',
+                },
+                { email: 'sogo-db3@example.org' },
+              ],
+            }),
+          })
+        )
+      })
+    })
+  })
+
   describe('form submission', () => {
     it('does not submit when title is empty', async () => {
       const user = userEvent.setup()

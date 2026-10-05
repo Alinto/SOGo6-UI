@@ -108,6 +108,13 @@ const eventFormFieldsSchema = z.object({
       z.object({
         email: z.string().email().or(z.literal('')),
         name: z.string().optional(),
+        status: z
+          .enum(['needs-action', 'accepted', 'declined', 'tentative'])
+          .optional(),
+        role: z
+          .enum(['required', 'optional', 'chair', 'non-participant'])
+          .optional(),
+        rsvp: z.boolean().optional(),
       })
     )
     .default([]),
@@ -307,6 +314,9 @@ export function EventForm({
         event?.attendees?.map((attendee) => ({
           email: attendee.email,
           name: attendee.name ?? '',
+          status: attendee.status,
+          role: attendee.role,
+          rsvp: attendee.rsvp,
         })) ?? [],
       recurrence_rule: recurrenceToFormRule(
         event?.recurrence ?? event?.recurrence_rule ?? null
@@ -332,11 +342,14 @@ export function EventForm({
     remove: removeReminder,
   } = useFieldArray({ control: form.control, name: 'reminders' })
 
-  const watchedAttendees = useWatch({
-    control: form.control,
-    name: 'attendees',
-    defaultValue: [],
-  }) as AttendeeInputItem[]
+  // Do not pass defaultValue here. Before the form is mounted, useWatch
+  // returns that fallback instead of the event's attendees, so the field
+  // looks empty and a later add replaces the whole list.
+  const watchedAttendees =
+    (useWatch({
+      control: form.control,
+      name: 'attendees',
+    }) as AttendeeInputItem[] | undefined) ?? []
 
   const watchedStart = useWatch({ control: form.control, name: 'start' })
   const watchedEnd = useWatch({ control: form.control, name: 'end' })
@@ -463,7 +476,10 @@ export function EventForm({
             .filter((attendee) => attendee.email.trim() !== '')
             .map((attendee) => ({
               email: attendee.email,
-              name: attendee.name || undefined,
+              ...(attendee.name ? { name: attendee.name } : {}),
+              ...(attendee.status ? { status: attendee.status } : {}),
+              ...(attendee.role ? { role: attendee.role } : {}),
+              ...(attendee.rsvp !== undefined ? { rsvp: attendee.rsvp } : {}),
             }))
         : undefined,
     recurrence_rule: values.recurrence_rule ?? undefined,
