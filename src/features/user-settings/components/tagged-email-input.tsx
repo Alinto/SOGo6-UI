@@ -12,7 +12,7 @@ interface TaggedEmailInputProps {
   translationNamespace: string
   tags: { id: string; value: string }[]
   remove: (index: number) => void
-  handleAdd: (value: string) => void
+  handleAdd: (value: string) => boolean | void
   errors?: FieldErrors
   name: string
   maxTags?: number
@@ -128,9 +128,10 @@ function TaggedEmailInput({
         return false
       }
 
+      if (handleAdd(trimmedEmail) === false) return false
+
       setShowInvalidError(false)
       setShowBlurHint(false)
-      handleAdd(trimmedEmail)
       setPendingValue('')
       return true
     },
@@ -205,12 +206,23 @@ function TaggedEmailInput({
       const emails = extractEmails(pastedText)
 
       if (emails.length > 1) {
+        // tags does not update during the loop, so track additions locally
+        const rejected: string[] = []
+        const added = new Set<string>()
         emails.forEach((email) => {
           if (isValidEmail(email)) {
+            const normalizedEmail = email.toLowerCase().trim()
+            if (added.has(normalizedEmail)) return
             const duplicateIndex = isDuplicate(email)
-            if (duplicateIndex === null && tags.length < maxTags) {
-              handleAdd(email)
-            } else if (duplicateIndex !== null) {
+            if (duplicateIndex === null) {
+              if (tags.length + added.size >= maxTags) {
+                rejected.push(email)
+              } else if (handleAdd(email) === false) {
+                rejected.push(email)
+              } else {
+                added.add(normalizedEmail)
+              }
+            } else {
               if (highlightTimeoutRef.current) {
                 clearTimeout(highlightTimeoutRef.current)
               }
@@ -222,7 +234,7 @@ function TaggedEmailInput({
             }
           }
         })
-        setPendingValue('')
+        setPendingValue(rejected.join(', '))
       } else if (emails.length === 1) {
         setPendingValue(emails[0])
         inputRef.current?.focus()

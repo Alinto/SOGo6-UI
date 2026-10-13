@@ -7,7 +7,7 @@ import { FieldErrors } from 'react-hook-form'
 interface ForwardEmailInputProps {
   tags: { id: string; value: string }[]
   remove: (index: number) => void
-  handleAdd: (value: string) => void
+  handleAdd: (value: string) => boolean | void
   errors?: FieldErrors
   name: string
   maxTags?: number
