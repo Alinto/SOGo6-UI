@@ -83,12 +83,12 @@ function MailNotificationsSettingForm({ data, accountId, update }: Props) {
     }
   }
 
-  function handleAdd(value: string) {
-    if (errors.email || errors.emails) return
-    if (fields.length >= MAX_NOTIFY_ADDRESSES) return
+  function handleAdd(value: string): boolean {
+    if (fields.length >= MAX_NOTIFY_ADDRESSES) return false
 
-    form.setValue('email', '')
+    form.setValue('email', '', { shouldValidate: true })
     insert(fields.length, { value })
+    return true
   }
 
   return (

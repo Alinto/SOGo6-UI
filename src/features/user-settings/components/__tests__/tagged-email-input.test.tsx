@@ -67,6 +67,60 @@ describe('TaggedEmailInput', () => {
     await user.keyboard('{Enter}')
 
     expect(handleAdd).toHaveBeenCalledWith('new@example.com')
+    expect(screen.getByTestId('email-input-field')).toHaveValue('')
+  })
+
+  it('keeps the email in the input when handleAdd rejects it', async () => {
+    const user = userEvent.setup()
+    const handleAdd = jest.fn(() => false)
+
+    render(<TaggedEmailInput {...defaultProps} handleAdd={handleAdd} />)
+
+    const input = screen.getByTestId('email-input-field')
+    await user.type(input, 'kept@example.com')
+    await user.keyboard('{Enter}')
+
+    expect(handleAdd).toHaveBeenCalledWith('kept@example.com')
+    expect(input).toHaveValue('kept@example.com')
+  })
+
+  it('stops adding pasted emails at maxTags and keeps the rest in the input', async () => {
+    const user = userEvent.setup()
+    const handleAdd = jest.fn()
+
+    render(
+      <TaggedEmailInput
+        {...defaultProps}
+        handleAdd={handleAdd}
+        maxTags={3}
+        tags={[{ id: '1', value: 'a@example.com' }]}
+      />
+    )
+
+    const input = screen.getByTestId('email-input-field')
+    await user.click(input)
+    await user.paste('b@example.com, c@example.com, d@example.com')
+
+    expect(handleAdd).toHaveBeenCalledTimes(2)
+    expect(handleAdd).toHaveBeenNthCalledWith(1, 'b@example.com')
+    expect(handleAdd).toHaveBeenNthCalledWith(2, 'c@example.com')
+    expect(input).toHaveValue('d@example.com')
+  })
+
+  it('adds an email only once when it is pasted twice', async () => {
+    const user = userEvent.setup()
+    const handleAdd = jest.fn()
+
+    render(<TaggedEmailInput {...defaultProps} handleAdd={handleAdd} />)
+
+    const input = screen.getByTestId('email-input-field')
+    await user.click(input)
+    await user.paste('b@example.com, B@example.com, c@example.com')
+
+    expect(handleAdd).toHaveBeenCalledTimes(2)
+    expect(handleAdd).toHaveBeenNthCalledWith(1, 'b@example.com')
+    expect(handleAdd).toHaveBeenNthCalledWith(2, 'c@example.com')
+    expect(input).toHaveValue('')
   })
 
   it('shows invalid email error for malformed input', async () => {
@@ -108,7 +162,10 @@ describe('TaggedEmailInput', () => {
     )
 
     expect(screen.getByText('errors.max_reached.string')).toBeInTheDocument()
-    expect(screen.getByRole('group')).toHaveAttribute('data-max-reached', 'true')
+    expect(screen.getByRole('group')).toHaveAttribute(
+      'data-max-reached',
+      'true'
+    )
   })
 
   it('adds valid email on blur', async () => {
