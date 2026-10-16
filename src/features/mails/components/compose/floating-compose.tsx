@@ -4,6 +4,7 @@ import { useComposeAttachmentUpload } from '@/features/mails/hooks/use-compose-a
 import { useComposeDraftPersistence } from '@/features/mails/hooks/use-compose-draft-persistence'
 import { useComposeFloatingWindowState } from '@/features/mails/hooks/use-compose-floating-window-state'
 import { useComposeSend } from '@/features/mails/hooks/use-compose-send'
+import { hasComposeDraftContent } from '@/features/mails/utils/has-compose-draft-content'
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
@@ -152,6 +153,17 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
     ...mailFields,
   })
 
+  const [showDiscardConfirm, setShowDiscardConfirm] = React.useState(false)
+
+  // Only ask for confirmation when there is something to lose.
+  const handleDiscardClick = () => {
+    if (hasComposeDraftContent({ ...mailFields, attachments })) {
+      setShowDiscardConfirm(true)
+    } else {
+      void handleDiscardDraft()
+    }
+  }
+
   const handleInsertJitsi = () => {
     const meetId = Math.random().toString(36).substring(2, 10)
     const link = `${jitsiBaseUrl}/${meetId}`
@@ -204,7 +216,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
         onMinimize={handleMinimize}
         onMaximize={handleMaximize}
         onRestore={handleRestore}
-        onDiscardDraft={() => void handleDiscardDraft()}
+        onDiscardDraft={handleDiscardClick}
         onClose={handleClose}
       />
 
@@ -216,7 +228,7 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
               <ComposeHeader draftId={draftId} />
               <div
                 className={cn(
-                  'mt-4 flex flex-1 flex-col overflow-y-auto',
+                  'flex min-w-0 flex-1 flex-col overflow-y-auto',
                   styles.compose_editor
                 )}
               >
@@ -258,6 +270,12 @@ export const FloatingCompose: React.FC<FloatingComposeProps> = ({
           !open && setEmptyContentAlert(null)
         }
         onConfirmSendAnyway={() => void handleConfirmSendAnyway()}
+        showDiscardConfirm={showDiscardConfirm}
+        onDiscardConfirmOpenChange={setShowDiscardConfirm}
+        onConfirmDiscard={() => {
+          setShowDiscardConfirm(false)
+          void handleDiscardDraft()
+        }}
       />
     </motion.div>
   )

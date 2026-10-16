@@ -5,15 +5,27 @@ import RecipientAutocompleteField from '../recipient-autocomplete-field'
 const mockUseRecipientSuggestions = jest.fn()
 const mockUseShareUserSuggestions = jest.fn()
 const mockHandleAdd = jest.fn()
+const mockUseRecipientPhotos = jest.fn()
 
 jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
   useRecipientSuggestions: (...args: unknown[]) =>
     mockUseRecipientSuggestions(...args),
 }))
 
+jest.mock('@/features/address_books/hooks/use-recipient-photos', () => ({
+  useRecipientPhotos: (...args: unknown[]) => mockUseRecipientPhotos(...args),
+}))
+
 jest.mock('@/features/address_books/hooks/use-share-user-suggestions', () => ({
   useShareUserSuggestions: (...args: unknown[]) =>
     mockUseShareUserSuggestions(...args),
+}))
+
+jest.mock('../recipient-contact-card', () => ({
+  __esModule: true,
+  default: ({ email, name }: { email: string; name?: string }) => (
+    <span data-testid="contact-card">{`${name ?? ''}|${email}`}</span>
+  ),
 }))
 
 jest.mock('@/components/ui/inputs/input-with-tags', () => ({
@@ -28,8 +40,22 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
     onKeyDown,
     disabled,
     tags,
+    handleAdd: _handleAdd,
+    remove: _remove,
+    containerClassName: _containerClassName,
+    ...aria
   }: {
-    tags: { id: string; value: string; label?: string }[]
+    handleAdd?: unknown
+    remove?: unknown
+    containerClassName?: string
+    role?: string
+    tags: {
+      id: string
+      value: string
+      label?: string
+      tooltip?: string
+      details?: React.ReactNode
+    }[]
     name: string
     placeholder: string
     value?: string
@@ -41,8 +67,9 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
   }) => (
     <>
       {tags.map((tag) => (
-        <span key={tag.id} data-testid="tag">
+        <span key={tag.id} data-testid="tag" title={tag.tooltip}>
           {tag.label ?? tag.value}
+          {tag.details}
         </span>
       ))}
       <input
@@ -54,6 +81,7 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         disabled={disabled}
+        {...aria}
       />
     </>
   ),
@@ -76,6 +104,7 @@ describe('RecipientAutocompleteField', () => {
       suggestions: [],
       isFetching: false,
     })
+    mockUseRecipientPhotos.mockReturnValue(new Map())
   })
 
   afterEach(() => {
@@ -98,7 +127,7 @@ describe('RecipientAutocompleteField', () => {
       expect(screen.getByPlaceholderText('to.string')).toBeInTheDocument()
     })
 
-    it('shows the name between chevrons next to the email of added tags', () => {
+    it('shows the name of added tags, with the email as tooltip', () => {
       render(
         <RecipientAutocompleteField
           tags={[
@@ -113,9 +142,164 @@ describe('RecipientAutocompleteField', () => {
         />
       )
       const tags = screen.getAllByTestId('tag')
-      expect(tags[0]).toHaveTextContent('bob@example.com <Bob>')
+      expect(tags[0]).toHaveTextContent(/^Bob$/)
+      expect(tags[0]).toHaveAttribute('title', 'bob@example.com')
       expect(tags[1]).toHaveTextContent('typed@example.com')
-      expect(tags[1]).not.toHaveTextContent('<')
+      expect(tags[1]).not.toHaveAttribute('title')
+      expect(screen.queryByTestId('contact-card')).not.toBeInTheDocument()
+    })
+
+    it('gives each tag a contact card instead of a tooltip with showContactCard', () => {
+      render(
+        <RecipientAutocompleteField
+          tags={[
+            { id: '1', value: 'bob@example.com', name: 'Bob' },
+            { id: '2', value: 'typed@example.com' },
+          ]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="to"
+          placeholder="to.string"
+          showContactCard
+          {...defaultProps}
+        />
+      )
+      const tags = screen.getAllByTestId('tag')
+      expect(tags[0]).not.toHaveAttribute('title')
+      const cards = screen.getAllByTestId('contact-card')
+      expect(cards.map((card) => card.textContent)).toEqual([
+        'Bob|bob@example.com',
+        '|typed@example.com',
+      ])
+    })
+  })
+
+  describe('keyboard navigation', () => {
+    const suggestions = [
+      { email: 'alice@example.com', name: 'Alice', source: 'contact' as const },
+      { email: 'alex@example.com', name: 'Alex', source: 'contact' as const },
+    ]
+
+    const openPanel = async (value = 'al') => {
+      render(
+        <RecipientAutocompleteField
+          tags={[]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="to"
+          placeholder="to.string"
+          {...defaultProps}
+        />
+      )
+      const input = screen.getByTestId('to')
+      fireEvent.change(input, { target: { value } })
+      fireEvent.focus(input)
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      await screen.findByRole('listbox')
+      return input
+    }
+
+    beforeEach(() => {
+      mockUseRecipientSuggestions.mockReturnValue({
+        suggestions,
+        isFetching: false,
+      })
+    })
+
+    it('exposes the combobox state to assistive technologies', async () => {
+      const input = await openPanel()
+      expect(input).toHaveAttribute('role', 'combobox')
+      expect(input).toHaveAttribute('aria-expanded', 'true')
+      expect(input).toHaveAttribute('aria-controls', 'to-listbox')
+      expect(input).not.toHaveAttribute('aria-activedescendant')
+      expect(screen.getAllByRole('option')).toHaveLength(2)
+    })
+
+    it('moves the highlight with the arrow keys and picks it with Enter', async () => {
+      const input = await openPanel()
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      expect(input).toHaveAttribute('aria-activedescendant', 'to-option-0')
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      expect(input).toHaveAttribute('aria-activedescendant', 'to-option-1')
+      expect(screen.getAllByRole('option')[1]).toHaveAttribute(
+        'aria-selected',
+        'true'
+      )
+
+      fireEvent.keyDown(input, { key: 'Enter' })
+      expect(mockHandleAdd).toHaveBeenCalledWith(
+        'alex@example.com',
+        suggestions[1]
+      )
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+    })
+
+    it('wraps around from the first row with ArrowUp', async () => {
+      const input = await openPanel()
+
+      fireEvent.keyDown(input, { key: 'ArrowUp' })
+      expect(input).toHaveAttribute('aria-activedescendant', 'to-option-1')
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      expect(input).toHaveAttribute('aria-activedescendant', 'to-option-0')
+    })
+
+    it('picks the add-as-typed row with the keyboard', async () => {
+      const onAddDirect = jest.fn()
+      mockUseRecipientSuggestions.mockReturnValue({
+        suggestions: [],
+        isFetching: false,
+      })
+      render(
+        <RecipientAutocompleteField
+          tags={[]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="to"
+          placeholder="to.string"
+          onAddDirect={onAddDirect}
+          {...defaultProps}
+        />
+      )
+      const input = screen.getByTestId('to')
+      fireEvent.change(input, { target: { value: 'new@example.com' } })
+      fireEvent.focus(input)
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+      await screen.findByRole('listbox')
+
+      fireEvent.keyDown(input, { key: 'ArrowDown' })
+      fireEvent.keyDown(input, { key: 'Enter' })
+
+      expect(mockHandleAdd).toHaveBeenCalledWith('new@example.com', undefined)
+      expect(onAddDirect).toHaveBeenCalledWith('new@example.com')
+    })
+
+    it('closes the list with Escape', async () => {
+      const input = await openPanel()
+
+      fireEvent.keyDown(input, { key: 'Escape' })
+
+      expect(screen.queryByRole('listbox')).not.toBeInTheDocument()
+      expect(mockHandleAdd).not.toHaveBeenCalled()
+    })
+
+    it('adds the typed value on Enter when no row is highlighted', async () => {
+      const input = await openPanel('al@example.com')
+
+      fireEvent.keyDown(input, { key: 'Enter' })
+
+      expect(mockHandleAdd).toHaveBeenCalledWith('al@example.com')
+    })
+
+    it('shows a pointer cursor on suggestion rows', async () => {
+      await openPanel()
+      screen
+        .getAllByRole('option')
+        .forEach((option) => expect(option).toHaveClass('cursor-pointer'))
     })
   })
 
@@ -155,6 +339,42 @@ describe('RecipientAutocompleteField', () => {
       await waitFor(() => {
         expect(screen.getByText('<Alice>')).toBeInTheDocument()
       })
+    })
+
+    it('shows an avatar in place of an icon on suggestion rows', async () => {
+      mockUseRecipientSuggestions.mockReturnValue({
+        suggestions: [
+          {
+            email: 'alice.martin@example.com',
+            name: 'Alice Martin',
+            source: 'contact' as const,
+          },
+        ],
+        isFetching: false,
+      })
+
+      render(
+        <RecipientAutocompleteField
+          tags={[]}
+          remove={jest.fn()}
+          handleAdd={mockHandleAdd}
+          name="to"
+          placeholder="to.string"
+          {...defaultProps}
+        />
+      )
+
+      fireEvent.change(screen.getByTestId('to'), {
+        target: { value: 'ali' },
+      })
+      fireEvent.focus(screen.getByTestId('to'))
+      await act(async () => {
+        jest.advanceTimersByTime(300)
+      })
+
+      // Photos are looked up for the same query while the panel is open.
+      expect(mockUseRecipientPhotos).toHaveBeenLastCalledWith('ali', false)
+      expect(screen.getByRole('option')).toHaveTextContent(/^AM/)
     })
 
     it('calls handleAdd when a suggestion is picked', async () => {

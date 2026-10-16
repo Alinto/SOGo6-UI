@@ -27,6 +27,9 @@ const baseProps = {
   emptyContentAlert: null,
   onEmptyContentAlertOpenChange: jest.fn(),
   onConfirmSendAnyway: jest.fn(),
+  showDiscardConfirm: false,
+  onDiscardConfirmOpenChange: jest.fn(),
+  onConfirmDiscard: jest.fn(),
 }
 
 describe('ComposeSendAlerts', () => {
@@ -54,6 +57,25 @@ describe('ComposeSendAlerts', () => {
 
       fireEvent.click(screen.getByText('no_recipient_alert.ok.string'))
       expect(baseProps.onNoRecipientAlertOpenChange).toHaveBeenCalledWith(false)
+    })
+  })
+
+  describe('discard confirmation', () => {
+    it('is hidden when showDiscardConfirm is false', () => {
+      render(<ComposeSendAlerts {...baseProps} />)
+      expect(
+        screen.queryByText('discard_draft_confirm.title.string')
+      ).not.toBeInTheDocument()
+    })
+
+    it('calls onConfirmDiscard when the discard button is clicked', () => {
+      render(<ComposeSendAlerts {...baseProps} showDiscardConfirm />)
+
+      expect(
+        screen.getByText('discard_draft_confirm.content.string')
+      ).toBeInTheDocument()
+      fireEvent.click(screen.getByText('discard_draft_confirm.confirm.string'))
+      expect(baseProps.onConfirmDiscard).toHaveBeenCalled()
     })
   })
 

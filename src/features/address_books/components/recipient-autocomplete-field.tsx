@@ -1,6 +1,7 @@
 'use client'
 
 import InputWithTags from '@/components/ui/inputs/input-with-tags'
+import { useRecipientPhotos } from '@/features/address_books/hooks/use-recipient-photos'
 import {
   type RecipientSuggestionItem,
   useRecipientSuggestions,
@@ -9,6 +10,8 @@ import { useShareUserSuggestions } from '@/features/address_books/hooks/use-shar
 import { cn } from '@/lib/utils'
 import { Loader2, UserPlus } from 'lucide-react'
 import React, { useEffect, useMemo, useRef, useState } from 'react'
+import RecipientAvatar from './recipient-avatar'
+import RecipientContactCard from './recipient-contact-card'
 
 type RecipientTag = { id: string; value: string; name?: string }
 
@@ -22,7 +25,7 @@ type RecipientAutocompleteFieldProps = {
   disabled?: boolean
   loadingLabel: string
   getAddDirectLabel?: (email: string) => string
-  // Called only when the "add as typed" row is clicked (not on Enter/blur),
+  // Called only when the "add as typed" row is picked (not on Enter/blur),
   // e.g. to also save the typed address as a contact.
   onAddDirect?: (email: string) => void
   // When true, the "add as typed"/blur-to-add affordance accepts any
@@ -40,6 +43,12 @@ type RecipientAutocompleteFieldProps = {
   // `gab` searches directory accounts (sharing). `recipients` searches
   // personal contacts, lists and the directory (compose and mail search).
   suggestionSource?: 'recipients' | 'gab'
+  // `plain` drops the field border, for layouts that separate fields with
+  // lines (compose).
+  variant?: 'bordered' | 'plain'
+  // Shows a contact card (avatar, name, email, phone) on hover/click of a
+  // tag instead of a plain email tooltip.
+  showContactCard?: boolean
 }
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -60,10 +69,15 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
   suggestionsOnly = false,
   panelSide = 'bottom',
   suggestionSource = 'recipients',
+  variant = 'bordered',
+  showContactCard = false,
 }) => {
   const [draft, setDraft] = useState('')
   const [debouncedQ, setDebouncedQ] = useState('')
   const [open, setOpen] = useState(false)
+  // The highlighted row is tied to the query/panel it was picked in, so it
+  // resets whenever the list changes.
+  const [active, setActive] = useState({ key: '', index: -1 })
   const containerRef = useRef<HTMLDivElement>(null)
   const useGab = suggestionSource === 'gab'
 
@@ -90,6 +104,8 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
     [recipientSuggestions, shareSuggestions, useGab]
   )
   const isFetching = useGab ? shareFetching : recipientFetching
+  // Directory accounts (sharing) are not contacts: no photos to look up.
+  const photos = useRecipientPhotos(debouncedQ, !open || useGab)
 
   const isAddableDraft = (value: string) =>
     !suggestionsOnly &&
@@ -110,22 +126,54 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
     () =>
       tags.map((tag) => ({
         ...tag,
-        label: tag.name
-          ? `${tag.value} ${formatSuggestionName(tag.name)}`
-          : undefined,
+        // Show the name when known; the email stays available on hover/tap.
+        label: tag.name || undefined,
+        ...(showContactCard
+          ? {
+              details: (
+                <RecipientContactCard email={tag.value} name={tag.name} />
+              ),
+            }
+          : { tooltip: tag.name ? tag.value : undefined }),
       })),
-    [tags]
+    [tags, showContactCard]
   )
+
+  const showAddDirect =
+    !!getAddDirectLabel &&
+    isAddableDraft(debouncedQ) &&
+    !filteredSuggestions.some(
+      (suggestion) =>
+        suggestion.email.toLowerCase() === debouncedQ.toLowerCase()
+    ) &&
+    !tags.some((tag) => tag.value.toLowerCase() === debouncedQ.toLowerCase())
 
   const showPanel =
     open &&
     debouncedQ.length >= 2 &&
-    (filteredSuggestions.length > 0 ||
-      (!!getAddDirectLabel &&
-        isAddableDraft(debouncedQ) &&
-        !tags.some(
-          (tag) => tag.value.toLowerCase() === debouncedQ.toLowerCase()
-        )))
+    (filteredSuggestions.length > 0 || showAddDirect)
+
+  // Keyboard-navigable rows: the suggestions, then the "add as typed" row.
+  const optionCount = showPanel
+    ? filteredSuggestions.length + (showAddDirect ? 1 : 0)
+    : 0
+  const listboxId = `${name}-listbox`
+  const optionId = (index: number) => `${name}-option-${index}`
+
+  const listKey = `${showPanel}:${debouncedQ}`
+  const activeIndex = active.key === listKey ? active.index : -1
+  const setActiveIndex = (update: number | ((prev: number) => number)) =>
+    setActive({
+      key: listKey,
+      index: typeof update === 'function' ? update(activeIndex) : update,
+    })
+
+  useEffect(() => {
+    if (activeIndex < 0) return
+    document
+      .getElementById(`${name}-option-${activeIndex}`)
+      ?.scrollIntoView?.({ block: 'nearest' })
+  }, [activeIndex, name])
 
   useEffect(() => {
     const onClick = (event: MouseEvent) => {
@@ -149,6 +197,77 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
     setOpen(false)
   }
 
+  const pickAddDirect = () => {
+    pickSuggestion(debouncedQ)
+    onAddDirect?.(debouncedQ)
+  }
+
+  const pickOption = (index: number) => {
+    const suggestion = filteredSuggestions[index]
+    if (suggestion) pickSuggestion(suggestion.email, suggestion)
+    else if (showAddDirect) pickAddDirect()
+  }
+
+  // Replaces InputWithTags' own Enter handler.
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      if (!showPanel) {
+        setOpen(true)
+        return
+      }
+      if (optionCount === 0) return
+      const step = event.key === 'ArrowDown' ? 1 : -1
+      setActiveIndex((prev) =>
+        prev < 0 && step < 0
+          ? optionCount - 1
+          : (prev + step + optionCount) % optionCount
+      )
+      return
+    }
+
+    if (event.key === 'Escape') {
+      if (!showPanel) return
+      event.preventDefault()
+      event.stopPropagation()
+      setOpen(false)
+      return
+    }
+
+    if (event.key !== 'Enter') return
+
+    if (activeIndex >= 0 && activeIndex < optionCount) {
+      event.preventDefault()
+      event.stopPropagation()
+      pickOption(activeIndex)
+      return
+    }
+    if (suggestionsOnly) {
+      // Typed text is never added as is.
+      event.preventDefault()
+      event.stopPropagation()
+      const first = showPanel ? filteredSuggestions[0] : undefined
+      if (first) pickSuggestion(first.email, first)
+      return
+    }
+    const value = event.currentTarget.value
+    if (value.length) {
+      event.preventDefault()
+      event.stopPropagation()
+      handleAdd(value)
+      setDraft('')
+      setOpen(false)
+    }
+  }
+
+  const optionClassName = (index: number) =>
+    cn(
+      'hover:bg-muted-foreground/15 flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left text-sm',
+      activeIndex === index && 'bg-muted-foreground/15'
+    )
+
+  const addDirectIndex = filteredSuggestions.length
+
   return (
     <div ref={containerRef} className="relative">
       <InputWithTags
@@ -159,17 +278,19 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
           setDraft('')
           setOpen(false)
         }}
-        {...(suggestionsOnly && {
-          // Overrides InputWithTags' Enter handler so typed text is never
-          // added as is.
-          onKeyDown: (event: React.KeyboardEvent<HTMLInputElement>) => {
-            if (event.key !== 'Enter') return
-            event.preventDefault()
-            event.stopPropagation()
-            const first = showPanel ? filteredSuggestions[0] : undefined
-            if (first) pickSuggestion(first.email, first)
-          },
-        })}
+        onKeyDown={handleKeyDown}
+        containerClassName={
+          variant === 'plain'
+            ? 'rounded-none border-0 has-[.tag]:py-1.5'
+            : undefined
+        }
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={showPanel}
+        aria-controls={showPanel ? listboxId : undefined}
+        aria-activedescendant={
+          activeIndex >= 0 ? optionId(activeIndex) : undefined
+        }
         name={name}
         placeholder={placeholder}
         disabled={disabled}
@@ -190,6 +311,8 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
 
       {showPanel && (
         <div
+          id={listboxId}
+          role="listbox"
           className={cn(
             'border-border bg-popover absolute z-50 max-h-60 w-full overflow-y-auto rounded-lg border shadow-lg',
             panelSide === 'top' ? 'bottom-full mb-1' : 'top-full mt-1'
@@ -205,16 +328,24 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
           {filteredSuggestions.map((suggestion, index) => (
             <button
               key={`${suggestion.uid ?? suggestion.source}:${suggestion.email}:${index}`}
+              id={optionId(index)}
+              role="option"
+              aria-selected={activeIndex === index}
               type="button"
-              className={cn(
-                'text-foreground hover:bg-muted/70 flex w-full items-center gap-3 px-3 py-2 text-left text-sm'
-              )}
+              tabIndex={-1}
+              className={cn('text-foreground', optionClassName(index))}
+              onMouseEnter={() => setActiveIndex(index)}
               onMouseDown={(event) => {
                 event.preventDefault()
                 pickSuggestion(suggestion.email, suggestion)
               }}
             >
-              <UserPlus className="text-muted-foreground h-4 w-4 shrink-0" />
+              <RecipientAvatar
+                email={suggestion.email}
+                name={suggestion.name}
+                photo={photos.get(suggestion.email.toLowerCase())}
+                size="sm"
+              />
               <span className="flex min-w-0 flex-1 items-baseline gap-1">
                 <span className="truncate font-medium">{suggestion.email}</span>
                 {suggestion.name && (
@@ -225,25 +356,27 @@ const RecipientAutocompleteField: React.FC<RecipientAutocompleteFieldProps> = ({
               </span>
             </button>
           ))}
-          {getAddDirectLabel &&
-            isAddableDraft(debouncedQ) &&
-            !filteredSuggestions.some(
-              (suggestion) =>
-                suggestion.email.toLowerCase() === debouncedQ.toLowerCase()
-            ) && (
-              <button
-                type="button"
-                className="border-border text-muted-foreground hover:bg-muted/70 flex w-full items-center gap-3 border-t px-3 py-2 text-left text-sm"
-                onMouseDown={(event) => {
-                  event.preventDefault()
-                  pickSuggestion(debouncedQ)
-                  onAddDirect?.(debouncedQ)
-                }}
-              >
-                <UserPlus className="h-4 w-4 shrink-0" />
-                {getAddDirectLabel(debouncedQ)}
-              </button>
-            )}
+          {showAddDirect && getAddDirectLabel && (
+            <button
+              id={optionId(addDirectIndex)}
+              role="option"
+              aria-selected={activeIndex === addDirectIndex}
+              type="button"
+              tabIndex={-1}
+              className={cn(
+                'border-border text-muted-foreground border-t',
+                optionClassName(addDirectIndex)
+              )}
+              onMouseEnter={() => setActiveIndex(addDirectIndex)}
+              onMouseDown={(event) => {
+                event.preventDefault()
+                pickAddDirect()
+              }}
+            >
+              <UserPlus className="h-4 w-4 shrink-0" />
+              {getAddDirectLabel(debouncedQ)}
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -1,9 +1,15 @@
 .compose_editor {
+  /* CKEditor ships its own font stack; use the app's for its UI and content */
+  --ck-font-face: var(--font-geist-sans), sans-serif;
+  --ck-content-font-family: var(--font-geist-sans), sans-serif;
+  --ck-content-font-size: 0.875rem;
   display: flex;
   flex-direction: column;
   [role='application'] {
     flex: 1;
     min-height: 0;
+    min-width: 0;
+    max-width: 100%;
     display: flex;
     flex-direction: column;
     [role='presentation']:nth-of-type(2) {

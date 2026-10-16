@@ -83,6 +83,18 @@ describe('addressBooksUiSlice', () => {
       expect(state.isFormOpen).toBe(true)
       expect(state.formBookId).toBe('work')
       expect(state.prefillContact?.firstName).toBe('Alice')
+      expect(state.openContactAfterCreate).toBe(true)
+    })
+
+    it('openCreateForm can stay on the current page after creation', () => {
+      let state = reducer(
+        undefined,
+        openCreateForm({ bookId: 'work', openContactAfterCreate: false })
+      )
+      expect(state.openContactAfterCreate).toBe(false)
+
+      state = reducer(state, closeForm())
+      expect(state.openContactAfterCreate).toBe(true)
     })
 
     it('openEditForm sets editing contact', () => {

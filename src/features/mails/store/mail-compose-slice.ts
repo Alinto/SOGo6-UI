@@ -162,6 +162,37 @@ const mailComposeSlice = createSlice({
       }
     },
 
+    // Keeps recipient names in every open draft in sync with an edited
+    // contact.
+    renameRecipients: (
+      state,
+      action: PayloadAction<{ emails: string[]; name?: string }>
+    ) => {
+      const emails = new Set(
+        action.payload.emails.map((email) => email.toLowerCase())
+      )
+      const name = action.payload.name?.trim() || undefined
+      for (const draft of Object.values(state.drafts)) {
+        let changed = false
+        for (const field of ['to', 'cc', 'bcc'] as const) {
+          for (const recipient of draft[field]) {
+            if (
+              emails.has(recipient.email.toLowerCase()) &&
+              recipient.name !== name
+            ) {
+              if (name) recipient.name = name
+              else delete recipient.name
+              changed = true
+            }
+          }
+        }
+        if (changed) {
+          draft.isDirty = true
+          draft.updatedAt = Date.now()
+        }
+      }
+    },
+
     updateMailKey: (
       state,
       action: PayloadAction<{ draftId: string; mailKey: string }>
@@ -384,6 +415,7 @@ export const {
   setActiveDraft,
   closeDraft,
   updateRecipients,
+  renameRecipients,
   updateSubject,
   updateBody,
   addAttachment,

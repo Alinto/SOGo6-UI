@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { FloatingCompose } from '../floating-compose'
 
@@ -9,6 +9,7 @@ jest.mock('@/components/ui/button', () => ({
       {children}
     </button>
   ),
+  buttonVariants: () => '',
 }))
 
 jest.mock('@/hooks/use-mobile', () => ({
@@ -383,6 +384,69 @@ describe('FloatingCompose Component', () => {
       await user.click(closeButton)
 
       expect(mockDispatch).toHaveBeenCalled()
+    })
+  })
+
+  describe('Discard Draft', () => {
+    const discardButton = () => screen.getByTitle('discard_draft.string')
+
+    it('discards an empty draft without asking for confirmation', async () => {
+      const user = userEvent.setup()
+      render(<FloatingCompose draftId="draft-1" />)
+
+      await user.click(discardButton())
+
+      expect(
+        screen.queryByText('discard_draft_confirm.title.string')
+      ).not.toBeInTheDocument()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'mailCompose/closeDraft' })
+      )
+    })
+
+    it('asks for confirmation before discarding a draft with content', async () => {
+      const user = userEvent.setup()
+      ;(useAppSelector as jest.Mock).mockImplementation(
+        (selector: (s: any) => any) => {
+          const state = createMockState(true, false)
+          state.mailCompose.drafts['draft-1'].subject = 'Hello'
+          return selector(state)
+        }
+      )
+      render(<FloatingCompose draftId="draft-1" />)
+
+      await user.click(discardButton())
+
+      expect(
+        await screen.findByText('discard_draft_confirm.title.string')
+      ).toBeInTheDocument()
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'mailCompose/closeDraft' })
+      )
+
+      await user.click(
+        screen.getByRole('button', {
+          name: 'discard_draft_confirm.cancel.string',
+        })
+      )
+      expect(
+        screen.queryByText('discard_draft_confirm.title.string')
+      ).not.toBeInTheDocument()
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'mailCompose/closeDraft' })
+      )
+
+      await user.click(discardButton())
+      await user.click(
+        await screen.findByRole('button', {
+          name: 'discard_draft_confirm.confirm.string',
+        })
+      )
+      await waitFor(() =>
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({ type: 'mailCompose/closeDraft' })
+        )
+      )
     })
   })
 

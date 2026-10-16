@@ -3,6 +3,7 @@ import type {
   VCard,
 } from '@/features/address_books/address-books-types'
 import type { CalendarsResponse } from '@/features/calendars/calendars-types'
+import { AUTOCOMPLETE_VCARDS } from './autocomplete-contacts'
 
 /**
  * Email of the fake connected account (same as the uid/email of the fake
@@ -314,7 +315,7 @@ export const DEFAULT_VCARDS: Record<string, VCard[]> = {
       updated_at: '2024-01-01T00:00:00.000Z',
     },
   ],
-  personal: [],
+  personal: AUTOCOMPLETE_VCARDS,
   global: [
     {
       id: '4',

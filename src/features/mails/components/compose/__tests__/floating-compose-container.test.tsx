@@ -3,8 +3,8 @@ import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
-import { useAppSelector } from '@/lib/redux/hooks'
 import { selectOpenDraftIds } from '@/features/mails/store'
+import { useAppSelector } from '@/lib/redux/hooks'
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: jest.fn(),
@@ -42,13 +42,11 @@ jest.mock('@/features/mails/components/constants', () => ({
   FOLDERS_NAME: { DRAFT: 'Drafts' },
 }))
 
-const mockFloatingCompose = jest.fn(
-  ({ draftId }: { draftId: string }) => (
-    <div data-testid="floating-compose" data-draft-id={draftId}>
-      {draftId}
-    </div>
-  )
-)
+const mockFloatingCompose = jest.fn(({ draftId }: { draftId: string }) => (
+  <div data-testid="floating-compose" data-draft-id={draftId}>
+    {draftId}
+  </div>
+))
 
 jest.mock('@/features/mails/components/compose/floating-compose', () => ({
   __esModule: true,
@@ -140,7 +138,7 @@ describe('FloatingComposeContainer', () => {
         'fixed',
         'right-14',
         'bottom-0',
-        'z-100',
+        'z-(--z-floating-compose)',
         'flex',
         'flex-row-reverse',
         'items-end',
@@ -186,11 +184,11 @@ describe('FloatingComposeContainer', () => {
 
       renderComponent()
 
-      expect(screen.getAllByTestId('floating-compose').map((node) => node.textContent)).toEqual([
-        'draft-a',
-        'draft-b',
-        'draft-c',
-      ])
+      expect(
+        screen
+          .getAllByTestId('floating-compose')
+          .map((node) => node.textContent)
+      ).toEqual(['draft-a', 'draft-b', 'draft-c'])
     })
   })
 
