@@ -61,14 +61,20 @@ const FloatingComposeContainer = () => {
     }, 2000)
 
     return () => window.clearTimeout(timer)
-  }, [dispatch, isMobile, mainAccount?.id, triggerGetCurrentDrafts, triggerGetMail])
+  }, [
+    dispatch,
+    isMobile,
+    mainAccount?.id,
+    triggerGetCurrentDrafts,
+    triggerGetMail,
+  ])
 
   if (openDraftIds.length === 0) {
     return null
   }
 
   return (
-    <div className="pointer-events-none fixed right-14 bottom-0 z-100 flex flex-row-reverse items-end -space-x-32 space-x-reverse px-4">
+    <div className="pointer-events-none fixed right-14 bottom-0 z-(--z-floating-compose) flex flex-row-reverse items-end -space-x-32 space-x-reverse px-4">
       {openDraftIds.map((draftId) => (
         <FloatingCompose key={draftId} draftId={draftId} />
       ))}

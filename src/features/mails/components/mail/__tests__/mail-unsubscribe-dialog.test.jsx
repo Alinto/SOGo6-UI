@@ -114,7 +114,7 @@ describe('UnsubscribeDialog', () => {
     expect(content).toHaveClass('fixed')
     expect(content).toHaveClass('top-[50%]')
     expect(content).toHaveClass('left-[50%]')
-    expect(content).toHaveClass('z-50')
+    expect(content).toHaveClass('z-(--z-modal)')
     expect(content).toHaveClass('flex')
     expect(content).toHaveClass('w-[92vw]')
     expect(content).toHaveClass('max-w-sm')

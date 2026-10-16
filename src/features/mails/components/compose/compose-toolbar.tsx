@@ -110,7 +110,7 @@ export function ComposeToolbar({
                 <MoreVerticalIcon />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="z-9999 w-40">
+            <DropdownMenuContent align="end" className="w-40">
               <DropdownMenuGroup>
                 <DropdownMenuCheckboxItem
                   checked={requestReadReceipt}
@@ -196,7 +196,7 @@ export function ComposeToolbar({
               <MoreHorizontalIcon />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="z-9999 w-40">
+          <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuGroup>
               <DropdownMenuItem disabled>
                 {t('schedule_sending.string')}

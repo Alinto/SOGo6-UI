@@ -90,6 +90,25 @@
             "string": "Discard draft",
             "context": "Discard the current draft"
         },
+        "discard_draft_confirm": {
+            "title": {
+                "string": "Discard this draft?",
+                "context": "Title of the confirmation shown when the user discards a message being written"
+            },
+            "content": {
+                "string": "This message will be deleted. This action cannot be undone.",
+                "context": "Content of the confirmation shown when the user discards a message being written"
+            },
+            "confirm": {
+                "string": "Discard",
+                "context": "Label for the button confirming that the draft is discarded"
+            },
+            "cancel": {
+                "string": "Cancel",
+                "context": "Label for the button keeping the draft and going back to writing"
+            },
+            "context": "Confirmation shown when the user discards a message being written"
+        },
         "cc": {
             "string": "Cc",
             "context": "Carbon copy recipient"

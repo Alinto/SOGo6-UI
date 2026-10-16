@@ -25,6 +25,10 @@ jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
     mockUseRecipientSuggestions(...args),
 }))
 
+jest.mock('@/features/address_books/hooks/use-recipient-photos', () => ({
+  useRecipientPhotos: jest.fn(() => new Map()),
+}))
+
 jest.mock('@/features/address_books/hooks/use-share-user-suggestions', () => ({
   useShareUserSuggestions: () => ({ suggestions: [], isFetching: false }),
 }))

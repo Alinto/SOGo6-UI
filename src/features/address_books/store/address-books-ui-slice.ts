@@ -15,6 +15,9 @@ export interface AddressBooksUiState {
   editingContactId: string | null
   formBookId: string | null
   prefillContact: Partial<VCard> | null
+  // Go to the new contact page after creating it (off when the form is
+  // opened from another screen, e.g. a compose recipient card).
+  openContactAfterCreate: boolean
   isListFormOpen: boolean
   editingListId: string | null
   prefillListMembers: ContactMember[] | null
@@ -31,6 +34,7 @@ const initialState: AddressBooksUiState = {
   editingContactId: null,
   formBookId: null,
   prefillContact: null,
+  openContactAfterCreate: true,
   isListFormOpen: false,
   editingListId: null,
   prefillListMembers: null,
@@ -82,12 +86,19 @@ const addressBooksUiSlice = createSlice({
     openCreateForm: (
       state,
       action: PayloadAction<
-        { bookId?: string; prefill?: Partial<VCard> } | undefined
+        | {
+            bookId?: string
+            prefill?: Partial<VCard>
+            openContactAfterCreate?: boolean
+          }
+        | undefined
       >
     ) => {
       state.isFormOpen = true
       state.editingContactId = null
       state.prefillContact = action.payload?.prefill ?? null
+      state.openContactAfterCreate =
+        action.payload?.openContactAfterCreate ?? true
       if (action.payload?.bookId) {
         state.formBookId = action.payload.bookId
       }
@@ -105,6 +116,7 @@ const addressBooksUiSlice = createSlice({
       state.isFormOpen = false
       state.editingContactId = null
       state.prefillContact = null
+      state.openContactAfterCreate = true
     },
     setFormBookId: (state, action: PayloadAction<string | null>) => {
       state.formBookId = action.payload

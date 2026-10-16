@@ -1,40 +1,25 @@
+import {
+  AUTOCOMPLETE_ADDRESS_BOOK,
+  AUTOCOMPLETE_CONTACTS,
+} from '@/app/fakeApi/utils/autocomplete-contacts'
 import type { ApiContactSuggestion } from '@/features/address_books/address-books-api-types'
 import { NextResponse } from 'next/server'
 
-const MOCK_ADDRESS_BOOK = { key: 'personal', name: 'Personal Address Book' }
-
-const MOCK_CONTACTS = [
-  { contact_key: 'jdupont', email: 'jdupont@sogo.eu', name: 'Jean Dupont' },
-  { contact_key: 'mleblanc', email: 'mleblanc@sogo.eu', name: 'Marie Leblanc' },
-  { contact_key: 'pmartin', email: 'pmartin@sogo.eu', name: 'Pierre Martin' },
-  { contact_key: 'srobert', email: 'srobert@sogo.eu', name: 'Sophie Robert' },
-  {
-    contact_key: 'abernard',
-    email: 'abernard@sogo.eu',
-    name: 'Antoine Bernard',
-  },
-  { contact_key: 'lmoreau', email: 'lmoreau@sogo.eu', name: 'Lucie Moreau' },
-  { contact_key: 'nthomas', email: 'nthomas@sogo.eu', name: 'Nicolas Thomas' },
-  { contact_key: 'csimon', email: 'csimon@sogo.eu', name: 'Claire Simon' },
-  { contact_key: 'vdubois', email: 'vdubois@sogo.eu', name: 'Victor Dubois' },
-  { contact_key: 'eleroy', email: 'eleroy@sogo.eu', name: 'Émilie Leroy' },
-]
-
 const MOCK_SUGGESTIONS: ApiContactSuggestion[] = [
-  ...MOCK_CONTACTS.map((contact) => ({
+  ...AUTOCOMPLETE_CONTACTS.map((contact) => ({
     type: 'contact' as const,
     ...contact,
-    address_book: MOCK_ADDRESS_BOOK,
+    address_book: AUTOCOMPLETE_ADDRESS_BOOK,
   })),
   {
     type: 'list',
     name: 'Design Team',
     list_key: 'design-team',
     member_count: 2,
-    members: MOCK_CONTACTS.filter((c) =>
+    members: AUTOCOMPLETE_CONTACTS.filter((c) =>
       ['mleblanc', 'csimon'].includes(c.contact_key)
     ),
-    address_book: MOCK_ADDRESS_BOOK,
+    address_book: AUTOCOMPLETE_ADDRESS_BOOK,
   },
 ]
 

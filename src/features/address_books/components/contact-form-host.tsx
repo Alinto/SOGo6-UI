@@ -1,6 +1,8 @@
 'use client'
 
+import { renameRecipients } from '@/features/mails/store'
 import { useRouter } from '@/lib/i18n/navigation'
+import { ADDRESS_BOOKS_SLICE } from '@/lib/redux/api/api-slice'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useTranslations } from 'next-intl'
 import { memo, useCallback, useMemo, useState } from 'react'
@@ -10,12 +12,18 @@ import {
   useAddressBookState,
 } from '../hooks/use-address-book-state'
 import {
+  addressBooksApiEndpoints,
   useAddVCardToAddressBookMutation,
   useUpdateVCardMutation,
 } from '../store/address-books-api'
 import { closeForm, selectRightsByBook } from '../store/address-books-ui-slice'
+import { getContactDisplayName } from '../utils/contact-list'
 import { listCreatableAddressBooks } from '../utils/list-creatable-address-books'
 import { getContactApiErrorMessageKey } from '../utils/map-contact-api-error'
+import {
+  getContactEmails,
+  getRecipientCardChanges,
+} from '../utils/recipient-card-changes'
 import { serializeContactFromForm } from '../utils/serialize-contact'
 import ContactForm, {
   fromFieldArray,
@@ -42,6 +50,7 @@ function ContactFormHost() {
   const [updateContact, { isLoading: isUpdating }] = useUpdateVCardMutation()
 
   const editingContactId = ui.editingContactId
+  const openContactAfterCreate = ui.openContactAfterCreate
   const {
     editingEntity: editingContact,
     isEditLoading,
@@ -87,6 +96,27 @@ function ContactFormHost() {
       const payload = buildVCardPayload(values)
       const serializedBody = serializeContactFromForm(values)
 
+      // Keep open compose windows (recipient names and contact cards) in
+      // sync, only with what they show.
+      const syncCompose = (
+        id: string,
+        { nameChanged, cardChanged }: ReturnType<typeof getRecipientCardChanges>
+      ) => {
+        const name = getContactDisplayName({ ...payload, id })
+        if (nameChanged && name) {
+          dispatch(
+            renameRecipients({ emails: getContactEmails(payload), name })
+          )
+        }
+        if (cardChanged) {
+          dispatch(
+            addressBooksApiEndpoints.util.invalidateTags([
+              { type: ADDRESS_BOOKS_SLICE, id: 'ALL_CONTACTS' },
+            ])
+          )
+        }
+      }
+
       try {
         if (contactId) {
           await updateContact({
@@ -96,6 +126,10 @@ function ContactFormHost() {
             ...payload,
             patchBody: serializedBody,
           }).unwrap()
+          syncCompose(
+            contactId,
+            getRecipientCardChanges(editingContact, payload)
+          )
           return
         }
 
@@ -104,8 +138,10 @@ function ContactFormHost() {
           vCard: payload as VCard,
           createBody: serializedBody,
         }).unwrap()
+        // e.g. a recipient added to the contacts from its compose card.
+        syncCompose(created?.id ?? '', { nameChanged: true, cardChanged: true })
 
-        if (created?.id) {
+        if (created?.id && openContactAfterCreate) {
           push(`/address_books/${bookId}/${created.id}`)
         }
       } catch (error) {
@@ -119,6 +155,9 @@ function ContactFormHost() {
       addContact,
       buildVCardPayload,
       defaultBookId,
+      dispatch,
+      editingContact,
+      openContactAfterCreate,
       push,
       tErrors,
       updateContact,

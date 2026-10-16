@@ -14,7 +14,7 @@ import {
 } from '../utils/address-book-permissions'
 import { routeParam } from '../utils/route-param'
 
-function findAddressBook(
+export function findAddressBook(
   books:
     | {
         personals: AddressBook[]

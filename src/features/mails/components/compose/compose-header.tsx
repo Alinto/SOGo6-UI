@@ -23,7 +23,6 @@ import { useSaveRecipientAsContact } from '@/features/address_books/hooks/use-sa
 import { useOfflineIdentities } from '@/features/offline/hooks/use-offline-identities'
 import { useProfile } from '@/features/user-profile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { createClientId } from '@/lib/utils/create-client-id'
 import { Check, PenLine } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React, { useCallback, useRef } from 'react'
@@ -43,8 +42,23 @@ interface ComposeHeaderProps {
 type RecipientTag = { id: string; value: string; name?: string }
 type RecipientField = 'to' | 'cc' | 'bcc'
 
+// Fields are separated by lines instead of being boxed.
+const ROW_CLASS = 'flex min-h-10 items-center gap-2 border-b px-3'
+const PLAIN_FIELD_CLASS =
+  'rounded-none border-0 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0'
+
 const isValidEmail = (value: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+
+// A field never holds the same address twice, so it is a stable tag id.
+const toRecipientTags = (
+  recipients: MailComposeRecipient[] | undefined
+): RecipientTag[] =>
+  (recipients ?? []).map((recipient) => ({
+    id: recipient.email.toLowerCase(),
+    value: recipient.email,
+    name: recipient.name,
+  }))
 
 const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   const [showCc, setShowCc] = React.useState(false)
@@ -79,94 +93,65 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   const { toRecipients, ccRecipients, bccRecipients } =
     useAppSelector(selectDraftData(draftId)) ?? {}
 
-  const [toTags, setToTags] = React.useState<RecipientTag[]>([])
-  const [ccTags, setCcTags] = React.useState<RecipientTag[]>([])
-  const [bccTags, setBccTags] = React.useState<RecipientTag[]>([])
+  // The draft's recipients are the single source of truth: tags are derived
+  // from them, so changes made elsewhere (e.g. a renamed contact) show up.
+  const toTags = React.useMemo(
+    () => toRecipientTags(toRecipients),
+    [toRecipients]
+  )
+  const ccTags = React.useMemo(
+    () => toRecipientTags(ccRecipients),
+    [ccRecipients]
+  )
+  const bccTags = React.useMemo(
+    () => toRecipientTags(bccRecipients),
+    [bccRecipients]
+  )
 
-  const hasInitializedRecipients = React.useRef(false)
-
+  // Open the Cc/Bcc rows once when the draft arrives with such recipients
+  // (reply all, restored draft); the user can still toggle them afterwards.
+  const hasShownExistingRecipients = React.useRef(false)
   React.useEffect(() => {
-    if (hasInitializedRecipients.current) return
-    if (
-      !toRecipients?.length &&
-      !ccRecipients?.length &&
-      !bccRecipients?.length
-    )
-      return
-    hasInitializedRecipients.current = true
-    setToTags(
-      toRecipients?.map((r: MailComposeRecipient) => ({
-        id: createClientId(),
-        value: r.email,
-        name: r.name,
-      }))
-    )
-    setCcTags(
-      ccRecipients?.map((r: MailComposeRecipient) => ({
-        id: createClientId(),
-        value: r.email,
-        name: r.name,
-      }))
-    )
-    setBccTags(
-      bccRecipients?.map((r: MailComposeRecipient) => ({
-        id: createClientId(),
-        value: r.email,
-        name: r.name,
-      }))
-    )
-    if (ccRecipients?.length > 0) setShowCc(true)
-    if (bccRecipients?.length > 0) setShowBcc(true)
-  }, [toRecipients, ccRecipients, bccRecipients])
+    if (hasShownExistingRecipients.current) return
+    if (!toTags.length && !ccTags.length && !bccTags.length) return
+    hasShownExistingRecipients.current = true
+    if (ccTags.length > 0) setShowCc(true)
+    if (bccTags.length > 0) setShowBcc(true)
+  }, [toTags.length, ccTags.length, bccTags.length])
 
-  const dispatchRecipients = useCallback(
-    (field: RecipientField, tags: RecipientTag[]) => {
-      dispatch(
-        updateRecipients({
-          draftId,
-          field,
-          recipients: tags.map((tag) => ({
-            email: tag.value,
-            ...(tag.name ? { name: tag.name } : {}),
-          })),
-        })
-      )
+  const makeHandlers = useCallback(
+    (field: RecipientField, recipients: MailComposeRecipient[] | undefined) => {
+      const current = recipients ?? []
+      const save = (next: MailComposeRecipient[]) =>
+        dispatch(updateRecipients({ draftId, field, recipients: next }))
+      return {
+        handleAdd: (value: string, suggestion?: RecipientSuggestionItem) => {
+          const trimmed = value.trim()
+          if (!trimmed || !isValidEmail(trimmed)) return
+          if (
+            current.some(
+              (recipient) =>
+                recipient.email.toLowerCase() === trimmed.toLowerCase()
+            )
+          )
+            return
+          save([
+            ...current,
+            {
+              email: trimmed,
+              ...(suggestion?.name ? { name: suggestion.name } : {}),
+            },
+          ])
+        },
+        remove: (index: number) => save(current.filter((_, i) => i !== index)),
+      }
     },
     [draftId, dispatch]
   )
 
-  const makeHandlers = useCallback(
-    (
-      field: RecipientField,
-      tags: RecipientTag[],
-      setTags: React.Dispatch<React.SetStateAction<RecipientTag[]>>
-    ) => ({
-      handleAdd: (value: string, suggestion?: RecipientSuggestionItem) => {
-        const trimmed = value.trim()
-        if (!trimmed || !isValidEmail(trimmed)) return
-        if (
-          tags.some((tag) => tag.value.toLowerCase() === trimmed.toLowerCase())
-        )
-          return
-        const newTags = [
-          ...tags,
-          { id: createClientId(), value: trimmed, name: suggestion?.name },
-        ]
-        setTags(newTags)
-        dispatchRecipients(field, newTags)
-      },
-      remove: (index: number) => {
-        const newTags = tags.filter((_, i) => i !== index)
-        setTags(newTags)
-        dispatchRecipients(field, newTags)
-      },
-    }),
-    [dispatchRecipients]
-  )
-
-  const toHandlers = makeHandlers('to', toTags, setToTags)
-  const ccHandlers = makeHandlers('cc', ccTags, setCcTags)
-  const bccHandlers = makeHandlers('bcc', bccTags, setBccTags)
+  const toHandlers = makeHandlers('to', toRecipients)
+  const ccHandlers = makeHandlers('cc', ccRecipients)
+  const bccHandlers = makeHandlers('bcc', bccRecipients)
 
   const totalRecipients = toTags.length + ccTags.length + bccTags.length
   const isOverLimit =
@@ -303,7 +288,7 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
             <PenLine className="h-3.5 w-3.5 shrink-0" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="z-[9999] min-w-[160px]">
+        <DropdownMenuContent align="start" className="min-w-[160px]">
           <DropdownMenuGroup>
             <DropdownMenuItem
               onSelect={() => handleSignatureSelect(null)}
@@ -338,15 +323,17 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
   const renderFromField = () => {
     const displayedFrom = selectedFrom || defaultFrom
     if (!identitiesEnabled || memoizedIdentities.length <= 1) {
-      return <Input value={displayedFrom} readOnly className="min-w-3xl" />
+      return (
+        <Input value={displayedFrom} readOnly className={PLAIN_FIELD_CLASS} />
+      )
     }
     if (!customFromEnabled) {
       return (
         <Select value={displayedFrom} disabled>
-          <SelectTrigger className="min-w-3xl">
+          <SelectTrigger className={PLAIN_FIELD_CLASS}>
             <SelectValue />
           </SelectTrigger>
-          <SelectContent className="z-[9999]">
+          <SelectContent>
             <SelectItem value={displayedFrom}>{displayedFrom}</SelectItem>
           </SelectContent>
         </Select>
@@ -354,10 +341,10 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
     }
     return (
       <Select value={selectedFrom} onValueChange={setSelectedFrom}>
-        <SelectTrigger className="min-w-3xl">
+        <SelectTrigger className={PLAIN_FIELD_CLASS}>
           <SelectValue placeholder={t('from.string')} />
         </SelectTrigger>
-        <SelectContent className="z-[9999]">
+        <SelectContent>
           {memoizedIdentities.map((identity) => (
             <SelectItem key={identity.mail} value={identity.mail}>
               {identity.name
@@ -370,38 +357,46 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
     )
   }
 
+  const renderRecipientField = (
+    field: RecipientField,
+    tags: RecipientTag[],
+    handlers: ReturnType<typeof makeHandlers>
+  ) => (
+    <RecipientAutocompleteField
+      tags={tags}
+      remove={handlers.remove}
+      handleAdd={handlers.handleAdd}
+      name={field}
+      placeholder={t(`${field}.string`)}
+      disabled={isOverLimit}
+      loadingLabel={t('recipient_search.loading.string')}
+      getAddDirectLabel={(email) =>
+        t('recipient_search.add_direct.string', { email })
+      }
+      onAddDirect={saveAsContact}
+      variant="plain"
+      showContactCard
+    />
+  )
+
   return (
     <>
-      <div className="flex justify-between gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
-          <div className="min-w-0 flex-1">{renderFromField()}</div>
-          <div className="flex-shrink-0">{renderSignatureButton()}</div>
-        </div>
+      <div className={ROW_CLASS}>
+        <div className="min-w-0 flex-1">{renderFromField()}</div>
+        <div className="flex-shrink-0">{renderSignatureButton()}</div>
       </div>
 
       {isOverLimit && (
-        <p className="text-destructive mt-1 ml-2 text-xs">
+        <p className="text-destructive border-b px-6 py-1 text-xs">
           {t('max_recipients_reached.string', { max: mailMaxRecipient })}
         </p>
       )}
-      <div className="mt-2 flex w-full items-stretch">
-        <div className="min-w-0 flex-1">
-          <RecipientAutocompleteField
-            tags={toTags}
-            remove={toHandlers.remove}
-            handleAdd={toHandlers.handleAdd}
-            name="to"
-            placeholder={t('to.string')}
-            disabled={isOverLimit}
-            loadingLabel={t('recipient_search.loading.string')}
-            getAddDirectLabel={(email) =>
-              t('recipient_search.add_direct.string', { email })
-            }
-            onAddDirect={saveAsContact}
-          />
+      <div className={ROW_CLASS}>
+        <div className="-ml-2 min-w-0 flex-1">
+          {renderRecipientField('to', toTags, toHandlers)}
         </div>
 
-        <div className="flex items-center gap-2 px-2">
+        <div className="flex shrink-0 items-center gap-2">
           <span
             role="button"
             tabIndex={0}
@@ -424,47 +419,27 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
       </div>
 
       {showCc && (
-        <div className="mt-2">
-          <RecipientAutocompleteField
-            tags={ccTags}
-            remove={ccHandlers.remove}
-            handleAdd={ccHandlers.handleAdd}
-            name="cc"
-            placeholder={t('cc.string')}
-            disabled={isOverLimit}
-            loadingLabel={t('recipient_search.loading.string')}
-            getAddDirectLabel={(email) =>
-              t('recipient_search.add_direct.string', { email })
-            }
-            onAddDirect={saveAsContact}
-          />
+        <div className={ROW_CLASS}>
+          <div className="-ml-2 min-w-0 flex-1">
+            {renderRecipientField('cc', ccTags, ccHandlers)}
+          </div>
         </div>
       )}
 
       {showBcc && (
-        <div className="mt-2">
-          <RecipientAutocompleteField
-            tags={bccTags}
-            remove={bccHandlers.remove}
-            handleAdd={bccHandlers.handleAdd}
-            name="bcc"
-            placeholder={t('bcc.string')}
-            disabled={isOverLimit}
-            loadingLabel={t('recipient_search.loading.string')}
-            getAddDirectLabel={(email) =>
-              t('recipient_search.add_direct.string', { email })
-            }
-            onAddDirect={saveAsContact}
-          />
+        <div className={ROW_CLASS}>
+          <div className="-ml-2 min-w-0 flex-1">
+            {renderRecipientField('bcc', bccTags, bccHandlers)}
+          </div>
         </div>
       )}
 
-      <div className="mt-2 flex w-full items-center">
+      <div className={ROW_CLASS}>
         <Input
           value={subject}
           onChange={handleSubjectChange}
           placeholder={t('subject.string')}
-          className="w-full rounded-tr-none rounded-br-none border-r-0"
+          className={PLAIN_FIELD_CLASS}
         />
       </div>
     </>

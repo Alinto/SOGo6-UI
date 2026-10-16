@@ -25,6 +25,9 @@ interface ComposeSendAlertsProps {
   emptyContentAlert: EmptyContentAlert | null
   onEmptyContentAlertOpenChange: (open: boolean) => void
   onConfirmSendAnyway: () => void
+  showDiscardConfirm: boolean
+  onDiscardConfirmOpenChange: (open: boolean) => void
+  onConfirmDiscard: () => void
 }
 
 export function ComposeSendAlerts({
@@ -33,6 +36,9 @@ export function ComposeSendAlerts({
   emptyContentAlert,
   onEmptyContentAlertOpenChange,
   onConfirmSendAnyway,
+  showDiscardConfirm,
+  onDiscardConfirmOpenChange,
+  onConfirmDiscard,
 }: ComposeSendAlertsProps) {
   const t = useTranslations('COMPOSE')
 
@@ -42,7 +48,7 @@ export function ComposeSendAlerts({
         open={showNoRecipientAlert}
         onOpenChange={onNoRecipientAlertOpenChange}
       >
-        <AlertDialogContent className="z-9999">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
               {t('no_recipient_alert.title.string')}
@@ -52,7 +58,9 @@ export function ComposeSendAlerts({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => onNoRecipientAlertOpenChange(false)}>
+            <AlertDialogAction
+              onClick={() => onNoRecipientAlertOpenChange(false)}
+            >
               {t('no_recipient_alert.ok.string')}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -63,7 +71,7 @@ export function ComposeSendAlerts({
         open={emptyContentAlert !== null}
         onOpenChange={onEmptyContentAlertOpenChange}
       >
-        <AlertDialogContent className="z-9999">
+        <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
               {emptyContentAlert &&
@@ -84,6 +92,33 @@ export function ComposeSendAlerts({
             </AlertDialogCancel>
             <AlertDialogAction onClick={onConfirmSendAnyway}>
               {t('empty_content_alert.send.string')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={showDiscardConfirm}
+        onOpenChange={onDiscardConfirmOpenChange}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t('discard_draft_confirm.title.string')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('discard_draft_confirm.content.string')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t('discard_draft_confirm.cancel.string')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/70"
+              onClick={onConfirmDiscard}
+            >
+              {t('discard_draft_confirm.confirm.string')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
