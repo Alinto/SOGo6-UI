@@ -141,7 +141,7 @@ NEXT_PUBLIC_ADMIN_DOMAINS=admin.localhost
 
 ## Docker deployment
 
-Production image: root **`Dockerfile`** (`output: 'standalone'`, Node 24, port **3000**).
+Production image: root **`Dockerfile`** (`output: 'standalone'`, Node 24.22.1, port **3000**).
 
 > **`Dockerfile.static`** is a legacy static-export experiment and is **not** compatible with the current app (proxy, `/env`, `/fakeApi`). Use the main **`Dockerfile`** only.
 
@@ -153,7 +153,7 @@ Environment files (`.env.development`, `.env.local`) are **not** baked into the 
 docker build -t sogo-ui .
 ```
 
-Optional: `docker build --build-arg NODE_VERSION=24 -t sogo-ui .`
+Optional: `docker build --build-arg NODE_VERSION=24.22.1 -t sogo-ui .`
 
 ### Required runtime variables
 

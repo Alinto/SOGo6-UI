@@ -1,5 +1,5 @@
-# Pin Node LTS (Active LTS) — same major everywhere (build + runtime).
-ARG NODE_VERSION=24
+# Pin patched Node 24 LTS (24.22.1) — same version for build and runtime.
+ARG NODE_VERSION=24.22.1
 
 # Dependencies
 FROM node:${NODE_VERSION}-alpine AS deps
