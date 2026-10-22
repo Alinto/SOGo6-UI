@@ -135,7 +135,10 @@ export function LoginForm({
     setServerError(null)
 
     try {
-      const result = await getAuthMode({ username: data.email }).unwrap()
+      const result = await getAuthMode({
+        username: data.email,
+        redirect: `${window.location.origin}/${locale}/auth/login/sso`,
+      }).unwrap()
       const { kind, location } = result.data
 
       switch (kind) {
@@ -147,7 +150,7 @@ export function LoginForm({
             `/auth/login/pwd?email=${encodeURIComponent(data.email)}&mode=ldap`
           )
           break
-        case 'sso':
+        case 'openid':
           window.location.href = location
           break
         default:
