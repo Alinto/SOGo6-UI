@@ -1,8 +1,5 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -22,8 +19,11 @@ import {
   useFormField,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { useCreateFolderMutation } from '../../store/mails-api'
 
 const createFolderSchema = z.object({
@@ -65,7 +65,7 @@ function CreateFolderNameFieldMessage() {
   return (
     <p
       id={formMessageId}
-      className="text-[0.8rem] font-medium text-destructive"
+      className="text-destructive text-[0.8rem] font-medium"
       role="alert"
     >
       {text}
@@ -140,7 +140,6 @@ export function CreateFolderDialog({
                   <FormControl>
                     <Input
                       {...field}
-                      autoFocus
                       disabled={isLoading}
                       placeholder={t(
                         'folders.actions.new_subfolder_dialog.placeholder.string'

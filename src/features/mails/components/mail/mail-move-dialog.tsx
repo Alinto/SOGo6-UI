@@ -127,7 +127,6 @@ export default function MailMoveDialog({
 
         <div className="flex flex-col gap-2">
           <Input
-            autoFocus
             value={newFolderName}
             onChange={(e) => setNewFolderName(e.target.value)}
             placeholder={t('move_dialog.new_folder_placeholder.string')}

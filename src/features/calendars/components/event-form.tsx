@@ -622,6 +622,7 @@ export function EventForm({
                 <FormControl>
                   <Input
                     placeholder={t('eventForm.title.placeholder.string')}
+                    autoFocus={!event}
                     {...field}
                   />
                 </FormControl>

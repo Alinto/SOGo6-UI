@@ -1,8 +1,8 @@
 'use client'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { setMailLayout } from '@/features/mails/store/mail-layout-slice'
 import type { MailLayoutMode } from '@/features/mails/store/mail-layout-slice'
+import { setMailLayout } from '@/features/mails/store/mail-layout-slice'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
@@ -20,7 +20,9 @@ const ListFilter: React.FC = () => {
   const filter = searchParams.get('filter') || 'all'
   const isMobile = useIsMobile()
   const dispatch = useAppDispatch()
-  const mailLayoutMode = useAppSelector((state: RootState) => state.mailLayout.mode)
+  const mailLayoutMode = useAppSelector(
+    (state: RootState) => state.mailLayout.mode
+  )
 
   return (
     <div className="flex flex-col items-start gap-1">
@@ -76,11 +78,6 @@ const ListFilter: React.FC = () => {
               {t('filter.attachments.string')}
             </ToggleGroupItem>
           </ToggleGroup>
-          {filter !== 'all' && (
-            <p className="text-muted-foreground max-w-xs text-xs">
-              {t('filter.client_scope_notice.string')}
-            </p>
-          )}
         </div>
 
         {!isMobile && (
@@ -94,10 +91,7 @@ const ListFilter: React.FC = () => {
               }
             }}
           >
-            <ToggleGroupItem
-              value="full"
-              aria-label={t('layout.full.string')}
-            >
+            <ToggleGroupItem value="full" aria-label={t('layout.full.string')}>
               <TooltipWrapper content={t('layout.full.string')}>
                 <Maximize2 size={16} />
               </TooltipWrapper>

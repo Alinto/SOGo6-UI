@@ -46,6 +46,7 @@ const calendarDefaultOptions = [
 
 const LabelsForm: React.FC<Props> = ({ data, update }) => {
   const t = useTranslations('US_CALENDARS')
+  const formT = useTranslations('FORM_COMMONS')
 
   const calendarDaysShowedOptions = useMemo(
     () =>
@@ -439,9 +440,12 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
 
         <div className="mt-6">
           <FixedFormButtonGroup
-            onReset={form.reset}
+            onReset={() => form.reset()}
             disableReset={!isDirty || isSubmitting}
             disableSubmit={!isDirty || isSubmitting}
+            showLabels
+            resetLabel={formT('reset.default.string')}
+            submitLabel={formT('save.default.string')}
           />
         </div>
       </form>

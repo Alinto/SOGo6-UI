@@ -401,7 +401,7 @@ const SidebarHeader = React.forwardRef<
       {...props}
     >
       {open && (
-        <div className="flex items-center justify-center gap-4">
+        <div className="flex items-center justify-center gap-4 px-2 py-3">
           <Link href="/u/0/INBOX" aria-label="Inbox" title="Inbox">
             <Image
               alt="App Logo"

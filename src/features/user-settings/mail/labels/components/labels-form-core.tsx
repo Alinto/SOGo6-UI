@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/form'
 import FixedFormButtonGroup from '@/components/ui/forms/fixed-form-button-group'
 import { Input } from '@/components/ui/input'
+import { createClientId } from '@/lib/utils/create-client-id'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Trash2 } from 'lucide-react'
-import { createClientId } from '@/lib/utils/create-client-id'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
@@ -140,6 +140,9 @@ const MailLabelsSettingsForm: React.FC<MailLabelsSettingsFormProps> = ({
           onReset={handleReset}
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}
+          showLabels
+          resetLabel={formT('reset.default.string')}
+          submitLabel={formT('save.default.string')}
         />
       </form>
     </Form>
