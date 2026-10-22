@@ -8,7 +8,7 @@
       "USER_ID": "1000",
       "GROUP_ID": "1000",
       "USERNAME": "vscode",
-      "NODE_VERSION": "22"
+      "NODE_VERSION": "24.22.1"
     }
   },
   "workspaceFolder": "/SOGo",
