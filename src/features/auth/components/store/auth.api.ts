@@ -12,7 +12,7 @@ export interface LoginResponse {
 }
 
 export interface AuthModeResponse {
-  data: { kind: 'plain' | 'sso' | 'ldap'; location: string }
+  data: { kind: 'plain' | 'ldap' | 'openid'; location: string }
   error_code: string
   error_msg: string
 }
@@ -39,10 +39,14 @@ export const authApi = apiSlice.injectEndpoints({
       }),
     }),
 
-    getAuthMode: builder.query<AuthModeResponse, { username: string }>({
-      query: ({ username }) => ({
+    // redirect: page where the API sends the user back after a SSO login (see login-sso-callback)
+    getAuthMode: builder.query<
+      AuthModeResponse,
+      { username: string; redirect?: string }
+    >({
+      query: ({ username, redirect }) => ({
         url: 'auth/mode',
-        params: { username },
+        params: { username, redirect },
       }),
       // Pas de cache — l'email change à chaque tentative de login
       keepUnusedDataFor: 0,

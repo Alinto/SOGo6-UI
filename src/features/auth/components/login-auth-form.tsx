@@ -6,6 +6,7 @@ import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
 import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import { decodeJwtPayload } from '@/features/auth/utils'
 import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
 import { useEnvVars } from '@/lib/env-service'
@@ -20,19 +21,6 @@ import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-
-interface JwtPayload {
-  uid: string
-  cn: string
-  email: string
-}
-
-function decodeJwtPayload(token: string): JwtPayload {
-  const [, payloadB64] = token.split('.')
-  // Convertir base64url → base64 standard
-  const base64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
-  return JSON.parse(atob(base64)) as JwtPayload
-}
 
 const createPasswordSchema = (t: (key: string) => string) =>
   z.object({
