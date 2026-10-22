@@ -375,10 +375,11 @@ describe('LabelsForm', () => {
       expect(useTranslations).toHaveBeenCalledWith('US_ADDRESS_BOOKS')
     })
 
-    it('only calls useTranslations with the US_ADDRESS_BOOKS namespace', () => {
+    it('only calls useTranslations with the expected namespaces', () => {
       render(<LabelsForm data={undefined} update={mockUpdate} />)
       const calls = (useTranslations as jest.Mock).mock.calls.map((c) => c[0])
-      expect(calls.every((ns: string) => ns === 'US_ADDRESS_BOOKS')).toBe(true)
+      const allowed = ['US_ADDRESS_BOOKS', 'FORM_COMMONS']
+      expect(calls.every((ns: string) => allowed.includes(ns))).toBe(true)
     })
   })
 

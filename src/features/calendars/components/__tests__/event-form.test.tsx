@@ -104,6 +104,19 @@ describe('EventForm', () => {
       ).toBeInTheDocument()
     })
 
+    it('focuses the title field when creating an event', () => {
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          calendars={mockCalendars}
+          onCancel={onCancel}
+        />
+      )
+      expect(
+        screen.getByRole('textbox', { name: 'eventForm.title.label.string' })
+      ).toHaveFocus()
+    })
+
     it('renders calendar selector when calendars are provided', () => {
       render(
         <EventForm
@@ -337,6 +350,20 @@ describe('EventForm', () => {
       expect(
         screen.queryByRole('button', { name: 'eventForm.create.string' })
       ).not.toBeInTheDocument()
+    })
+
+    it('does not focus the title field when editing an event', () => {
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          calendars={mockCalendars}
+          event={mockEvent}
+          onCancel={onCancel}
+        />
+      )
+      expect(
+        screen.getByRole('textbox', { name: 'eventForm.title.label.string' })
+      ).not.toHaveFocus()
     })
 
     it('populates form fields with event data', () => {

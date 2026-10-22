@@ -37,6 +37,7 @@ interface Props {
 
 export function GeneralSettingsForm({ data, update }: Props) {
   const t = useTranslations('US_GENERAL')
+  const formT = useTranslations('FORM_COMMONS')
   const t_common = useTranslations('COMMON')
 
   const today = new Date()
@@ -324,9 +325,12 @@ export function GeneralSettingsForm({ data, update }: Props) {
         </div>
         <div className="mt-6">
           <FixedFormButtonGroup
-            onReset={form.reset}
+            onReset={() => form.reset()}
             disableReset={!isDirty || isSubmitting}
             disableSubmit={!isDirty || isSubmitting}
+            showLabels
+            resetLabel={formT('reset.default.string')}
+            submitLabel={formT('save.default.string')}
           />
         </div>
       </form>

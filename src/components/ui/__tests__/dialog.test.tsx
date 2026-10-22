@@ -84,3 +84,32 @@ describe('DialogOverlay Component', () => {
     expect(overlay).toBeInTheDocument()
   })
 })
+
+describe('DialogContent auto focus', () => {
+  it('focuses the first field when the dialog opens', () => {
+    render(
+      <Dialog defaultOpen>
+        <DialogContent>
+          <DialogTitle>Test Dialog</DialogTitle>
+          <input aria-label="first" />
+          <input aria-label="second" />
+        </DialogContent>
+      </Dialog>
+    )
+
+    expect(screen.getByLabelText('first')).toHaveFocus()
+  })
+
+  it('respects an onOpenAutoFocus handler that prevents the default', () => {
+    render(
+      <Dialog defaultOpen>
+        <DialogContent onOpenAutoFocus={(event) => event.preventDefault()}>
+          <DialogTitle>Test Dialog</DialogTitle>
+          <input aria-label="first" />
+        </DialogContent>
+      </Dialog>
+    )
+
+    expect(screen.getByLabelText('first')).not.toHaveFocus()
+  })
+})

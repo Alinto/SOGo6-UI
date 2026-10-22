@@ -194,6 +194,9 @@ function ExternalAccountForm({
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}
           errors={form.formState.errors}
+          showLabels
+          resetLabel={t_commons('reset.default.string')}
+          submitLabel={t_commons('save.default.string')}
         />
       </form>
     </Form>

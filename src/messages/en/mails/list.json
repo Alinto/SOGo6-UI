@@ -56,10 +56,6 @@
       }
     },
     "filter": {
-      "client_scope_notice": {
-        "string": "Filters apply only to messages loaded on this page.",
-        "description": "Hint that URL filters are client-side on the current server page"
-      },
       "all": {
         "string": "All"
       },

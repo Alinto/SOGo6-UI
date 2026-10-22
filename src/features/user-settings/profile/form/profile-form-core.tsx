@@ -176,6 +176,9 @@ const ProfileFormCore = () => {
             isUpdatingPreferences
           }
           errors={form.formState.errors}
+          showLabels
+          resetLabel={formT('reset.default.string')}
+          submitLabel={formT('save.default.string')}
         />
       </form>
     </Form>

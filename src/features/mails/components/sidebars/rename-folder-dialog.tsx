@@ -1,8 +1,5 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -25,10 +22,13 @@ import { Input } from '@/components/ui/input'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import { useRenameFolderMutation } from '../../store/mails-api'
 
 const renameFolderSchema = z.object({
@@ -72,7 +72,7 @@ function RenameFolderNameFieldMessage() {
   return (
     <p
       id={formMessageId}
-      className="text-[0.8rem] font-medium text-destructive"
+      className="text-destructive text-[0.8rem] font-medium"
       role="alert"
     >
       {text}
@@ -186,7 +186,6 @@ export function RenameFolderDialog({
                   <FormControl>
                     <Input
                       {...field}
-                      autoFocus
                       disabled={isLoading}
                       placeholder={t(
                         'folders.actions.rename_dialog.placeholder.string'

@@ -108,6 +108,15 @@ describe('CreateFolderDialog', () => {
       })
       expect(submit).toBeDisabled()
     })
+
+    it('should focus the name input when opened', () => {
+      render(<CreateFolderDialog {...defaultProps} />)
+      expect(
+        screen.getByPlaceholderText(
+          'folders.actions.new_subfolder_dialog.placeholder.string'
+        )
+      ).toHaveFocus()
+    })
   })
 
   describe('integration', () => {

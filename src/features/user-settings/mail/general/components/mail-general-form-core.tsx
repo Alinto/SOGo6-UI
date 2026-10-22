@@ -33,6 +33,7 @@ interface Props {
 
 const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
   const t = useTranslations('US_MAIL_GENERAL')
+  const formT = useTranslations('FORM_COMMONS')
 
   const fetchedData = data ? mapApiToMailGeneralSettings(data) : undefined
 
@@ -540,9 +541,12 @@ const MailGeneralSettingsForm: React.FC<Props> = ({ data, update }) => {
           />
         </div>
         <FixedFormButtonGroup
-          onReset={form.reset}
+          onReset={() => form.reset()}
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}
+          showLabels
+          resetLabel={formT('reset.default.string')}
+          submitLabel={formT('save.default.string')}
         />
       </form>
     </Form>

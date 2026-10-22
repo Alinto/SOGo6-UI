@@ -36,6 +36,7 @@ interface Props {
 
 const LabelsForm: React.FC<Props> = ({ data, update }) => {
   const t = useTranslations('US_MAIL_CATEGORY_LABELS')
+  const formT = useTranslations('FORM_COMMONS')
   const schema = createSchema(t)
 
   const fetchedData = data ? mapApiToMailCategorySettings(data) : undefined
@@ -134,9 +135,12 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
           ))}
         </div>
         <FixedFormButtonGroup
-          onReset={form.reset}
+          onReset={() => form.reset()}
           disableReset={!isDirty || isSubmitting}
           disableSubmit={!isDirty || isSubmitting}
+          showLabels
+          resetLabel={formT('reset.default.string')}
+          submitLabel={formT('save.default.string')}
         />
       </form>
     </Form>

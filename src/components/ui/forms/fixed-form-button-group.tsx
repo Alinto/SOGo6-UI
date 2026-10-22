@@ -22,6 +22,13 @@ interface FixedFormButtonGroupProps {
    * @default 'floating'
    */
   mode?: 'floating' | 'inline'
+
+  /**
+   * In 'floating' mode, render rectangular buttons with a text label
+   * instead of round icon-only buttons.
+   * @default false
+   */
+  showLabels?: boolean
 }
 
 const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
@@ -33,8 +40,11 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
   isLoading = false,
   errors,
   mode = 'floating',
+  showLabels = false,
 }) => {
   const isInline = mode === 'inline'
+  const isLabelledFloating = !isInline && showLabels
+  const isIconOnly = !isInline && !showLabels
   const hasErrors = errors && Object.keys(errors).length > 0
   const t = useTranslations('COMPONENTS')
 
@@ -50,17 +60,18 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
       <Button
         className={cn(
           'shadow-lg',
-          isInline ? 'gap-2 rounded-lg px-6 py-3' : 'h-14 w-14 rounded-full'
+          isInline && 'gap-2 rounded-lg px-6 py-3',
+          isIconOnly && 'h-14 w-14 rounded-full'
         )}
-        size={isInline ? 'default' : 'icon'}
+        size={isIconOnly ? 'icon' : 'default'}
         type="button"
         disabled={disableReset || isLoading}
         onClick={onReset}
         variant="outline"
       >
-        <Undo size={isInline ? 18 : 24} />
-        {isInline && <span>{resetLabel}</span>}
-        {!isInline && (
+        {!isLabelledFloating && <Undo size={isInline ? 18 : 24} />}
+        {!isIconOnly && <span>{resetLabel}</span>}
+        {isIconOnly && (
           <AccessibleIcon label={resetLabel}>
             <span className="sr-only">{resetLabel}</span>
           </AccessibleIcon>
@@ -81,20 +92,21 @@ const FixedFormButtonGroup: React.FC<FixedFormButtonGroupProps> = ({
         <Button
           className={cn(
             'shadow-lg',
-            isInline ? 'gap-2 rounded-lg px-6 py-3' : 'h-14 w-14 rounded-full'
+            isInline && 'gap-2 rounded-lg px-6 py-3',
+            isIconOnly && 'h-14 w-14 rounded-full'
           )}
-          size={isInline ? 'default' : 'icon'}
+          size={isIconOnly ? 'icon' : 'default'}
           type="submit"
           disabled={disableSubmit || isLoading}
           aria-busy={isLoading}
         >
           {isLoading ? (
-            <Loader2 size={isInline ? 18 : 24} className="animate-spin" />
+            <Loader2 size={isIconOnly ? 24 : 18} className="animate-spin" />
           ) : (
-            <Save size={isInline ? 18 : 24} />
+            !isLabelledFloating && <Save size={isInline ? 18 : 24} />
           )}
-          {isInline && <span>{submitLabel}</span>}
-          {!isInline && (
+          {!isIconOnly && <span>{submitLabel}</span>}
+          {isIconOnly && (
             <AccessibleIcon label={submitLabel}>
               <span className="sr-only">{submitLabel}</span>
             </AccessibleIcon>

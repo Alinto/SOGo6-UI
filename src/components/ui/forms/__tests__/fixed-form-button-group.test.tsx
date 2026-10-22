@@ -81,4 +81,51 @@ describe('FixedFormButtonGroup', () => {
     expect(screen.getByText('Cancel')).toBeInTheDocument()
     expect(screen.getByText('Confirm')).toBeInTheDocument()
   })
+
+  it('renders floating labelled buttons without round style when showLabels is true', () => {
+    render(
+      <FixedFormButtonGroup
+        onReset={mockReset}
+        disableReset={false}
+        disableSubmit={false}
+        showLabels
+        resetLabel="Reset"
+        submitLabel="Save"
+      />
+    )
+
+    const resetButton = screen.getByRole('button', { name: 'Reset' })
+    const submitButton = screen.getByRole('button', { name: 'Save' })
+    expect(screen.getByText('Reset')).toBeVisible()
+    expect(screen.getByText('Save')).toBeVisible()
+    expect(resetButton).not.toHaveClass('rounded-full')
+    expect(submitButton).not.toHaveClass('rounded-full')
+    // Same size as the other form buttons (default Button size)
+    expect(resetButton).toHaveClass('h-9', 'px-4')
+    expect(submitButton).toHaveClass('h-9', 'px-4')
+    expect(resetButton.querySelector('svg')).toBeNull()
+    expect(submitButton.querySelector('svg')).toBeNull()
+    expect(resetButton.parentElement).toHaveClass('fixed')
+  })
+
+  it('shows a spinner next to the label while loading when showLabels is true', () => {
+    render(
+      <FixedFormButtonGroup
+        onReset={mockReset}
+        disableReset={false}
+        disableSubmit={false}
+        isLoading
+        showLabels
+        resetLabel="Reset"
+        submitLabel="Save"
+      />
+    )
+
+    const submitButton = screen.getByRole('button', { name: 'Save' })
+    expect(screen.getByText('Save')).toBeVisible()
+    expect(submitButton).toBeDisabled()
+    expect(submitButton).toHaveAttribute('aria-busy', 'true')
+    expect(submitButton.querySelector('svg.animate-spin')).not.toBeNull()
+    expect(screen.getByRole('button', { name: 'Reset' })).toBeDisabled()
+  })
 })
