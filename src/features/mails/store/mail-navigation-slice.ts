@@ -12,6 +12,8 @@ interface MailNavigationState {
   page: number
   totalPages: number
   skipFolderFetch: boolean
+  /** True while a reload asked by the user (Refresh, folder change) is in flight. */
+  isManualRefresh: boolean
 }
 
 const initialState: MailNavigationState = {
@@ -21,6 +23,7 @@ const initialState: MailNavigationState = {
   page: 1,
   totalPages: 1,
   skipFolderFetch: false,
+  isManualRefresh: false,
 }
 
 const mailNavigationSlice = createSlice({
@@ -53,14 +56,30 @@ const mailNavigationSlice = createSlice({
     setSkipFolderFetch: (state, action: PayloadAction<boolean>) => {
       state.skipFolderFetch = action.payload
     },
+    setManualRefresh: (state, action: PayloadAction<boolean>) => {
+      state.isManualRefresh = action.payload
+    },
   },
 })
 
-export const { setMailNavigation, clearMailNavigation, setSkipFolderFetch } =
-  mailNavigationSlice.actions
+export const {
+  setMailNavigation,
+  clearMailNavigation,
+  setSkipFolderFetch,
+  setManualRefresh,
+} = mailNavigationSlice.actions
 
 export const selectSkipFolderFetch = (state: {
   mailNavigation: MailNavigationState
 }) => state.mailNavigation.skipFolderFetch
+
+/** `accountId/folder` of the last list shown (null before the first one). */
+export const selectMailNavigationFolderKey = (state: {
+  mailNavigation: MailNavigationState
+}) => state.mailNavigation.folderKey
+
+export const selectIsManualRefresh = (state: {
+  mailNavigation: MailNavigationState
+}) => state.mailNavigation.isManualRefresh
 
 export default mailNavigationSlice.reducer

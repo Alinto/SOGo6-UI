@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { act, render, screen } from '@testing-library/react'
 import MessagesList from '../list'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
@@ -192,11 +192,67 @@ describe('MessagesList', () => {
   it('renders skeleton when loading', () => {
     render(<MessagesList {...defaultProps} isLoading />)
     expect(screen.getByTestId('skeleton')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('loading.string')
   })
 
   it('renders items when not loading', () => {
     render(<MessagesList {...defaultProps} />)
     expect(screen.getAllByTestId('list-item')).toHaveLength(2)
+  })
+
+  describe('loading overlay while fetching', () => {
+    beforeEach(() => jest.useFakeTimers())
+    afterEach(() => jest.useRealTimers())
+
+    it('waits a short delay before showing the overlay', () => {
+      render(<MessagesList {...defaultProps} isFetching />)
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+      act(() => {
+        jest.advanceTimersByTime(299)
+      })
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    })
+
+    it('shows the overlay over the items after the delay', () => {
+      render(<MessagesList {...defaultProps} isFetching />)
+      act(() => {
+        jest.advanceTimersByTime(300)
+      })
+      expect(screen.getByRole('status')).toHaveTextContent('loading.string')
+      expect(screen.getAllByTestId('list-item')).toHaveLength(2)
+    })
+
+    it('never shows the overlay for a fetch shorter than the delay', () => {
+      const { rerender } = render(<MessagesList {...defaultProps} isFetching />)
+      act(() => {
+        jest.advanceTimersByTime(100)
+      })
+      rerender(<MessagesList {...defaultProps} isFetching={false} />)
+      act(() => {
+        jest.advanceTimersByTime(500)
+      })
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    })
+
+    it('hides the overlay as soon as the fetch ends', () => {
+      const { rerender } = render(<MessagesList {...defaultProps} isFetching />)
+      act(() => {
+        jest.advanceTimersByTime(300)
+      })
+      rerender(<MessagesList {...defaultProps} isFetching={false} />)
+      expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    })
+  })
+
+  it('shows the loading overlay at once while refreshing', () => {
+    render(<MessagesList {...defaultProps} isRefreshing />)
+    expect(screen.getByRole('status')).toHaveTextContent('loading.string')
+    expect(screen.getAllByTestId('list-item')).toHaveLength(2)
+  })
+
+  it('does not show the loading overlay when idle', () => {
+    render(<MessagesList {...defaultProps} />)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 
   it('renders empty state when no items', () => {

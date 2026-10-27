@@ -22,6 +22,7 @@ const mockBatchPhishing = jest.fn().mockResolvedValue(undefined)
 const mockBatchIllegal = jest.fn().mockResolvedValue(undefined)
 const mockBatchMarkImportant = jest.fn().mockResolvedValue(undefined)
 const mockBatchRemoveImportant = jest.fn().mockResolvedValue(undefined)
+const mockRefresh = jest.fn()
 const mockUseMailBatchActions = jest.fn(() => ({
   batchDelete: mockBatchDelete,
   batchMarkRead: mockBatchMarkRead,
@@ -58,6 +59,8 @@ jest.mock('@/features/mails/hooks/use-folder-messages', () => ({
       hasPreviousPage: false,
     },
     isLoading: false,
+    isRefreshing: false,
+    refresh: mockRefresh,
     currentPage: 1,
     params: {},
   })),
@@ -255,6 +258,13 @@ jest.mock('../list-sort', () => ({
   default: () => <div data-testid="list-sort" />,
 }))
 
+jest.mock('../list-refresh', () => ({
+  __esModule: true,
+  default: ({ onRefresh }: { onRefresh: () => void }) => (
+    <button data-testid="list-refresh" onClick={onRefresh} />
+  ),
+}))
+
 jest.mock('../list-pagination', () => ({
   __esModule: true,
   default: () => <div data-testid="list-pagination" />,
@@ -323,6 +333,12 @@ describe('ListToolbar', () => {
     it('renders ListFilter when not mobile', () => {
       render(<ListToolbar />)
       expect(screen.getByTestId('list-filter')).toBeInTheDocument()
+    })
+
+    it('refreshes the list on refresh click', () => {
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('list-refresh'))
+      expect(mockRefresh).toHaveBeenCalledTimes(1)
     })
 
     it('renders ListSort when not mobile', () => {

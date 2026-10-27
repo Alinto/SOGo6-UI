@@ -2,6 +2,7 @@ import '@testing-library/jest-dom'
 import reducer, {
   clearMailNavigation,
   setMailNavigation,
+  setManualRefresh,
   setSkipFolderFetch,
 } from '../mail-navigation-slice'
 
@@ -130,6 +131,17 @@ describe('mailNavigationSlice', () => {
       expect(state.skipFolderFetch).toBe(true)
       const cleared = reducer(state, setSkipFolderFetch(false))
       expect(cleared.skipFolderFetch).toBe(false)
+    })
+  })
+
+  describe('setManualRefresh', () => {
+    it('is false initially, then follows the payload', () => {
+      const initial = reducer(undefined, { type: '@@INIT' })
+      expect(initial.isManualRefresh).toBe(false)
+      const state = reducer(initial, setManualRefresh(true))
+      expect(state.isManualRefresh).toBe(true)
+      const cleared = reducer(state, setManualRefresh(false))
+      expect(cleared.isManualRefresh).toBe(false)
     })
   })
 })
