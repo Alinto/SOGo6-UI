@@ -12,6 +12,11 @@ const mockMailSearchState = {
   folder: null as string | null,
 }
 
+const mockNavState = {
+  manualRefreshId: null as string | null,
+  folderKey: null as string | null,
+}
+
 const mockUsePathname = jest.fn(() => '/en/u/0/INBOX')
 
 jest.mock('next/navigation', () => ({
@@ -26,7 +31,11 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => mockDispatch),
   useAppSelector: jest.fn((selector: (s: any) => any) =>
     selector({
-      mailNavigation: { skipFolderFetch: false },
+      mailNavigation: {
+        skipFolderFetch: false,
+        manualRefreshId: mockNavState.manualRefreshId,
+        folderKey: mockNavState.folderKey,
+      },
       mailSearch: mockMailSearchState,
     })
   ),
@@ -34,10 +43,33 @@ jest.mock('@/lib/redux/hooks', () => ({
 
 jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
   selectSkipFolderFetch: (state: any) => state.mailNavigation.skipFolderFetch,
+  selectIsManualRefresh: (state: any) =>
+    state.mailNavigation.manualRefreshId !== null,
+  selectMailNavigationFolderKey: (state: any) => state.mailNavigation.folderKey,
   setMailNavigation: jest.fn((payload) => ({
     type: 'mailNavigation/setMailNavigation',
     payload,
   })),
+  manualRefreshStarted: jest.fn((payload) => ({
+    type: 'mailNavigation/manualRefreshStarted',
+    payload,
+  })),
+  manualRefreshEnded: jest.fn((payload) => ({
+    type: 'mailNavigation/manualRefreshEnded',
+    payload,
+  })),
+}))
+
+jest.mock('@/lib/redux/api/api-slice', () => ({
+  MAILS_FOLDERS_SLICE: 'mails/folders',
+  apiSlice: {
+    util: {
+      invalidateTags: jest.fn((tags: unknown) => ({
+        type: 'invalidateTags',
+        tags,
+      })),
+    },
+  },
 }))
 
 jest.mock('@/features/mails/store/mail-search-slice', () => ({
@@ -61,6 +93,15 @@ jest.mock('../use-current-folder', () => ({
 import { useCurrentFolder } from '../use-current-folder'
 
 import { useFolderMessages } from '../use-folder-messages'
+
+const refreshStarted = () => ({
+  type: 'mailNavigation/manualRefreshStarted',
+  payload: expect.any(String),
+})
+const refreshEnded = () => ({
+  type: 'mailNavigation/manualRefreshEnded',
+  payload: expect.any(String),
+})
 
 const mockData = {
   mails: [
@@ -89,6 +130,8 @@ describe('useFolderMessages', () => {
       isLoading: false,
       isFetching: false,
     })
+    mockNavState.manualRefreshId = null
+    mockNavState.folderKey = null
     mockMailSearchState.isActive = false
     mockMailSearchState.accountId = null
     mockMailSearchState.params = null
@@ -101,7 +144,11 @@ describe('useFolderMessages', () => {
     const { useAppSelector } = require('@/lib/redux/hooks')
     useAppSelector.mockImplementation((selector: (s: any) => any) =>
       selector({
-        mailNavigation: { skipFolderFetch: false },
+        mailNavigation: {
+          skipFolderFetch: false,
+          manualRefreshId: mockNavState.manualRefreshId,
+          folderKey: mockNavState.folderKey,
+        },
         mailSearch: mockMailSearchState,
       })
     )
@@ -532,6 +579,309 @@ describe('useFolderMessages', () => {
 
       expect(result.current.isVirtualFolder).toBe(true)
       expect(result.current.isSearchActive).toBe(true)
+    })
+  })
+
+  describe('isUserFetching', () => {
+    const queryState = (state: Record<string, unknown>) =>
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: mockData,
+        currentData: mockData,
+        isLoading: false,
+        isFetching: false,
+        ...state,
+      })
+
+    it('is false when idle', () => {
+      queryState({})
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      expect(result.current.isUserFetching).toBe(false)
+    })
+
+    it('is true when loading new args (page, sort) with no data yet', () => {
+      queryState({ isFetching: true, currentData: undefined })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      expect(result.current.isUserFetching).toBe(true)
+    })
+
+    it('is false for a background refetch of the shown list', () => {
+      queryState({ isFetching: true })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      expect(result.current.isUserFetching).toBe(false)
+    })
+
+    it('exposes the Refresh flag as isRefreshing', () => {
+      mockNavState.manualRefreshId = 'refresh-1'
+      queryState({})
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      expect(result.current.isRefreshing).toBe(true)
+    })
+  })
+
+  describe('refresh', () => {
+    beforeEach(() => jest.useFakeTimers())
+    afterEach(() => jest.useRealTimers())
+
+    it('refetches the list, refreshes folders and flags a manual refresh', () => {
+      const refetch = jest.fn(() => Promise.resolve())
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+        refetch,
+      })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+
+      act(() => {
+        result.current.refresh()
+      })
+
+      expect(refetch).toHaveBeenCalledTimes(1)
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'invalidateTags',
+        tags: ['mails/folders'],
+      })
+      expect(mockDispatch).toHaveBeenCalledWith(refreshStarted())
+    })
+
+    it('keeps the flag for at least 300ms when the reload is instant', async () => {
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+        refetch: jest.fn(() => Promise.resolve()),
+      })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      act(() => {
+        result.current.refresh()
+      })
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(299)
+      })
+      expect(mockDispatch).not.toHaveBeenCalledWith(refreshEnded())
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(1)
+      })
+      expect(mockDispatch).toHaveBeenCalledWith(refreshEnded())
+    })
+
+    it('keeps the flag until a slow reload ends', async () => {
+      let finish: () => void = () => {}
+      const request = new Promise<void>((resolve) => {
+        finish = resolve
+      })
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+        refetch: jest.fn(() => request),
+      })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      act(() => {
+        result.current.refresh()
+      })
+
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(5000)
+      })
+      expect(mockDispatch).not.toHaveBeenCalledWith(refreshEnded())
+
+      await act(async () => {
+        finish()
+        await Promise.resolve()
+      })
+      expect(mockDispatch).toHaveBeenCalledWith(refreshEnded())
+    })
+
+    it('keeps the flag on until the last of two overlapping reloads ends', async () => {
+      const { default: navigationReducer } = jest.requireActual(
+        '@/features/mails/store/mail-navigation-slice'
+      )
+      const finishers: Array<() => void> = []
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+        refetch: jest.fn(
+          () => new Promise<void>((resolve) => finishers.push(resolve))
+        ),
+      })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      // Run the dispatched refresh actions through the real reducer.
+      const isRefreshing = () =>
+        mockDispatch.mock.calls
+          .map(([action]) => action)
+          .filter((action) => String(action.type).includes('manualRefresh'))
+          .reduce(navigationReducer, undefined).manualRefreshId !== null
+
+      act(() => {
+        result.current.refresh()
+      })
+      act(() => {
+        result.current.refresh()
+      })
+      await act(async () => {
+        await jest.advanceTimersByTimeAsync(300)
+      })
+
+      await act(async () => {
+        finishers[0]()
+        await jest.advanceTimersByTimeAsync(0)
+      })
+      expect(mockDispatch).toHaveBeenCalledWith(refreshEnded())
+      expect(isRefreshing()).toBe(true)
+
+      await act(async () => {
+        finishers[1]()
+        await jest.advanceTimersByTimeAsync(0)
+      })
+      expect(isRefreshing()).toBe(false)
+    })
+
+    it('does not throw when the query is skipped', () => {
+      const refetch = jest.fn(() => {
+        throw new Error('Cannot refetch a query that has not been started yet.')
+      })
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: undefined,
+        isFetching: false,
+        refetch,
+      })
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+
+      expect(() => result.current.refresh()).not.toThrow()
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'invalidateTags',
+        tags: ['mails/folders'],
+      })
+      expect(mockDispatch).not.toHaveBeenCalledWith(refreshStarted())
+    })
+  })
+
+  describe('folder switch', () => {
+    const mockQueryWithRefetch = () => {
+      const refetch = jest.fn(() => Promise.resolve())
+      mockGetFolderMessagesQuery.mockReturnValue({
+        data: mockData,
+        currentData: mockData,
+        isFetching: false,
+        refetch,
+      })
+      return refetch
+    }
+
+    it('reloads the list with the loading flag when another folder opens', () => {
+      mockNavState.folderKey = '0/INBOX'
+      const refetch = mockQueryWithRefetch()
+      renderHook(() =>
+        useFolderMessages({
+          folder: 'Sent',
+          accountId: '0',
+          reloadOnFolderSwitch: true,
+        })
+      )
+      expect(refetch).toHaveBeenCalledTimes(1)
+      expect(mockDispatch).toHaveBeenCalledWith(refreshStarted())
+    })
+
+    it('does not refresh the folder tree on a folder switch', () => {
+      mockNavState.folderKey = '0/INBOX'
+      mockQueryWithRefetch()
+      renderHook(() =>
+        useFolderMessages({
+          folder: 'Sent',
+          accountId: '0',
+          reloadOnFolderSwitch: true,
+        })
+      )
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        expect.objectContaining({ type: 'invalidateTags' })
+      )
+    })
+
+    it('does not reload when coming back to the same folder', () => {
+      mockNavState.folderKey = '0/INBOX'
+      const refetch = mockQueryWithRefetch()
+      renderHook(() =>
+        useFolderMessages({
+          folder: 'INBOX',
+          accountId: '0',
+          reloadOnFolderSwitch: true,
+        })
+      )
+      expect(refetch).not.toHaveBeenCalled()
+    })
+
+    it('does not reload on the first list shown', () => {
+      const refetch = mockQueryWithRefetch()
+      renderHook(() =>
+        useFolderMessages({
+          folder: 'INBOX',
+          accountId: '0',
+          reloadOnFolderSwitch: true,
+        })
+      )
+      expect(refetch).not.toHaveBeenCalled()
+    })
+
+    it('reloads only once per mount', () => {
+      mockNavState.folderKey = '0/INBOX'
+      const refetch = mockQueryWithRefetch()
+      const { rerender } = renderHook(() =>
+        useFolderMessages({
+          folder: 'Sent',
+          accountId: '0',
+          reloadOnFolderSwitch: true,
+        })
+      )
+      rerender()
+      rerender()
+      expect(refetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('does not reload while a search is active', () => {
+      mockNavState.folderKey = '0/INBOX'
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.folder = 'Sent'
+      const refetch = jest.fn(() => Promise.resolve())
+      mockSearchMailsQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+        refetch,
+      })
+      renderHook(() =>
+        useFolderMessages({
+          folder: 'Sent',
+          accountId: '0',
+          reloadOnFolderSwitch: true,
+        })
+      )
+      expect(refetch).not.toHaveBeenCalled()
+    })
+
+    it('does not reload on a folder switch without reloadOnFolderSwitch (toolbar)', () => {
+      mockNavState.folderKey = '0/INBOX'
+      const refetch = mockQueryWithRefetch()
+      renderHook(() => useFolderMessages({ folder: 'Sent', accountId: '0' }))
+      expect(refetch).not.toHaveBeenCalled()
+      expect(mockDispatch).not.toHaveBeenCalledWith(refreshStarted())
     })
   })
 })

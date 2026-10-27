@@ -2,7 +2,7 @@
 
 import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
-import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
+import ListSkeleton from '@/features/mails/components/skeletons/list-loading-skeleton'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -28,10 +28,12 @@ const Page: React.FC = () => {
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
 
-  const { data, isFetching, isLoading, error, refetch } = useFolderMessages({
-    folder: folderPath,
-    accountId: accountString,
-  })
+  const { data, isUserFetching, isRefreshing, isLoading, error, refetch } =
+    useFolderMessages({
+      folder: folderPath,
+      accountId: accountString,
+      reloadOnFolderSwitch: true,
+    })
 
   const { cachedMails, cachedAt, isShowingCache } = useOfflineMailList({
     accountId: accountString,
@@ -70,14 +72,13 @@ const Page: React.FC = () => {
           hasNextPage={false}
           hasPreviousPage={false}
           isLoading={false}
-          isFetching={false}
           hideToolbar
         />
       </div>
     )
   }
 
-  if (isLoading || (isFetching && !data)) {
+  if (isLoading || isUserFetching) {
     return (
       <div
         className={`${listVisibilityClass} h-full w-full flex-col overflow-hidden`}
@@ -115,7 +116,8 @@ const Page: React.FC = () => {
         totalPages={data?.totalPages ?? 1}
         hasNextPage={data?.hasNextPage ?? false}
         hasPreviousPage={data?.hasPreviousPage ?? false}
-        isLoading={isFetching}
+        isLoading={false}
+        isRefreshing={isRefreshing}
         hideToolbar
       />
     </div>

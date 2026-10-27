@@ -69,6 +69,20 @@ describe('@classic/default', () => {
       expect(screen.getByTestId('mail-list-skeleton')).toBeInTheDocument()
     })
 
+    it('shows skeleton instead of the previous page while a new page loads', () => {
+      mockUseFolderMessages.mockReturnValue({
+        data: { mails: [{ id: '1' }], page: 1, total: 1, totalPages: 2 },
+        isLoading: false,
+        isFetching: true,
+        isUserFetching: true,
+        error: undefined,
+        refetch: jest.fn(),
+      })
+      render(<ClassicMailFolderDefault />)
+      expect(screen.getByTestId('mail-list-skeleton')).toBeInTheDocument()
+      expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
+    })
+
     it('shows error fallback when query errors', () => {
       mockUseFolderMessages.mockReturnValue({
         data: undefined,
@@ -121,6 +135,7 @@ describe('@classic/default', () => {
       expect(mockUseFolderMessages).toHaveBeenCalledWith({
         folder: 'INBOX',
         accountId: '0',
+        reloadOnFolderSwitch: true,
       })
     })
   })

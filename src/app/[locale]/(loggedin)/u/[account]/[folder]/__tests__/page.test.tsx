@@ -119,6 +119,24 @@ describe('Mail Folder Page', () => {
     expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
   })
 
+  it('should show loading skeleton instead of the previous page while a new page loads', () => {
+    ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
+      data: { mails: [{ id: '1' }], page: 1, total: 1, totalPages: 2 },
+      currentData: undefined,
+      isLoading: false,
+      isFetching: true,
+      refetch: jest.fn(),
+    })
+
+    render(
+      <Provider store={createTestStore()}>
+        <Page />
+      </Provider>
+    )
+    expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
+    expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
+  })
+
   it('should render messages list with data', async () => {
     const mockMessages = [
       { id: '1', subject: 'Test 1', from: 'sender1@example.com' },

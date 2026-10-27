@@ -25,6 +25,11 @@ jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
   })),
 }))
 
+jest.mock('@/lib/redux/api/api-slice', () => ({
+  MAILS_FOLDERS_SLICE: 'mails/folders',
+  apiSlice: { util: { invalidateTags: jest.fn() } },
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
   useGetFoldersQuery: jest.fn(() => ({ data: [], isLoading: false })),
@@ -117,6 +122,17 @@ describe('Classic Page', () => {
       render(<Page />)
       expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
     })
+  })
+
+  it('shows ListSkeleton instead of the previous page while a new page loads', () => {
+    mockUseGetFolderMessagesQuery.mockReturnValue({
+      data: { mails: [{ id: 1 }], page: 1, total: 1, totalPages: 2 },
+      currentData: undefined,
+      isFetching: true,
+    })
+    render(<Page />)
+    expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
+    expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
   })
 
   describe('integration', () => {

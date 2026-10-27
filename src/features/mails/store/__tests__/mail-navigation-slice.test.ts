@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom'
 import reducer, {
   clearMailNavigation,
+  manualRefreshEnded,
+  manualRefreshStarted,
   setMailNavigation,
   setSkipFolderFetch,
 } from '../mail-navigation-slice'
@@ -130,6 +132,23 @@ describe('mailNavigationSlice', () => {
       expect(state.skipFolderFetch).toBe(true)
       const cleared = reducer(state, setSkipFolderFetch(false))
       expect(cleared.skipFolderFetch).toBe(false)
+    })
+  })
+
+  describe('manual refresh', () => {
+    it('has no refresh in flight initially', () => {
+      const initial = reducer(undefined, { type: '@@INIT' })
+      expect(initial.manualRefreshId).toBeNull()
+    })
+
+    it('is cleared only by the last refresh started', () => {
+      let state = reducer(undefined, manualRefreshStarted('a'))
+      state = reducer(state, manualRefreshStarted('b'))
+      expect(state.manualRefreshId).toBe('b')
+      state = reducer(state, manualRefreshEnded('a'))
+      expect(state.manualRefreshId).toBe('b')
+      state = reducer(state, manualRefreshEnded('b'))
+      expect(state.manualRefreshId).toBeNull()
     })
   })
 })

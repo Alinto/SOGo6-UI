@@ -25,6 +25,14 @@
         }
       }
     },
+    "loading": {
+      "string": "Loading messages…",
+      "context": "Screen-reader text announced while the message list is reloading."
+    },
+    "refresh": {
+      "string": "Refresh",
+      "context": "Button that reloads the list of messages of the current folder."
+    },
     "pagination": {
       "previous": {
         "string": "Previous page"
