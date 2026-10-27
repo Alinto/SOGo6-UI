@@ -12,6 +12,12 @@ interface MailNavigationState {
   page: number
   totalPages: number
   skipFolderFetch: boolean
+  /**
+   * Id of the last reload asked by the user (Refresh, folder change), or null
+   * once it has ended. Only that reload can clear it, so an older reload that
+   * ends late does not hide the spinner of a newer one.
+   */
+  manualRefreshId: string | null
 }
 
 const initialState: MailNavigationState = {
@@ -21,6 +27,7 @@ const initialState: MailNavigationState = {
   page: 1,
   totalPages: 1,
   skipFolderFetch: false,
+  manualRefreshId: null,
 }
 
 const mailNavigationSlice = createSlice({
@@ -53,14 +60,36 @@ const mailNavigationSlice = createSlice({
     setSkipFolderFetch: (state, action: PayloadAction<boolean>) => {
       state.skipFolderFetch = action.payload
     },
+    manualRefreshStarted: (state, action: PayloadAction<string>) => {
+      state.manualRefreshId = action.payload
+    },
+    manualRefreshEnded: (state, action: PayloadAction<string>) => {
+      if (state.manualRefreshId === action.payload) {
+        state.manualRefreshId = null
+      }
+    },
   },
 })
 
-export const { setMailNavigation, clearMailNavigation, setSkipFolderFetch } =
-  mailNavigationSlice.actions
+export const {
+  setMailNavigation,
+  clearMailNavigation,
+  setSkipFolderFetch,
+  manualRefreshStarted,
+  manualRefreshEnded,
+} = mailNavigationSlice.actions
 
 export const selectSkipFolderFetch = (state: {
   mailNavigation: MailNavigationState
 }) => state.mailNavigation.skipFolderFetch
+
+/** `accountId/folder` of the last list shown (null before the first one). */
+export const selectMailNavigationFolderKey = (state: {
+  mailNavigation: MailNavigationState
+}) => state.mailNavigation.folderKey
+
+export const selectIsManualRefresh = (state: {
+  mailNavigation: MailNavigationState
+}) => state.mailNavigation.manualRefreshId !== null
 
 export default mailNavigationSlice.reducer

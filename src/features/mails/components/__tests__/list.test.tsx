@@ -192,11 +192,29 @@ describe('MessagesList', () => {
   it('renders skeleton when loading', () => {
     render(<MessagesList {...defaultProps} isLoading />)
     expect(screen.getByTestId('skeleton')).toBeInTheDocument()
+    expect(screen.getByRole('status')).toHaveTextContent('loading.string')
+    expect(
+      screen.getByTestId('skeleton').closest('[aria-busy]')
+    ).toHaveAttribute('aria-busy', 'true')
+    expect(screen.getByRole('status').closest('[aria-busy]')).toBeNull()
   })
 
   it('renders items when not loading', () => {
     render(<MessagesList {...defaultProps} />)
     expect(screen.getAllByTestId('list-item')).toHaveLength(2)
+  })
+
+  it('shows the loading overlay at once while refreshing', () => {
+    render(<MessagesList {...defaultProps} isRefreshing />)
+    expect(screen.getByRole('status')).toHaveTextContent('loading.string')
+    expect(screen.getAllByTestId('list-item')).toHaveLength(2)
+    expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'true')
+  })
+
+  it('does not show the loading overlay when idle', () => {
+    render(<MessagesList {...defaultProps} />)
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.getByRole('list')).toHaveAttribute('aria-busy', 'false')
   })
 
   it('renders empty state when no items', () => {
