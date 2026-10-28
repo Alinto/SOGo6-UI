@@ -106,9 +106,14 @@ export function serializeContactFromForm(
   const lastName = values.lastName.trim()
   const organization = values.organization?.trim()
   const isOrg = values.contactKind === 'org'
+  const email = values.emails.find((entry) => entry.value.trim())?.value.trim()
+  const phone = values.phoneNumbers
+    .find((entry) => entry.value.trim())
+    ?.value.trim()
+  const personName = `${firstName} ${lastName}`.trim()
   const displayName = isOrg
-    ? organization || `${firstName} ${lastName}`.trim()
-    : `${firstName} ${lastName}`.trim()
+    ? organization || personName || email || phone
+    : personName || email || phone || organization
 
   const body: ContactCreateBody = {
     display_name: displayName || undefined,
@@ -161,15 +166,14 @@ export function serializeContactFromForm(
   return body
 }
 
-export function serializeContactPatch(
-  patch: Partial<VCard>
-): ContactPatchBody {
+export function serializeContactPatch(patch: Partial<VCard>): ContactPatchBody {
   const body: ContactPatchBody = {}
 
   if (patch.firstName !== undefined) body.first_name = patch.firstName
   if (patch.lastName !== undefined) body.last_name = patch.lastName
   if (patch.firstName !== undefined || patch.lastName !== undefined) {
-    const displayName = `${patch.firstName ?? ''} ${patch.lastName ?? ''}`.trim()
+    const displayName =
+      `${patch.firstName ?? ''} ${patch.lastName ?? ''}`.trim()
     if (displayName) body.display_name = displayName
   }
   if (patch.middleName !== undefined) body.middle_name = patch.middleName
@@ -200,7 +204,9 @@ export function serializeContactPatch(
   return body
 }
 
-export function serializeContactCreate(vcard: Partial<VCard>): ContactCreateBody {
+export function serializeContactCreate(
+  vcard: Partial<VCard>
+): ContactCreateBody {
   return serializeContactPatch(vcard) as ContactCreateBody
 }
 

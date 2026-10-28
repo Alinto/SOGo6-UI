@@ -132,8 +132,48 @@ describe('ContactForm', () => {
 
       expect(screen.getByText('edit_contact.string')).toBeInTheDocument()
       await waitFor(() => {
-        expect(screen.getByDisplayValue('John')).toBeInTheDocument()
-        expect(screen.getByDisplayValue('Doe')).toBeInTheDocument()
+        expect(screen.getByDisplayValue('John Doe')).toBeInTheDocument()
+      })
+      expect(
+        screen.queryByTestId('contact-kind-select')
+      ).not.toBeInTheDocument()
+    })
+  })
+
+  describe('identity', () => {
+    it('asks for an identity when every field is empty', async () => {
+      const user = userEvent.setup()
+      const onSubmit = jest.fn()
+      render(<ContactForm open onClose={jest.fn()} onSubmit={onSubmit} />)
+
+      await user.click(screen.getByRole('button', { name: 'create.string' }))
+
+      expect(
+        await screen.findByText('identity_required.string')
+      ).toBeInTheDocument()
+      expect(onSubmit).not.toHaveBeenCalled()
+    })
+
+    it('saves an email without a name', async () => {
+      const user = userEvent.setup()
+      const onSubmit = jest.fn().mockResolvedValue(undefined)
+      render(<ContactForm open onClose={jest.fn()} onSubmit={onSubmit} />)
+
+      await user.type(
+        screen.getByRole('textbox', { name: 'emails.string' }),
+        'jean@example.com'
+      )
+      await user.click(screen.getByRole('button', { name: 'create.string' }))
+
+      await waitFor(() => {
+        expect(onSubmit).toHaveBeenCalledWith(
+          expect.objectContaining({
+            name: '',
+            firstName: 'jean@example.com',
+            lastName: '',
+          }),
+          undefined
+        )
       })
     })
   })
@@ -188,7 +228,7 @@ describe('ContactForm', () => {
         screen.getByRole('button', { name: 'create.string' })
       ).toBeInTheDocument()
       expect(
-        screen.getByRole('textbox', { name: 'fields.first_name.string' })
+        screen.getByRole('textbox', { name: 'fields.name.string' })
       ).toBeInTheDocument()
     })
 
@@ -200,12 +240,8 @@ describe('ContactForm', () => {
       render(<ContactForm open onClose={jest.fn()} onSubmit={onSubmit} />)
 
       await user.type(
-        screen.getByRole('textbox', { name: 'fields.first_name.string' }),
-        'Jane'
-      )
-      await user.type(
-        screen.getByRole('textbox', { name: 'fields.last_name.string' }),
-        'Doe'
+        screen.getByRole('textbox', { name: 'fields.name.string' }),
+        'Jane Doe'
       )
       await user.upload(screen.getByTestId('contact-photo-input'), file)
 

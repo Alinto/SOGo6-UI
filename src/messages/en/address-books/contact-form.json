@@ -132,6 +132,14 @@
       "string": "Labels",
       "context": "Label for contact labels field"
     },
+    "more_details": {
+      "string": "More details",
+      "context": "Expands the optional contact fields."
+    },
+    "identity_required": {
+      "string": "Enter a name, an email, a phone number, or a company.",
+      "context": "Shown when every identity field is empty."
+    },
     "photo": {
       "string": "Photo",
       "context": "Label for contact photo upload"
@@ -167,6 +175,10 @@
     "fields": {
       "address_book": {
         "string": "Address book"
+      },
+      "name": {
+        "string": "Name",
+        "context": "Single name field. A first and last name are not both required."
       },
       "first_name": {
         "string": "First name"

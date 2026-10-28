@@ -11,6 +11,7 @@ describe('serializeContactFromForm', () => {
     expect(
       serializeContactFromForm({
         contactKind: 'individual',
+        name: '',
         firstName: 'Alice',
         lastName: 'Martin',
         middleName: '',
@@ -76,6 +77,7 @@ describe('serializeContactFromForm', () => {
     expect(
       serializeContactFromForm({
         contactKind: 'individual',
+        name: '',
         firstName: 'Alice',
         lastName: 'Martin',
         middleName: '',
@@ -115,6 +117,7 @@ describe('serializeContactFromForm', () => {
     expect(
       serializeContactFromForm({
         contactKind: 'org',
+        name: '',
         firstName: '',
         lastName: '',
         middleName: '',
