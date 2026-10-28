@@ -114,6 +114,20 @@
       },
       "deselect_mail": {
         "string": "Deselect message"
+      },
+      "select_all": {
+        "string": "Select all messages"
+      },
+      "deselect_all": {
+        "string": "Deselect all messages"
+      }
+    },
+    "row": {
+      "unread": {
+        "string": "Unread"
+      },
+      "attachment": {
+        "string": "Attachment"
       }
     },
     "time": {

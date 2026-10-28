@@ -15,15 +15,19 @@ import {
   FastAccessProvider,
   useFastAccessRequired,
 } from '@/features/mails/components/sidebars/fast-access/context'
+import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useSyncAdvancedSearchFromUrl } from '@/features/mails/hooks/use-sync-advanced-search-from-url'
+import { getFolderDisplayName } from '@/features/mails/utils/folder-path-from-params'
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
 import OutboxPanel from '@/features/offline/components/outbox-panel'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 import { MailDetailPage } from './[mail_id]/page'
 
@@ -34,6 +38,16 @@ function MailLayoutInner({
   children: React.ReactNode
   classic: React.ReactNode
 }) {
+  const { folderPath, folderType: currentFolderType } = useCurrentFolder()
+  const tFolders = useTranslations('MAILS_COMMONS')
+  const folderTitle = folderPath
+    ? getFolderDisplayName(
+        folderPath,
+        (key) => tFolders(key as 'folders.inbox.string'),
+        currentFolderType
+      )
+    : null
+  useDocumentTitle(folderTitle)
   const { data } = useGetPreferencesQuery()
   const layoutType = data?.layoutType || 'modern'
   const isMobile = useIsMobile()
@@ -95,7 +109,10 @@ function MailLayoutInner({
         width={`calc(${SIDEBAR_WIDTH} - 1.5rem)`}
         className="min-w-0 flex-1"
       >
-        <SidebarInset className="flex min-w-0 flex-col overflow-x-hidden">
+        <SidebarInset
+          as="div"
+          className="flex min-w-0 flex-col overflow-x-hidden"
+        >
           {!isFullPaneOverlay && <ListToolbar />}
           <div
             className={cn(

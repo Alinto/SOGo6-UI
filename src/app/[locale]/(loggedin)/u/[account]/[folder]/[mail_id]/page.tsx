@@ -26,6 +26,7 @@ import CachedDataIndicator from '@/features/offline/components/cached-data-indic
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
 import { useMailCache } from '@/features/offline/hooks/use-mail-cache'
 import { useOfflineMailBody } from '@/features/offline/hooks/use-offline-mail-body'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
 
@@ -79,6 +80,7 @@ export function MailDetailPage({
       active: isOfflineOverlay || isError,
     })
   const data = fetchedMail ?? cachedMail ?? undefined
+  useDocumentTitle(data?.subject)
 
   useEffect(() => {
     if (!fetchedMail) return

@@ -248,7 +248,7 @@ const CalendarPage = () => {
   }
 
   return (
-    <main className="flex h-full w-full flex-col overflow-hidden">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       <div className="shrink-0">
         <CalendarToolbar
           view={calendarState.view}
@@ -401,7 +401,7 @@ const CalendarPage = () => {
         onSelect={handleDeleteWithScope}
         onCancel={() => setDeleteScopeDialogOpen(false)}
       />
-    </main>
+    </div>
   )
 }
 

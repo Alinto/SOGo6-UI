@@ -7,14 +7,12 @@ import MailFolderLabel from '@/features/mails/components/mail/mail-folder-label'
 import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label'
-import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import {
   MAIL_PRIORITY_HIGHEST,
   MAIL_PRIORITY_NORMAL,
 } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
-import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
   Archive,
@@ -27,15 +25,20 @@ import {
   Paperclip,
   Reply,
   ShieldX,
-  Star,
   Trash2,
   User,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams, usePathname } from 'next/navigation'
-import React, { useState } from 'react'
+import React from 'react'
 import { ImapMessagesList } from '../mails-types'
 import { formatDate } from './list-item-utils'
+import {
+  MailFlagButton,
+  MailRowAnchor,
+  MailRowStatus,
+  useMailRowLink,
+} from './mail-row-link'
 
 interface ListItemClassicProps {
   data: ImapMessagesList
@@ -65,7 +68,6 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const t = useTranslations('MAILS_LIST')
   const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const tMinutesAgo = (count: number) => t('time.minutes_ago.string', { count })
-  const { push } = useRouter()
   const { account, folder } = useParams()
   const pathname = usePathname()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
@@ -77,9 +79,7 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const mailFolderPath = data.folder ?? folderString
   const { folderType } = useCurrentFolder(mailFolderPath, accountString)
   const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
-  const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
-  const [isHovered, setIsHovered] = useState(false)
   const showHighPriority = data.priority < MAIL_PRIORITY_NORMAL
   const priorityTitle =
     data.priority === MAIL_PRIORITY_HIGHEST
@@ -92,6 +92,13 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
   const hasHoverActions = Boolean(
     onToggleRead || onDelete || onArchive || onSpam || onMoveToInbox
   )
+  const { href, onClick } = useMailRowLink({
+    folderType,
+    mailFolderPath,
+    accountId: accountString,
+    mailId: id,
+    onOpenMail,
+  })
 
   // Highlight when this mail is open in the right panel
   const isOpenInPanel = decodeURIComponent(pathname).endsWith(`/${id}`)
@@ -110,56 +117,12 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
           data.seen ? '' : 'font-semibold',
           data.deleted && 'opacity-60'
         )}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onClick={async () => {
-          const openedDraft = await openDraftIfNeeded({
-            folderType,
-            folderPath: mailFolderPath,
-            accountId: accountString,
-            mailId: id,
-          })
-          if (openedDraft) return
-          if (onOpenMail) {
-            await onOpenMail(String(id), mailFolderPath)
-            return
-          }
-          push(
-            `/u/${accountString}/${encodeURIComponent(mailFolderPath)}/${id}`
-          )
-        }}
       >
-        {(isHovered || isSelected) && (
-          <MailListItemCheckbox
-            isSelected={isSelected}
-            data={data}
-            onHandleCheckboxClick={onHandleCheckboxClick}
-          />
-        )}
-        <span
-          className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center',
-            isHovered || isSelected ? 'hidden' : ''
-          )}
+        <MailRowAnchor
+          href={href}
+          onClick={onClick}
+          className="order-3 flex min-w-0 flex-1 flex-col justify-center gap-0.5"
         >
-          <Avatar className="h-6 w-6">
-            <AvatarFallback>
-              {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
-        </span>
-        <div>
-          <Star
-            fill={flagged ? 'yellow' : 'white'}
-            className="h-4 w-4 cursor-pointer transition-all duration-200 hover:h-5 hover:w-5"
-            strokeWidth={1}
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggleFlag?.(data.id)
-            }}
-          />
-        </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
           <div className="flex w-full items-center justify-between gap-2">
             <div className="flex min-w-0 items-center gap-1">
               <span
@@ -171,104 +134,15 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
                 <MailFolderLabel name={folderLabel} type={folderType} />
               )}
             </div>
-            <div className="flex shrink-0 items-center gap-1">
-              {hasHoverActions && (
-                <div className="hidden items-center gap-1 group-hover:flex">
-                  {onToggleRead && (
-                    <TooltipButton
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      tooltipSide="top"
-                      tooltip={
-                        data.seen
-                          ? t('actions.mark_as_unread.string')
-                          : t('actions.mark_as_read.string')
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onToggleRead(data.id)
-                      }}
-                    >
-                      {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
-                    </TooltipButton>
-                  )}
-                  {onDelete && (
-                    <TooltipButton
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      tooltipSide="top"
-                      tooltip={t('actions.delete.string')}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onDelete(data.id)
-                      }}
-                    >
-                      <Trash2 size={16} />
-                    </TooltipButton>
-                  )}
-                  {onArchive && (
-                    <TooltipButton
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      tooltipSide="top"
-                      tooltip={t('actions.archive.string')}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onArchive(data.id)
-                      }}
-                    >
-                      <Archive size={16} />
-                    </TooltipButton>
-                  )}
-                  {onMoveToInbox && (
-                    <TooltipButton
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      tooltipSide="top"
-                      tooltip={tBar('report_not_spam.string')}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onMoveToInbox(data.id)
-                      }}
-                    >
-                      <Inbox size={16} />
-                    </TooltipButton>
-                  )}
-                  {onSpam && (
-                    <TooltipButton
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      tooltipSide="top"
-                      tooltip={tBar('report_spam.string')}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onSpam(data.id)
-                      }}
-                    >
-                      <ShieldX size={16} />
-                    </TooltipButton>
-                  )}
-                </div>
+            <span
+              className={cn(
+                'text-muted-foreground shrink-0 text-sm whitespace-nowrap',
+                hasHoverActions &&
+                  'group-focus-within:hidden group-hover:hidden'
               )}
-              <span
-                className={cn(
-                  'text-muted-foreground shrink-0 text-sm whitespace-nowrap',
-                  hasHoverActions && 'group-hover:hidden'
-                )}
-              >
-                {formatDate(data.date, undefined, tMinutesAgo)}
-              </span>
-            </div>
+            >
+              {formatDate(data.date, undefined, tMinutesAgo)}
+            </span>
           </div>
           <div className="flex w-full min-w-0 items-start justify-between gap-2">
             <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -315,19 +189,140 @@ const ListItemClassic: React.FC<ListItemClassicProps> = ({
                 >
                   {data.subject}
                 </span>
+                <MailRowStatus seen={data.seen} hasAttachment={hasAttachment} />
                 <MailListLabels flags={data.flags} />
               </div>
               {showSnippet && (
-                <p className="text-muted-foreground truncate text-sm">
+                <span className="text-muted-foreground block truncate text-sm">
                   {data.snippet}
-                </p>
+                </span>
               )}
             </div>
             {hasAttachment && (
-              <Paperclip className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0" />
+              <Paperclip
+                className="text-muted-foreground mt-0.5 h-4 w-4 shrink-0"
+                aria-hidden
+              />
             )}
           </div>
-        </div>
+        </MailRowAnchor>
+
+        <MailListItemCheckbox
+          isSelected={isSelected}
+          data={data}
+          onHandleCheckboxClick={onHandleCheckboxClick}
+          wrapperClassName={
+            isSelected
+              ? 'order-1 flex'
+              : 'order-1 hidden group-hover:flex group-focus-within:flex'
+          }
+        />
+        <span
+          className={cn(
+            'order-1 flex h-8 w-8 shrink-0 items-center justify-center',
+            isSelected
+              ? 'hidden'
+              : 'group-focus-within:hidden group-hover:hidden'
+          )}
+        >
+          <Avatar className="h-6 w-6">
+            <AvatarFallback>
+              {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        </span>
+        <MailFlagButton
+          flagged={flagged}
+          onToggle={() => onToggleFlag?.(data.id)}
+        />
+        {hasHoverActions ? (
+          <div className="order-4 hidden items-center gap-1 group-focus-within:flex group-hover:flex">
+            {onToggleRead && (
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={
+                  data.seen
+                    ? t('actions.mark_as_unread.string')
+                    : t('actions.mark_as_read.string')
+                }
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onToggleRead(data.id)
+                }}
+              >
+                {data.seen ? <MailOpen size={16} /> : <Mail size={16} />}
+              </TooltipButton>
+            )}
+            {onDelete && (
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={t('actions.delete.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onDelete(data.id)
+                }}
+              >
+                <Trash2 size={16} />
+              </TooltipButton>
+            )}
+            {onArchive && (
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={t('actions.archive.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onArchive(data.id)
+                }}
+              >
+                <Archive size={16} />
+              </TooltipButton>
+            )}
+            {onMoveToInbox && (
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={tBar('report_not_spam.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onMoveToInbox(data.id)
+                }}
+              >
+                <Inbox size={16} />
+              </TooltipButton>
+            )}
+            {onSpam && (
+              <TooltipButton
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                tooltipSide="top"
+                tooltip={tBar('report_spam.string')}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onSpam(data.id)
+                }}
+              >
+                <ShieldX size={16} />
+              </TooltipButton>
+            )}
+          </div>
+        ) : null}
       </div>
       <Separator className="m-0" />
     </>

@@ -6,6 +6,7 @@ import { appCollisionDetection } from '@/components/dnd/collision'
 import { isMailDragData, type AppDragData } from '@/components/dnd/types'
 import MobileCreateFab from '@/components/mobile-create-fab'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
+import { SkipLink } from '@/components/skip-link'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import ContactFormHost from '@/features/address_books/components/contact-form-host'
 import DistributionListFormHost from '@/features/address_books/components/distribution-list-form-host'
@@ -197,9 +198,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           onDragEnd={handleDragEnd}
           onDragCancel={clearActiveDrag}
         >
+          <SkipLink />
           <MailDragSession />
           <AppSidebar />
-          <SidebarInset className="flex h-screen min-w-0 flex-col overflow-hidden">
+          <SidebarInset
+            id="main-content"
+            className="flex h-screen min-w-0 flex-col overflow-hidden"
+          >
             <AppHeader />
             <div className="min-h-0 min-w-0 flex-1 overflow-hidden border-y">
               {children}
