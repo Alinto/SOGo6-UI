@@ -7,7 +7,9 @@ import { useTranslations } from 'next-intl'
 import { useCallback } from 'react'
 import { requestCreateEvent } from '../store/calendar-ui-slice'
 
-export function useCreateEventAction(options?: { closeMobileSidebar?: boolean }) {
+export function useCreateEventAction(options?: {
+  closeMobileSidebar?: boolean
+}) {
   const t = useTranslations('CALENDARS.toolbar')
   const { isMobile, setOpenMobile } = useSidebar()
   const dispatch = useAppDispatch()

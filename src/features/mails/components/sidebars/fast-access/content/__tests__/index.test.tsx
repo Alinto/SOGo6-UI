@@ -1,8 +1,8 @@
+import type { FastAccessModuleId } from '@/features/mails/components/sidebars/fast-access/context'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import FastAccessContent from '../index'
-import type { FastAccessModuleId } from '@/features/mails/components/sidebars/fast-access/context'
 
 jest.mock('@/components/ui/sidebar', () => ({
   Sidebar: ({
@@ -74,7 +74,10 @@ describe('FastAccessContent', () => {
   describe('configuration', () => {
     it('uses a right sidebar', () => {
       render(<FastAccessContent name="calendar" />)
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-side', 'right')
+      expect(screen.getByTestId('sidebar')).toHaveAttribute(
+        'data-side',
+        'right'
+      )
     })
 
     it('applies rail-oriented classes on sidebar', () => {

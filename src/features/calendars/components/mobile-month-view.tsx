@@ -91,9 +91,9 @@ export function MobileMonthView({
   }
 
   return (
-    <div className="bg-background flex shrink-0 flex-col gap-3 border-b p-4 overflow-hidden">
+    <div className="bg-background flex shrink-0 flex-col gap-3 overflow-hidden border-b p-4">
       {/* Header with month navigation */}
-      <div className="flex items-center justify-center gap-2 min-w-0">
+      <div className="flex min-w-0 items-center justify-center gap-2">
         <Button
           variant="ghost"
           size="icon"
@@ -119,7 +119,7 @@ export function MobileMonthView({
         {weekDayHeaders.map((dayName, index) => (
           <div
             key={`header-${index}`}
-            className="text-muted-foreground flex h-8 items-center justify-center text-xs font-medium min-w-0 truncate"
+            className="text-muted-foreground flex h-8 min-w-0 items-center justify-center truncate text-xs font-medium"
           >
             {dayName}
           </div>
@@ -137,7 +137,7 @@ export function MobileMonthView({
               key={`day-${index}`}
               onClick={() => handleDayClick(day)}
               className={cn(
-                'relative flex h-10 w-full flex-col items-center justify-center rounded-md text-sm transition-colors min-w-0',
+                'relative flex h-10 w-full min-w-0 flex-col items-center justify-center rounded-md text-sm transition-colors',
                 // Current month vs other months
                 isCurrentMonth
                   ? 'text-foreground'
@@ -151,9 +151,11 @@ export function MobileMonthView({
                 // Hover state - allow hover even for other months
                 'hover:bg-accent/50 cursor-pointer'
               )}
-              aria-label={format(day, 'EEEE, MMMM d, yyyy', { locale: dateFnsLocale })}
+              aria-label={format(day, 'EEEE, MMMM d, yyyy', {
+                locale: dateFnsLocale,
+              })}
             >
-              <span className="truncate w-full text-center">
+              <span className="w-full truncate text-center">
                 {format(day, 'd')}
               </span>
 
@@ -161,7 +163,7 @@ export function MobileMonthView({
               {hasEvents && (
                 <div
                   className={cn(
-                    'absolute bottom-1 h-1 w-1 rounded-full shrink-0',
+                    'absolute bottom-1 h-1 w-1 shrink-0 rounded-full',
                     isToday
                       ? 'bg-primary-foreground'
                       : isSelected

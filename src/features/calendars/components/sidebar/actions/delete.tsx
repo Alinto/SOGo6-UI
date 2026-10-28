@@ -19,7 +19,11 @@ interface DeleteActionProps {
   onClose?: () => void
 }
 
-const DeleteAction: React.FC<DeleteActionProps> = ({ id, sourceType, onClose }) => {
+const DeleteAction: React.FC<DeleteActionProps> = ({
+  id,
+  sourceType,
+  onClose,
+}) => {
   const t = useTranslations('CALENDARS')
   const [deleteCalendar, { isLoading: isDeletingLocal }] =
     useDeleteCalendarMutation()
@@ -52,7 +56,11 @@ const DeleteAction: React.FC<DeleteActionProps> = ({ id, sourceType, onClose }) 
         <Button variant="outline" onClick={onClose}>
           {t('forms.deleteCalendar.cancel.string')}
         </Button>
-        <Button variant="destructive" disabled={isLoading} onClick={handleDelete}>
+        <Button
+          variant="destructive"
+          disabled={isLoading}
+          onClick={handleDelete}
+        >
           {t('forms.deleteCalendar.confirm.string')}
         </Button>
       </DialogFooter>

@@ -12,6 +12,10 @@ jest.mock('@/features/calendars/store/calendars-api', () => ({
   useGetEventsQuery: (...args: unknown[]) => mockUseGetEventsQuery(...args),
 }))
 
+jest.mock('@/features/calendars/hooks/useCalendarVisibility', () => ({
+  useCalendarVisibility: () => ({ isCalendarVisible: () => true }),
+}))
+
 jest.mock('@/components/ui/calendar-lazy', () => ({
   Calendar: ({
     onSelect,
@@ -110,7 +114,7 @@ describe('CalendarContent', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockUseGetCalendarsQuery.mockReturnValue({
-      data: [{ id: 'cal-1', key: 'cal-1', u_hidden: false, color: '#3b82f6' }],
+      data: [{ id: 'cal-1', key: 'cal-1', color: '#3b82f6' }],
     })
     mockUseGetEventsQuery.mockReturnValue({
       data: [],

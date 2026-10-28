@@ -18,7 +18,9 @@ describe('RecurrenceScopeDialog', () => {
       />
     )
     expect(screen.getByText('recurrenceScope.ONE.string')).toBeInTheDocument()
-    expect(screen.getByText('recurrenceScope.THISANDFUTURE.string')).toBeInTheDocument()
+    expect(
+      screen.getByText('recurrenceScope.THISANDFUTURE.string')
+    ).toBeInTheDocument()
     expect(screen.getByText('recurrenceScope.ALL.string')).toBeInTheDocument()
   })
 

@@ -47,7 +47,9 @@ describe('DeleteAction', () => {
     it('renders title and action buttons', () => {
       render(<DeleteAction id="cal-1" onClose={onClose} />)
       expect(
-        screen.getByRole('button', { name: 'forms.deleteCalendar.cancel.string' })
+        screen.getByRole('button', {
+          name: 'forms.deleteCalendar.cancel.string',
+        })
       ).toBeInTheDocument()
       expect(
         screen.getByRole('button', {
@@ -61,7 +63,9 @@ describe('DeleteAction', () => {
     it('calls onClose when cancel is clicked', () => {
       render(<DeleteAction id="cal-1" onClose={onClose} />)
       fireEvent.click(
-        screen.getByRole('button', { name: 'forms.deleteCalendar.cancel.string' })
+        screen.getByRole('button', {
+          name: 'forms.deleteCalendar.cancel.string',
+        })
       )
       expect(onClose).toHaveBeenCalled()
     })
@@ -81,9 +85,7 @@ describe('DeleteAction', () => {
     })
 
     it('invokes external delete mutation for ICS calendars', async () => {
-      render(
-        <DeleteAction id="ics-cal-1" sourceType="ics" onClose={onClose} />
-      )
+      render(<DeleteAction id="ics-cal-1" sourceType="ics" onClose={onClose} />)
       fireEvent.click(
         screen.getByRole('button', {
           name: 'forms.deleteCalendar.confirm.string',

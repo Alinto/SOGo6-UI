@@ -33,6 +33,7 @@ export const CALENDARS_SLICE = 'calendars'
 export const CALENDAR_EVENTS_SLICE = 'calendar_events'
 export const CALENDAR_SYNC_SLICE = 'calendar_sync'
 export const CALENDAR_SHARE_SLICE = 'calendar_share'
+export const FOLDER_PREFERENCES_SLICE = 'preferences/folders'
 export const TASKS_SLICE = 'tasks'
 export const ADMIN_CONFIG_SLICE = 'adminConfig'
 export const ADMIN_CONFIG_DOMAIN_SLICE = 'adminConfig/domain'
@@ -80,6 +81,7 @@ const tagTypes = [
   CALENDAR_EVENTS_SLICE,
   CALENDAR_SYNC_SLICE,
   CALENDAR_SHARE_SLICE,
+  FOLDER_PREFERENCES_SLICE,
   TASKS_SLICE,
   ADMIN_CONFIG_SLICE,
   ADMIN_CONFIG_DOMAIN_SLICE,

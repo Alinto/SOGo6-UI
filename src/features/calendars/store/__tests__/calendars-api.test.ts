@@ -34,8 +34,9 @@ describe('calendars-api', () => {
       expect(typeof CalendarsApi.useDeleteCalendarMutation).toBe('function')
     })
 
-    it('exports local visibility-only mutation', () => {
-      expect(typeof CalendarsApi.useUpdateCalendarVisibilityMutation).toBe(
+    it('exports folder preferences query and mutation', () => {
+      expect(typeof CalendarsApi.useGetFolderPreferencesQuery).toBe('function')
+      expect(typeof CalendarsApi.useUpdateFolderPreferencesMutation).toBe(
         'function'
       )
     })

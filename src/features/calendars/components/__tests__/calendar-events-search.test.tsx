@@ -1,6 +1,6 @@
+import { selectCalendarEventFromSearch } from '@/features/calendars/calendar-event-selection-bridge'
 import '@testing-library/jest-dom'
 import { act, fireEvent, render, screen } from '@testing-library/react'
-import { selectCalendarEventFromSearch } from '@/features/calendars/calendar-event-selection-bridge'
 import { CalendarEventsSearch } from '../calendar-events-search'
 
 const mockSearchEventsQuery = jest.fn()
@@ -67,7 +67,9 @@ describe('CalendarEventsSearch', () => {
     render(<CalendarEventsSearch />)
 
     expect(screen.getByText('Search events...')).toBeInTheDocument()
-    expect(screen.getByRole('textbox')).toHaveClass('placeholder:text-transparent')
+    expect(screen.getByRole('textbox')).toHaveClass(
+      'placeholder:text-transparent'
+    )
   })
 
   it('calls selectCalendarEventFromSearch when a result is clicked', () => {

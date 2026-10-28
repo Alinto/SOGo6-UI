@@ -2,53 +2,56 @@
 
 import {
   useGetCalendarsQuery,
-  useUpdateCalendarVisibilityMutation,
+  useGetFolderPreferencesQuery,
+  useUpdateFolderPreferencesMutation,
 } from '@/features/calendars/store/calendars-api'
+import { getCalendarFolderScope } from '@/features/calendars/utils/calendar-source-type'
+import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
 import { useCallback, useMemo } from 'react'
 
 /**
- * Hook to manage which calendars' events are visible
- * Uses the store to track hidden state via the updateCalendarVisibility mutation
- * All calendars default to visible === true
+ * Which calendars' events are displayed, persisted in the `display` field of
+ * /preferences/folders (CALENDAR.OWNER / CALENDAR.SUBS, keyed by calendar key).
+ * A calendar missing from the preferences is visible.
  */
 export function useCalendarVisibility() {
-  // Fetch all calendars from the store
   const { data: calendarsData } = useGetCalendarsQuery()
+  const { data: folderPreferences } = useGetFolderPreferencesQuery()
+  const [updateFolderPreferences] = useUpdateFolderPreferencesMutation()
+  const isOtherOwner = useIsOtherOwner()
 
-  // Mutation to update calendar visibility in the store
-  const [updateCalendarVisibility] = useUpdateCalendarVisibilityMutation()
-
-  // Get hidden calendars from store by checking the hidden property
   const hiddenCalendars = useMemo(() => {
-    if (!calendarsData) return new Set<string>()
-
     const hiddenIds = new Set<string>()
-    calendarsData.forEach((calendar) => {
-      if (calendar.u_hidden === true) {
-        const key = calendar.key ?? calendar.id
-        if (key) hiddenIds.add(key)
+    const { OWNER = {}, SUBS = {} } = folderPreferences?.CALENDAR ?? {}
+    for (const entries of [OWNER, SUBS]) {
+      for (const [key, preference] of Object.entries(entries)) {
+        if (preference?.display === false) hiddenIds.add(key)
       }
-    })
+    }
     return hiddenIds
-  }, [calendarsData])
-  // Set calendar visibility by calling the mutation
+  }, [folderPreferences])
+
   const setCalendarVisibility = useCallback(
     async (calendarId: string, isVisible: boolean) => {
-      await updateCalendarVisibility({
-        id: calendarId,
-        hidden: !isVisible,
+      const calendar = calendarsData?.find(
+        (cal) => cal.key === calendarId || cal.id === calendarId
+      )
+      const key = calendar?.key ?? calendar?.id ?? calendarId
+      const scope = calendar
+        ? getCalendarFolderScope(calendar, isOtherOwner)
+        : 'OWNER'
+      await updateFolderPreferences({
+        CALENDAR: { [scope]: { [key]: { display: isVisible } } },
       })
     },
-    [updateCalendarVisibility]
+    [calendarsData, isOtherOwner, updateFolderPreferences]
   )
 
-  // Get visibility state for a specific calendar (visible by default)
   const isCalendarVisible = useCallback(
-    (calendarId: string): boolean => {
-      return !hiddenCalendars.has(calendarId)
-    },
+    (calendarId: string): boolean => !hiddenCalendars.has(calendarId),
     [hiddenCalendars]
   )
+
   return {
     setCalendarVisibility,
     isCalendarVisible,

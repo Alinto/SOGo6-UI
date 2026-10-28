@@ -125,7 +125,11 @@ const LEGEND_ITEM_KEYS: ReadonlyArray<{
     style: S.nonworking,
     i18nKey: 'eventForm.attendees.legend_non_working.string',
   },
-  { key: 'busy', style: S.busy, i18nKey: 'eventForm.attendees.legend_busy.string' },
+  {
+    key: 'busy',
+    style: S.busy,
+    i18nKey: 'eventForm.attendees.legend_busy.string',
+  },
   {
     key: 'tentative',
     style: S.tentative,
@@ -385,18 +389,24 @@ const PersonRow = React.memo(function PersonRow({
                       key={h}
                       title={
                         optHour
-                          ? t('eventForm.attendees.tooltip_slot_optimal.string', {
-                              duration: appointmentDuration,
-                              time: `${String(h).padStart(2, '0')}:00`,
-                            })
+                          ? t(
+                              'eventForm.attendees.tooltip_slot_optimal.string',
+                              {
+                                duration: appointmentDuration,
+                                time: `${String(h).padStart(2, '0')}:00`,
+                              }
+                            )
                           : dominant === 'busy'
                             ? t('eventForm.attendees.tooltip_slot_busy.string')
                             : dominant === 'available'
-                              ? t('eventForm.attendees.tooltip_slot_free.string', {
-                                  name:
-                                    person.personName?.trim() || person.email,
-                                  time: `${String(h).padStart(2, '0')}:00`,
-                                })
+                              ? t(
+                                  'eventForm.attendees.tooltip_slot_free.string',
+                                  {
+                                    name:
+                                      person.personName?.trim() || person.email,
+                                    time: `${String(h).padStart(2, '0')}:00`,
+                                  }
+                                )
                               : undefined
                       }
                       style={{
@@ -440,19 +450,27 @@ const PersonRow = React.memo(function PersonRow({
                           key={q}
                           title={
                             opt
-                              ? t('eventForm.attendees.tooltip_slot_optimal.string', {
-                                  duration: appointmentDuration,
-                                  time: `${String(h).padStart(2, '0')}:${mm}`,
-                                })
+                              ? t(
+                                  'eventForm.attendees.tooltip_slot_optimal.string',
+                                  {
+                                    duration: appointmentDuration,
+                                    time: `${String(h).padStart(2, '0')}:${mm}`,
+                                  }
+                                )
                               : raw === 'busy'
-                                ? t('eventForm.attendees.tooltip_slot_busy.string')
+                                ? t(
+                                    'eventForm.attendees.tooltip_slot_busy.string'
+                                  )
                                 : raw === 'available'
-                                  ? t('eventForm.attendees.tooltip_slot_free.string', {
-                                      name:
-                                        person.personName?.trim() ||
-                                        person.email,
-                                      time: `${String(h).padStart(2, '0')}:${mm}`,
-                                    })
+                                  ? t(
+                                      'eventForm.attendees.tooltip_slot_free.string',
+                                      {
+                                        name:
+                                          person.personName?.trim() ||
+                                          person.email,
+                                        time: `${String(h).padStart(2, '0')}:${mm}`,
+                                      }
+                                    )
                                   : undefined
                           }
                           style={{
@@ -645,14 +663,7 @@ const TimelineFreeBusy = React.memo(function TimelineFreeBusy({
     applyScroll()
     const id = requestAnimationFrame(applyScroll)
     return () => cancelAnimationFrame(id)
-  }, [
-    eventLineX,
-    hours,
-    workingHours.start,
-    data,
-    persons.length,
-    totalW,
-  ])
+  }, [eventLineX, hours, workingHours.start, data, persons.length, totalW])
 
   const slotStatus = useCallback(
     (avail: SlotArray, date: string, h: number, q: number) => {

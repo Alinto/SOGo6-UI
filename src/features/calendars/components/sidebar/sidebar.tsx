@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/sidebar'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import {
-  isSharedCalendar,
+  isSharedWithMe,
   isSubscriptionCalendar,
 } from '@/features/calendars/utils/calendar-source-type'
 import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
@@ -29,11 +29,9 @@ const Sidebar: React.FC = () => {
 
   const groupedCalendars = useMemo(() => {
     const calendars = data ?? []
-    // Shared = owned by someone else than the connected account; without an
-    // owner, fall back to the backend source type. Anything that is neither
-    // shared nor a subscription is a personal calendar.
+    // Anything that is neither shared nor a subscription is a personal calendar.
     const isShared = (calendar: Calendar) =>
-      calendar.owner ? isOtherOwner(calendar.owner) : isSharedCalendar(calendar)
+      isSharedWithMe(calendar, isOtherOwner)
     const nonSubscriptions = calendars.filter(
       (calendar) => !isSubscriptionCalendar(calendar)
     )

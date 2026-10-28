@@ -10,6 +10,7 @@ import {
   CALENDAR_EVENTS_SLICE,
   CALENDAR_SHARE_SLICE,
   CALENDAR_SYNC_SLICE,
+  FOLDER_PREFERENCES_SLICE,
   apiSlice,
 } from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
@@ -27,6 +28,7 @@ import type {
   CalendarEventCreateBody,
   CalendarEventUpdateBody,
   CalendarEventsResponse,
+  CalendarFolderScope,
   CalendarShareData,
   CalendarShareRights,
   CalendarShareUser,
@@ -37,6 +39,8 @@ import type {
   EventRecurrence,
   ExternalCalendarCreateBody,
   ExternalCalendarUpdateBody,
+  FolderDisplayPreference,
+  FolderPreferences,
   FreeBusyApiResponse,
   FreeBusyRequest,
 } from '../calendars-types'
@@ -52,6 +56,57 @@ const externalCalendarSyncUrl = (key: string) =>
 const calendarEventsUrl = (key: string) =>
   `calendars/${encodeURIComponent(key)}/events`
 const eventUrl = (eventKey: string) => `events/${encodeURIComponent(eventKey)}`
+const FOLDER_PREFERENCES_URL = 'preferences/folders'
+
+type FolderPreferenceSnapshot = {
+  scope: CalendarFolderScope
+  key: string
+  previous?: FolderDisplayPreference
+}
+
+/**
+ * Merges a PATCH body (CALENDAR.OWNER|SUBS entries) into the cached
+ * preferences, one calendar at a time. Returns the previous values so a failed
+ * PATCH can restore only its own calendars, not changes made since.
+ */
+function mergeFolderPreferences(
+  draft: FolderPreferences,
+  patch: FolderPreferences
+): FolderPreferenceSnapshot[] {
+  const snapshots: FolderPreferenceSnapshot[] = []
+  if (!patch.CALENDAR) return snapshots
+  draft.CALENDAR ??= {}
+  for (const [scope, entries] of Object.entries(patch.CALENDAR) as [
+    CalendarFolderScope,
+    Record<string, FolderDisplayPreference> | undefined,
+  ][]) {
+    if (!entries) continue
+    const draftEntries = (draft.CALENDAR[scope] ??= {})
+    for (const [key, value] of Object.entries(entries)) {
+      const previous = draftEntries[key]
+      snapshots.push({
+        scope,
+        key,
+        previous: previous ? { ...previous } : undefined,
+      })
+      draftEntries[key] = value
+    }
+  }
+  return snapshots
+}
+
+/** Puts back the entries saved by mergeFolderPreferences, leaving the others as they are. */
+function restoreFolderPreferences(
+  draft: FolderPreferences,
+  snapshots: FolderPreferenceSnapshot[]
+) {
+  for (const { scope, key, previous } of snapshots) {
+    const draftEntries = draft.CALENDAR?.[scope]
+    if (!draftEntries) continue
+    if (previous) draftEntries[key] = previous
+    else delete draftEntries[key]
+  }
+}
 
 const createCalendarNotifyMutation =
   (options: {
@@ -305,7 +360,6 @@ export function normalizeCalendar(calendar: Calendar): Calendar {
       false,
     ctag: calendar.ctag ?? 0,
     share_token: calendar.share_token ?? null,
-    u_hidden: calendar.u_hidden ?? false,
     ...withRights(calendar),
   }
 }
@@ -877,39 +931,55 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         }
       },
     }),
-    updateCalendarVisibility: builder.mutation<
-      null,
-      { id: string; hidden: boolean }
-    >({
-      queryFn: async () => {
-        // INTENTIONALLY LOCAL-ONLY: The backend CalendarUpdateSchema does not
-        // expose a `hidden` field. Calendar visibility is a UI-only preference
-        // stored in the RTK Query cache. State is lost on page refresh until
-        // backend user preference persistence is added.
-        return { data: null }
-      },
-      async onQueryStarted({ id, hidden }, { dispatch, queryFulfilled }) {
+    getFolderPreferences: builder.query<FolderPreferences, void>({
+      query: () => ({ url: FOLDER_PREFERENCES_URL }),
+      transformResponse: (
+        response: ApiDataResponse<FolderPreferences> | FolderPreferences
+      ) => unwrapApiData(response) ?? {},
+      providesTags: [FOLDER_PREFERENCES_SLICE],
+    }),
+    updateFolderPreferences: builder.mutation<unknown, FolderPreferences>({
+      query: (body) => ({
+        url: FOLDER_PREFERENCES_URL,
+        method: 'PATCH',
+        body,
+      }),
+      // GET /events only returns events of displayed calendars: refetch them
+      // so a calendar shown again gets its events back.
+      invalidatesTags: (_result, error) =>
+        error ? [] : [CALENDAR_EVENTS_SLICE],
+      // Optimistic: the checkbox reacts at once, rolled back if the PATCH fails.
+      // The rollback restores only this PATCH's calendars: undoing the whole
+      // cache change would also revert other toggles saved in the meantime.
+      async onQueryStarted(body, { dispatch, queryFulfilled }) {
+        let snapshots: FolderPreferenceSnapshot[] = []
+        dispatch(
+          updateQueryData<FolderPreferences>(
+            'getFolderPreferences',
+            undefined,
+            (draft) => {
+              snapshots = mergeFolderPreferences(draft, body)
+            }
+          )
+        )
         try {
           await queryFulfilled
-
-          dispatch(
-            updateQueryData<Calendar[]>('getCalendars', undefined, (draft) => {
-              const calendar = draft.find(
-                (cal) => cal.key === id || cal.id === id
-              )
-              if (calendar) calendar.u_hidden = hidden
-            })
-          )
-
-          dispatch(
-            updateQueryData<Calendar | null>('getCalendarById', id, (draft) => {
-              if (draft) {
-                draft.u_hidden = hidden
-              }
-            })
-          )
         } catch {
-          // Local-only visibility updates should fail silently.
+          dispatch(
+            updateQueryData<FolderPreferences>(
+              'getFolderPreferences',
+              undefined,
+              (draft) => restoreFolderPreferences(draft, snapshots)
+            )
+          )
+          dispatch(
+            addNotification({
+              type: 'error',
+              title: 'calendar_visibility.error.title.string',
+              message: 'calendar_visibility.error.message.string',
+              duration: 5000,
+            })
+          )
         }
       },
     }),
@@ -934,7 +1004,8 @@ export const {
   useGetEventsQuery,
   useGetEventsInTimeRangeQuery,
   useSearchEventsQuery,
-  useUpdateCalendarVisibilityMutation,
+  useGetFolderPreferencesQuery,
+  useUpdateFolderPreferencesMutation,
   useGetFreeBusyQuery,
   useCreateExternalCalendarMutation,
   useGetExternalCalendarQuery,

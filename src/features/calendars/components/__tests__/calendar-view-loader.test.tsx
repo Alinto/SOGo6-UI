@@ -35,7 +35,12 @@ describe('CalendarViewLoader', () => {
       expect(container).toHaveClass('flex', 'h-full', 'min-h-[200px]', 'flex-1')
 
       const spinner = container.querySelector('div[class*="animate-spin"]')
-      expect(spinner).toHaveClass('border-primary', 'h-10', 'w-10', 'rounded-full')
+      expect(spinner).toHaveClass(
+        'border-primary',
+        'h-10',
+        'w-10',
+        'rounded-full'
+      )
     })
   })
 
