@@ -197,11 +197,20 @@ function AddressBookList({
   }
 
   const selectedIndividuals = selectedItems.filter(isIndividualContact)
-  const canCreateList = permissions.canCreate && selectedIndividuals.length >= 2
+  const canOfferList = permissions.canCreate && !allContactsView
+  const canCreateList = canOfferList && selectedIndividuals.length >= 2
   const hasSelections = canSelect && selectedItems.length > 0
   const showCheckboxes = hasSelections
+  const showEmptyLists =
+    canOfferList &&
+    !isSearchActive &&
+    !searchTooShort &&
+    !isBookEmpty &&
+    summaryListCount === 0 &&
+    summaryContactCount > 0
 
   const handleCreateListFromSelection = () => {
+    if (!canCreateList) return
     dispatch(
       openCreateListForm({
         bookId: book_id,
@@ -211,12 +220,17 @@ function AddressBookList({
     setSelectedItems([])
   }
 
+  const handleCreateEmptyList = () => {
+    dispatch(openCreateListForm({ bookId: book_id }))
+    setSelectedItems([])
+  }
+
   return (
     <>
-      <div className="flex w-full flex-col rounded p-4">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden rounded p-4">
         {(hasSummaryCounts || hasSelections || isFetching) && (
-          <div className="text-muted-foreground flex min-w-0 flex-row items-center justify-between gap-2">
-            <div className="flex min-w-0 items-center gap-2">
+          <div className="text-muted-foreground flex min-w-0 shrink-0 flex-row flex-wrap items-center justify-between gap-2">
+            <div className="flex min-w-0 flex-wrap items-center gap-2">
               {isFetching && (
                 <Loader2
                   className="text-muted-foreground h-4 w-4 shrink-0 animate-spin"
@@ -233,28 +247,43 @@ function AddressBookList({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6"
+                    className="h-7 w-7"
                     onClick={handleDeselectAll}
                     aria-label={t('deselect_all.string')}
                   >
                     <X className="h-4 w-4" />
                   </Button>
-                  {canCreateList && (
+                  {canOfferList && (
                     <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
+                      variant="outline"
+                      size="sm"
+                      className="h-7 gap-1.5 px-2 text-xs"
                       onClick={handleCreateListFromSelection}
-                      aria-label={t('create_list_from_selection.string')}
+                      disabled={!canCreateList}
+                      aria-label={t('create_list.string')}
+                      aria-describedby={
+                        canCreateList
+                          ? undefined
+                          : 'address-book-create-list-hint'
+                      }
                     >
-                      <Users className="h-4 w-4" />
+                      <Users className="h-3.5 w-3.5" aria-hidden />
+                      {t('create_list.string')}
                     </Button>
+                  )}
+                  {canOfferList && !canCreateList && (
+                    <span
+                      id="address-book-create-list-hint"
+                      className="text-xs"
+                    >
+                      {t('create_list_hint.string')}
+                    </span>
                   )}
                   {permissions.canErase && (
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="text-destructive hover:text-destructive h-6 w-6"
+                      className="text-destructive hover:text-destructive h-7 w-7"
                       onClick={() => setBulkDeleteOpen(true)}
                       disabled={isDeleting}
                       aria-label={t('delete_selected.string')}
@@ -270,48 +299,63 @@ function AddressBookList({
                 />
               ) : null}
             </div>
-            <div className="bg-muted/50 flex shrink-0 items-center rounded-md border border-transparent">
-              {serverSide && (
-                <Select value={sortBy} onValueChange={handleSortByChange}>
-                  <SelectTrigger
-                    className="text-muted-foreground h-7 w-auto max-w-[9rem] gap-1 border-0 bg-transparent px-2 text-xs shadow-none"
-                    aria-label={t('filters.sort_by.string')}
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent align="end">
-                    {SORT_FIELDS.map((field) => (
-                      <SelectItem key={field} value={field}>
-                        {t(`filters.sort_options.${field}.string`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+            <div className="flex shrink-0 items-center gap-2">
+              {canOfferList && !hasSelections && !showEmptyLists && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 gap-1.5 px-2 text-xs"
+                  onClick={handleCreateEmptyList}
+                >
+                  <Users className="h-3.5 w-3.5" aria-hidden />
+                  {t('new_list.string')}
+                </Button>
               )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground h-7 gap-1 rounded-l-none px-2 text-xs"
-                onClick={handleToggleSort}
-                aria-label={
-                  sortOrder === 'asc'
-                    ? t('filters.sort_order_asc.string')
-                    : t('filters.sort_order_desc.string')
-                }
-              >
-                {sortOrder === 'asc' ? (
-                  <ArrowDownAZ className="h-3.5 w-3.5" />
-                ) : (
-                  <ArrowUpAZ className="h-3.5 w-3.5" />
+              <div className="bg-muted/50 flex shrink-0 items-center rounded-md border border-transparent">
+                {serverSide && (
+                  <Select value={sortBy} onValueChange={handleSortByChange}>
+                    <SelectTrigger
+                      className="text-muted-foreground h-7 w-auto max-w-[9rem] gap-1 border-0 bg-transparent px-2 text-xs shadow-none"
+                      aria-label={t('filters.sort_by.string')}
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent align="end">
+                      {SORT_FIELDS.map((field) => (
+                        <SelectItem key={field} value={field}>
+                          {t(`filters.sort_options.${field}.string`)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
-              </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-muted-foreground h-7 gap-1 rounded-l-none px-2 text-xs"
+                  onClick={handleToggleSort}
+                  aria-label={
+                    sortOrder === 'asc'
+                      ? t('filters.sort_order_asc.string')
+                      : t('filters.sort_order_desc.string')
+                  }
+                >
+                  {sortOrder === 'asc' ? (
+                    <ArrowDownAZ className="h-3.5 w-3.5" />
+                  ) : (
+                    <ArrowUpAZ className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         )}
 
         <div
+          data-testid="address-book-list-scroll"
           className={cn(
-            'flex min-h-0 flex-1 flex-col space-y-5',
+            'scrollbar-thin-gray flex min-h-0 flex-1 flex-col space-y-5 overflow-y-auto',
             (hasSummaryCounts || hasSelections || isFetching) && 'mt-4'
           )}
         >
@@ -352,6 +396,9 @@ function AddressBookList({
             showCheckboxes={showCheckboxes}
             onHandleCheckboxClick={handleCheckboxClick}
             sourceBookNamesById={sourceBookNamesById}
+            emptyHint={showEmptyLists ? t('lists_empty.string') : undefined}
+            onCreate={showEmptyLists ? handleCreateEmptyList : undefined}
+            createLabel={showEmptyLists ? t('new_list.string') : undefined}
           />
 
           <ListSection
@@ -366,17 +413,21 @@ function AddressBookList({
             allContactsView={allContactsView}
             sourceBookNamesById={sourceBookNamesById}
             className={
-              distributionLists.length > 0 ? 'border-t pt-4' : undefined
+              distributionLists.length > 0 || showEmptyLists
+                ? 'border-t pt-4'
+                : undefined
             }
           />
         </div>
 
         {showPagination && (
-          <AddressBookListPagination
-            totalPages={totalPages}
-            currentPage={currentPage}
-            showPageSize={serverSide}
-          />
+          <div className="shrink-0">
+            <AddressBookListPagination
+              totalPages={totalPages}
+              currentPage={currentPage}
+              showPageSize={serverSide}
+            />
+          </div>
         )}
       </div>
 

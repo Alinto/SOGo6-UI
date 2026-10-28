@@ -186,6 +186,13 @@ describe('AddressBookList Component', () => {
     expect(listItems[0]).not.toHaveTextContent('(Selected)')
   })
 
+  it('scrolls inside the contact list', () => {
+    render(<AddressBookList items={mockItems} />)
+    expect(screen.getByTestId('address-book-list-scroll')).toHaveClass(
+      'overflow-y-auto'
+    )
+  })
+
   it('renders the correct number of contacts', () => {
     render(<AddressBookList items={mockItems} />)
     expect(screen.getByText('2 contacts')).toBeInTheDocument()
@@ -205,8 +212,24 @@ describe('AddressBookList Component', () => {
         screen.getByLabelText('delete_selected.string')
       ).toBeInTheDocument()
       expect(
-        screen.getByLabelText('create_list_from_selection.string')
+        screen.getByRole('button', { name: 'create_list.string' })
+      ).toBeEnabled()
+    })
+
+    it('shows a new list action before any selection', () => {
+      render(<AddressBookList items={mockItems} />)
+      expect(
+        screen.getByRole('button', { name: 'new_list.string' })
       ).toBeInTheDocument()
+    })
+
+    it('keeps create list visible until two contacts are selected', () => {
+      render(<AddressBookList items={mockItems} />)
+      fireEvent.click(screen.getAllByTestId('list-item')[0])
+      expect(
+        screen.getByRole('button', { name: 'create_list.string' })
+      ).toBeDisabled()
+      expect(screen.getByText('create_list_hint.string')).toBeInTheDocument()
     })
 
     it('hides bulk delete without the erase right', () => {
@@ -222,8 +245,8 @@ describe('AddressBookList Component', () => {
         screen.queryByLabelText('delete_selected.string')
       ).not.toBeInTheDocument()
       expect(
-        screen.getByLabelText('create_list_from_selection.string')
-      ).toBeInTheDocument()
+        screen.getByRole('button', { name: 'create_list.string' })
+      ).toBeEnabled()
     })
 
     it('hides list creation without the create right', () => {
@@ -239,7 +262,10 @@ describe('AddressBookList Component', () => {
         screen.getByLabelText('delete_selected.string')
       ).toBeInTheDocument()
       expect(
-        screen.queryByLabelText('create_list_from_selection.string')
+        screen.queryByRole('button', { name: 'create_list.string' })
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'new_list.string' })
       ).not.toBeInTheDocument()
     })
 

@@ -35,18 +35,23 @@ jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: jest.fn(() => jest.fn()),
 }))
 
-jest.mock('@/features/address_books/hooks/address-book-entries-context', () => ({
-  AddressBookEntriesProvider: ({ children }: { children: React.ReactNode }) =>
-    children,
-  useAddressBookEntriesContext: () => mockUseAddressBookEntries(),
-}))
+jest.mock(
+  '@/features/address_books/hooks/address-book-entries-context',
+  () => ({
+    AddressBookEntriesProvider: ({ children }: { children: React.ReactNode }) =>
+      children,
+    useAddressBookEntriesContext: () => mockUseAddressBookEntries(),
+  })
+)
 
 jest.mock('@/features/address_books/hooks/use-address-book-entries', () => ({
-  useAddressBookEntries: (...args: unknown[]) => mockUseAddressBookEntries(...args),
+  useAddressBookEntries: (...args: unknown[]) =>
+    mockUseAddressBookEntries(...args),
 }))
 
 jest.mock('@/features/address_books/hooks/use-all-contacts-entries', () => ({
-  useAllContactsEntries: (...args: unknown[]) => mockUseAllContactsEntries(...args),
+  useAllContactsEntries: (...args: unknown[]) =>
+    mockUseAllContactsEntries(...args),
 }))
 
 describe('AddressBook Layout', () => {
@@ -89,12 +94,13 @@ describe('AddressBook Layout', () => {
     expect(flexContainer).toBeInTheDocument()
   })
 
-  it('should have min-h-full on the main container', () => {
+  it('should fill the viewport without scrolling the page', () => {
     const { container } = render(
       <Layout visualization={mockVisualization}>{mockChildren}</Layout>
     )
-    const mainContainer = container.querySelector('.min-h-full')
+    const mainContainer = container.querySelector('.overflow-hidden')
     expect(mainContainer).toBeInTheDocument()
+    expect(mainContainer).toHaveClass('h-full', 'min-h-0')
   })
 
   it('should have responsive width classes on children panel', () => {
@@ -141,7 +147,9 @@ describe('AddressBook Layout', () => {
 
     render(<Layout visualization={mockVisualization}>{mockChildren}</Layout>)
 
-    expect(screen.queryByTestId('visualization-content')).not.toBeInTheDocument()
+    expect(
+      screen.queryByTestId('visualization-content')
+    ).not.toBeInTheDocument()
   })
 
   it('should expand children panel to full width when address book is empty', () => {

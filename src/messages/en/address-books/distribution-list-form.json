@@ -16,9 +16,37 @@
       "string": "{number, plural, one {# member} other {# members}}",
       "context": "Member count on distribution list detail"
     },
+    "intro": {
+      "string": "A list lets you write to several contacts at once.",
+      "context": "Helper shown when creating a distribution list."
+    },
     "members": {
       "string": "Members",
       "context": "Label for members section"
+    },
+    "search_members": {
+      "string": "Search contacts to add",
+      "context": "Placeholder for filtering contacts in the distribution list form."
+    },
+    "no_contacts": {
+      "string": "This address book has no contacts to add.",
+      "context": "Shown in the member picker when the address book has no individual contacts."
+    },
+    "no_matching_contacts": {
+      "string": "No matching contacts",
+      "context": "Shown when the member search has no results."
+    },
+    "all_contacts_added": {
+      "string": "All contacts are in this list.",
+      "context": "Shown when every contact of the address book is already a member."
+    },
+    "remove_member": {
+      "string": "Remove {name}",
+      "context": "Aria label for removing a member chip."
+    },
+    "add_member": {
+      "string": "Add {name}",
+      "context": "Aria label for adding a contact as a list member."
     },
     "members_selected": {
       "string": "{number, plural, one {# member selected} other {# members selected}}",

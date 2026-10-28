@@ -28,16 +28,16 @@ const AddressBooksPage: React.FC = () => {
 
   if (isError) {
     return (
-      <div className="text-destructive flex min-h-full items-center justify-center p-8 text-sm">
+      <div className="text-destructive flex h-full items-center justify-center p-8 text-sm">
         {t('load_error.list.string')}
       </div>
     )
   }
 
   return (
-    <div className="flex min-h-full flex-col">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden">
       {!isAllContactsView && <ReadOnlyBanner />}
-      <div className="flex min-h-full flex-1">
+      <div className="flex min-h-0 flex-1 overflow-hidden">
         {isLoading && items.length === 0 ? (
           <ListSkeleton />
         ) : (

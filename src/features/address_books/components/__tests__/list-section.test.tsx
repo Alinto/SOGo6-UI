@@ -69,6 +69,28 @@ describe('ListSection', () => {
       expect(screen.getByText('Contacts')).toBeInTheDocument()
     })
 
+    it('shows an empty hint and create action when requested', () => {
+      const onCreate = jest.fn()
+      render(
+        <ListSection
+          title="Lists"
+          items={[]}
+          bookId="work"
+          variant="lists"
+          selectedItems={[]}
+          showCheckboxes={false}
+          onHandleCheckboxClick={onHandleCheckboxClick}
+          emptyHint="Create a list"
+          onCreate={onCreate}
+          createLabel="New list"
+        />
+      )
+
+      expect(screen.getByText('Create a list')).toBeInTheDocument()
+      fireEvent.click(screen.getByRole('button', { name: 'New list' }))
+      expect(onCreate).toHaveBeenCalledTimes(1)
+    })
+
     it('returns null when items array is empty', () => {
       const { container } = render(
         <ListSection
@@ -113,8 +135,14 @@ describe('ListSection', () => {
         />
       )
 
-      expect(screen.getByTestId('list-item-c1')).toHaveAttribute('data-active', 'true')
-      expect(screen.getByTestId('list-item-c1')).toHaveAttribute('data-selected', 'true')
+      expect(screen.getByTestId('list-item-c1')).toHaveAttribute(
+        'data-active',
+        'true'
+      )
+      expect(screen.getByTestId('list-item-c1')).toHaveAttribute(
+        'data-selected',
+        'true'
+      )
     })
   })
 

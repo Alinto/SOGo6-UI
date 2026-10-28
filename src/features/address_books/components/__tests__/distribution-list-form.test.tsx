@@ -7,12 +7,25 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('@/components/ui/dialog', () => ({
-  Dialog: ({ children, open }: { children: React.ReactNode; open?: boolean }) =>
-    open ? <div data-testid="list-form-dialog">{children}</div> : null,
-  DialogContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DialogHeader: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DialogTitle: ({ children }: { children: React.ReactNode }) => <h2>{children}</h2>,
-  DialogFooter: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  Dialog: ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode
+    open?: boolean
+  }) => (open ? <div data-testid="list-form-dialog">{children}</div> : null),
+  DialogContent: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogHeader: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  DialogTitle: ({ children }: { children: React.ReactNode }) => (
+    <h2>{children}</h2>
+  ),
+  DialogFooter: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
 }))
 
 jest.mock('@/components/ui/scroll-area', () => ({
@@ -40,7 +53,9 @@ const list: VCard = {
   kind: 'group',
   firstName: 'Sales Team',
   lastName: '',
-  members: [{ contactId: 'c1', email: 'alice@example.com', displayName: 'Alice Smith' }],
+  members: [
+    { contactId: 'c1', email: 'alice@example.com', displayName: 'Alice Smith' },
+  ],
 }
 
 describe('DistributionListForm', () => {
@@ -59,7 +74,9 @@ describe('DistributionListForm', () => {
         />
       )
       expect(screen.getByTestId('list-form-dialog')).toBeInTheDocument()
-      expect(screen.getByText('DISTRIBUTION_LIST_FORM.new_list.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('DISTRIBUTION_LIST_FORM.new_list.string')
+      ).toBeInTheDocument()
     })
 
     it('shows loading state', () => {
@@ -101,7 +118,9 @@ describe('DistributionListForm', () => {
         />
       )
 
-      expect(screen.getByText('DISTRIBUTION_LIST_FORM.edit_list.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('DISTRIBUTION_LIST_FORM.edit_list.string')
+      ).toBeInTheDocument()
       await waitFor(() => {
         expect(screen.getByDisplayValue('Sales Team')).toBeInTheDocument()
       })
@@ -137,7 +156,11 @@ describe('DistributionListForm', () => {
           open
           bookContacts={contacts}
           prefillMembers={[
-            { contactId: 'c1', email: 'alice@example.com', displayName: 'Alice Smith' },
+            {
+              contactId: 'c1',
+              email: 'alice@example.com',
+              displayName: 'Alice Smith',
+            },
             { contactId: 'c2', email: '', displayName: 'Bob NoMail' },
           ]}
           onClose={jest.fn()}
@@ -146,12 +169,15 @@ describe('DistributionListForm', () => {
       )
 
       await waitFor(() => {
-        const checkboxes = screen.getAllByRole('checkbox')
-        expect(checkboxes).toHaveLength(2)
-        checkboxes.forEach((checkbox) => {
-          expect(checkbox).toBeChecked()
-        })
+        expect(screen.getByText('Alice Smith')).toBeInTheDocument()
+        expect(screen.getByText('Bob NoMail')).toBeInTheDocument()
       })
+      expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+      expect(
+        screen.getAllByRole('button', {
+          name: 'DISTRIBUTION_LIST_FORM.remove_member.string',
+        })
+      ).toHaveLength(2)
     })
   })
 
@@ -168,7 +194,11 @@ describe('DistributionListForm', () => {
         />
       )
 
-      await user.click(screen.getByRole('button', { name: 'DISTRIBUTION_LIST_FORM.cancel.string' }))
+      await user.click(
+        screen.getByRole('button', {
+          name: 'DISTRIBUTION_LIST_FORM.cancel.string',
+        })
+      )
       expect(onClose).toHaveBeenCalledTimes(1)
     })
   })

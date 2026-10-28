@@ -13,7 +13,7 @@ const AddressBooksPage: React.FC = () => {
     useAddressBookEntries(routeParam(book_id) ?? null)
 
   return (
-    <div className="flex min-h-full">
+    <div className="flex h-full min-h-0 w-full">
       {isFetching ? (
         <ListSkeleton />
       ) : (
