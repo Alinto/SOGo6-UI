@@ -1,6 +1,6 @@
 import '@/__mocks__/matchMedia.mock'
 import '@testing-library/jest-dom'
-import { render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import React from 'react'
 import NavigationMenuToggler from '../navigation-menu-toggler'
 
@@ -18,47 +18,51 @@ jest.mock('../navigation-toggler', () => {
 })
 
 // Mock Radix UI Popover
-jest.mock('@/components/ui/popover', () => ({
-  Popover: ({
-    children,
-    open,
-  }: {
-    children: React.ReactNode
-    open?: boolean
-  }) => (
-    <div data-testid="popover" data-open={open}>
-      {children}
-    </div>
-  ),
-  PopoverTrigger: React.forwardRef<
+jest.mock('@/components/ui/popover', () => {
+  const PopoverTrigger = React.forwardRef<
     HTMLButtonElement,
     { asChild?: boolean; children: React.ReactNode }
-  >(({ children }, ref) => <div ref={ref}>{children}</div>),
-  PopoverContent: ({
-    children,
-    align,
-    side,
-    className,
-  }: {
-    children: React.ReactNode
-    align?: string
-    side?: string
-    className?: string
-  }) => (
-    <div
-      data-testid="popover-content"
-      data-align={align}
-      data-side={side}
-      className={className}
-    >
-      {children}
-    </div>
-  ),
-}))
+  >(({ children }, ref) => <div ref={ref}>{children}</div>)
+  PopoverTrigger.displayName = 'PopoverTrigger'
+  return {
+    Popover: ({
+      children,
+      open,
+    }: {
+      children: React.ReactNode
+      open?: boolean
+    }) => (
+      <div data-testid="popover" data-open={open}>
+        {children}
+      </div>
+    ),
+    PopoverTrigger,
+    PopoverContent: ({
+      children,
+      align,
+      side,
+      className,
+    }: {
+      children: React.ReactNode
+      align?: string
+      side?: string
+      className?: string
+    }) => (
+      <div
+        data-testid="popover-content"
+        data-align={align}
+        data-side={side}
+        className={className}
+      >
+        {children}
+      </div>
+    ),
+  }
+})
 
 // Mock Button component
-jest.mock('@/components/ui/button', () => ({
-  Button: React.forwardRef<
+jest.mock('@/components/ui/button', () => {
+  const Button = React.forwardRef<
     HTMLButtonElement,
     React.PropsWithChildren<{ asChild?: boolean; [key: string]: any }>
   >(({ children, ...props }, ref) => {
@@ -68,8 +72,10 @@ jest.mock('@/components/ui/button', () => ({
         {children}
       </button>
     )
-  }),
-}))
+  })
+  Button.displayName = 'Button'
+  return { Button }
+})
 
 // Mock lucide-react icons
 jest.mock('lucide-react', () => ({
@@ -84,14 +90,14 @@ describe('NavigationMenuToggler', () => {
 
   it('should render the component', () => {
     render(<NavigationMenuToggler />)
-    const button = screen.getByRole('button', { name: /open menu/i })
+    const button = screen.getByRole('button', { name: 'open_menu.string' })
     expect(button).toBeInTheDocument()
   })
 
   it('should render the menu button with correct aria-label', () => {
     render(<NavigationMenuToggler />)
-    const button = screen.getByRole('button', { name: /open menu/i })
-    expect(button).toHaveAttribute('aria-label', 'Open menu')
+    const button = screen.getByRole('button', { name: 'open_menu.string' })
+    expect(button).toHaveAttribute('aria-label', 'open_menu.string')
   })
 
   it('should render the Grid2X2 icon', () => {
@@ -152,9 +158,20 @@ describe('NavigationMenuToggler', () => {
     })
   })
 
+  it('opens on click and closes with Escape', () => {
+    render(<NavigationMenuToggler />)
+    const button = screen.getByRole('button', { name: 'open_menu.string' })
+    expect(button).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(button)
+    expect(screen.getByTestId('popover')).toHaveAttribute('data-open', 'true')
+    expect(button).toHaveAttribute('aria-expanded', 'true')
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.getByTestId('popover')).toHaveAttribute('data-open', 'false')
+  })
+
   it('should have button with p-0 class', () => {
     render(<NavigationMenuToggler />)
-    const button = screen.getByRole('button', { name: /open menu/i })
+    const button = screen.getByRole('button', { name: 'open_menu.string' })
     expect(button).toHaveClass('p-0')
   })
 

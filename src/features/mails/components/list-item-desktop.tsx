@@ -7,11 +7,9 @@ import MailFolderLabel from '@/features/mails/components/mail/mail-folder-label'
 import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label'
-import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
-import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
   Archive,
@@ -24,7 +22,6 @@ import {
   Paperclip,
   Reply,
   ShieldX,
-  Star,
   Trash2,
   User,
 } from 'lucide-react'
@@ -33,6 +30,12 @@ import { useParams } from 'next/navigation'
 import React, { memo } from 'react'
 import { ImapMessagesList } from '../mails-types'
 import { formatDate } from './list-item-utils'
+import {
+  MailFlagButton,
+  MailRowAnchor,
+  MailRowStatus,
+  useMailRowLink,
+} from './mail-row-link'
 
 interface ListItemDesktopProps {
   data: ImapMessagesList
@@ -61,7 +64,6 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
 }) => {
   const t = useTranslations('MAILS_LIST')
   const tBar = useTranslations('MAILS_COMMONS.mail_display.action-bar')
-  const { push } = useRouter()
   const { account, folder } = useParams()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
   const folderString = folderPathFromParams(
@@ -72,7 +74,6 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const mailFolderPath = data.folder ?? folderString
   const { folderType } = useCurrentFolder(mailFolderPath, accountString)
   const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
-  const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
   const showHighPriority = data.priority <= 2
@@ -87,6 +88,13 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
   const hasHoverActions = Boolean(
     onToggleRead || onDelete || onArchive || onSpam || onMoveToInbox
   )
+  const { href, onClick } = useMailRowLink({
+    folderType,
+    mailFolderPath,
+    accountId: accountString,
+    mailId: id,
+    onOpenMail,
+  })
 
   return (
     <>
@@ -97,132 +105,124 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
           data.seen ? '' : 'font-semibold',
           data.deleted && 'opacity-60'
         )}
-        onClick={async () => {
-          const openedDraft = await openDraftIfNeeded({
-            folderType,
-            folderPath: mailFolderPath,
-            accountId: accountString,
-            mailId: id,
-          })
-          if (openedDraft) return
-          if (onOpenMail) {
-            await onOpenMail(String(id), mailFolderPath)
-            return
-          }
-          push(
-            `/u/${accountString}/${encodeURIComponent(mailFolderPath)}/${id}`
-          )
-        }}
       >
+        <MailRowAnchor
+          href={href}
+          onClick={onClick}
+          className="order-3 flex min-w-0 flex-1 items-center gap-2"
+        >
+          <div className="flex w-1/5 min-w-0 items-center gap-1">
+            <span
+              className={`text-md min-w-0 truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
+            >
+              {displayName}
+            </span>
+            {folderLabel && (
+              <MailFolderLabel name={folderLabel} type={folderType} />
+            )}
+          </div>
+
+          <div className="flex w-3/5 min-w-0 flex-col gap-0.5">
+            <div
+              className={`flex min-w-0 items-center gap-1 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
+            >
+              {showHighPriority && (
+                <TooltipWrapper content={priorityTitle} side="top">
+                  <ChevronsUp
+                    className="text-warning h-4 w-4 shrink-0"
+                    aria-hidden
+                  />
+                </TooltipWrapper>
+              )}
+              {hasEventType && (
+                <Calendar
+                  className="text-muted-foreground h-4 w-4 shrink-0"
+                  aria-hidden
+                />
+              )}
+              {hasContactType && (
+                <User
+                  className="text-muted-foreground h-4 w-4 shrink-0"
+                  aria-hidden
+                />
+              )}
+              {data.answered && (
+                <Reply
+                  className="text-muted-foreground h-4 w-4 shrink-0"
+                  aria-hidden
+                />
+              )}
+              {data.forwarded && (
+                <Forward
+                  className="text-muted-foreground h-4 w-4 shrink-0"
+                  aria-hidden
+                />
+              )}
+              <span
+                className={cn(
+                  'min-w-0 shrink truncate',
+                  data.deleted && 'line-through'
+                )}
+              >
+                {data.subject}
+              </span>
+              <MailRowStatus seen={data.seen} hasAttachment={hasAttachment} />
+              <MailListLabels flags={data.flags} />
+            </div>
+            {showSnippet && (
+              <span className="text-muted-foreground block truncate text-sm">
+                {data.snippet}
+              </span>
+            )}
+          </div>
+        </MailRowAnchor>
+
         <MailListItemCheckbox
           isSelected={isSelected}
           data={data}
           onHandleCheckboxClick={onHandleCheckboxClick}
-          wrapperClassName={isSelected ? 'flex' : 'hidden group-hover:flex'}
+          wrapperClassName={
+            isSelected
+              ? 'order-1 flex'
+              : 'order-1 hidden group-hover:flex group-focus-within:flex'
+          }
         />
 
         <span
           className={cn(
-            'flex h-8 w-8 shrink-0 items-center justify-center',
-            isSelected ? 'hidden' : 'group-hover:hidden'
+            'order-1 flex h-8 w-8 shrink-0 items-center justify-center',
+            isSelected
+              ? 'hidden'
+              : 'group-focus-within:hidden group-hover:hidden'
           )}
         >
           <Avatar className="h-6 w-6">
-            <AvatarImage src="/images/account-avatar.svg" />
+            <AvatarImage src="/images/account-avatar.svg" alt="" />
             <AvatarFallback>
               {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </span>
 
-        <div>
-          <Star
-            fill={flagged ? 'yellow' : 'white'}
-            className="h-4 w-4 cursor-pointer transition-all duration-200 hover:h-5 hover:w-5"
-            strokeWidth={1}
-            onClick={(e) => {
-              e.stopPropagation()
-              onToggleFlag?.(data.id)
-            }}
-          />
-        </div>
-
-        <div className="flex w-1/5 min-w-0 items-center gap-1">
-          <span
-            className={`text-md min-w-0 truncate ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
-          >
-            {displayName}
-          </span>
-          {folderLabel && (
-            <MailFolderLabel name={folderLabel} type={folderType} />
-          )}
-        </div>
-
-        <div className="flex w-3/5 min-w-0 flex-col gap-0.5">
-          <div
-            className={`flex min-w-0 items-center gap-1 ${data.seen ? 'text-muted-foreground' : 'font-semibold'}`}
-          >
-            {showHighPriority && (
-              <TooltipWrapper content={priorityTitle} side="top">
-                <ChevronsUp
-                  className="text-warning h-4 w-4 shrink-0"
-                  aria-hidden
-                />
-              </TooltipWrapper>
-            )}
-            {hasEventType && (
-              <Calendar
-                className="text-muted-foreground h-4 w-4 shrink-0"
-                aria-hidden
-              />
-            )}
-            {hasContactType && (
-              <User
-                className="text-muted-foreground h-4 w-4 shrink-0"
-                aria-hidden
-              />
-            )}
-            {data.answered && (
-              <Reply
-                className="text-muted-foreground h-4 w-4 shrink-0"
-                aria-hidden
-              />
-            )}
-            {data.forwarded && (
-              <Forward
-                className="text-muted-foreground h-4 w-4 shrink-0"
-                aria-hidden
-              />
-            )}
-            <span
-              className={cn(
-                'min-w-0 shrink truncate',
-                data.deleted && 'line-through'
-              )}
-            >
-              {data.subject}
-            </span>
-            <MailListLabels flags={data.flags} />
-          </div>
-          {showSnippet && (
-            <p className="text-muted-foreground truncate text-sm">
-              {data.snippet}
-            </p>
-          )}
-        </div>
+        <MailFlagButton
+          flagged={flagged}
+          onToggle={() => onToggleFlag?.(data.id)}
+        />
 
         <span
           className={cn(
-            'text-muted-foreground w-1/5 text-right',
-            hasHoverActions && 'group-hover:hidden'
+            'text-muted-foreground order-4 w-1/5 text-right',
+            hasHoverActions && 'group-focus-within:hidden group-hover:hidden'
           )}
         >
-          {hasAttachment && <Paperclip className="mr-2 inline h-4 w-4" />}
+          {hasAttachment && (
+            <Paperclip className="mr-2 inline h-4 w-4" aria-hidden />
+          )}
           {formatDate(data.date)}
         </span>
 
         {hasHoverActions ? (
-          <div className="hidden w-1/5 items-center justify-end gap-1 group-hover:flex">
+          <div className="order-4 hidden w-1/5 items-center justify-end gap-1 group-focus-within:flex group-hover:flex">
             {onToggleRead ? (
               <TooltipButton
                 type="button"

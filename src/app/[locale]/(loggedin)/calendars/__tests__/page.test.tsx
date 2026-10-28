@@ -108,11 +108,13 @@ describe('CalendarPage', () => {
     expect(container).toBeInTheDocument()
   })
 
-  it('should render main element with correct classes', () => {
+  it('should render the page layout with correct classes', () => {
     const { container } = render(<CalendarPage />)
-    const main = container.querySelector('main')
-    expect(main).toBeInTheDocument()
-    expect(main).toHaveClass(
+    const layout = container.querySelector(
+      'div.flex.h-full.w-full.flex-col.overflow-hidden'
+    )
+    expect(layout).toBeInTheDocument()
+    expect(layout).toHaveClass(
       'flex',
       'h-full',
       'w-full',
@@ -138,16 +140,15 @@ describe('CalendarPage', () => {
   it('should have correct layout structure', () => {
     const { container } = render(<CalendarPage />)
 
-    // Main should have exactly 2 children: toolbar wrapper + view wrapper
-    const main = container.querySelector('main')
-    expect(main?.children.length).toBe(2)
+    const layout = container.querySelector(
+      'div.flex.h-full.w-full.flex-col.overflow-hidden'
+    )
+    expect(layout?.children.length).toBe(2)
 
-    // First child should be shrink-0 (toolbar)
-    const toolbarWrapper = main?.children[0]
+    const toolbarWrapper = layout?.children[0]
     expect(toolbarWrapper).toHaveClass('shrink-0')
 
-    // Second child should be flex-1 (calendar view)
-    const viewWrapper = main?.children[1]
+    const viewWrapper = layout?.children[1]
     expect(viewWrapper).toHaveClass('flex-1', 'overflow-hidden')
   })
 })

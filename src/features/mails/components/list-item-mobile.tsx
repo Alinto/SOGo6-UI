@@ -6,12 +6,10 @@ import MailFolderLabel from '@/features/mails/components/mail/mail-folder-label'
 import MailListLabels from '@/features/mails/components/mail/mail-list-labels'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
 import { useMailFolderLabel } from '@/features/mails/hooks/use-mail-folder-label'
-import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import { MAIL_PRIORITY_HIGHEST } from '@/features/mails/store/mail-compose-slice'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import { getPermissionsForFolder } from '@/features/mails/utils/folder-permissions'
 import { getListDisplayContact } from '@/features/mails/utils/folder-type-helpers'
-import { useRouter } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import {
   Calendar,
@@ -19,7 +17,6 @@ import {
   Forward,
   Paperclip,
   Reply,
-  Star,
   User,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
@@ -28,6 +25,12 @@ import React, { memo, useCallback, useRef } from 'react'
 import { ImapMessagesList } from '../mails-types'
 import { useMailActionMutation, useMoveToTrashMutation } from '../store'
 import { formatDate } from './list-item-utils'
+import {
+  MailFlagButton,
+  MailRowAnchor,
+  MailRowStatus,
+  useMailRowLink,
+} from './mail-row-link'
 import SwipeableMailItem from './swipeable-mail-item'
 
 interface ListItemMobileProps {
@@ -46,7 +49,6 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   onDelete: onDeleteOverride,
 }) => {
   const t = useTranslations('MAILS_LIST')
-  const { push } = useRouter()
   const { account, folder } = useParams()
   const accountString = Array.isArray(account) ? account[0] : (account ?? '')
   const folderString = folderPathFromParams(
@@ -63,7 +65,6 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   )
   const { canMarkRead, canWriteFlags } = getPermissionsForFolder(mailFolder)
   const folderLabel = useMailFolderLabel(data, mailFolderPath, folderType)
-  const { openDraftIfNeeded } = useOpenDraftOnClick()
   const { id, from, flagged, hasAttachment } = data
   const showHighPriority = data.priority <= 2
   const priorityTitle =
@@ -78,6 +79,15 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
   const isSelectedClass = isSelected ? 'bg-primary/20' : ''
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const isSwipingRef = useRef(false)
+  const ignoreRowClick = useCallback(() => isSwipingRef.current, [])
+  const { href, onClick } = useMailRowLink({
+    folderType,
+    mailFolderPath,
+    accountId: accountString,
+    mailId: id,
+    onOpenMail,
+    shouldIgnoreClick: ignoreRowClick,
+  })
 
   const handleLongPress = () => {
     // Don't trigger long press if swiping
@@ -185,27 +195,8 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
               data.seen ? '' : 'font-semibold',
               data.deleted && 'opacity-60'
             )}
-            onClick={async () => {
-              if (isSwipingRef.current) return
-
-              const openedDraft = await openDraftIfNeeded({
-                folderType,
-                folderPath: mailFolderPath,
-                accountId: accountString,
-                mailId: id,
-              })
-              if (openedDraft) return
-              if (onOpenMail) {
-                await onOpenMail(String(id), mailFolderPath)
-                return
-              }
-
-              push(
-                `/u/${accountString}/${encodeURIComponent(mailFolderPath)}/${id}`
-              )
-            }}
           >
-            <div className="flex min-w-0 flex-row items-center gap-2">
+            <div className="flex min-w-0 flex-row items-start gap-2">
               {/* Avatar on the left */}
               {isSelected && (
                 <MailListItemCheckbox
@@ -213,16 +204,17 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                   data={data}
                   onHandleCheckboxClick={onHandleCheckboxClick}
                   checkboxClassName="h-7 w-7"
+                  wrapperClassName="order-1"
                 />
               )}
               <span
                 className={cn(
-                  'flex h-10 w-10 shrink-0 items-center justify-center',
+                  'order-1 flex h-10 w-10 shrink-0 items-center justify-center',
                   isSelected ? 'hidden' : ''
                 )}
               >
                 <Avatar className="bg-secondary flex h-10 w-10 items-center justify-center">
-                  <AvatarImage src="/images/account-avatar.svg" />
+                  <AvatarImage src="/images/account-avatar.svg" alt="" />
                   <AvatarFallback className="text-lg font-semibold">
                     {from.name && from.name.length > 0
                       ? from.name[0].toUpperCase()
@@ -232,8 +224,11 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                   </AvatarFallback>
                 </Avatar>
               </span>
-              {/* Content on the right */}
-              <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <MailRowAnchor
+                href={href}
+                onClick={onClick}
+                className="order-3 flex min-w-0 flex-1 flex-col gap-1"
+              >
                 <div className="flex min-w-0 flex-row items-center justify-between gap-2">
                   <div className="flex min-w-0 flex-1 flex-row items-center gap-1">
                     <div
@@ -247,7 +242,7 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                   </div>
                   <span className="text-muted-foreground shrink-0 select-none">
                     {hasAttachment && (
-                      <Paperclip className="mr-2 inline h-4 w-4" />
+                      <Paperclip className="mr-2 inline h-4 w-4" aria-hidden />
                     )}
                     {formatDate(data.date)}
                   </span>
@@ -297,30 +292,27 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                       >
                         {data.subject}
                       </span>
+                      <MailRowStatus
+                        seen={data.seen}
+                        hasAttachment={hasAttachment}
+                      />
                       <MailListLabels flags={data.flags} />
                     </div>
                     {showSnippet && (
-                      <p className="text-muted-foreground truncate text-sm select-none">
+                      <span className="text-muted-foreground block truncate text-sm select-none">
                         {data.snippet}
-                      </p>
+                      </span>
                     )}
                   </div>
-                  <div>
-                    <Star
-                      fill={flagged ? 'yellow' : 'white'}
-                      className={cn(
-                        'h-5 w-5 shrink-0 transition-all duration-200 hover:h-5 hover:w-5',
-                        canWriteFlags ? 'cursor-pointer' : 'cursor-default'
-                      )}
-                      strokeWidth={1}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleToggleFlag()
-                      }}
-                    />
-                  </div>
                 </div>
-              </div>
+              </MailRowAnchor>
+              <MailFlagButton
+                flagged={flagged}
+                disabled={!canWriteFlags}
+                onToggle={handleToggleFlag}
+                className="order-4 mt-6"
+                iconClassName="h-5 w-5 hover:h-5"
+              />
             </div>
           </div>
         </div>
