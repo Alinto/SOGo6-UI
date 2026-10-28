@@ -55,7 +55,12 @@ describe('FeatureIncoming', () => {
     it('applies layout classes on group content', () => {
       render(<FeatureIncoming />)
       const root = screen.getByTestId('sidebar-group-content')
-      expect(root).toHaveClass('flex', 'flex-col', 'items-center', 'justify-center')
+      expect(root).toHaveClass(
+        'flex',
+        'flex-col',
+        'items-center',
+        'justify-center'
+      )
     })
   })
 

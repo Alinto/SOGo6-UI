@@ -1010,6 +1010,16 @@
                 }
             }
         },
+        "calendar_visibility": {
+            "error": {
+                "title": {
+                    "string": "Calendar display not saved"
+                },
+                "message": {
+                    "string": "The calendar could not be shown or hidden. Please try again."
+                }
+            }
+        },
         "message": {
             "success": {
                 "string": "Operation completed successfully.",

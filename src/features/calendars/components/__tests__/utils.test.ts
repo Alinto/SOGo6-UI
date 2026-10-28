@@ -58,9 +58,7 @@ describe('calendar free/busy utils', () => {
   })
 
   describe('mapBackendFreeBusyToAvailability', () => {
-    const team: TeamMember[] = [
-      { name: 'User', email: 'user@example.com' },
-    ]
+    const team: TeamMember[] = [{ name: 'User', email: 'user@example.com' }]
 
     it('maps busy periods to ISO from/to per UTC calendar day', () => {
       const out = mapBackendFreeBusyToAvailability(
@@ -157,12 +155,8 @@ describe('calendar free/busy utils', () => {
       const start17_30 = Date.UTC(2026, 4, 18, 17, 30, 0, 0)
       expect(slots.some((s) => s.startMs === start17_30)).toBe(true)
 
-      expect(
-        isPartOfOptimalSlot(slots, '2026-05-18', 17, 0)
-      ).toBe(false)
-      expect(
-        isPartOfOptimalSlot(slots, '2026-05-18', 17, 2)
-      ).toBe(true)
+      expect(isPartOfOptimalSlot(slots, '2026-05-18', 17, 0)).toBe(false)
+      expect(isPartOfOptimalSlot(slots, '2026-05-18', 17, 2)).toBe(true)
     })
   })
 })

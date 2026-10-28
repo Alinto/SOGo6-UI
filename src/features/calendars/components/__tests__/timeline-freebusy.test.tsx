@@ -11,8 +11,10 @@ jest.mock('next-intl', () => {
     useLocale: () => 'en',
     useTranslations: (namespace?: string) => {
       if (namespace === 'CALENDARS') {
-        return (key: string, values?: Record<string, string | number | boolean | Date>) =>
-          calendarsMessagesT(key, values)
+        return (
+          key: string,
+          values?: Record<string, string | number | boolean | Date>
+        ) => calendarsMessagesT(key, values)
       }
       return (key: string) => key
     },
@@ -55,9 +57,7 @@ describe('TimelineFreeBusy', () => {
     })
 
     it('renders no-data message when data is undefined', () => {
-      render(
-        <TimelineFreeBusy teamMembers={teamMembers} centerDate={center} />
-      )
+      render(<TimelineFreeBusy teamMembers={teamMembers} centerDate={center} />)
       expect(screen.getByText('No availability data')).toBeInTheDocument()
     })
   })

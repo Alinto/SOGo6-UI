@@ -21,14 +21,16 @@ describe('calendarsMessagesT', () => {
   describe('interpolation', () => {
     it('replaces placeholders with provided values', () => {
       expect(
-        calendarsMessagesT('eventForm.attendees.timeline_hour.string', { hour: 14 })
+        calendarsMessagesT('eventForm.attendees.timeline_hour.string', {
+          hour: 14,
+        })
       ).toBe('14h')
     })
 
     it('returns the raw message when no values are passed', () => {
-      expect(calendarsMessagesT('eventForm.attendees.timeline_hour.string')).toBe(
-        '{hour}h'
-      )
+      expect(
+        calendarsMessagesT('eventForm.attendees.timeline_hour.string')
+      ).toBe('{hour}h')
     })
 
     it('replaces multiple placeholders in one message', () => {

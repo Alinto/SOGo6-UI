@@ -4,12 +4,17 @@ import React from 'react'
 import AttendeeInput from '../attendee-input'
 
 const mockUseRecipientSuggestions = jest.fn(() => ({
-  suggestions: [] as { email: string; name?: string; source: 'user' | 'contact' | 'list' }[],
+  suggestions: [] as {
+    email: string
+    name?: string
+    source: 'user' | 'contact' | 'list'
+  }[],
   isFetching: false,
 }))
 
 jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
-  useRecipientSuggestions: (...args: unknown[]) => mockUseRecipientSuggestions(...args),
+  useRecipientSuggestions: (...args: unknown[]) =>
+    mockUseRecipientSuggestions(...args),
 }))
 
 jest.mock('next-intl', () => {
@@ -20,8 +25,10 @@ jest.mock('next-intl', () => {
     useLocale: () => 'en',
     useTranslations: (namespace?: string) => {
       if (namespace === 'CALENDARS') {
-        return (key: string, values?: Record<string, string | number | boolean | Date>) =>
-          calendarsMessagesT(key, values)
+        return (
+          key: string,
+          values?: Record<string, string | number | boolean | Date>
+        ) => calendarsMessagesT(key, values)
       }
       return (key: string) => key
     },

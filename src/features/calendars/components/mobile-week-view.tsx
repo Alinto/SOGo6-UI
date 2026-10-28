@@ -60,7 +60,7 @@ export function MobileWeekView({
   return (
     <div className="w-full">
       {/* Outer wrapper - Safari needs explicit width */}
-      <div 
+      <div
         style={{
           width: '100%',
           maxWidth: '100vw',
@@ -77,7 +77,7 @@ export function MobileWeekView({
             msOverflowStyle: 'none',
             width: '100%',
             touchAction: 'pan-x',
-            cursor: 'grab', 
+            cursor: 'grab',
           }}
         >
           {/* Inner flex container - force horizontal layout */}
@@ -94,7 +94,9 @@ export function MobileWeekView({
               const dayEvents = getEventsForDay(day)
               const isToday = isSameDay(day, today)
               const isSelected = isSameDay(day, date)
-              const dayLabel = format(day, 'EEEE d MMMM', { locale: dateFnsLocale })
+              const dayLabel = format(day, 'EEEE d MMMM', {
+                locale: dateFnsLocale,
+              })
 
               return (
                 <button
@@ -118,8 +120,8 @@ export function MobileWeekView({
                     borderColor: isSelected
                       ? 'hsl(var(--primary))'
                       : isToday
-                      ? 'hsl(var(--primary) / 0.5)'
-                      : 'hsl(var(--border))',
+                        ? 'hsl(var(--primary) / 0.5)'
+                        : 'hsl(var(--border))',
                     backgroundColor: isSelected
                       ? 'hsl(var(--primary) / 0.1)'
                       : 'transparent',

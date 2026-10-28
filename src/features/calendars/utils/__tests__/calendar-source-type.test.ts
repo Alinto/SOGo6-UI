@@ -1,4 +1,5 @@
 import {
+  getCalendarFolderScope,
   isPersonalCalendar,
   isSharedCalendar,
   isSubscriptionCalendar,
@@ -32,6 +33,38 @@ describe('calendar-source-type', () => {
       expect(isSubscriptionCalendar({ source_type: 'ics' })).toBe(true)
       expect(isSubscriptionCalendar({ source_type: 'subscription' })).toBe(true)
       expect(isSubscriptionCalendar({ source_type: 'local' })).toBe(false)
+    })
+  })
+
+  describe('getCalendarFolderScope', () => {
+    const isOtherOwner = (owner?: string | null) =>
+      Boolean(owner) && owner !== 'me@example.com'
+
+    it('puts personal calendars in OWNER', () => {
+      expect(
+        getCalendarFolderScope({ source_type: 'local' }, isOtherOwner)
+      ).toBe('OWNER')
+      expect(
+        getCalendarFolderScope(
+          { source_type: 'local', owner: 'me@example.com' },
+          isOtherOwner
+        )
+      ).toBe('OWNER')
+    })
+
+    it('puts shared calendars in SUBS', () => {
+      expect(
+        getCalendarFolderScope({ owner: 'other@example.com' }, isOtherOwner)
+      ).toBe('SUBS')
+      expect(
+        getCalendarFolderScope({ source_type: 'shared' }, isOtherOwner)
+      ).toBe('SUBS')
+    })
+
+    it('puts subscriptions in SUBS', () => {
+      expect(getCalendarFolderScope({ source_type: 'ics' }, isOtherOwner)).toBe(
+        'SUBS'
+      )
     })
   })
 })

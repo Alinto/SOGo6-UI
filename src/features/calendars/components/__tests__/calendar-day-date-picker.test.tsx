@@ -9,11 +9,7 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('@/components/ui/calendar-lazy', () => ({
-  Calendar: ({
-    onSelect,
-  }: {
-    onSelect: (date: Date | undefined) => void
-  }) => (
+  Calendar: ({ onSelect }: { onSelect: (date: Date | undefined) => void }) => (
     <button type="button" onClick={() => onSelect(new Date('2024-03-15'))}>
       Select March 15
     </button>
@@ -21,7 +17,13 @@ jest.mock('@/components/ui/calendar-lazy', () => ({
 }))
 
 jest.mock('@/components/ui/popover', () => ({
-  Popover: ({ children, open }: { children: React.ReactNode; open: boolean }) => (
+  Popover: ({
+    children,
+    open,
+  }: {
+    children: React.ReactNode
+    open: boolean
+  }) => (
     <div data-testid="popover" data-open={open}>
       {children}
     </div>

@@ -16,7 +16,11 @@ function StatefulRecurrenceSelector({
 }) {
   const [value, setValue] = useState<RecurrenceRuleValue | null>(initial)
   return (
-    <RecurrenceSelector value={value} onChange={setValue} eventStart={eventStart} />
+    <RecurrenceSelector
+      value={value}
+      onChange={setValue}
+      eventStart={eventStart}
+    />
   )
 }
 
@@ -190,7 +194,9 @@ describe('RecurrenceSelector', () => {
       const root = container.firstElementChild
       expect(root).toHaveClass('flex', 'flex-col', 'gap-3')
 
-      const panel = container.querySelector('div[class*="rounded-md"][class*="border"]')
+      const panel = container.querySelector(
+        'div[class*="rounded-md"][class*="border"]'
+      )
       expect(panel).toBeTruthy()
     })
   })
@@ -201,7 +207,10 @@ describe('RecurrenceSelector', () => {
       render(<RecurrenceSelector value={null} onChange={onChange} />)
 
       expect(screen.getByLabelText('repeat.string')).toBeInTheDocument()
-      expect(screen.getByRole('switch')).toHaveAttribute('id', 'recurrence-toggle')
+      expect(screen.getByRole('switch')).toHaveAttribute(
+        'id',
+        'recurrence-toggle'
+      )
     })
 
     it('renders radio group for end options', () => {
@@ -239,8 +248,12 @@ describe('RecurrenceSelector', () => {
         />
       )
 
-      expect(screen.getByRole('button', { name: 'days.mo.string' })).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: 'days.tu.string' })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'days.mo.string' })
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'days.tu.string' })
+      ).toBeInTheDocument()
     })
   })
 
@@ -293,7 +306,9 @@ describe('RecurrenceSelector', () => {
   describe('responsive layout', () => {
     it('uses vertical stack for main column', () => {
       const onChange = jest.fn()
-      const { container } = render(<RecurrenceSelector value={null} onChange={onChange} />)
+      const { container } = render(
+        <RecurrenceSelector value={null} onChange={onChange} />
+      )
       const root = container.firstElementChild
       expect(root?.className).toContain('flex-col')
     })
@@ -314,11 +329,17 @@ describe('RecurrenceSelector', () => {
         />
       )
 
-      expect(screen.getByRole('switch')).toHaveAttribute('data-state', 'checked')
+      expect(screen.getByRole('switch')).toHaveAttribute(
+        'data-state',
+        'checked'
+      )
 
       rerender(<RecurrenceSelector value={null} onChange={onChange} />)
 
-      expect(screen.getByRole('switch')).toHaveAttribute('data-state', 'unchecked')
+      expect(screen.getByRole('switch')).toHaveAttribute(
+        'data-state',
+        'unchecked'
+      )
     })
   })
 })

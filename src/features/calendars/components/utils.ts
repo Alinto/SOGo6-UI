@@ -287,8 +287,7 @@ export const getAllAvailableSlots = (
         const slotStartMs = Date.UTC(y, mo - 1, d, h, q * 15, 0, 0)
 
         const allFree = availabilityData.every(
-          (person) =>
-            person.availability[slotIndex]?.status === 'available'
+          (person) => person.availability[slotIndex]?.status === 'available'
         )
 
         if (allFree) {
@@ -334,10 +333,7 @@ export const isPartOfOptimalSlot = (
   const slotEndMs = slotStartMs + 15 * 60 * 1000
 
   return allAvailableSlots.some(
-    (s) =>
-      s.day === dayDate &&
-      slotStartMs >= s.startMs &&
-      slotEndMs <= s.endMs
+    (s) => s.day === dayDate && slotStartMs >= s.startMs && slotEndMs <= s.endMs
   )
 }
 
@@ -358,7 +354,10 @@ export function parseCompactUtc(compact: string): Date {
  * (shape expected by TimelineFreeBusy).
  */
 export function mapBackendFreeBusyToAvailability(
-  attendeesMap: Record<string, { periods: { start: string; end: string; type: string }[] }>,
+  attendeesMap: Record<
+    string,
+    { periods: { start: string; end: string; type: string }[] }
+  >,
   teamMembers: TeamMember[]
 ): AvailabilityData {
   const result: AvailabilityData = {}

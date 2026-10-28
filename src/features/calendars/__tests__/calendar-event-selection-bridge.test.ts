@@ -1,5 +1,5 @@
-import '@testing-library/jest-dom'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
+import '@testing-library/jest-dom'
 import {
   registerCalendarEventSelection,
   selectCalendarEventFromSearch,

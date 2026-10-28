@@ -2,11 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useState } from 'react'
 
-export type FastAccessModuleId =
-  | 'address-book'
-  | 'calendar'
-  | 'tasks'
-  | 'notes'
+export type FastAccessModuleId = 'address-book' | 'calendar' | 'tasks' | 'notes'
 
 type FastAccessState = {
   isOpen: boolean
@@ -23,8 +19,9 @@ export function FastAccessProvider({
 }: {
   children: React.ReactNode
 }) {
-  const [activeModule, setActiveModule] =
-    useState<FastAccessModuleId | null>(null)
+  const [activeModule, setActiveModule] = useState<FastAccessModuleId | null>(
+    null
+  )
   const [isOpen, setIsOpen] = useState(false)
 
   const openModule = useCallback((id: FastAccessModuleId) => {
@@ -64,7 +61,9 @@ export function useFastAccess() {
 export function useFastAccessRequired() {
   const ctx = useContext(FastAccessContext)
   if (!ctx) {
-    throw new Error('useFastAccessRequired must be used within FastAccessProvider')
+    throw new Error(
+      'useFastAccessRequired must be used within FastAccessProvider'
+    )
   }
   return ctx
 }

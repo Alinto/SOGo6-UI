@@ -138,9 +138,7 @@ export function CalendarToolbar({
             <SelectItem value={Views.MONTH}>
               {t('views.month.string')}
             </SelectItem>
-            <SelectItem value={Views.WEEK}>
-              {t('views.week.string')}
-            </SelectItem>
+            <SelectItem value={Views.WEEK}>{t('views.week.string')}</SelectItem>
             <SelectItem value={Views.DAY}>{t('views.day.string')}</SelectItem>
             <SelectItem value={Views.AGENDA}>
               {t('views.schedule.string')}

@@ -1,19 +1,15 @@
 'use client'
 
 import { Input } from '@/components/ui/input'
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from '@/components/ui/popover'
+import { Popover, PopoverAnchor, PopoverContent } from '@/components/ui/popover'
 import { CALENDAR_TEXT_SEARCH_MAX_LENGTH } from '@/features/calendars/calendar-constants'
+import { selectCalendarEventFromSearch } from '@/features/calendars/calendar-event-selection-bridge'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
 import {
   useGetCalendarsQuery,
   useSearchEventsQuery,
 } from '@/features/calendars/store/calendars-api'
-import { selectCalendarEventFromSearch } from '@/features/calendars/calendar-event-selection-bridge'
 import { getDateFnsLocale } from '@/lib/i18n/date-locales'
 import { format, parseISO } from 'date-fns'
 import { SearchIcon } from 'lucide-react'

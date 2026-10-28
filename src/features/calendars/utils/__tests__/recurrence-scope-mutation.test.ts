@@ -18,10 +18,7 @@ describe('recurrenceScopeToMutationFields', () => {
 
   it('returns recurrence_id and THISANDFUTURE range', () => {
     expect(
-      recurrenceScopeToMutationFields(
-        'THISANDFUTURE',
-        '2026-01-01T10:00:00Z'
-      )
+      recurrenceScopeToMutationFields('THISANDFUTURE', '2026-01-01T10:00:00Z')
     ).toEqual({
       recurrence_id: '2026-01-01T10:00:00Z',
       recurrence_range: 'THISANDFUTURE',

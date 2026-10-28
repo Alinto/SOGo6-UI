@@ -1,12 +1,12 @@
 'use client'
 
+import type { CalendarEvent } from '@/features/calendars'
 import { useIsMobile } from '@/hooks/useMediaQuery'
+import type { View } from 'react-big-calendar'
+import { Views } from 'react-big-calendar'
 import { MobileDayView } from './mobile-day-view'
 import { MobileMonthView } from './mobile-month-view'
 import { MobileWeekView } from './mobile-week-view'
-import type { View } from 'react-big-calendar'
-import { Views } from 'react-big-calendar'
-import type { CalendarEvent } from '@/features/calendars'
 
 type CalendarEventWithDate = CalendarEvent & {
   start: Date

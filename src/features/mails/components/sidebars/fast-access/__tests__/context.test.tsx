@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import React from 'react'
 import {
   FastAccessProvider,
   useFastAccess,
@@ -32,9 +31,7 @@ function RequiredConsumer() {
 
 function OptionalConsumer() {
   const ctx = useFastAccess()
-  return (
-    <span data-testid="optional">{ctx === null ? 'null' : 'present'}</span>
-  )
+  return <span data-testid="optional">{ctx === null ? 'null' : 'present'}</span>
 }
 
 describe('FastAccessProvider / context', () => {

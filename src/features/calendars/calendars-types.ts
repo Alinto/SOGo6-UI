@@ -175,9 +175,6 @@ export type Calendar = {
   // --- Frontend-normalized field ---
   id?: string
 
-  // --- UI-only field, never sent to the backend ---
-  u_hidden?: boolean
-
   /** Email of the calendar owner; differs from the connected account when shared. */
   owner?: string
   owner_uid?: string
@@ -320,6 +317,20 @@ export interface CalendarSyncResult {
   updated: number
   deleted: number
   total: number
+}
+
+/** Bucket of GET/PATCH /preferences/folders: calendars I own vs. the others. */
+export type CalendarFolderScope = 'OWNER' | 'SUBS'
+
+export interface FolderDisplayPreference {
+  display: boolean
+}
+
+/** GET/PATCH /preferences/folders — a PATCH body only holds the changed entries. */
+export interface FolderPreferences {
+  CALENDAR?: Partial<
+    Record<CalendarFolderScope, Record<string, FolderDisplayPreference>>
+  >
 }
 
 export interface ApiDataResponse<T> {

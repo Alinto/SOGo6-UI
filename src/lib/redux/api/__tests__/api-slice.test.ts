@@ -136,7 +136,7 @@ describe('API Slice', () => {
       const createApiCall = (mockCreateApi.mock.calls as any)[0]?.[0]
       const tagTypes = createApiCall?.tagTypes
 
-      expect(tagTypes).toHaveLength(40)
+      expect(tagTypes).toHaveLength(41)
     })
 
     it('should use readonly tag types array', async () => {
@@ -286,6 +286,7 @@ describe('API Slice', () => {
         'mail/folders',
         'folder/messages',
         'preferences',
+        'preferences/folders',
         'mails/folders',
       ]
 

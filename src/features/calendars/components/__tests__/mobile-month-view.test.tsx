@@ -67,9 +67,10 @@ describe('MobileMonthView', () => {
     render(<MobileMonthView {...defaultProps} />)
     const buttons = screen.getAllByRole('button')
     // Should have navigation buttons (previous and next month)
-    const navButtons = buttons.filter((btn) =>
-      btn.querySelector('.lucide-chevron-left') ||
-      btn.querySelector('.lucide-chevron-right')
+    const navButtons = buttons.filter(
+      (btn) =>
+        btn.querySelector('.lucide-chevron-left') ||
+        btn.querySelector('.lucide-chevron-right')
     )
     expect(navButtons.length).toBeGreaterThanOrEqual(2)
   })

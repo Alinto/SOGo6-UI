@@ -185,7 +185,9 @@ describe('MobileDayView', () => {
       />
     )
 
-    const colorIndicator = container.querySelector('[style*="background-color"]')
+    const colorIndicator = container.querySelector(
+      '[style*="background-color"]'
+    )
     expect(colorIndicator).toBeInTheDocument()
   })
 
@@ -196,7 +198,9 @@ describe('MobileDayView', () => {
       <MobileDayView {...defaultProps} events={[event]} />
     )
 
-    const colorIndicator = container.querySelector('[style*="background-color"]')
+    const colorIndicator = container.querySelector(
+      '[style*="background-color"]'
+    )
     expect(colorIndicator).toBeInTheDocument()
   })
 
@@ -210,7 +214,9 @@ describe('MobileDayView', () => {
       />
     )
 
-    const eventCard = screen.getByText('Test Event').closest('div[class*="cursor-pointer"]')
+    const eventCard = screen
+      .getByText('Test Event')
+      .closest('div[class*="cursor-pointer"]')
     if (eventCard) {
       fireEvent.click(eventCard)
       expect(mockOnEventClick).toHaveBeenCalledWith(event)

@@ -2,9 +2,9 @@ import '@testing-library/jest-dom'
 
 import type {
   ApiCalendarEventResponse,
+  ApiCalendarEventsResponse,
   ApiCalendarResponse,
   ApiCalendarsResponse,
-  ApiCalendarEventsResponse,
   Calendar,
   CalendarCreateBody,
   CalendarEvent,

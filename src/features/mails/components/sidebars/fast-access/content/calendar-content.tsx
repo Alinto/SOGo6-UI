@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar-lazy'
 import { SidebarGroupContent } from '@/components/ui/sidebar'
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
+import { useCalendarVisibility } from '@/features/calendars/hooks/useCalendarVisibility'
 import {
   useGetCalendarsQuery,
   useGetEventsQuery,
@@ -144,10 +145,11 @@ const CalendarContent: React.FC = () => {
   const [displayMonth, setDisplayMonth] = useState<Date>(new Date())
 
   const { data: calendars = [] } = useGetCalendarsQuery()
+  const { isCalendarVisible } = useCalendarVisibility()
 
   const visibleCalendars = useMemo(
-    () => calendars.filter((c) => !c.u_hidden),
-    [calendars]
+    () => calendars.filter((c) => isCalendarVisible(c.key ?? c.id ?? '')),
+    [calendars, isCalendarVisible]
   )
 
   const calendarColors = useMemo(

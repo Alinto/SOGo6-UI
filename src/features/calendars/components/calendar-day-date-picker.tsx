@@ -42,7 +42,7 @@ export function CalendarDayDatePicker({
             type="button"
             variant="ghost"
             size="icon"
-            className="size-6 shrink-0 p-0 -translate-y-px [&_svg]:size-4"
+            className="size-6 shrink-0 -translate-y-px p-0 [&_svg]:size-4"
             aria-label={t('pickDate.string')}
           >
             <CalendarIcon />
