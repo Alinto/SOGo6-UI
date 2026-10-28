@@ -50,7 +50,6 @@ const ListFilter: React.FC = () => {
             </ToggleGroupItem>
             <ToggleGroupItem
               value="read"
-              aria-pressed={true}
               aria-label={t('filter.read.string')}
               className="w-auto flex-none"
             >

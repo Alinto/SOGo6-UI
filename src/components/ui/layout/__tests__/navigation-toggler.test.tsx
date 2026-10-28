@@ -142,25 +142,25 @@ describe('NavigationToggler', () => {
     it('should have aria label for mail tab', () => {
       render(<NavigationToggler />)
 
-      expect(screen.getByLabelText('Mail')).toBeInTheDocument()
+      expect(screen.getByLabelText('mail.string')).toBeInTheDocument()
     })
 
     it('should have aria label for address books tab', () => {
       render(<NavigationToggler />)
 
-      expect(screen.getByLabelText('Address Books')).toBeInTheDocument()
+      expect(screen.getByLabelText('address_book.string')).toBeInTheDocument()
     })
 
     it('should have aria label for calendars tab', () => {
       render(<NavigationToggler />)
 
-      expect(screen.getByLabelText('Calendars')).toBeInTheDocument()
+      expect(screen.getByLabelText('calendar.string')).toBeInTheDocument()
     })
 
     it('should have aria label for tasks tab', () => {
       render(<NavigationToggler />)
 
-      expect(screen.getByLabelText('Tasks')).toBeInTheDocument()
+      expect(screen.getByLabelText('tasks.string')).toBeInTheDocument()
     })
   })
 
@@ -533,10 +533,10 @@ describe('NavigationToggler', () => {
       render(<NavigationToggler />)
 
       const tabs = [
-        screen.getByLabelText('Mail'),
-        screen.getByLabelText('Address Books'),
-        screen.getByLabelText('Calendars'),
-        screen.getByLabelText('Tasks'),
+        screen.getByLabelText('mail.string'),
+        screen.getByLabelText('address_book.string'),
+        screen.getByLabelText('calendar.string'),
+        screen.getByLabelText('tasks.string'),
       ]
 
       tabs.forEach((tab) => {
@@ -554,10 +554,10 @@ describe('NavigationToggler', () => {
     it('should use aria labels for all tabs', () => {
       render(<NavigationToggler />)
 
-      expect(screen.getByLabelText('Mail')).toBeInTheDocument()
-      expect(screen.getByLabelText('Address Books')).toBeInTheDocument()
-      expect(screen.getByLabelText('Calendars')).toBeInTheDocument()
-      expect(screen.getByLabelText('Tasks')).toBeInTheDocument()
+      expect(screen.getByLabelText('mail.string')).toBeInTheDocument()
+      expect(screen.getByLabelText('address_book.string')).toBeInTheDocument()
+      expect(screen.getByLabelText('calendar.string')).toBeInTheDocument()
+      expect(screen.getByLabelText('tasks.string')).toBeInTheDocument()
     })
 
     it('should have native title tooltips for all tabs', () => {
@@ -565,19 +565,19 @@ describe('NavigationToggler', () => {
 
       expect(screen.getByTestId('tab-trigger-mail')).toHaveAttribute(
         'title',
-        'Mail'
+        'mail.string'
       )
       expect(screen.getByTestId('tab-trigger-address_books')).toHaveAttribute(
         'title',
-        'Address Books'
+        'address_book.string'
       )
       expect(screen.getByTestId('tab-trigger-calendars')).toHaveAttribute(
         'title',
-        'Calendars'
+        'calendar.string'
       )
       expect(screen.getByTestId('tab-trigger-tasks')).toHaveAttribute(
         'title',
-        'Tasks'
+        'tasks.string'
       )
     })
   })

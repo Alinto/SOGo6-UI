@@ -26,12 +26,12 @@ exports[`CommandDialog component Rendering matches the snapshot 1`] = `
       <h2
         data-testid="dialog-title"
       >
-        Command Palette
+        command_palette.title.string
       </h2>
       <p
         data-testid="dialog-description"
       >
-        Search for a command to run...
+        command_palette.description.string
       </p>
     </div>
     <div

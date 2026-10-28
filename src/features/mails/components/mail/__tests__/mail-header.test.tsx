@@ -16,6 +16,9 @@ jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => {
     const translations: Record<string, string> = {
       'mail_display.header.unsubscribe.string': 'Unsubscribe',
+      'mail_display.header.from.string': 'From',
+      'mail_display.header.to.string': 'To',
+      'mail_display.header.cc.string': 'Cc',
       'mail_display.action-bar.reply.string': 'Reply',
       'mail_display.action-bar.reply_all.string': 'Reply All',
       'mail_display.action-bar.forward.string': 'Forward',
@@ -391,6 +394,8 @@ describe('MailHeader', () => {
     const draft = Object.values(selectAllDrafts(store.getState()))[0]!
 
     expect(draft.subject).toBe('Re: Original subject')
-    expect(draft.body).toBe(buildQuotedReplyBody(replyMail, '<p>Reply body</p>'))
+    expect(draft.body).toBe(
+      buildQuotedReplyBody(replyMail, '<p>Reply body</p>')
+    )
   })
 })

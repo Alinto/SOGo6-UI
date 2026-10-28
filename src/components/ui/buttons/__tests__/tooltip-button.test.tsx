@@ -336,6 +336,59 @@ describe('TooltipButton', () => {
   })
 
   describe('Accessibility', () => {
+    it('uses a string tooltip as the accessible name of an icon-only button', () => {
+      render(
+        <TooltipWrapper>
+          <TooltipButton tooltip="Supprimer">
+            <svg data-testid="icon" />
+          </TooltipButton>
+        </TooltipWrapper>
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Supprimer' })
+      ).toBeInTheDocument()
+      expect(screen.getByRole('button')).not.toHaveAttribute('aria-describedby')
+    })
+
+    it('does not replace visible text with the tooltip', () => {
+      render(
+        <TooltipWrapper>
+          <TooltipButton tooltip="Supprimer">Delete</TooltipButton>
+        </TooltipWrapper>
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Delete' })
+      ).not.toHaveAttribute('aria-label')
+    })
+
+    it('keeps an explicit aria-label over the tooltip', () => {
+      render(
+        <TooltipWrapper>
+          <TooltipButton tooltip="Supprimer" aria-label="Retirer">
+            <svg />
+          </TooltipButton>
+        </TooltipWrapper>
+      )
+
+      expect(
+        screen.getByRole('button', { name: 'Retirer' })
+      ).toBeInTheDocument()
+    })
+
+    it('does not invent a name when the tooltip is not a string', () => {
+      render(
+        <TooltipWrapper>
+          <TooltipButton tooltip={<span>Supprimer</span>}>
+            <svg />
+          </TooltipButton>
+        </TooltipWrapper>
+      )
+
+      expect(screen.getByRole('button')).not.toHaveAttribute('aria-label')
+    })
+
     it('maintains button accessibility attributes', () => {
       render(
         <TooltipButton

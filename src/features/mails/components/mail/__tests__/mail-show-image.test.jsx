@@ -107,16 +107,13 @@ describe('MailShowImage', () => {
   it('maintains accessibility for keyboard interaction', async () => {
     render(<MailShowImage onShowImages={mockOnShowImages} />)
 
-    const container = screen.getByText(
-      'This email contains external images. Click to display them.'
-    ).parentElement
+    const container = screen.getByRole('button', {
+      name: 'This email contains external images. Click to display them.',
+    })
 
-    // Focus the element and press Enter
     container.focus()
     await userEvent.keyboard('{Enter}')
 
-    // Note: This test assumes the component would handle keyboard events,
-    // though the current implementation only handles click events
-    expect(container).toHaveClass('cursor-pointer')
+    expect(mockOnShowImages).toHaveBeenCalledTimes(1)
   })
 })

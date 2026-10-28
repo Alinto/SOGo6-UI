@@ -97,7 +97,6 @@ const FormLabel = React.forwardRef<
       ref={ref}
       className={cn(error && 'text-destructive', className)}
       htmlFor={formItemId}
-      onClick={(e) => e.preventDefault()}
       {...props}
     />
   )
