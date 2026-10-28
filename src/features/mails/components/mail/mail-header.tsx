@@ -51,7 +51,7 @@ export default function MailHeader({
       {/* Avatar à gauche, aligné en haut */}
       <div className="flex flex-col items-start">
         <Avatar className="h-12 w-12">
-          <AvatarImage src="/images/account-avatar.svg" />
+          <AvatarImage src="/images/account-avatar.svg" alt="" />
           <AvatarFallback>
             {(from.name?.[0] ?? from.email?.[0] ?? '?').toUpperCase()}
           </AvatarFallback>
@@ -60,7 +60,9 @@ export default function MailHeader({
       {/* Bloc infos à droite de l'avatar */}
       <div className="flex flex-1 flex-col gap-1">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-base font-bold">From</span>
+          <span className="text-base font-bold">
+            {t('mail_display.header.from.string')}
+          </span>
           <ContactBadge contact={from} />
           {showUnsubscribeButton && (
             <>
@@ -84,7 +86,9 @@ export default function MailHeader({
         </div>
         {/* To */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-base font-bold">To</span>
+          <span className="text-base font-bold">
+            {t('mail_display.header.to.string')}
+          </span>
           {displayedTo.map((contact, idx) => (
             <ContactBadge contact={contact} key={contact.email + idx} />
           ))}
@@ -104,7 +108,9 @@ export default function MailHeader({
         {/* CC */}
         {cc?.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-base font-bold">Cc</span>
+            <span className="text-base font-bold">
+              {t('mail_display.header.cc.string')}
+            </span>
             {displayedCc.map((contact, idx) => (
               <ContactBadge contact={contact} key={contact.email + idx} />
             ))}

@@ -3,6 +3,31 @@
     "close": {
       "string": "Close"
     },
+    "open_menu": {
+      "string": "Open menu"
+    },
+    "inbox": {
+      "string": "Inbox"
+    },
+    "logo": {
+      "string": "SOGo"
+    },
+    "skip_to_content": {
+      "string": "Skip to content"
+    },
+    "sidebar": {
+      "toggle": {
+        "string": "Toggle sidebar"
+      }
+    },
+    "command_palette": {
+      "title": {
+        "string": "Command Palette"
+      },
+      "description": {
+        "string": "Search for a command to run..."
+      }
+    },
     "workInProgress": {
       "description": {
         "string": "This feature is currently under development."

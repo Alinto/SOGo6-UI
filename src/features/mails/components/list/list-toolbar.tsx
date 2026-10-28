@@ -290,6 +290,11 @@ const ListToolbar: React.FC = () => {
                 allSelected ? true : someSelected ? 'indeterminate' : false
               }
               onCheckedChange={handleSelectAll}
+              aria-label={
+                allSelected
+                  ? t('actions.deselect_all.string')
+                  : t('actions.select_all.string')
+              }
             />
           </span>
           <ListRefresh onRefresh={refresh} isRefreshing={isRefreshing} />

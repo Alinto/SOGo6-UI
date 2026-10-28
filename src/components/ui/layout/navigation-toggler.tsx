@@ -3,6 +3,7 @@ import { useNetworkStatus } from '@/features/offline/network/use-network-status'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { ModuleNavIcon } from '@/lib/icons/module-nav-icons'
+import { useTranslations } from 'next-intl'
 import React from 'react'
 import { Tabs, TabsList, TabsTrigger } from '../tabs'
 
@@ -22,6 +23,7 @@ const MODULE_TAB_TRIGGER_CLASS =
 const NavigationToggler: React.FC<NavigationTogglerProps> = ({
   className = '',
 }) => {
+  const t = useTranslations('NAVIGATION')
   const pathname = usePathname()
   const firstPathPart = pathname.split('/')[1] || ''
   let page = ''
@@ -70,32 +72,32 @@ const NavigationToggler: React.FC<NavigationTogglerProps> = ({
       <TabsList className="border-sidebar-foreground/20 bg-sidebar grid h-10 w-full grid-cols-4 items-stretch border px-1 py-1">
         <TabsTrigger
           value="mail"
-          aria-label={ModuleNavIcon.Mail.title}
-          title={ModuleNavIcon.Mail.title}
+          aria-label={t('mail.string')}
+          title={t('mail.string')}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.Mail.icon className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="address_books"
-          aria-label={ModuleNavIcon.AddressBook.title}
-          title={ModuleNavIcon.AddressBook.title}
+          aria-label={t('address_book.string')}
+          title={t('address_book.string')}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.AddressBook.icon className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="calendars"
-          aria-label={ModuleNavIcon.Calendar.title}
-          title={ModuleNavIcon.Calendar.title}
+          aria-label={t('calendar.string')}
+          title={t('calendar.string')}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.Calendar.icon className="h-6 w-6" />
         </TabsTrigger>
         <TabsTrigger
           value="tasks"
-          aria-label={ModuleNavIcon.Tasks.title}
-          title={ModuleNavIcon.Tasks.title}
+          aria-label={t('tasks.string')}
+          title={t('tasks.string')}
           className={MODULE_TAB_TRIGGER_CLASS}
         >
           <ModuleNavIcon.Tasks.icon className="h-6 w-6" />

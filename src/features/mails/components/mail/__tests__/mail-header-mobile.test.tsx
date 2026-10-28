@@ -6,6 +6,8 @@ jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => {
     const translations: Record<string, string> = {
       'mail_display.header.unsubscribe.string': 'Unsubscribe',
+      'mail_display.header.to.string': 'To',
+      'mail_display.header.cc.string': 'Cc',
     }
     return translations[key] || key
   }),
@@ -109,7 +111,7 @@ describe('MailHeaderMobile', () => {
     render(<MailHeaderMobile {...mockProps} />)
 
     expect(screen.getByTestId('chevron-down')).toBeInTheDocument()
-    expect(screen.getByText('to')).toBeInTheDocument()
+    expect(screen.getByText('To')).toBeInTheDocument()
     expect(screen.getByText('Jane Smith')).toBeInTheDocument()
   })
 
@@ -148,7 +150,7 @@ describe('MailHeaderMobile', () => {
   it('should show cc indicator in collapsed state when cc exists', () => {
     render(<MailHeaderMobile {...mockProps} />)
 
-    expect(screen.getByText('cc')).toBeInTheDocument()
+    expect(screen.getByText('Cc')).toBeInTheDocument()
   })
 
   it('should render all recipients when expanded', () => {
