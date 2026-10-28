@@ -15,6 +15,21 @@ jest.mock('@/lib/i18n/navigation', () => ({
     push: jest.fn(),
   })),
   usePathname: jest.fn(() => '/u/test@example.com/inbox'),
+  Link: ({
+    children,
+    href,
+    onClick,
+    className,
+  }: {
+    children: React.ReactNode
+    href: string
+    onClick?: React.MouseEventHandler<HTMLAnchorElement>
+    className?: string
+  }) => (
+    <a href={href} onClick={onClick} className={className}>
+      {children}
+    </a>
+  ),
 }))
 
 jest.mock('@/components/ui/avatar', () => ({
@@ -46,11 +61,7 @@ jest.mock('@/components/ui/separator', () => ({
 
 jest.mock('lucide-react', () => ({
   Paperclip: jest.fn(() => <span data-testid="paperclip-icon">📎</span>),
-  Star: jest.fn(({ onClick }) => (
-    <button data-testid="star-icon" onClick={onClick}>
-      ⭐
-    </button>
-  )),
+  Star: jest.fn(() => <span data-testid="star-icon">⭐</span>),
   Calendar: jest.fn(() => <span data-testid="calendar-icon" />),
   ChevronsUp: jest.fn(() => <span data-testid="chevrons-up-icon" />),
   Forward: jest.fn(() => <span data-testid="forward-icon" />),

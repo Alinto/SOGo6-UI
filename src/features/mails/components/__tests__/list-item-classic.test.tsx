@@ -10,6 +10,21 @@ import ListItemClassic from '../list-item-classic'
 
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(),
+  Link: ({
+    children,
+    href,
+    onClick,
+    className,
+  }: {
+    children: React.ReactNode
+    href: string
+    onClick?: React.MouseEventHandler<HTMLAnchorElement>
+    className?: string
+  }) => (
+    <a href={href} onClick={onClick} className={className}>
+      {children}
+    </a>
+  ),
 }))
 
 jest.mock('next/navigation', () => ({

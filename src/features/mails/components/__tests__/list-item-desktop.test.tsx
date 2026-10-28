@@ -15,6 +15,21 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn() })),
   usePathname: jest.fn(() => '/u/test@example.com/inbox'),
+  Link: ({
+    children,
+    href,
+    onClick,
+    className,
+  }: {
+    children: React.ReactNode
+    href: string
+    onClick?: React.MouseEventHandler<HTMLAnchorElement>
+    className?: string
+  }) => (
+    <a href={href} onClick={onClick} className={className}>
+      {children}
+    </a>
+  ),
 }))
 
 jest.mock('next-intl', () => ({
@@ -66,11 +81,7 @@ jest.mock('@/components/ui/buttons/tooltip-button', () => ({
 
 jest.mock('lucide-react', () => ({
   Paperclip: () => <span data-testid="paperclip-icon">📎</span>,
-  Star: ({ onClick }: any) => (
-    <button data-testid="star-icon" onClick={onClick}>
-      ⭐
-    </button>
-  ),
+  Star: () => <span data-testid="star-icon">⭐</span>,
   Mail: () => <span data-testid="mail-icon" />,
   MailOpen: () => <span data-testid="mail-open-icon" />,
   Trash2: () => <span data-testid="trash-icon" />,
@@ -274,8 +285,24 @@ describe('ListItemDesktop', () => {
     renderWithRedux(
       <ListItemDesktop {...defaultProps} onToggleFlag={onToggleFlag} />
     )
-    fireEvent.click(screen.getByTestId('star-icon'))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'mark_important.string' })
+    )
     expect(onToggleFlag).toHaveBeenCalledWith('123')
+  })
+
+  it('exposes the message as a named link outside the checkbox and star', () => {
+    renderWithRedux(<ListItemDesktop {...defaultProps} />)
+    const link = screen.getByRole('link', {
+      name: /John Doe.*Test Email Subject.*row\.unread\.string.*row\.attachment\.string/,
+    })
+    expect(link).toHaveAttribute('href', '/u///123')
+    expect(link).not.toContainElement(
+      screen.getByTestId('mail-list-item-checkbox')
+    )
+    const star = screen.getByRole('button', { name: 'mark_important.string' })
+    expect(link).not.toContainElement(star)
+    expect(star).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('shows a "highest priority" tooltip on the priority icon for priority 1', () => {

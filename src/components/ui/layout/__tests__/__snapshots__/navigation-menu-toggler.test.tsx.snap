@@ -8,7 +8,8 @@ exports[`NavigationMenuToggler should match snapshot 1`] = `
   >
     <div>
       <button
-        aria-label="Open menu"
+        aria-expanded="false"
+        aria-label="open_menu.string"
         class="p-0"
       >
         <div

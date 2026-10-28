@@ -23,6 +23,7 @@ import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actio
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -67,6 +68,7 @@ const VisualizationPage: React.FC = () => {
       mailId: mail_id,
       mail: data,
     })
+  useDocumentTitle(data?.subject)
 
   if (!mail_id) return null
   if (isLoading)

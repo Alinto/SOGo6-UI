@@ -10,6 +10,18 @@ const { useOfflineNav } = jest.requireMock(
 
 jest.mock('next/navigation', () => ({
   useRouter: () => ({ push: jest.fn() }),
+  useParams: () => ({ account: '0', folder: 'INBOX' }),
+}))
+
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
+jest.mock('@/features/mails/hooks/use-current-folder', () => ({
+  useCurrentFolder: () => ({
+    folderPath: 'INBOX',
+    folderType: 'inbox',
+  }),
 }))
 
 jest.mock('@/components/sidebar/module-rail', () => ({
