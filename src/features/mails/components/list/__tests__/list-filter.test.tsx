@@ -107,5 +107,13 @@ describe('ListFilter', () => {
         'filter.all.string'
       )
     })
+
+    it('does not force the read filter as pressed', () => {
+      render(<ListFilter />)
+      expect(screen.getByTestId('toggle-read')).not.toHaveAttribute(
+        'aria-pressed',
+        'true'
+      )
+    })
   })
 })

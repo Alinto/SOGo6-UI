@@ -1,7 +1,10 @@
+import { Checkbox } from '@/components/ui/checkbox'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { FormProvider, useForm } from 'react-hook-form'
 import {
+  FormControl,
   FormDescription,
   FormField,
   FormItem,
@@ -77,6 +80,61 @@ describe('Form components', () => {
       </Wrapper>
     )
     expect(container.firstChild).toHaveClass('custom-class')
+  })
+
+  it('moves focus to the associated input when the label is clicked', async () => {
+    const user = userEvent.setup()
+    render(
+      <Wrapper>
+        <FormField
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <input {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      </Wrapper>
+    )
+
+    await user.click(screen.getByText('Email'))
+    expect(screen.getByRole('textbox')).toHaveFocus()
+  })
+
+  it('toggles a checkbox once when its label is clicked', async () => {
+    const user = userEvent.setup()
+
+    const CheckboxForm = () => {
+      const methods = useForm({ defaultValues: { agree: false } })
+      return (
+        <FormProvider {...methods}>
+          <FormField
+            name="agree"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Agree</FormLabel>
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+        </FormProvider>
+      )
+    }
+
+    render(<CheckboxForm />)
+
+    const checkbox = screen.getByRole('checkbox')
+    expect(checkbox).toHaveAttribute('data-state', 'unchecked')
+    await user.click(screen.getByText('Agree'))
+    expect(checkbox).toHaveAttribute('data-state', 'checked')
   })
 
   it('applies custom className to FormLabel component', () => {

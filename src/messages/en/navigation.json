@@ -1,5 +1,8 @@
 {
   "NAVIGATION": {
+    "mail": {
+      "string": "Mail"
+    },
     "address_book": {
       "string": "Address Book"
     },
@@ -11,6 +14,15 @@
     },
     "notes": {
       "string": "Notes"
+    },
+    "sign_in": {
+      "string": "Sign in"
+    },
+    "settings": {
+      "string": "Settings"
+    },
+    "admin": {
+      "string": "Administration"
     },
     "fast_access": {
       "calendar": {

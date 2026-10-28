@@ -13,13 +13,18 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('lucide-react', () => ({
-  CloudDownload: jest.fn(({ size }) => (
-    <span data-testid="cloud-download-icon" data-size={size}>
+  CloudDownload: jest.fn(({ size, ...props }) => (
+    <span data-testid="cloud-download-icon" data-size={size} {...props}>
       ☁️⬇️
     </span>
   )),
-  Image: jest.fn(({ size, className }) => (
-    <span data-testid="image-icon" data-size={size} className={className}>
+  Image: jest.fn(({ size, className, ...props }) => (
+    <span
+      data-testid="image-icon"
+      data-size={size}
+      className={className}
+      {...props}
+    >
       🖼️
     </span>
   )),
@@ -61,9 +66,9 @@ describe('MailShowImage', () => {
   it('should call onShowImages when clicked', () => {
     render(<MailShowImage onShowImages={mockOnShowImages} />)
 
-    const container = screen
-      .getByText('This email contains external images. Click to display them.')
-      .closest('div')!
+    const container = screen.getByRole('button', {
+      name: 'This email contains external images. Click to display them.',
+    })
     fireEvent.click(container)
 
     expect(mockOnShowImages).toHaveBeenCalledTimes(1)
@@ -72,18 +77,18 @@ describe('MailShowImage', () => {
   it('should have cursor-pointer class', () => {
     render(<MailShowImage onShowImages={mockOnShowImages} />)
 
-    const container = screen
-      .getByText('This email contains external images. Click to display them.')
-      .closest('div')!
+    const container = screen.getByRole('button', {
+      name: 'This email contains external images. Click to display them.',
+    })
     expect(container).toHaveClass('cursor-pointer')
   })
 
   it('should apply correct styling classes', () => {
     render(<MailShowImage onShowImages={mockOnShowImages} />)
 
-    const container = screen
-      .getByText('This email contains external images. Click to display them.')
-      .closest('div')!
+    const container = screen.getByRole('button', {
+      name: 'This email contains external images. Click to display them.',
+    })
     expect(container).toHaveClass(
       'mb-2',
       'flex',
@@ -113,9 +118,9 @@ describe('MailShowImage', () => {
   it('should be clickable and call handler multiple times', () => {
     render(<MailShowImage onShowImages={mockOnShowImages} />)
 
-    const container = screen
-      .getByText('This email contains external images. Click to display them.')
-      .closest('div')!
+    const container = screen.getByRole('button', {
+      name: 'This email contains external images. Click to display them.',
+    })
 
     fireEvent.click(container)
     fireEvent.click(container)
@@ -127,9 +132,9 @@ describe('MailShowImage', () => {
   it('should have proper layout with flex and gap', () => {
     render(<MailShowImage onShowImages={mockOnShowImages} />)
 
-    const container = screen
-      .getByText('This email contains external images. Click to display them.')
-      .closest('div')!
+    const container = screen.getByRole('button', {
+      name: 'This email contains external images. Click to display them.',
+    })
 
     expect(container).toHaveClass('flex')
     expect(container).toHaveClass('gap-2')

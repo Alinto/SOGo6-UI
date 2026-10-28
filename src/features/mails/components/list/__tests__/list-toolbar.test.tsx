@@ -102,11 +102,12 @@ jest.mock('@/hooks/use-mobile', () => ({
 }))
 
 jest.mock('@/components/ui/checkbox', () => ({
-  Checkbox: ({ checked, onCheckedChange }: any) => (
+  Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
     <input
       data-testid="checkbox"
       type="checkbox"
       checked={checked === true}
+      aria-label={props['aria-label']}
       onChange={(e) => onCheckedChange?.(e.target.checked)}
     />
   ),
@@ -344,7 +345,10 @@ describe('ListToolbar', () => {
 
     it('renders checkbox', () => {
       render(<ListToolbar />)
-      expect(screen.getByTestId('checkbox')).toBeInTheDocument()
+      expect(screen.getByTestId('checkbox')).toHaveAttribute(
+        'aria-label',
+        'actions.select_all.string'
+      )
     })
   })
 

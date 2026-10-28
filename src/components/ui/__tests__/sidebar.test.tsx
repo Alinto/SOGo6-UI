@@ -454,9 +454,9 @@ describe('Sidebar Components', () => {
       </SidebarProvider>
     )
 
-    const link = screen.getByRole('link', { name: 'Inbox' })
+    const link = screen.getByRole('link', { name: 'inbox.string' })
     expect(link).toHaveAttribute('href', '/u/0/INBOX')
-    expect(screen.getByAltText('App Logo')).toBeInTheDocument()
+    expect(screen.getByAltText('logo.string')).toBeInTheDocument()
   })
 
   it('renders SidebarInput', () => {

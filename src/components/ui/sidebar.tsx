@@ -20,6 +20,7 @@ import {
 import { useIsMobile } from '@/hooks/use-mobile'
 import { Link } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
+import { useTranslations } from 'next-intl'
 import NavigationMenuToggler from './layout/navigation-menu-toggler'
 import NavigationToggler from './layout/navigation-toggler'
 
@@ -285,6 +286,7 @@ const SidebarTrigger = React.forwardRef<
     onClose?: () => void
   }
 >(({ className, onClick, reverseIcon, onClose, ...props }, ref) => {
+  const t = useTranslations('COMMONS')
   const isMobile = useIsMobile()
   const { toggleSidebar, open, openMobile } = useSidebar()
 
@@ -316,8 +318,7 @@ const SidebarTrigger = React.forwardRef<
       {...props}
     >
       {icon}
-      {/* eslint-disable-next-line react/jsx-no-literals */}
-      <span className="sr-only">Toggle Sidebar</span>
+      <span className="sr-only">{t('sidebar.toggle.string')}</span>
     </Button>
   )
 })
@@ -328,15 +329,17 @@ const SidebarRail = React.forwardRef<
   React.ComponentProps<'button'>
 >(({ className, ...props }, ref) => {
   const { toggleSidebar } = useSidebar()
+  const t = useTranslations('COMMONS')
+  const toggleLabel = t('sidebar.toggle.string')
 
   return (
     <button
       ref={ref}
       data-sidebar="rail"
-      aria-label="Toggle Sidebar"
+      aria-label={toggleLabel}
       tabIndex={-1}
       onClick={toggleSidebar}
-      title="Toggle Sidebar"
+      title={toggleLabel}
       className={cn(
         'hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-0.5 sm:flex',
         'in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize',
@@ -353,11 +356,11 @@ const SidebarRail = React.forwardRef<
 SidebarRail.displayName = 'SidebarRail'
 
 const SidebarInset = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<'main'>
->(({ className, ...props }, ref) => {
+  HTMLElement,
+  React.ComponentProps<'main'> & { as?: 'main' | 'div' }
+>(({ className, as: Comp = 'main', ...props }, ref) => {
   return (
-    <main
+    <Comp
       ref={ref}
       className={cn(
         'bg-background relative flex min-h-svh min-w-0 flex-1 flex-col overflow-x-hidden',
@@ -393,6 +396,7 @@ const SidebarHeader = React.forwardRef<
   React.ComponentProps<'div'>
 >(({ className, ...props }, ref) => {
   const { open } = useSidebar()
+  const t = useTranslations('COMMONS')
   return (
     <div
       ref={ref}
@@ -402,9 +406,13 @@ const SidebarHeader = React.forwardRef<
     >
       {open && (
         <div className="flex items-center justify-center gap-4 px-2 py-3">
-          <Link href="/u/0/INBOX" aria-label="Inbox" title="Inbox">
+          <Link
+            href="/u/0/INBOX"
+            aria-label={t('inbox.string')}
+            title={t('inbox.string')}
+          >
             <Image
-              alt="App Logo"
+              alt={t('logo.string')}
               src={'/images/sogo-full-alt.png'}
               width={100}
               height={50}

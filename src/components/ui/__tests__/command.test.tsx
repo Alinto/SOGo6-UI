@@ -24,8 +24,8 @@ jest.mock('lucide-react', () => ({
 }))
 
 // Mock CMDK components
-jest.mock('cmdk', () => ({
-  Command: React.forwardRef<any, any>(
+jest.mock('cmdk', () => {
+  const Command = React.forwardRef<any, any>(
     ({ className, children, ...props }, ref) => (
       <div
         ref={ref}
@@ -37,8 +37,10 @@ jest.mock('cmdk', () => ({
         {children}
       </div>
     )
-  ),
-}))
+  )
+  Command.displayName = 'Command'
+  return { Command }
+})
 
 // Mock specific CMDK sub-components that are used
 const mockCmdkComponents = {
@@ -110,6 +112,13 @@ const mockCmdkComponents = {
     />
   )),
 }
+
+mockCmdkComponents.Input.displayName = 'Input'
+mockCmdkComponents.List.displayName = 'List'
+mockCmdkComponents.Empty.displayName = 'Empty'
+mockCmdkComponents.Group.displayName = 'Group'
+mockCmdkComponents.Item.displayName = 'Item'
+mockCmdkComponents.Separator.displayName = 'Separator'
 
 // Add the sub-components to the main Command mock
 Object.assign(jest.requireMock('cmdk').Command, mockCmdkComponents)
@@ -269,10 +278,10 @@ describe('CommandDialog component', () => {
       render(<CommandDialog open />)
 
       expect(screen.getByTestId('dialog-title')).toHaveTextContent(
-        'Command Palette'
+        'command_palette.title.string'
       )
       expect(screen.getByTestId('dialog-description')).toHaveTextContent(
-        'Search for a command to run...'
+        'command_palette.description.string'
       )
     })
 

@@ -32,7 +32,7 @@ export default function MailHeaderMobile({
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-1 items-start gap-2">
           <Avatar className="h-10 w-10 shrink-0">
-            <AvatarImage src="/images/account-avatar.svg" />
+            <AvatarImage src="/images/account-avatar.svg" alt="" />
             <AvatarFallback>
               {from.name?.[0]?.toUpperCase() ||
                 from.email?.[0]?.toUpperCase() ||
@@ -83,14 +83,14 @@ export default function MailHeaderMobile({
           onClick={() => setExpandRecipients(true)}
         >
           <ChevronDown className="h-6 w-6 shrink-0" />
-          to{' '}
+          {t('mail_display.header.to.string')}{' '}
           <span className="text-foreground truncate">
             {safeTo[0]?.name || safeTo[0]?.email}
           </span>
           {totalTo > 1 && (
             <span className="text-foreground">+{totalTo - 1}</span>
           )}
-          {totalCc > 0 && <span>cc</span>}
+          {totalCc > 0 && <span>{t('mail_display.header.cc.string')}</span>}
         </Button>
       )}
 
@@ -99,7 +99,9 @@ export default function MailHeaderMobile({
         <div className="flex flex-col gap-2">
           {/* To Recipients */}
           <div className="flex flex-col gap-1">
-            <span className="text-xs font-bold">To</span>
+            <span className="text-xs font-bold">
+              {t('mail_display.header.to.string')}
+            </span>
             <div className="flex flex-wrap items-center gap-1">
               {safeTo.map((contact, idx) => (
                 <ContactBadge contact={contact} key={contact.email + idx} />
@@ -110,7 +112,9 @@ export default function MailHeaderMobile({
           {/* CC Recipients */}
           {totalCc > 0 && (
             <div className="flex flex-col gap-1">
-              <span className="text-xs font-bold">Cc</span>
+              <span className="text-xs font-bold">
+                {t('mail_display.header.cc.string')}
+              </span>
               <div className="flex flex-wrap items-center gap-1">
                 {safeCc.map((contact, idx) => (
                   <ContactBadge contact={contact} key={contact.email + idx} />

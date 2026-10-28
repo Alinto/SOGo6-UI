@@ -25,6 +25,93 @@ import { MoreHorizontal } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import * as React from 'react'
 
+function DomainActionsCell({ domain }: { domain: string }) {
+  const router = useRouter()
+  const pathname = usePathname() ?? '/'
+  const locale = pathname.split('/')[1] || ''
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const [deleteDomain, { isLoading }] = useDeleteDomainMutation()
+  const t = useTranslations('ADMIN_PANNEL_DOMAIN')
+
+  async function confirmAndDelete() {
+    try {
+      await deleteDomain(domain).unwrap()
+      setConfirmOpen(false)
+    } catch (err: any) {
+      const msg =
+        err?.data?.message || err?.message || 'Failed to delete domain'
+      alert(msg)
+    }
+  }
+
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">{t('open_menu.string')}</span>
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() =>
+              router.push(
+                `/${locale}/admin_panel/domains/custom_domains/${encodeURIComponent(
+                  domain
+                )}`
+              )
+            }
+            className="cursor-pointer"
+          >
+            Modify
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => setConfirmOpen(true)}
+            className="cursor-pointer"
+          >
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this {domain} item? This action
+              cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="space-x-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setConfirmOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={confirmAndDelete}
+              disabled={isLoading}
+            >
+              {isLoading
+                ? t('ADMIN_PANNEL_DOMAIN.deleting')
+                : t('ADMIN_PANNEL_DOMAIN.delete')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  )
+}
+
 // Builds columns dynamically from data
 export function domainColumnsFromData<
   T extends { name?: string; extra_infos?: Record<string, any> },
@@ -93,92 +180,7 @@ export function domainColumnsFromData<
     {
       id: 'actions',
       enableHiding: false,
-      cell: ({ row }) => {
-        const domain = row.original.name
-        const router = useRouter()
-        const pathname = usePathname() ?? '/'
-        const locale = pathname.split('/')[1] || ''
-        const [confirmOpen, setConfirmOpen] = React.useState(false)
-        const [deleteDomain, { isLoading }] = useDeleteDomainMutation()
-
-        async function confirmAndDelete() {
-          try {
-            await deleteDomain(domain).unwrap()
-            setConfirmOpen(false)
-          } catch (err: any) {
-            const msg =
-              err?.data?.message || err?.message || 'Failed to delete domain'
-            alert(msg)
-          }
-        }
-        const t = useTranslations('ADMIN_PANNEL_DOMAIN')
-        return (
-          <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Open menu</span>
-                  <MoreHorizontal />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={() =>
-                    router.push(
-                      `/${locale}/admin_panel/domains/custom_domains/${encodeURIComponent(
-                        domain
-                      )}`
-                    )
-                  }
-                  className="cursor-pointer"
-                >
-                  Modify
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setConfirmOpen(true)}
-                  className="cursor-pointer"
-                >
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Confirm deletion</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to delete this {domain} item? This
-                    action cannot be undone.
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="space-x-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setConfirmOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    onClick={confirmAndDelete}
-                    disabled={isLoading}
-                  >
-                    {isLoading
-                      ? t('ADMIN_PANNEL_DOMAIN.deleting')
-                      : t('ADMIN_PANNEL_DOMAIN.delete')}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </>
-        )
-      },
+      cell: ({ row }) => <DomainActionsCell domain={row.original.name} />,
     },
   ]
 
