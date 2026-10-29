@@ -9,9 +9,11 @@ import { useProfile } from '@/features/user-profile'
 import type { SogoModule } from '@/features/user-profile/profile-types'
 import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 import { usePathname } from '@/lib/i18n/navigation'
+import { useTranslations } from 'next-intl'
 
 const SidebarsContent = () => {
   const pathname = usePathname()
+  const t = useTranslations('NAVIGATION')
   const { moduleAccess, isLoading } = useProfile()
 
   const firstSection = pathname.split('/')[1]
@@ -30,23 +32,47 @@ const SidebarsContent = () => {
 
   // Admin & user_settings ne sont pas soumis au filtre moduleAccess
   if (isAdminSidebar) {
-    return <AdminPanelSidebar />
+    return (
+      <nav aria-label={t('admin.string')}>
+        <AdminPanelSidebar />
+      </nav>
+    )
   }
   if (isUserSettingsSidebar) {
-    return <UserSettingsSidebar />
+    return (
+      <nav aria-label={t('settings.string')}>
+        <UserSettingsSidebar />
+      </nav>
+    )
   }
 
   if (isAddressBooksSidebar && hasModuleAccess('contact')) {
-    return <Sidebar />
+    return (
+      <nav aria-label={t('address_book.string')}>
+        <Sidebar />
+      </nav>
+    )
   }
   if (isCalendarsSidebar && hasModuleAccess('calendar')) {
-    return <CalendarsSidebar />
+    return (
+      <nav aria-label={t('calendar.string')}>
+        <CalendarsSidebar />
+      </nav>
+    )
   }
   if (isTasksSidebar) {
-    return <TasksSidebar />
+    return (
+      <nav aria-label={t('tasks.string')}>
+        <TasksSidebar />
+      </nav>
+    )
   }
   if (isMailSidebar && hasModuleAccess('mail')) {
-    return <MailSidebar />
+    return (
+      <nav aria-label={t('mail.string')}>
+        <MailSidebar />
+      </nav>
+    )
   }
 
   return null

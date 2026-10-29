@@ -15,7 +15,13 @@ export default function GlobalNotFound() {
         <title>Page not found · SOGo</title>
       </head>
       <body className="flex min-h-screen items-center justify-center antialiased">
-        <main className="text-center">
+        <a
+          href="#main-content"
+          className="bg-background text-foreground focus:ring-ring sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:rounded-md focus:px-3 focus:py-2 focus:ring-2"
+        >
+          Skip to content
+        </a>
+        <main id="main-content" className="text-center">
           <p className="text-6xl font-semibold tracking-tight">404</p>
           <p className="text-muted-foreground mt-2">Page not found</p>
         </main>

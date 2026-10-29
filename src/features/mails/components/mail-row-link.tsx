@@ -66,9 +66,19 @@ export function useMailRowLink({
 export function MailRowStatus({
   seen,
   hasAttachment,
+  priority = null,
+  hasEvent = false,
+  hasContact = false,
+  answered = false,
+  forwarded = false,
 }: {
   seen: boolean
   hasAttachment: boolean
+  priority?: 'high' | 'highest' | null
+  hasEvent?: boolean
+  hasContact?: boolean
+  answered?: boolean
+  forwarded?: boolean
 }) {
   const t = useTranslations('MAILS_LIST')
   return (
@@ -76,6 +86,20 @@ export function MailRowStatus({
       {!seen && <span className="sr-only">{t('row.unread.string')}</span>}
       {hasAttachment && (
         <span className="sr-only">{t('row.attachment.string')}</span>
+      )}
+      {priority === 'highest' && (
+        <span className="sr-only">{t('priority.highest.string')}</span>
+      )}
+      {priority === 'high' && (
+        <span className="sr-only">{t('priority.high.string')}</span>
+      )}
+      {hasEvent && (
+        <span className="sr-only">{t('row.invitation.string')}</span>
+      )}
+      {hasContact && <span className="sr-only">{t('row.contact.string')}</span>}
+      {answered && <span className="sr-only">{t('row.replied.string')}</span>}
+      {forwarded && (
+        <span className="sr-only">{t('row.forwarded.string')}</span>
       )}
     </>
   )
