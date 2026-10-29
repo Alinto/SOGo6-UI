@@ -8,6 +8,7 @@ import {
   isBase64,
   parseEmailContact,
   replaceDataSrcWithSrc,
+  sanitizeEmailHtml,
 } from '../utils'
 
 // parseEmailContact
@@ -134,5 +135,27 @@ describe('blockExternalImages', () => {
     expect(blockExternalImages('<img src="cid:abc">')).toBe(
       '<img src="cid:abc">'
     )
+  })
+})
+
+describe('sanitizeEmailHtml', () => {
+  it('names an empty link from its href', () => {
+    const html = sanitizeEmailHtml(
+      '<a href="https://example.com/notes"></a><a href="https://example.com/read">Read</a>'
+    )
+    expect(html).toContain('aria-label="https://example.com/notes"')
+    expect(html).toContain('>Read</a>')
+    expect(html).not.toContain('aria-label="https://example.com/read"')
+  })
+
+  it('marks a layout table as presentational and keeps a data table', () => {
+    const html = sanitizeEmailHtml(
+      '<table><tr><td>Logo</td></tr></table><table><caption>Hours</caption><tr><th>Day</th></tr></table><p lang="fr">Bonjour</p>'
+    )
+    expect(html).toContain('role="presentation"')
+    expect(html).toContain('<caption>Hours</caption>')
+    expect(html).toContain('lang="fr"')
+    const dataTable = html.slice(html.indexOf('<caption>'))
+    expect(dataTable).not.toContain('role="presentation"')
   })
 })

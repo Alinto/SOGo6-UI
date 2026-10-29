@@ -134,6 +134,23 @@ describe('AttendeeInput', () => {
       const input = screen.getByRole('combobox')
       expect(input).toHaveAttribute('aria-expanded', 'false')
       expect(input).toHaveAttribute('aria-autocomplete', 'list')
+      expect(input).not.toHaveAttribute('aria-controls')
+    })
+
+    it('names a participant status that is otherwise only a color', () => {
+      render(
+        <AttendeeInput
+          value={[
+            {
+              email: 'ada@example.com',
+              name: 'Ada',
+              status: 'accepted',
+            },
+          ]}
+          onChange={jest.fn()}
+        />
+      )
+      expect(screen.getByText('Accepted')).toHaveClass('sr-only')
     })
   })
 })
