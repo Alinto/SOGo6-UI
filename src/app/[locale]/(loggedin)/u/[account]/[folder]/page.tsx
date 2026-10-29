@@ -2,7 +2,7 @@
 
 import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
-import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
+import ListSkeleton from '@/features/mails/components/skeletons/list-loading-skeleton'
 import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
@@ -33,6 +33,8 @@ const Page = () => {
     data,
     isLoading,
     isFetching,
+    isUserFetching,
+    isRefreshing,
     error,
     refetch,
     currentPage,
@@ -142,7 +144,8 @@ const Page = () => {
         clientFilterActive ? false : (data?.hasPreviousPage ?? false)
       }
       isLoading={isLoading}
-      isFetching={isFetching}
+      isFetching={isUserFetching}
+      isRefreshing={isRefreshing}
       hideToolbar
     />
   )

@@ -5,6 +5,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
+import ListRefresh from '@/features/mails/components/list/list-refresh'
 import ListSort from '@/features/mails/components/list/list-sort'
 import MailActionsBar from '@/features/mails/components/mail/mail-action-bar'
 import MailBulkLabelPickerDialog from '@/features/mails/components/mail/mail-bulk-label-picker-dialog'
@@ -51,10 +52,11 @@ const ListToolbar: React.FC = () => {
   const activeFilter = searchParams.get('filter') ?? 'all'
   const clientFilterActive = activeFilter !== 'all'
 
-  const { data, currentPage, isSearchActive } = useFolderMessages({
-    folder: folderPath,
-    accountId: accountString,
-  })
+  const { data, currentPage, isSearchActive, refresh, isRefreshing } =
+    useFolderMessages({
+      folder: folderPath,
+      accountId: accountString,
+    })
 
   // Search results can span multiple folders; map each result's id back to
   // its actual folder so bulk actions target the right one (see
@@ -290,6 +292,7 @@ const ListToolbar: React.FC = () => {
               onCheckedChange={handleSelectAll}
             />
           </span>
+          <ListRefresh onRefresh={refresh} isRefreshing={isRefreshing} />
           {selectedIds.length > 0 ? (
             <MailActionsBar
               compact

@@ -1,8 +1,11 @@
 'use client'
 
 import {
+  selectIsManualRefresh,
+  selectMailNavigationFolderKey,
   selectSkipFolderFetch,
   setMailNavigation,
+  setManualRefresh,
 } from '@/features/mails/store/mail-navigation-slice'
 import { clearMailSearch } from '@/features/mails/store/mail-search-slice'
 import {
@@ -10,14 +13,17 @@ import {
   useSearchMailsQuery,
 } from '@/features/mails/store/mails-api'
 import { usePathname } from '@/lib/i18n/navigation'
+import { MAILS_FOLDERS_SLICE, apiSlice } from '@/lib/redux/api/api-slice'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { isMailDetailPath } from '../utils/mail-detail-navigation'
 import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '../utils/mail-search-form'
 import { useCurrentFolder } from './use-current-folder'
 
 const EXCLUDED_PARAMS = ['filter']
+
+const MIN_REFRESH_FEEDBACK_MS = 300
 
 const MAIL_LIST_DEFAULTS: Record<string, string> = {
   fields: 'contents',
@@ -155,7 +161,36 @@ export function useFolderMessages({
   )
 
   const queryResult = isSearchActive ? searchQueryResult : folderQueryResult
-  const { data } = queryResult
+  const { data, currentData, isFetching, refetch } = queryResult
+  const isManualRefresh = useAppSelector(selectIsManualRefresh)
+
+  const isUserFetching = isFetching && currentData === undefined
+
+  // Reload the message list with the loading overlay. The flag stays on for
+  // a minimum time so a fast reload still shows visible feedback.
+  const reloadList = useCallback(() => {
+    let request: ReturnType<typeof refetch>
+    try {
+      request = refetch()
+    } catch {
+      // The query is skipped (virtual folder, folder tree still loading…):
+      // RTK Query throws because there is nothing to refetch.
+      return
+    }
+    dispatch(setManualRefresh(true))
+    const minDuration = new Promise((resolve) =>
+      setTimeout(resolve, MIN_REFRESH_FEEDBACK_MS)
+    )
+    void Promise.allSettled([request, minDuration]).then(() =>
+      dispatch(setManualRefresh(false))
+    )
+  }, [refetch, dispatch])
+
+  // Refresh button: also reload the folder tree (unread counters).
+  const refresh = useCallback(() => {
+    dispatch(apiSlice.util.invalidateTags([MAILS_FOLDERS_SLICE]))
+    reloadList()
+  }, [reloadList, dispatch])
 
   // While a search is active, the list conceptually lives at `mailSearch.folder`
   // (the route the search was triggered from) even if the current route's
@@ -166,12 +201,28 @@ export function useFolderMessages({
   // folder instead of the search results list.
   const navigationFolder =
     isSearchActive && mailSearch.folder ? mailSearch.folder : folder
+  const folderKey = `${resolvedAccountId}/${navigationFolder}`
+
+  // Opening another folder reloads its list, even when cached, so the user
+  // sees fresh mails and the loading overlay. Read once at mount (the list
+  // pages remount on each folder change), before the effect below records
+  // the new folder. Coming back to the same folder (e.g. closing a mail)
+  // does not reload.
+  const lastListFolderKey = useAppSelector(selectMailNavigationFolderKey)
+  const isFolderSwitchRef = useRef(
+    lastListFolderKey != null && lastListFolderKey !== folderKey
+  )
+  useEffect(() => {
+    if (!isFolderSwitchRef.current || isSearchActive) return
+    isFolderSwitchRef.current = false
+    reloadList()
+  }, [reloadList, isSearchActive])
 
   useEffect(() => {
     if (!data?.mails) return
     dispatch(
       setMailNavigation({
-        folderKey: `${resolvedAccountId}/${navigationFolder}`,
+        folderKey,
         orderedIds: data.mails.map((m) => m.id),
         // Search results can span multiple folders; each mail's own `folder`
         // (only set on search results) is what prev/next navigation must
@@ -183,7 +234,7 @@ export function useFolderMessages({
         totalPages: data.totalPages ?? 1,
       })
     )
-  }, [data, resolvedAccountId, navigationFolder, dispatch])
+  }, [data, folderKey, navigationFolder, dispatch])
 
   return {
     ...queryResult,
@@ -191,5 +242,8 @@ export function useFolderMessages({
     params,
     isVirtualFolder: isVirtual,
     isSearchActive,
+    isUserFetching,
+    isRefreshing: isManualRefresh,
+    refresh,
   }
 }

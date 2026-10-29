@@ -2,7 +2,7 @@
 
 import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
-import ListSkeleton from '@/features/mails/components/skeletons/list-skeleton'
+import ListSkeleton from '@/features/mails/components/skeletons/list-loading-skeleton'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -28,7 +28,15 @@ const Page: React.FC = () => {
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
 
-  const { data, isFetching, isLoading, error, refetch } = useFolderMessages({
+  const {
+    data,
+    isFetching,
+    isUserFetching,
+    isRefreshing,
+    isLoading,
+    error,
+    refetch,
+  } = useFolderMessages({
     folder: folderPath,
     accountId: accountString,
   })
@@ -115,7 +123,9 @@ const Page: React.FC = () => {
         totalPages={data?.totalPages ?? 1}
         hasNextPage={data?.hasNextPage ?? false}
         hasPreviousPage={data?.hasPreviousPage ?? false}
-        isLoading={isFetching}
+        isLoading={false}
+        isFetching={isUserFetching}
+        isRefreshing={isRefreshing}
         hideToolbar
       />
     </div>

@@ -25,6 +25,11 @@ jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
   })),
 }))
 
+jest.mock('@/lib/redux/api/api-slice', () => ({
+  MAILS_FOLDERS_SLICE: 'mails/folders',
+  apiSlice: { util: { invalidateTags: jest.fn() } },
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   useGetFolderMessagesQuery: jest.fn(),
   useGetFoldersQuery: jest.fn(() => ({ data: [], isLoading: false })),
