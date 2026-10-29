@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import { useRouter } from '@/lib/i18n/navigation'
+import { Link } from '@/lib/i18n/navigation'
 import { Users } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
@@ -40,17 +40,18 @@ function ListItem({
   sourceBookName = null,
   onHandleCheckboxClick,
 }: ListItemProps) {
-  const { push } = useRouter()
   const params = useParams()
   const book_id = routeParam(params.book_id)
   const { firstName, lastName, id } = data
   const t = useTranslations('ADDRESS_BOOKS_LIST')
   const [isHovered, setIsHovered] = useState(false)
+  const [isFocused, setIsFocused] = useState(false)
   const isList = isDistributionList(data)
   const displayName = getContactDisplayName(data)
   const photoSrc = getContactPhotoSrc(data)
 
-  const shouldShowCheckbox = showCheckbox || isHovered || isSelected
+  const shouldShowCheckbox =
+    showCheckbox || isHovered || isSelected || isFocused
 
   const getItemStyles = () => {
     const baseStyles =
@@ -68,21 +69,12 @@ function ListItem({
     return `${baseStyles} hover:bg-accent/50`
   }
 
-  const handleItemClick = () => {
-    const targetBookId =
-      book_id === ALL_CONTACTS_BOOK_ID
-        ? (data.addressBookKey ?? book_id)
-        : book_id
-    const kindQuery = isList ? '?kind=group' : ''
-    push(`/address_books/${targetBookId}/${id}${kindQuery}`)
-  }
-
-  const handleItemKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      handleItemClick()
-    }
-  }
+  const targetBookId =
+    book_id === ALL_CONTACTS_BOOK_ID
+      ? (data.addressBookKey ?? book_id)
+      : book_id
+  const kindQuery = isList ? '?kind=group' : ''
+  const href = `/address_books/${targetBookId}/${id}${kindQuery}`
 
   const handleCheckboxClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -91,21 +83,43 @@ function ListItem({
 
   return (
     <div
-      role="button"
-      tabIndex={0}
       className={getItemStyles()}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={handleItemClick}
-      onKeyDown={handleItemKeyDown}
-      aria-label={displayName}
-      aria-current={isActive ? 'true' : undefined}
+      onFocus={() => setIsFocused(true)}
+      onBlur={(event) => {
+        if (
+          !(event.relatedTarget instanceof Node) ||
+          !event.currentTarget.contains(event.relatedTarget)
+        ) {
+          setIsFocused(false)
+        }
+      }}
     >
+      <Link
+        href={href}
+        aria-current={isActive ? 'true' : undefined}
+        className="flex min-w-0 flex-1 flex-col truncate"
+      >
+        <span className="truncate text-sm">{displayName}</span>
+        {allContactsView && sourceBookName && (
+          <span className="text-muted-foreground truncate text-xs">
+            {t('source_address_book.string', { name: sourceBookName })}
+          </span>
+        )}
+        {isList && (
+          <span className="text-muted-foreground truncate text-xs">
+            {t('list_member_count.string', {
+              number: getDistributionListMemberCount(data),
+            })}
+          </span>
+        )}
+      </Link>
       {shouldShowCheckbox && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden">
+              <span className="relative order-first flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden">
                 <Checkbox
                   className="bg-background shrink-0 cursor-pointer"
                   checked={isSelected}
@@ -123,7 +137,7 @@ function ListItem({
         </TooltipProvider>
       )}
       {!shouldShowCheckbox && (
-        <Avatar className="h-10 w-10 shrink-0">
+        <Avatar className="order-first h-10 w-10 shrink-0">
           {isList ? (
             <AvatarFallback className="bg-primary/10 text-primary">
               <Users className="h-4 w-4" />
@@ -141,21 +155,6 @@ function ListItem({
           )}
         </Avatar>
       )}
-      <div className="flex min-w-0 flex-1 flex-col truncate">
-        <span className="truncate text-sm">{displayName}</span>
-        {allContactsView && sourceBookName && (
-          <span className="text-muted-foreground truncate text-xs">
-            {t('source_address_book.string', { name: sourceBookName })}
-          </span>
-        )}
-        {isList && (
-          <span className="text-muted-foreground truncate text-xs">
-            {t('list_member_count.string', {
-              number: getDistributionListMemberCount(data),
-            })}
-          </span>
-        )}
-      </div>
     </div>
   )
 }

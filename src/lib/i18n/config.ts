@@ -1,7 +1,7 @@
 import { defineRouting } from 'next-intl/routing'
 
 export function getLocales() {
-  return ['en', 'de', 'fr', 'es']
+  return ['en']
 }
 
 export function getDefaultLocale() {

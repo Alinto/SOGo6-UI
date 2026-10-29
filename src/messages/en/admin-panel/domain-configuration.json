@@ -1,5 +1,8 @@
 {
   "AP_DOMAIN_CONFIGURATION": {
+    "validation_error": {
+      "string": "Some fields are invalid."
+    },
     "origin": {
       "rule": {
         "string": "(from rule {origin})"

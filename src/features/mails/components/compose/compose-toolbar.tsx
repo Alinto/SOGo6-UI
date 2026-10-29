@@ -84,10 +84,12 @@ export function ComposeToolbar({
           className="rounded"
           size="sm"
           title={t('attachment.string')}
+          aria-label={t('attachment.string')}
           onClick={onAttachmentClick}
         >
           <Paperclip
             className={cn('h-5 w-5', isUploading && 'animate-pulse')}
+            aria-hidden
           />
         </Button>
 
@@ -98,16 +100,21 @@ export function ComposeToolbar({
             size="sm"
             onClick={onInsertJitsi}
             title={t('jitsi.string')}
+            aria-label={t('jitsi.string')}
           >
-            <Video className="h-5 w-5" />
+            <Video className="h-5 w-5" aria-hidden />
           </Button>
         )}
 
         <ButtonGroup className="z-9999">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" aria-label="More Options">
-                <MoreVerticalIcon />
+              <Button
+                variant="outline"
+                size="icon"
+                aria-label={t('more_options.string')}
+              >
+                <MoreVerticalIcon aria-hidden />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
@@ -190,10 +197,10 @@ export function ComposeToolbar({
           <DropdownMenuTrigger asChild>
             <Button
               size="icon"
-              aria-label="More Options"
+              aria-label={t('more_options.string')}
               disabled={isSending || isUploading}
             >
-              <MoreHorizontalIcon />
+              <MoreHorizontalIcon aria-hidden />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-40">

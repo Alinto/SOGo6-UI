@@ -18,12 +18,18 @@ describe('resolveLogoutRedirect', () => {
     })
   })
 
-  it('replaces the URL with the locale-prefixed login path when navigation must be skipped', () => {
+  it('replaces the URL with the English login path when navigation must be skipped', () => {
+    expect(
+      resolveLogoutRedirect(true, 'https://sogo.example/en/u/0/INBOX')
+    ).toEqual({
+      mode: 'replace-login',
+      href: '/en/auth/login',
+    })
     expect(
       resolveLogoutRedirect(true, 'https://sogo.example/fr/u/0/INBOX')
     ).toEqual({
       mode: 'replace-login',
-      href: '/fr/auth/login',
+      href: '/en/auth/login',
     })
   })
 })

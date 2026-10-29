@@ -30,6 +30,7 @@ function DomainActionsCell({ domain }: { domain: string }) {
   const pathname = usePathname() ?? '/'
   const locale = pathname.split('/')[1] || ''
   const [confirmOpen, setConfirmOpen] = React.useState(false)
+  const [deleteError, setDeleteError] = React.useState<string | null>(null)
   const [deleteDomain, { isLoading }] = useDeleteDomainMutation()
   const t = useTranslations('ADMIN_PANNEL_DOMAIN')
 
@@ -37,10 +38,8 @@ function DomainActionsCell({ domain }: { domain: string }) {
     try {
       await deleteDomain(domain).unwrap()
       setConfirmOpen(false)
-    } catch (err: any) {
-      const msg =
-        err?.data?.message || err?.message || 'Failed to delete domain'
-      alert(msg)
+    } catch {
+      setDeleteError(t('delete_error.string'))
     }
   }
 
@@ -87,6 +86,11 @@ function DomainActionsCell({ domain }: { domain: string }) {
               cannot be undone.
             </DialogDescription>
           </DialogHeader>
+          {deleteError ? (
+            <p role="alert" className="text-destructive text-sm">
+              {deleteError}
+            </p>
+          ) : null}
           <DialogFooter className="space-x-2">
             <Button
               type="button"

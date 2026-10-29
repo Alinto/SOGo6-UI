@@ -397,24 +397,22 @@ const ComposeHeader: React.FC<ComposeHeaderProps> = ({ draftId }) => {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <span
-            role="button"
-            tabIndex={0}
+          <button
+            type="button"
+            aria-expanded={showCc}
             onClick={() => setShowCc((prev) => !prev)}
-            onKeyDown={(e) => e.key === 'Enter' && setShowCc((prev) => !prev)}
             className={`cursor-pointer text-sm select-none ${showCc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           >
             {t('cc.string')}
-          </span>
-          <span
-            role="button"
-            tabIndex={0}
+          </button>
+          <button
+            type="button"
+            aria-expanded={showBcc}
             onClick={() => setShowBcc((prev) => !prev)}
-            onKeyDown={(e) => e.key === 'Enter' && setShowBcc((prev) => !prev)}
             className={`cursor-pointer text-sm select-none ${showBcc ? 'text-foreground font-medium' : 'text-muted-foreground'}`}
           >
             {t('bcc.string')}
-          </span>
+          </button>
         </div>
       </div>
 
