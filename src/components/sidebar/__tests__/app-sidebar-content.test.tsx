@@ -7,6 +7,10 @@ jest.mock('@/lib/i18n/navigation', () => ({
   usePathname: () => mockUsePathname(),
 }))
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
+
 // Mock useProfile
 jest.mock('@/features/user-profile', () => ({
   useProfile: jest.fn(() => ({
@@ -46,14 +50,17 @@ describe('SidebarsContent', () => {
 
   describe('route selection', () => {
     it.each([
-      ['/address_books/123', 'address-books-sidebar'],
-      ['/user_settings/general', 'user-settings-sidebar'],
-      ['/calendars/view', 'calendars-sidebar'],
-      ['/u/account/inbox', 'mail-sidebar'],
-    ])('renders %s sidebar', (path, testId) => {
+      ['/address_books/123', 'address-books-sidebar', 'address_book.string'],
+      ['/user_settings/general', 'user-settings-sidebar', 'settings.string'],
+      ['/calendars/view', 'calendars-sidebar', 'calendar.string'],
+      ['/u/account/inbox', 'mail-sidebar', 'mail.string'],
+    ])('renders %s sidebar in a named nav', (path, testId, label) => {
       mockUsePathname.mockReturnValue(path)
       render(<SidebarsContent />)
       expect(screen.getByTestId(testId)).toBeInTheDocument()
+      expect(
+        screen.getByRole('navigation', { name: label })
+      ).toBeInTheDocument()
     })
 
     it('renders null for unknown routes', () => {
@@ -88,31 +95,29 @@ describe('SidebarsContent', () => {
   })
 
   describe('edge cases', () => {
-    it.each([
-      '',
-      '/',
-      'address_books/123',
-      '/Address_Books/123',
-    ])('handles %s → null', (path) => {
-      mockUsePathname.mockReturnValue(path)
-      const { container } = render(<SidebarsContent />)
-      expect(container.firstChild).toBeNull()
-    })
+    it.each(['', '/', 'address_books/123', '/Address_Books/123'])(
+      'handles %s → null',
+      (path) => {
+        mockUsePathname.mockReturnValue(path)
+        const { container } = render(<SidebarsContent />)
+        expect(container.firstChild).toBeNull()
+      }
+    )
   })
 
   it('renders only one sidebar', () => {
     const paths = ['/address_books/test', '/user_settings/test']
-    paths.forEach(path => {
+    paths.forEach((path) => {
       mockUsePathname.mockReturnValue(path)
       const { unmount } = render(<SidebarsContent />)
-      
+
       const sidebars = [
         'address-books-sidebar',
         'user-settings-sidebar',
         'calendars-sidebar',
         'mail-sidebar',
-      ].filter(id => screen.queryByTestId(id))
-      
+      ].filter((id) => screen.queryByTestId(id))
+
       expect(sidebars).toHaveLength(1)
       unmount()
     })

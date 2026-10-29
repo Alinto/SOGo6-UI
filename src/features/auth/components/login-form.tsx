@@ -221,6 +221,7 @@ export function LoginForm({
           aria-invalid={errors.email ? 'true' : 'false'}
           aria-describedby={errors.email ? 'email-error' : undefined}
           {...register('email')}
+          autoComplete="username"
         />
         {errors.email && (
           <p id="email-error" className="text-destructive text-sm">

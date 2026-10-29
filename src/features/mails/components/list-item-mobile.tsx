@@ -295,6 +295,17 @@ const ListItemMobile: React.FC<ListItemMobileProps> = ({
                       <MailRowStatus
                         seen={data.seen}
                         hasAttachment={hasAttachment}
+                        priority={
+                          showHighPriority
+                            ? data.priority === MAIL_PRIORITY_HIGHEST
+                              ? 'highest'
+                              : 'high'
+                            : null
+                        }
+                        hasEvent={hasEventType}
+                        hasContact={hasContactType}
+                        answered={data.answered}
+                        forwarded={data.forwarded}
                       />
                       <MailListLabels flags={data.flags} />
                     </div>

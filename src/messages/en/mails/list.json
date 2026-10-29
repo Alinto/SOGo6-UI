@@ -136,6 +136,18 @@
       },
       "attachment": {
         "string": "Attachment"
+      },
+      "replied": {
+        "string": "Replied"
+      },
+      "forwarded": {
+        "string": "Forwarded"
+      },
+      "invitation": {
+        "string": "Calendar invitation"
+      },
+      "contact": {
+        "string": "Contact"
       }
     },
     "time": {
