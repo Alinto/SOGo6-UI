@@ -168,14 +168,21 @@ describe('SidebarItem', () => {
     expect(mockSetCalendarVisibility).toHaveBeenCalledWith('cal-123', false)
   })
 
-  it('should toggle calendar visibility when item is clicked', () => {
+  it('names the checkbox with the visible calendar name', () => {
+    render(<SidebarItem {...defaultProps} />)
+
+    expect(
+      screen.getByRole('checkbox', { name: 'Test Calendar' })
+    ).toBeInTheDocument()
+  })
+
+  it('does not toggle calendar visibility when the name is clicked', () => {
     mockIsCalendarVisible.mockReturnValue(true)
-    const { container } = render(<SidebarItem {...defaultProps} />)
+    render(<SidebarItem {...defaultProps} />)
 
-    const clickableDiv = container.querySelector('.cursor-pointer')
-    fireEvent.click(clickableDiv!)
+    fireEvent.click(screen.getByText('Test Calendar'))
 
-    expect(mockSetCalendarVisibility).toHaveBeenCalledWith('cal-123', false)
+    expect(mockSetCalendarVisibility).not.toHaveBeenCalled()
   })
 
   it('should apply color to checkbox when calendar is visible', () => {
@@ -303,17 +310,19 @@ describe('SidebarItem', () => {
       const { container } = render(
         <SidebarItem {...defaultProps} isShared owner="test@tutu.fr" />
       )
-      const row = container.querySelector('.cursor-pointer')
+      const row = screen.getByRole('checkbox', { name: /Test Calendar/ })
+        .parentElement?.parentElement
       expect(row).toHaveClass('items-center', 'min-h-10')
       expect(row).not.toHaveClass('items-start')
       expect(row).not.toHaveClass('items-end')
     })
 
     it('should keep the checkbox vertically centered without an owner', () => {
-      const { container } = render(<SidebarItem {...defaultProps} />)
-      expect(container.querySelector('.cursor-pointer')).toHaveClass(
-        'items-center'
-      )
+      render(<SidebarItem {...defaultProps} />)
+      expect(
+        screen.getByRole('checkbox', { name: 'Test Calendar' }).parentElement
+          ?.parentElement
+      ).toHaveClass('items-center')
     })
 
     it('should not display the owner when the calendar is not shared', () => {

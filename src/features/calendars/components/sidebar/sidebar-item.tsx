@@ -161,6 +161,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     !folderSharingDisabled.includes('calendar')
   const sharedOwner = isShared && owner ? owner : null
   const fullLabel = sharedOwner ? `${name} - ${sharedOwner}` : name
+  const labelId = `calendar-${id}-label`
+  const collapsed = sidebarState === 'collapsed'
 
   const handleCheckboxChange = (checked: boolean) => {
     setCalendarVisibility(id, checked)
@@ -176,10 +178,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <div
-            onClick={() => handleCheckboxChange(!isVisible)}
-            title={sidebarState === 'collapsed' ? undefined : fullLabel}
+            title={collapsed ? undefined : fullLabel}
             className={cn(
-              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex w-full cursor-pointer gap-2.5 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex w-full gap-2.5 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
               // With an owner line, the row grows and the checkbox stays
               // centered on the whole text block
               sharedOwner
@@ -188,14 +189,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               !disableActions && 'pr-8'
             )}
           >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center"
-            >
+            <div className="flex items-center">
               <Checkbox
                 checked={isVisible}
                 onCheckedChange={handleCheckboxChange}
                 className="cursor-pointer"
+                aria-labelledby={collapsed ? undefined : labelId}
+                aria-label={collapsed ? fullLabel : undefined}
                 style={
                   isVisible && color
                     ? { backgroundColor: color, borderColor: color }
@@ -207,7 +207,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             </div>
             <div className="flex min-w-0 flex-1 flex-col group-data-[collapsible=icon]:hidden">
               <div className="flex min-w-0 items-center gap-1.5">
-                <span className="min-w-0 truncate text-sm" title={name}>
+                <span
+                  id={labelId}
+                  className="min-w-0 truncate text-sm"
+                  title={name}
+                >
                   {name}
                 </span>
                 {isReadOnly && (

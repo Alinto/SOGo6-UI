@@ -1,6 +1,10 @@
 {
     "MAILS_COMMONS": {
         "mail_display": {
+            "message_body": {
+                "string": "Message",
+                "description": "Accessible name of the received message body"
+            },
             "action-bar": {
                 "reply": {
                     "string": "Reply",

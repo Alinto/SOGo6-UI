@@ -1,8 +1,12 @@
+import type { ImapAttachments } from '@/features/mails/mails-types'
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MailContent from '../mail-content'
-import type { ImapAttachments } from '@/features/mails/mails-types'
+
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key: string) => key,
+}))
 
 jest.mock('../mail-attachment', () => ({
   AttachmentDisplay: ({ attachments }: { attachments: { count: number } }) => (
@@ -20,8 +24,7 @@ jest.mock('../mail-show-image', () => ({
 
 describe('MailContent', () => {
   const mockPlainBody = '<p>This is a plain email body</p>'
-  const mockBase64Body =
-    'PHA+VGhpcyBpcyBhIGJhc2U2NCBlbWFpbCBib2R5PC9wPg=='
+  const mockBase64Body = 'PHA+VGhpcyBpcyBhIGJhc2U2NCBlbWFpbCBib2R5PC9wPg=='
   const mockBodyWithImages =
     '<p>Email with image</p><img src="http://example.com/image.jpg" />'
   const mockBodyWithScript =
@@ -63,6 +66,7 @@ describe('MailContent', () => {
       })
 
       const shadowHost = container.querySelector('.mail-shadow-root')
+      expect(shadowHost).toHaveAttribute('aria-label', 'message_body.string')
       const shadowContent = shadowHost?.shadowRoot?.textContent
       expect(shadowContent).toContain('This is a plain email body')
     })
@@ -77,9 +81,7 @@ describe('MailContent', () => {
 
   describe('integration', () => {
     it('renders attachments when provided', () => {
-      render(
-        <MailContent body={mockPlainBody} attachments={mockAttachments} />
-      )
+      render(<MailContent body={mockPlainBody} attachments={mockAttachments} />)
       const attachmentDisplay = screen.getByTestId('attachment-display')
       expect(attachmentDisplay).toBeInTheDocument()
       expect(attachmentDisplay).toHaveTextContent('Attachments: 2')
@@ -147,7 +149,8 @@ describe('MailContent', () => {
       })
 
       const shadowContent =
-        container.querySelector('.mail-shadow-root')?.shadowRoot?.innerHTML ?? ''
+        container.querySelector('.mail-shadow-root')?.shadowRoot?.innerHTML ??
+        ''
       expect(shadowContent).not.toContain('<script>')
       expect(shadowContent).not.toContain('alert("xss")')
       expect(shadowContent).toContain('Content with script')
