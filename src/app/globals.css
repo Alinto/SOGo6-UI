@@ -111,7 +111,7 @@ html.mail-dragging.mail-drop-forbidden * {
 
     --success: 142 48% 32%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 90% 38%;
+    --warning: 38 90% 28%;
     --warning-foreground: 0 0% 100%;
     --info: 210 80% 40%;
     --info-foreground: 0 0% 100%;
@@ -223,7 +223,7 @@ html.mail-dragging.mail-drop-forbidden * {
 
     --success: 142 48% 32%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 90% 38%;
+    --warning: 38 90% 28%;
     --warning-foreground: 0 0% 100%;
     --info: 210 80% 38%;
     --info-foreground: 0 0% 100%;
