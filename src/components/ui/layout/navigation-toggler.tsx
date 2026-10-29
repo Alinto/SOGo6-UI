@@ -18,7 +18,7 @@ const MODULE_HREF: Record<string, string> = {
 }
 
 const MODULE_TAB_TRIGGER_CLASS =
-  'text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:hover:bg-sidebar-accent data-[state=active]:shadow-none h-full py-0 leading-none cursor-pointer'
+  'text-sidebar-foreground hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground data-[state=active]:bg-sidebar-accent data-[state=active]:text-sidebar-accent-foreground data-[state=active]:hover:bg-sidebar-accent data-[state=active]:shadow-none focus-visible:ring-sidebar-foreground focus-visible:ring-offset-0 focus-visible:ring-inset h-full py-0 leading-none cursor-pointer'
 
 const NavigationToggler: React.FC<NavigationTogglerProps> = ({
   className = '',
