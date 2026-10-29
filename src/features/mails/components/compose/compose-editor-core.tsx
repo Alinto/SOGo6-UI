@@ -60,7 +60,7 @@ import {
   Undo,
 } from 'ckeditor5'
 import 'ckeditor5/ckeditor5.css'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   setPendingInsert,
@@ -140,6 +140,7 @@ export const ComposeEditorCore = ({
   onChange: propOnChange,
 }: ComposeEditorCoreProps) => {
   const locale = useLocale()
+  const t = useTranslations('COMPOSE')
   const editorRef = useRef<ClassicEditor | null>(null)
   const dispatch = useAppDispatch()
 
@@ -386,6 +387,17 @@ export const ComposeEditorCore = ({
     (editor: ClassicEditor) => {
       editorRef.current = editor
 
+      const editorLabel = t('editor.string')
+      const editable = editor.ui.getEditableElement()
+      const iframe =
+        editable?.querySelector('iframe') ??
+        editor.ui.view.element?.querySelector('iframe')
+      if (iframe) {
+        iframe.title = editorLabel
+      } else if (editable) {
+        editable.setAttribute('aria-label', editorLabel)
+      }
+
       const plainTextPlugin = editor.plugins.get(
         PlainTextModePlugin
       ) as PlainTextModePlugin
@@ -436,7 +448,7 @@ export const ComposeEditorCore = ({
         editor.model.document.off('change:data', changeHandler)
       })
     },
-    [dispatch, draftId]
+    [dispatch, draftId, t]
   )
 
   const handleChange = useCallback(

@@ -64,6 +64,7 @@ export function AdminDataTable<TData>({
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [newDomainName, setNewDomainName] = React.useState('')
   const [newDomainDescription, setNewDomainDescription] = React.useState('')
+  const [createError, setCreateError] = React.useState<string | null>(null)
 
   const [saveCustomDomainConfig, { isLoading: isSaving }] =
     useSaveCustomDomainConfigMutation()
@@ -90,6 +91,7 @@ export function AdminDataTable<TData>({
   function openCreateDialog() {
     setNewDomainName('')
     setNewDomainDescription('')
+    setCreateError(null)
     setIsDialogOpen(true)
   }
 
@@ -98,11 +100,11 @@ export function AdminDataTable<TData>({
     const val = (newDomainName || '').trim()
     const desc = (newDomainDescription || '').trim()
     if (!val) {
-      alert('Please enter a domain name') //TODO: toast avec trad
+      setCreateError(t('DATA_TABLE.domain_name_required.string'))
       return
     }
     if (!desc) {
-      alert('Please enter a domain description') //TODO: toast avec trad
+      setCreateError(t('DATA_TABLE.domain_description_required.string'))
       return
     }
 
@@ -116,14 +118,12 @@ export function AdminDataTable<TData>({
           domain_name: val,
           domain_description: desc,
         },
-      })
+      }).unwrap()
 
       setIsDialogOpen(false)
       router.push(target)
-    } catch (err: any) {
-      const msg =
-        err?.data?.message || err?.message || 'Failed to create custom domain'
-      alert(msg)
+    } catch {
+      setCreateError(t('DATA_TABLE.create_error.string'))
     }
   }
 
@@ -133,6 +133,7 @@ export function AdminDataTable<TData>({
         {filterColumn && (
           <Input
             placeholder={filterPlaceholder}
+            aria-label={t('DATA_TABLE.filter_label.string')}
             value={
               (table.getColumn(filterColumn)?.getFilterValue() as string) ?? ''
             }
@@ -173,6 +174,12 @@ export function AdminDataTable<TData>({
               aria-label="Custom domain description"
               className="min-h-30"
             />
+
+            {createError ? (
+              <p role="alert" className="text-destructive text-sm">
+                {createError}
+              </p>
+            ) : null}
 
             <DialogFooter className="flex justify-end">
               <Button

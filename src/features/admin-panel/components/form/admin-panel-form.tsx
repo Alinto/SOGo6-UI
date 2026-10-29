@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useEffect, useMemo } from 'react'
+import { useTranslations } from 'next-intl'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
@@ -26,6 +27,8 @@ const AdminDomainFormFrame: React.FC<Props> = ({
   onSubmit,
   isLoading = false,
 }) => {
+  const t = useTranslations('AP_DOMAIN_CONFIGURATION')
+  const [validationError, setValidationError] = useState<string | null>(null)
   // Build schema + defaultValues from the full data (all tabs)
   const { schema, defaultValues } = useMemo(() => {
     if (!data || Object.keys(data).length === 0) {
@@ -75,7 +78,7 @@ const AdminDomainFormFrame: React.FC<Props> = ({
   // onInvalid callback: useful to surface validation problems
   function handleInvalid(errors: any) {
     console.error('[AdminDomainFormFrame] validation errors:', errors)
-    alert('Validation errors: some fields are invalid.') //TODO: toast avec trad
+    setValidationError(t('validation_error.string'))
   }
 
   const { isDirty, isSubmitting } = form.formState
@@ -85,8 +88,16 @@ const AdminDomainFormFrame: React.FC<Props> = ({
       <Form {...form}>
         <form
           className=""
-          onSubmit={form.handleSubmit(handleSubmit, handleInvalid)}
+          onSubmit={form.handleSubmit(async (values) => {
+            setValidationError(null)
+            await handleSubmit(values)
+          }, handleInvalid)}
         >
+          {validationError ? (
+            <p role="alert" className="text-destructive mb-4 text-sm">
+              {validationError}
+            </p>
+          ) : null}
           {renderData &&
             Object.entries(renderData).map(([sectionKey, sectionMeta]) => (
               <div key={sectionKey} className="mb-8">

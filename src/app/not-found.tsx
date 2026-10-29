@@ -11,6 +11,9 @@ export default function GlobalNotFound() {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${openDyslexic.variable}`}
     >
+      <head>
+        <title>Page not found · SOGo</title>
+      </head>
       <body className="flex min-h-screen items-center justify-center antialiased">
         <main className="text-center">
           <p className="text-6xl font-semibold tracking-tight">404</p>

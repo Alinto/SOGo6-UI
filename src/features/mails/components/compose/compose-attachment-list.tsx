@@ -123,19 +123,23 @@ export function ComposeAttachmentList({
                 {(att.uploadStatus === 'completed' ||
                   att.file instanceof File) && (
                   <button
+                    type="button"
                     className="hover:text-primary ml-2 shrink-0 cursor-pointer"
                     onClick={() => void handleDownloadAttachment(att)}
                     title={t('attachment.download.string')}
+                    aria-label={t('attachment.download.string')}
                   >
-                    <Download className="h-3 w-3" />
+                    <Download className="h-3 w-3" aria-hidden />
                   </button>
                 )}
                 <button
+                  type="button"
                   className="hover:text-destructive shrink-0 cursor-pointer"
                   onClick={() => void handleDeleteAttachment(att)}
                   disabled={att.uploadStatus === 'uploading'}
+                  aria-label={t('attachment.remove.string')}
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3" aria-hidden />
                 </button>
               </div>
             </div>

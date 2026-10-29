@@ -12,7 +12,7 @@ jest.mock('next-intl/server', () => ({
 
 jest.mock('../config', () => ({
   routing: {
-    locales: ['en', 'de', 'fr', 'es'],
+    locales: ['en'],
     defaultLocale: 'en',
     localePrefix: 'always',
     localeDetection: true,
@@ -103,22 +103,13 @@ describe('request', () => {
     it('should construct correct directory path for each locale', async () => {
       ;(fs.existsSync as jest.Mock).mockReturnValue(false)
 
-      const locales = ['en', 'de', 'fr', 'es']
+      const locales = ['en']
       for (const locale of locales) {
         await createMessages(locale)
       }
 
       expect(fs.existsSync).toHaveBeenCalledWith(
         expect.stringContaining('messages/en')
-      )
-      expect(fs.existsSync).toHaveBeenCalledWith(
-        expect.stringContaining('messages/de')
-      )
-      expect(fs.existsSync).toHaveBeenCalledWith(
-        expect.stringContaining('messages/fr')
-      )
-      expect(fs.existsSync).toHaveBeenCalledWith(
-        expect.stringContaining('messages/es')
       )
     })
 

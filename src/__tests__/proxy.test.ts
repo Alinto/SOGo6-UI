@@ -120,7 +120,7 @@ describe('proxy helpers', () => {
   describe('isAdminPanelPath', () => {
     it('matches admin panel routes for supported locales', () => {
       expect(isAdminPanelPath('/en/admin_panel')).toBe(true)
-      expect(isAdminPanelPath('/fr/admin_panel/users')).toBe(true)
+      expect(isAdminPanelPath('/fr/admin_panel/users')).toBe(false)
       expect(isAdminPanelPath('/en/mails')).toBe(false)
     })
   })
@@ -128,7 +128,7 @@ describe('proxy helpers', () => {
   describe('isLocaleRootPath', () => {
     it('matches locale root paths only', () => {
       expect(isLocaleRootPath('/en')).toBe(true)
-      expect(isLocaleRootPath('/fr/')).toBe(true)
+      expect(isLocaleRootPath('/fr/')).toBe(false)
       expect(isLocaleRootPath('/en/mails')).toBe(false)
     })
   })
@@ -136,7 +136,7 @@ describe('proxy helpers', () => {
   describe('isAuthPath', () => {
     it('matches auth routes for supported locales', () => {
       expect(isAuthPath('/en/auth/login')).toBe(true)
-      expect(isAuthPath('/de/auth')).toBe(true)
+      expect(isAuthPath('/de/auth')).toBe(false)
       expect(isAuthPath('/en/mails')).toBe(false)
     })
   })

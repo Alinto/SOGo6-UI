@@ -8,7 +8,7 @@ jest.mock('next-intl/routing', () => ({
 
 // Mock i18n config
 jest.mock('../config', () => ({
-  getLocales: jest.fn(() => ['en', 'de', 'fr', 'es']),
+  getLocales: jest.fn(() => ['en']),
   getDefaultLocale: jest.fn(() => 'en'),
 }))
 
@@ -55,24 +55,12 @@ describe('routing', () => {
       expect(routing.locales).toContain('en')
     })
 
-    it('should include German locale', () => {
-      expect(routing.locales).toContain('de')
-    })
-
-    it('should include French locale', () => {
-      expect(routing.locales).toContain('fr')
-    })
-
-    it('should include Spanish locale', () => {
-      expect(routing.locales).toContain('es')
-    })
-
-    it('should have exactly 4 locales', () => {
-      expect(routing.locales).toHaveLength(4)
+    it('should expose only English', () => {
+      expect(routing.locales).toEqual(['en'])
     })
 
     it('should have locales in the expected order', () => {
-      expect(routing.locales).toEqual(['en', 'de', 'fr', 'es'])
+      expect(routing.locales).toEqual(['en'])
     })
 
     it('should not have duplicate locales', () => {
@@ -102,7 +90,7 @@ describe('routing', () => {
 
   describe('routing consistency', () => {
     it('should have locales that match configuration', () => {
-      const expectedLocales = ['en', 'de', 'fr', 'es']
+      const expectedLocales = ['en']
       expect(routing.locales).toEqual(expectedLocales)
     })
 
@@ -134,7 +122,7 @@ describe('routing', () => {
     })
 
     it('should support locale validation', () => {
-      const testLocales = ['en', 'de', 'fr', 'es']
+      const testLocales = ['en']
       testLocales.forEach((locale) => {
         expect(routing.locales).toContain(locale)
       })

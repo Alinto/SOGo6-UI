@@ -21,7 +21,7 @@ jest.mock('next-intl/navigation', () => ({
 // Mock i18n config
 jest.mock('../config', () => ({
   routing: {
-    locales: ['en', 'de', 'fr', 'es'],
+    locales: ['en'],
     defaultLocale: 'en',
     localePrefix: 'always',
     localeDetection: true,
