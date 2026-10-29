@@ -166,7 +166,21 @@ const ListItemDesktop: React.FC<ListItemDesktopProps> = ({
               >
                 {data.subject}
               </span>
-              <MailRowStatus seen={data.seen} hasAttachment={hasAttachment} />
+              <MailRowStatus
+                seen={data.seen}
+                hasAttachment={hasAttachment}
+                priority={
+                  showHighPriority
+                    ? data.priority === MAIL_PRIORITY_HIGHEST
+                      ? 'highest'
+                      : 'high'
+                    : null
+                }
+                hasEvent={hasEventType}
+                hasContact={hasContactType}
+                answered={data.answered}
+                forwarded={data.forwarded}
+              />
               <MailListLabels flags={data.flags} />
             </div>
             {showSnippet && (

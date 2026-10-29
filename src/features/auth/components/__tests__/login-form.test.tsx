@@ -58,6 +58,7 @@ describe('LoginForm - Step 1 (Email + Language)', () => {
     const emailInput = screen.getByLabelText(/email.label.string/i)
     expect(emailInput).toBeInTheDocument()
     expect(emailInput).toHaveAttribute('type', 'email')
+    expect(emailInput).toHaveAttribute('autoComplete', 'username')
   })
 
   it('renders language selector', () => {

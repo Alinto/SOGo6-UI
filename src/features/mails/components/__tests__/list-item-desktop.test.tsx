@@ -305,6 +305,26 @@ describe('ListItemDesktop', () => {
     expect(star).toHaveAttribute('aria-pressed', 'false')
   })
 
+  it('includes priority, invitation, contact, reply and forward in the link name', () => {
+    renderWithRedux(
+      <ListItemDesktop
+        {...defaultProps}
+        data={{
+          ...mockData,
+          priority: 1,
+          mailType: ['event', 'contact'],
+          answered: true,
+          forwarded: true,
+        }}
+      />
+    )
+    expect(
+      screen.getByRole('link', {
+        name: /priority\.highest\.string.*row\.invitation\.string.*row\.contact\.string.*row\.replied\.string.*row\.forwarded\.string/,
+      })
+    ).toBeInTheDocument()
+  })
+
   it('shows a "highest priority" tooltip on the priority icon for priority 1', () => {
     renderWithRedux(
       <ListItemDesktop {...defaultProps} data={{ ...mockData, priority: 1 }} />

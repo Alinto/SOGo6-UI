@@ -20,6 +20,15 @@ describe('GlobalNotFound', () => {
     render(<GlobalNotFound />)
 
     expect(screen.getByRole('main')).toHaveClass('text-center')
+    expect(screen.getByRole('main')).toHaveAttribute('id', 'main-content')
+  })
+
+  it('renders a skip link to the main content', () => {
+    render(<GlobalNotFound />)
+
+    expect(
+      screen.getByRole('link', { name: 'Skip to content' })
+    ).toHaveAttribute('href', '#main-content')
   })
 
   it('sets a document title', () => {
