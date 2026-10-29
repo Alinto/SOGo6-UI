@@ -5,6 +5,15 @@ const mockPush = jest.fn()
 
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
+  Link: ({
+    href,
+    children,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }))
 
 jest.mock('next/navigation', () => ({
@@ -159,7 +168,7 @@ describe('ListItem', () => {
       expect(screen.getByTestId('checkbox')).toBeInTheDocument()
     })
 
-    it('navigates to contact page when clicked', () => {
+    it('links to the contact page', () => {
       render(
         <ListItem
           data={contact}
@@ -167,8 +176,10 @@ describe('ListItem', () => {
           onHandleCheckboxClick={mockOnHandleCheckboxClick}
         />
       )
-      fireEvent.click(screen.getByRole('button', { name: 'John Doe' }))
-      expect(mockPush).toHaveBeenCalledWith('/address_books/test-book-id/1')
+      expect(screen.getByRole('link', { name: 'John Doe' })).toHaveAttribute(
+        'href',
+        '/address_books/test-book-id/1'
+      )
     })
 
     it('appends kind query for distribution lists', () => {
@@ -179,10 +190,22 @@ describe('ListItem', () => {
           onHandleCheckboxClick={mockOnHandleCheckboxClick}
         />
       )
-      fireEvent.click(screen.getByRole('button', { name: 'Team' }))
-      expect(mockPush).toHaveBeenCalledWith(
+      expect(screen.getByRole('link', { name: /Team/ })).toHaveAttribute(
+        'href',
         '/address_books/test-book-id/list-1?kind=group'
       )
+    })
+
+    it('keeps the checkbox outside the link', () => {
+      render(
+        <ListItem
+          data={contact}
+          isSelected
+          onHandleCheckboxClick={mockOnHandleCheckboxClick}
+        />
+      )
+      const link = screen.getByRole('link', { name: 'John Doe' })
+      expect(link).not.toContainElement(screen.getByTestId('checkbox'))
     })
   })
 

@@ -66,13 +66,16 @@ describe('filterPrecacheEntries', () => {
 
 describe('offlineFallbackPath', () => {
   it('uses the locale-prefixed fallback for known locales', () => {
+    expect(offlineFallbackPath('https://sogo.example/en/u/0/INBOX')).toBe(
+      '/en/~offline'
+    )
     expect(offlineFallbackPath('https://sogo.example/fr/u/0/INBOX')).toBe(
-      '/fr/~offline'
+      '/~offline'
     )
     expect(offlineFallbackPath('https://sogo.example/de/calendars')).toBe(
-      '/de/~offline'
+      '/~offline'
     )
-    expect(offlineFallbackPath('/es/~offline')).toBe('/es/~offline')
+    expect(offlineFallbackPath('/es/~offline')).toBe('/~offline')
   })
 
   it('falls back to the unlocalized page for unknown paths', () => {
@@ -86,7 +89,7 @@ describe('offlineFallbackPath', () => {
 describe('isAuthLoginPath', () => {
   it('matches locale-prefixed login documents', () => {
     expect(isAuthLoginPath('/en/auth/login')).toBe(true)
-    expect(isAuthLoginPath('/fr/auth/login/')).toBe(true)
+    expect(isAuthLoginPath('/fr/auth/login/')).toBe(false)
     expect(isAuthLoginPath('/en/auth/login/pwd')).toBe(false)
     expect(isAuthLoginPath('/en/~offline')).toBe(false)
   })
@@ -105,10 +108,10 @@ describe('isPrecachedDocumentPath', () => {
 describe('offlineLoginPath', () => {
   it('uses the locale-prefixed login page', () => {
     expect(offlineLoginPath('https://sogo.example/fr/u/0/INBOX')).toBe(
-      '/fr/auth/login'
+      '/en/auth/login'
     )
     expect(offlineLoginPath('https://sogo.example/de/calendars')).toBe(
-      '/de/auth/login'
+      '/en/auth/login'
     )
   })
 
@@ -122,7 +125,7 @@ describe('offlineLoginPath', () => {
 
 describe('shareLocaleFromPathname', () => {
   it('keeps known locales and falls back to English', () => {
-    expect(shareLocaleFromPathname('/fr/share')).toBe('fr')
+    expect(shareLocaleFromPathname('/fr/share')).toBe('en')
     expect(shareLocaleFromPathname('/share')).toBe('en')
     expect(shareLocaleFromPathname('/xx/share')).toBe('en')
   })

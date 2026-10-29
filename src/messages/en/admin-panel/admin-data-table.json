@@ -3,6 +3,18 @@
     "filter_placeholder": {
       "string": "Filter..."
     },
+    "filter_label": {
+      "string": "Filter table"
+    },
+    "domain_name_required": {
+      "string": "Enter a domain name."
+    },
+    "domain_description_required": {
+      "string": "Enter a domain description."
+    },
+    "create_error": {
+      "string": "The domain could not be created."
+    },
     "no_result": {
       "string": "No results."
     },

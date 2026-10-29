@@ -167,7 +167,19 @@
             "download": {
                 "string": "Download attachment",
                 "context": "Title for the download attachment button"
+            },
+            "remove": {
+                "string": "Remove attachment",
+                "context": "Accessible name of the button that removes an attachment"
             }
+        },
+        "more_options": {
+            "string": "More options",
+            "context": "Accessible name of the compose overflow menus"
+        },
+        "editor": {
+            "string": "Message body",
+            "context": "Accessible name of the compose editor"
         },
         "return_receipt": {
             "string": "Return receipt",

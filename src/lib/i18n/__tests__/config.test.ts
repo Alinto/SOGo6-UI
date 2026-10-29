@@ -12,29 +12,14 @@ describe('i18n config', () => {
       expect(Array.isArray(locales)).toBe(true)
     })
 
-    it('should return exactly 4 locales', () => {
+    it('should expose only English until other translations exist', () => {
       const locales = getLocales()
-      expect(locales).toHaveLength(4)
+      expect(locales).toEqual(['en'])
     })
 
     it('should include English locale', () => {
       const locales = getLocales()
       expect(locales).toContain('en')
-    })
-
-    it('should include German locale', () => {
-      const locales = getLocales()
-      expect(locales).toContain('de')
-    })
-
-    it('should include French locale', () => {
-      const locales = getLocales()
-      expect(locales).toContain('fr')
-    })
-
-    it('should include Spanish locale', () => {
-      const locales = getLocales()
-      expect(locales).toContain('es')
     })
 
     it('should return the same locales on multiple calls', () => {
@@ -45,7 +30,7 @@ describe('i18n config', () => {
 
     it('should return locales in expected order', () => {
       const locales = getLocales()
-      expect(locales).toEqual(['en', 'de', 'fr', 'es'])
+      expect(locales).toEqual(['en'])
     })
   })
 
@@ -119,8 +104,8 @@ describe('i18n config', () => {
       })
     })
 
-    it('should have exactly 4 locales in routing config', () => {
-      expect(routing.locales).toHaveLength(4)
+    it('should have exactly the exposed locales in routing config', () => {
+      expect(routing.locales).toEqual(['en'])
     })
   })
 

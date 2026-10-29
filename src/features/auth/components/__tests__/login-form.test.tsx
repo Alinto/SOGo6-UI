@@ -8,7 +8,7 @@ jest.mock('next-intl', () => ({
 }))
 
 jest.mock('@/lib/i18n/config', () => ({
-  getLocales: () => ['en', 'fr', 'de', 'es'],
+  getLocales: () => ['en'],
 }))
 
 const mockPush = jest.fn()

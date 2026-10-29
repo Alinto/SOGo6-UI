@@ -21,4 +21,9 @@ describe('GlobalNotFound', () => {
 
     expect(screen.getByRole('main')).toHaveClass('text-center')
   })
+
+  it('sets a document title', () => {
+    render(<GlobalNotFound />)
+    expect(document.title).toBe('Page not found · SOGo')
+  })
 })

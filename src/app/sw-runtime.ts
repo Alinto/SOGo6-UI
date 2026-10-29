@@ -6,7 +6,7 @@ export function isNavigationRequest(
 }
 
 /** Keep in sync with `getLocales()` / `getDefaultLocale()` — do not import next-intl into the SW. */
-export const OFFLINE_FALLBACK_LOCALES = ['en', 'de', 'fr', 'es'] as const
+export const OFFLINE_FALLBACK_LOCALES = ['en'] as const
 export const DEFAULT_OFFLINE_LOCALE = 'en'
 
 function localeFromRequestUrl(requestUrl: string): string | undefined {
@@ -45,7 +45,8 @@ export function pathnameFromRequestUrl(requestUrl: string): string {
 
 /** `/{locale}/auth/login` — precached so logout can land here while offline. */
 export function isAuthLoginPath(pathname: string): boolean {
-  return /^\/(?:en|de|fr|es)\/auth\/login\/?$/.test(pathname)
+  const localePattern = OFFLINE_FALLBACK_LOCALES.join('|')
+  return new RegExp(`^/(?:${localePattern})/auth/login/?$`).test(pathname)
 }
 
 /** Login or `~offline` documents — the only navigations safe to CacheFirst. */

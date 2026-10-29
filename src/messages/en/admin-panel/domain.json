@@ -30,6 +30,9 @@
     },
     "delete": {
       "string": "Delete"
+    },
+    "delete_error": {
+      "string": "The domain could not be deleted."
     }
   }
 }
