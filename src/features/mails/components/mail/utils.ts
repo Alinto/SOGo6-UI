@@ -1,4 +1,5 @@
 import { getCachedEnvVars } from '@/lib/env-service'
+import { useTranslations } from 'next-intl'
 import React, { useEffect, useRef } from 'react'
 
 // Resolve API base URL at call time (env may load after module init)
@@ -165,42 +166,64 @@ export function blockExternalImages(html: string): string {
  * @param html - HTML brut du mail
  * @returns HTML nettoyé et sécurisé
  */
+function nameEmailContent(html: string): string {
+  if (typeof DOMParser === 'undefined') return html
+
+  const doc = new DOMParser().parseFromString(html, 'text/html')
+
+  doc.querySelectorAll('a').forEach((anchor) => {
+    const text = (anchor.textContent ?? '').replace(/\s+/g, '').trim()
+    if (text) return
+    const alt = anchor.querySelector('img')?.getAttribute('alt')?.trim()
+    if (alt) return
+    const href = anchor.getAttribute('href')?.trim()
+    if (!href || anchor.hasAttribute('aria-label')) return
+    anchor.setAttribute('aria-label', href)
+  })
+
+  doc.querySelectorAll('table').forEach((table) => {
+    if (table.querySelector('th, caption') || table.hasAttribute('role')) return
+    table.setAttribute('role', 'presentation')
+  })
+
+  return doc.body.innerHTML
+}
+
 export function sanitizeEmailHtml(html: string): string {
   if (!html || typeof html !== 'string') return ''
 
   try {
-    return (
-      html
-        // 1. Supprimer <script> (avec contenu)
-        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    const cleaned = html
+      // 1. Supprimer <script> (avec contenu)
+      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
 
-        // 2. Supprimer tous les event handlers (onclick, onerror, onload, etc.)
-        .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
-        .replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
+      // 2. Supprimer tous les event handlers (onclick, onerror, onload, etc.)
+      .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
+      .replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
 
-        // 3. Bloquer javascript: dans les attributs href
-        .replace(/(href\s*=\s*["'])javascript:/gi, '$1about:blank#blocked-')
+      // 3. Bloquer javascript: dans les attributs href
+      .replace(/(href\s*=\s*["'])javascript:/gi, '$1about:blank#blocked-')
 
-        // 4. Bloquer data: URI (sauf images)
-        .replace(/(src\s*=\s*["'])data:(?!image)/gi, '$1about:blank#blocked-')
+      // 4. Bloquer data: URI (sauf images)
+      .replace(/(src\s*=\s*["'])data:(?!image)/gi, '$1about:blank#blocked-')
 
-        // 5. Neutraliser <iframe>, <object>, <embed>
-        .replace(
-          /<(iframe|object|embed)(\s[^>]*)?>/gi,
-          '<div data-blocked="$1"$2>'
-        )
-        .replace(/<\/(iframe|object|embed)>/gi, '</div>')
+      // 5. Neutraliser <iframe>, <object>, <embed>
+      .replace(
+        /<(iframe|object|embed)(\s[^>]*)?>/gi,
+        '<div data-blocked="$1"$2>'
+      )
+      .replace(/<\/(iframe|object|embed)>/gi, '</div>')
 
-        // 6. Supprimer <base> (peut rediriger tous les liens relatifs)
-        .replace(/<base\b[^>]*>/gi, '')
+      // 6. Supprimer <base> (peut rediriger tous les liens relatifs)
+      .replace(/<base\b[^>]*>/gi, '')
 
-        // 7. Neutralize <form> (no unauthorized submit)
-        .replace(/<form(\s[^>]*)?>/gi, '<div data-blocked="form"$1>')
-        .replace(/<\/form>/gi, '</div>')
+      // 7. Neutralize <form> (no unauthorized submit)
+      .replace(/<form(\s[^>]*)?>/gi, '<div data-blocked="form"$1>')
+      .replace(/<\/form>/gi, '</div>')
 
-        // 8. Supprimer <meta> refresh (redirection auto)
-        .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh[^>]*>/gi, '')
-    )
+      // 8. Supprimer <meta> refresh (redirection auto)
+      .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh[^>]*>/gi, '')
+    return nameEmailContent(cleaned)
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('❌ [sanitizeEmailHtml] Error:', error)
@@ -225,6 +248,7 @@ export function sanitizeEmailHtml(html: string): string {
  * @param html - HTML content of the mail (will be automatically sanitized)
  */
 export const ShadowEmailContent = ({ html }: { html: string }) => {
+  const t = useTranslations('MAILS_COMMONS.mail_display')
   const hostRef = useRef<HTMLDivElement>(null)
   const shadowRootRef = useRef<ShadowRoot | null>(null)
 
@@ -385,6 +409,7 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
   return React.createElement('div', {
     ref: hostRef,
     className: 'mail-shadow-root',
+    'aria-label': t('message_body.string'),
     style: { minHeight: '100px' },
   })
 }

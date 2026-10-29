@@ -64,7 +64,7 @@ export default function MailMoveCopyMenu({
               aria-label={t('move.string')}
               data-testid="mail-action-btn-move-copy"
             >
-              <FolderInput size={18} />
+              <FolderInput size={18} aria-hidden />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>

@@ -17,6 +17,7 @@ import {
 import type { AttendeeInputItem } from '../../calendars-types'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const ATTENDEE_LISTBOX_ID = 'attendee-suggestions'
 const isValidEmail = (email: string) => EMAIL_RE.test(email)
 
 const STATUS_STYLES: Record<string, string> = {
@@ -24,6 +25,35 @@ const STATUS_STYLES: Record<string, string> = {
   declined: 'bg-destructive',
   tentative: 'bg-warning',
   'needs-action': 'bg-muted-foreground',
+}
+
+function AttendeeStatusDot({ status }: { status: string }) {
+  const t = useTranslations('CALENDARS')
+  const label =
+    status === 'accepted'
+      ? t('visualization.attendeeStatus.accepted.string')
+      : status === 'declined'
+        ? t('visualization.attendeeStatus.declined.string')
+        : status === 'tentative'
+          ? t('visualization.attendeeStatus.tentative.string')
+          : status === 'needs-action'
+            ? t('visualization.attendeeStatus.pending.string')
+            : null
+
+  if (!label) return null
+
+  return (
+    <>
+      <span
+        className={cn(
+          'h-1.5 w-1.5 shrink-0 rounded-full',
+          STATUS_STYLES[status] ?? 'bg-muted-foreground'
+        )}
+        aria-hidden
+      />
+      <span className="sr-only">{label}</span>
+    </>
+  )
 }
 
 interface AttendeeInputProps {
@@ -215,12 +245,7 @@ export default function AttendeeInput({
               className="flex items-center gap-1.5 pr-1 pl-2"
             >
               {attendee.status && (
-                <span
-                  className={cn(
-                    'h-1.5 w-1.5 shrink-0 rounded-full',
-                    STATUS_STYLES[attendee.status] ?? 'bg-muted-foreground'
-                  )}
-                />
+                <AttendeeStatusDot status={attendee.status} />
               )}
               <span className="max-w-[140px] truncate text-xs">
                 {attendee.name ?? attendee.email}
@@ -248,9 +273,15 @@ export default function AttendeeInput({
         <div className="relative">
           <div className="relative flex items-center">
             {isFetching ? (
-              <Loader2 className="text-muted-foreground absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 animate-spin" />
+              <Loader2
+                className="text-muted-foreground absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 animate-spin"
+                aria-hidden
+              />
             ) : (
-              <Search className="text-muted-foreground absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2" />
+              <Search
+                className="text-muted-foreground absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2"
+                aria-hidden
+              />
             )}
             <Input
               ref={inputRef}
@@ -273,17 +304,25 @@ export default function AttendeeInput({
               role="combobox"
               aria-expanded={isOpen}
               aria-autocomplete="list"
+              aria-controls={isOpen ? ATTENDEE_LISTBOX_ID : undefined}
+              aria-activedescendant={
+                isOpen && listLength > 0
+                  ? `${ATTENDEE_LISTBOX_ID}-option-${effectiveHighlight}`
+                  : undefined
+              }
             />
           </div>
 
           {isOpen && (filteredSuggestions.length > 0 || hasDirectRow) && (
             <div
+              id={ATTENDEE_LISTBOX_ID}
               className="border-border bg-popover absolute z-50 mt-1 w-full overflow-hidden rounded-lg border shadow-lg"
               role="listbox"
             >
               {filteredSuggestions.map((user, idx) => (
                 <button
                   key={user.uid}
+                  id={`${ATTENDEE_LISTBOX_ID}-option-${idx}`}
                   type="button"
                   role="option"
                   aria-selected={idx === effectiveHighlight}
@@ -336,6 +375,7 @@ export default function AttendeeInput({
 
               {hasDirectRow && (
                 <button
+                  id={`${ATTENDEE_LISTBOX_ID}-option-${suggestionCount}`}
                   type="button"
                   role="option"
                   aria-selected={effectiveHighlight === suggestionCount}
