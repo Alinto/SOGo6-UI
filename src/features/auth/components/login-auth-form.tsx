@@ -12,6 +12,7 @@ import { useEnvVars } from '@/lib/env-service'
 import { useRouter } from '@/lib/i18n/navigation'
 import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
+import { clearAuthenticatedApiCache } from '@/lib/redux/listeners/reset-cache-on-logout'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, ArrowLeft } from 'lucide-react'
@@ -115,6 +116,10 @@ export function LoginAuthForm({
       }
 
       const payload = decodeJwtPayload(result.data.jwt_token)
+
+      // Cache keys do not include the user. The login page has no mailbox
+      // subscriptions, so this drops the previous account before the new one.
+      clearAuthenticatedApiCache(dispatch)
 
       dispatch(
         setCredentials({
