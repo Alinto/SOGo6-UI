@@ -2,10 +2,11 @@
 
 import { Button } from '@/components/ui/button'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import { useSsoErrorMessage } from '@/features/auth/sso-error-message'
 import { decodeJwtPayload } from '@/features/auth/utils'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 
@@ -15,6 +16,7 @@ import React from 'react'
  */
 export function LoginSsoCallback() {
   const t = useTranslations('AUTH')
+  const ssoErrorMessage = useSsoErrorMessage()
   const { push } = useRouter()
   const dispatch = useAppDispatch()
   const [error, setError] = React.useState<string | null>(null)
@@ -54,17 +56,19 @@ export function LoginSsoCallback() {
     }
   }, [dispatch, push])
 
-  if (error === null) return null
+  if (error === null) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="text-primary-foreground h-6 w-6 animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-xs flex-col gap-4">
       <div className="border-destructive/50 bg-destructive/10 text-destructive flex items-start gap-2 rounded-lg border p-3 text-sm">
         <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-        <p>
-          {error
-            ? t('error.sso_failed.string', { code: error })
-            : t('error.generic.string')}
-        </p>
+        <p>{ssoErrorMessage(error)}</p>
       </div>
       <Button
         type="button"

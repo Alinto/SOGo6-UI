@@ -22,7 +22,7 @@
           "SOGO_D_PWD_RECOVERY_DELAY": "default",
           "SOGO_D_PWD_RECOVERY_FORCE": "default",
           "SOGO_D_PWD_RECOVERY_METHOD": "default",
-          "SOGo_D_OPENID_FETCH_USER_PROFILE": "default"
+          "SOGO_D_OPENID_FETCH_USER_PROFILE": "default"
         },
         "CALENDAR_CONTACT_SETTINGS": {
           "SOGO_D_CALDAV_ENABLED": "default",
@@ -178,7 +178,7 @@
           "SOGO_D_PWD_RECOVERY_DELAY": 86400,
           "SOGO_D_PWD_RECOVERY_FORCE": false,
           "SOGO_D_PWD_RECOVERY_METHOD": ["secretQuestion", "secondaryEmail"],
-          "SOGo_D_OPENID_FETCH_USER_PROFILE": true
+          "SOGO_D_OPENID_FETCH_USER_PROFILE": true
         },
         "CALENDAR_CONTACT_SETTINGS": {
           "SOGO_D_CALDAV_ENABLED": true,
@@ -348,7 +348,7 @@
           "SOGO_D_PWD_RECOVERY_DELAY": "default",
           "SOGO_D_PWD_RECOVERY_FORCE": "default",
           "SOGO_D_PWD_RECOVERY_METHOD": "default",
-          "SOGo_D_OPENID_FETCH_USER_PROFILE": "default"
+          "SOGO_D_OPENID_FETCH_USER_PROFILE": "default"
         },
         "CALENDAR_CONTACT_SETTINGS": {
           "SOGO_D_CALDAV_ENABLED": "default",
@@ -469,7 +469,7 @@
           "SOGO_D_PWD_RECOVERY_DELAY": 86400,
           "SOGO_D_PWD_RECOVERY_FORCE": false,
           "SOGO_D_PWD_RECOVERY_METHOD": ["secretQuestion", "secondaryEmail"],
-          "SOGo_D_OPENID_FETCH_USER_PROFILE": true
+          "SOGO_D_OPENID_FETCH_USER_PROFILE": true
         },
         "CALENDAR_CONTACT_SETTINGS": {
           "SOGO_D_CALDAV_ENABLED": true,

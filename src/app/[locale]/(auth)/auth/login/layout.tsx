@@ -2,13 +2,14 @@
 
 import LoginShell from '@/features/auth/components/login-shell'
 import { selectIsAuthenticated } from '@/features/auth/components/store/auth.slice'
+import { hasSsoCallbackResult } from '@/features/auth/utils'
+import { useRouter } from '@/lib/i18n/navigation'
 import { useAppSelector } from '@/lib/redux/hooks'
-import { useRouter } from 'next/navigation'
 import React, { startTransition, useEffect, useState } from 'react'
 
 const LoginLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated)
-  const router = useRouter()
+  const { push } = useRouter()
   const [isHydrated, setIsHydrated] = useState(false)
 
   useEffect(() => {
@@ -17,13 +18,16 @@ const LoginLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     })
   }, [])
 
-  useEffect(() => {
-    if (isHydrated && isAuthenticated) {
-      router.push('/u/0/INBOX')
-    }
-  }, [isHydrated, isAuthenticated, router])
+  const ssoResultPending =
+    isHydrated && hasSsoCallbackResult(window.location.hash)
 
-  if (!isHydrated || isAuthenticated) return null
+  useEffect(() => {
+    if (isHydrated && isAuthenticated && !ssoResultPending) {
+      push('/u/0/INBOX')
+    }
+  }, [isHydrated, isAuthenticated, ssoResultPending, push])
+
+  if (!isHydrated || (isAuthenticated && !ssoResultPending)) return null
 
   return <LoginShell>{children}</LoginShell>
 }
