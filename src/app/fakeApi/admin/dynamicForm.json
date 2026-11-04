@@ -104,7 +104,7 @@
             "data_type": "bool",
             "default": true,
             "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
-            "name": "SOGo_D_OPENID_FETCH_USER_PROFILE",
+            "name": "SOGO_D_OPENID_FETCH_USER_PROFILE",
             "required": false
           },
           {
