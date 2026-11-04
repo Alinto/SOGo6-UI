@@ -1,6 +1,18 @@
+import { redirectToExternalLogin } from '@/features/auth/utils'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { LoginForm } from '../login-form'
+
+jest.mock('@/features/auth/utils', () => {
+  const actual = jest.requireActual<typeof import('@/features/auth/utils')>(
+    '@/features/auth/utils'
+  )
+  return {
+    ...actual,
+    redirectToExternalLogin: jest.fn(),
+  }
+})
 
 jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
@@ -26,13 +38,16 @@ jest.mock('@/lib/i18n/navigation', () => ({
   ),
 }))
 
+const mockGetAuthMode = jest.fn()
+
 jest.mock('@/features/auth/components/store/auth.api', () => ({
   useGetSystemQuery: () => ({
     data: { data: { system: { SOGO_S_DIRECT_LOGIN: false } } },
     isLoading: false,
     isError: false,
+    refetch: jest.fn(),
   }),
-  useLazyGetAuthModeQuery: () => [jest.fn()],
+  useLazyGetAuthModeQuery: () => [mockGetAuthMode],
 }))
 
 describe('LoginForm - Step 1 (Email + Language)', () => {
@@ -110,5 +125,108 @@ describe('LoginForm - Step 1 (Email + Language)', () => {
     render(<LoginForm />)
     expect(screen.getByTestId('login-offline-banner')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /next.string/i })).toBeDisabled()
+  })
+})
+
+describe('LoginForm auth mode', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    Object.defineProperty(navigator, 'onLine', {
+      configurable: true,
+      value: true,
+    })
+  })
+
+  async function submit(email = 'user@example.com') {
+    const user = userEvent.setup()
+    render(<LoginForm />)
+    await user.type(screen.getByLabelText(/email.label.string/i), email)
+    await user.click(screen.getByRole('button', { name: /next.string/i }))
+  }
+
+  it('assigns an absolute openid location', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { kind: 'openid', location: 'https://idp.example/auth' },
+        }),
+    })
+
+    await submit()
+
+    expect(redirectToExternalLogin).toHaveBeenCalledWith(
+      'https://idp.example/auth'
+    )
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('stays on the form when the openid location is missing or relative', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { kind: 'openid', location: '/relative' },
+        }),
+    })
+
+    await submit()
+
+    expect(redirectToExternalLogin).not.toHaveBeenCalled()
+    expect(
+      screen.getByText('error.unknown_provider.string')
+    ).toBeInTheDocument()
+  })
+
+  it('goes to the password step for a plain login', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { kind: 'plain', location: '' },
+        }),
+    })
+
+    await submit('ada@example.com')
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/auth/login/pwd?email=ada%40example.com'
+    )
+    expect(redirectToExternalLogin).not.toHaveBeenCalled()
+  })
+
+  it('shows an unknown provider when cas has no location', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { kind: 'cas', location: '' },
+        }),
+    })
+
+    await submit()
+
+    expect(redirectToExternalLogin).not.toHaveBeenCalled()
+    expect(
+      screen.getByText('error.unknown_provider.string')
+    ).toBeInTheDocument()
+  })
+
+  it('shows the translated redirect error', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.reject({
+          status: 400,
+          data: {
+            error_code: 'S000215',
+            error_msg: 'SSO Redirect Url Not Allowed',
+          },
+        }),
+    })
+
+    await submit()
+
+    expect(
+      screen.getByText('error.sso_redirect_not_allowed.string')
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText('SSO Redirect Url Not Allowed')
+    ).not.toBeInTheDocument()
   })
 })

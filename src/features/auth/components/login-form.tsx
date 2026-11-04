@@ -14,11 +14,19 @@ import {
   useGetSystemQuery,
   useLazyGetAuthModeQuery,
 } from '@/features/auth/components/store/auth.api'
+import {
+  isSsoErrorCode,
+  useSsoErrorMessage,
+} from '@/features/auth/sso-error-message'
+import {
+  isAbsoluteHttpUrl,
+  redirectToExternalLogin,
+} from '@/features/auth/utils'
 import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useEnvVars } from '@/lib/env-service'
 import { getLocales } from '@/lib/i18n/config'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
-import { getErrorMessage } from '@/lib/redux/api/error-handlers'
+import { getErrorCode, getErrorMessage } from '@/lib/redux/api/error-handlers'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle, Languages, Loader2 } from 'lucide-react'
@@ -55,6 +63,7 @@ export function LoginForm({
   ...props
 }: React.ComponentPropsWithoutRef<'form'>) {
   const t = useTranslations('AUTH')
+  const ssoErrorMessage = useSsoErrorMessage()
   const { push } = useRouter()
   const pathname = usePathname()
   const locale = useLocale()
@@ -65,7 +74,6 @@ export function LoginForm({
   const searchParams = useSearchParams()
 
   const {
-    data: systemData,
     isLoading: systemLoading,
     isError: systemError,
     refetch: refetchSystem,
@@ -113,13 +121,6 @@ export function LoginForm({
     return () => window.clearTimeout(timer)
   }, [systemLoading])
 
-  // If SOGO_S_DIRECT_LOGIN → skip email step, go directly to password
-  React.useEffect(() => {
-    if (systemData?.data?.system?.SOGO_S_DIRECT_LOGIN) {
-      push('/auth/login/pwd')
-    }
-  }, [systemData, push])
-
   const handleLocaleChange = (newLocale: string) => {
     const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`)
     push(newPathname)
@@ -137,23 +138,22 @@ export function LoginForm({
       }).unwrap()
       const { kind, location } = result.data
 
-      switch (kind) {
-        case 'plain':
-          push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}`)
-          break
-        case 'ldap':
-          push(
-            `/auth/login/pwd?email=${encodeURIComponent(data.email)}&mode=ldap`
-          )
-          break
-        case 'openid':
-          window.location.href = location
-          break
-        default:
-          setServerError(t('error.unknown_provider.string'))
+      if (isAbsoluteHttpUrl(location)) {
+        redirectToExternalLogin(location)
+        return
       }
+      if (kind === 'plain') {
+        push(`/auth/login/pwd?email=${encodeURIComponent(data.email)}`)
+        return
+      }
+      setServerError(t('error.unknown_provider.string'))
     } catch (error) {
-      setServerError(getErrorMessage(error) || t('error.generic.string'))
+      const code = getErrorCode(error)
+      setServerError(
+        isSsoErrorCode(code)
+          ? ssoErrorMessage(code)
+          : getErrorMessage(error) || t('error.generic.string')
+      )
     } finally {
       setIsLoading(false)
     }

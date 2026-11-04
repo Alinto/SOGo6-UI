@@ -11,8 +11,10 @@ export interface LoginResponse {
   error_msg: string
 }
 
+export type AuthKind = 'plain' | 'openid' | 'cas' | 'saml2'
+
 export interface AuthModeResponse {
-  data: { kind: 'plain' | 'ldap' | 'openid'; location: string }
+  data: { kind: AuthKind; location: string }
   error_code: string
   error_msg: string
 }

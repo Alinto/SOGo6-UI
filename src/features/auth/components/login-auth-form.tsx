@@ -41,7 +41,6 @@ export function LoginAuthForm({
   const { push } = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
-  const mode = searchParams.get('mode') // 'ldap' ou null
 
   const dispatch = useAppDispatch()
   const [login] = useLoginMutation()
@@ -168,11 +167,6 @@ export function LoginAuthForm({
           </Label>
         </div>
         <p className="text-primary-foreground text-sm font-medium">{email}</p>
-        {mode === 'ldap' && (
-          <p className="text-primary-foreground/60 text-xs">
-            {t('auth_mode.ldap.string')}
-          </p>
-        )}
       </div>
 
       <div className="mb-6 grid gap-2">

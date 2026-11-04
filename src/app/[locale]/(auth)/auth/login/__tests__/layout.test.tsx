@@ -12,7 +12,7 @@ jest.mock('next/image', () => ({
 }))
 
 const mockPush = jest.fn()
-jest.mock('next/navigation', () => ({
+jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }))
 
@@ -25,6 +25,7 @@ describe('Auth Login Layout', () => {
   afterEach(() => {
     jest.mocked(useAppSelector).mockReturnValue(false)
     mockPush.mockClear()
+    window.history.replaceState(null, '', '/en/auth/login')
   })
 
   it('renders children correctly', () => {
@@ -96,5 +97,19 @@ describe('Auth Login Layout', () => {
 
     expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
     expect(screen.queryByTestId('test-content')).not.toBeInTheDocument()
+  })
+
+  it('keeps the callback mounted when a token is already in the hash', () => {
+    jest.mocked(useAppSelector).mockReturnValue(true)
+    window.history.replaceState(null, '', '/en/auth/login/sso#token=abc')
+
+    render(
+      <Layout>
+        <div data-testid="test-content">Test Content</div>
+      </Layout>
+    )
+
+    expect(screen.getByTestId('test-content')).toBeInTheDocument()
+    expect(mockPush).not.toHaveBeenCalled()
   })
 })

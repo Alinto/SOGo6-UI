@@ -128,7 +128,7 @@
         },
         "developer_comment": ""
       },
-      "SOGo_D_OPENID_FETCH_USER_PROFILE": {
+      "SOGO_D_OPENID_FETCH_USER_PROFILE": {
         "name": {
           "string": "Fetch User Profile"
         },

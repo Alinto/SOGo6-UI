@@ -57,16 +57,38 @@ describe('LoginSsoCallback', () => {
     expect(window.location.pathname).toBe('/en/auth/login/sso')
   })
 
-  it('shows the error code sent by the API', () => {
+  it('shows the loader while the token is stored', () => {
+    setHash(`#token=${encodeURIComponent(TOKEN)}`)
+
+    const { container } = render(<LoginSsoCallback />)
+
+    expect(container.querySelector('.animate-spin')).toBeInTheDocument()
+  })
+
+  it('shows a mapped error instead of the loader', () => {
     setHash('#error=S000212')
+
+    const { container } = render(<LoginSsoCallback />)
+
+    expect(mockDispatch).not.toHaveBeenCalled()
+    expect(mockTranslate).toHaveBeenCalledWith(
+      'error.sso_user_not_found.string'
+    )
+    expect(container.querySelector('.animate-spin')).not.toBeInTheDocument()
+    expect(
+      screen.getByText('error.sso_user_not_found.string')
+    ).toBeInTheDocument()
+    expect(screen.getByText('sso_back_to_login.string')).toBeInTheDocument()
+  })
+
+  it('keeps the code for an unknown SSO error', () => {
+    setHash('#error=S000299')
 
     render(<LoginSsoCallback />)
 
-    expect(mockDispatch).not.toHaveBeenCalled()
     expect(mockTranslate).toHaveBeenCalledWith('error.sso_failed.string', {
-      code: 'S000212',
+      code: 'S000299',
     })
-    expect(screen.getByText('sso_back_to_login.string')).toBeInTheDocument()
   })
 
   it('shows a generic error without token nor error', () => {
@@ -85,5 +107,34 @@ describe('LoginSsoCallback', () => {
 
     expect(mockDispatch).not.toHaveBeenCalled()
     expect(screen.getByText('error.generic.string')).toBeInTheDocument()
+  })
+
+  it('stores an unpadded token and clears the fragment', () => {
+    const payload = { uid: 'user', cn: 'John Do', email: 'user@example.com' }
+    const bytes = new TextEncoder().encode(JSON.stringify(payload))
+    let binary = ''
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte)
+    })
+    const segment = btoa(binary)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '')
+    const token = `h.${segment}.s`
+    expect(segment.length % 4).not.toBe(0)
+    setHash(`#token=${encodeURIComponent(token)}`)
+
+    render(<LoginSsoCallback />)
+
+    expect(mockDispatch).toHaveBeenCalledWith(
+      expect.objectContaining({
+        payload: {
+          token,
+          user: payload,
+          rememberMe: false,
+        },
+      })
+    )
+    expect(window.location.hash).toBe('')
   })
 })
