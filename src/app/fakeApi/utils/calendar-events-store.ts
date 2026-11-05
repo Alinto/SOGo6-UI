@@ -2,6 +2,7 @@ import type { CalendarEvent } from '@/features/calendars/calendars-types'
 import { NextRequest, NextResponse } from 'next/server'
 import { generateDefaultCalendarEvents } from './calendar-events-seed'
 import { getDemoData, setDemoData } from './demo-storage'
+import { isUnsubscribedSharedCalendar } from './shared-calendars-store'
 
 const COOKIE_NAME = 'demo_cal_delta'
 
@@ -53,9 +54,7 @@ export function getEventsForCalendar(
   )
 
   const merged = base
-    .map((e) =>
-      upsertedIds.has(e.id ?? '') ? delta.upserts[e.id ?? ''] : e
-    )
+    .map((e) => (upsertedIds.has(e.id ?? '') ? delta.upserts[e.id ?? ''] : e))
     .concat(
       Object.values(delta.upserts).filter(
         (e) => e.calendar_id === calendarId && !base.some((b) => b.id === e.id)
@@ -68,7 +67,9 @@ export function getEventsForCalendar(
 /**
  * All events across all known calendars, merged with delta.
  */
-export function getAllEvents(req: NextRequest): Record<string, CalendarEvent[]> {
+export function getAllEvents(
+  req: NextRequest
+): Record<string, CalendarEvent[]> {
   const seeds = generateDefaultCalendarEvents()
   return Object.fromEntries(
     Object.keys(seeds).map((calId) => [calId, getEventsForCalendar(req, calId)])
@@ -84,13 +85,14 @@ export function getEventsForAllCalendars(
   endDateTime: string | null
 ): CalendarEvent[] {
   const all = getAllEvents(req)
-  let events: CalendarEvent[] = Object.values(all).flat()
+  let events: CalendarEvent[] = Object.entries(all)
+    .filter(([calendarId]) => !isUnsubscribedSharedCalendar(req, calendarId))
+    .flatMap(([, calendarEvents]) => calendarEvents)
 
   if (startDateTime) {
     const startBoundary = new Date(startDateTime).getTime()
     events = events.filter(
-      (e) =>
-        new Date(e.end_date ?? e.date_end ?? '').getTime() >= startBoundary
+      (e) => new Date(e.end_date ?? e.date_end ?? '').getTime() >= startBoundary
     )
   }
   if (endDateTime) {

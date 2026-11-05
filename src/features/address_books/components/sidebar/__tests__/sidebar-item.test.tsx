@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render } from '@testing-library/react'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
@@ -100,6 +100,16 @@ jest.mock('@/components/ui/sidebar', () => ({
 
 jest.mock('lucide-react', () => ({
   MoreVertical: () => <span data-testid="more-vertical" />,
+}))
+
+const mockUpdateSubscription = jest.fn(() => ({
+  unwrap: () => Promise.resolve(),
+}))
+jest.mock('@/features/address_books/store/address-books-api', () => ({
+  useUpdateSharedAddressBookSubscriptionMutation: () => [
+    mockUpdateSubscription,
+    { isLoading: false },
+  ],
 }))
 
 // Mock action components
@@ -264,5 +274,72 @@ describe('SidebarItem', () => {
     const { queryByTestId } = render(<SidebarItem {...props} />)
 
     expect(queryByTestId('sidebar-menu-action')).toBeNull()
+  })
+
+  describe('shared address books', () => {
+    it('replaces Delete with Unsubscribe', () => {
+      const { queryByText, getByText } = render(
+        <SidebarItem {...defaultProps} isShared owner="team-lead@example.com" />
+      )
+
+      expect(queryByText('delete.default.string')).toBeNull()
+      expect(getByText('options.unsubscribe.string')).toBeInTheDocument()
+    })
+
+    it('unsubscribes from the shared address book on click', () => {
+      const { getByText } = render(<SidebarItem {...defaultProps} isShared />)
+
+      fireEvent.click(getByText('options.unsubscribe.string'))
+
+      expect(mockUpdateSubscription).toHaveBeenCalledWith({
+        key: 'test-book-id',
+        subscribe: false,
+      })
+    })
+
+    it('redirects to all contacts after unsubscribing from the open book', async () => {
+      jest.mocked(useParams).mockReturnValue({ book_id: 'test-book-id' })
+      const { getByText } = render(<SidebarItem {...defaultProps} isShared />)
+
+      fireEvent.click(getByText('options.unsubscribe.string'))
+
+      await waitFor(() =>
+        expect(mockPush).toHaveBeenCalledWith('/address_books/all')
+      )
+    })
+
+    it('stays on the current route when unsubscribing from another book', async () => {
+      jest.mocked(useParams).mockReturnValue({ book_id: 'other-book-id' })
+      const { getByText } = render(<SidebarItem {...defaultProps} isShared />)
+
+      fireEvent.click(getByText('options.unsubscribe.string'))
+
+      await waitFor(() => expect(mockUpdateSubscription).toHaveBeenCalled())
+      await Promise.resolve()
+      expect(mockPush).not.toHaveBeenCalled()
+    })
+
+    it('stays on the current route when unsubscribing fails', async () => {
+      jest.mocked(useParams).mockReturnValue({ book_id: 'test-book-id' })
+      mockUpdateSubscription.mockReturnValueOnce({
+        unwrap: () => Promise.reject(new Error('failed')),
+      })
+      const { getByText } = render(<SidebarItem {...defaultProps} isShared />)
+
+      fireEvent.click(getByText('options.unsubscribe.string'))
+
+      await waitFor(() => expect(mockUpdateSubscription).toHaveBeenCalled())
+      await Promise.resolve()
+      expect(mockPush).not.toHaveBeenCalled()
+    })
+
+    it('keeps Delete and no Unsubscribe for personal address books', () => {
+      const { queryByText, getByText } = render(
+        <SidebarItem {...defaultProps} />
+      )
+
+      expect(getByText('delete.default.string')).toBeInTheDocument()
+      expect(queryByText('options.unsubscribe.string')).toBeNull()
+    })
   })
 })

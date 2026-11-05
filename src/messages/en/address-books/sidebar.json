@@ -71,6 +71,9 @@
             },
             "ios_download": {
                 "string": "Download iOS - MacOS configuration profile"
+            },
+            "unsubscribe": {
+                "string": "Unsubscribe"
             }
         },
         "all_contacts": {
@@ -236,6 +239,60 @@
             },
             "close": {
                 "string": "Close"
+            }
+        },
+        "shared_subscribe": {
+            "add_title": {
+                "string": "Subscribe to a shared address book"
+            },
+            "description": {
+                "string": "Address books other users have shared with you."
+            },
+            "search_label": {
+                "string": "Search by owner"
+            },
+            "search_placeholder": {
+                "string": "Owner name or email…"
+            },
+            "subscribe": {
+                "string": "Subscribe"
+            },
+            "subscribed": {
+                "string": "Subscribed"
+            },
+            "empty": {
+                "string": "No users share address books with you."
+            },
+            "error": {
+                "string": "Unable to load shared address books."
+            },
+            "loading": {
+                "string": "Loading shared address books…"
+            },
+            "owner_items": {
+                "loading": {
+                    "string": "Loading this user's address books…"
+                },
+                "error": {
+                    "string": "Unable to load this user's address books."
+                },
+                "empty": {
+                    "string": "This user shares no address books."
+                }
+            },
+            "pagination": {
+                "previous": {
+                    "string": "Previous page"
+                },
+                "next": {
+                    "string": "Next page"
+                },
+                "page": {
+                    "string": "Page {page} of {total}"
+                },
+                "current": {
+                    "string": "Page {page}"
+                }
             }
         }
     }

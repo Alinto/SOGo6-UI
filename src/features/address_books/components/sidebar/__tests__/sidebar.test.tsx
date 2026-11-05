@@ -76,6 +76,11 @@ jest.mock('../forms/add', () => ({
   ),
 }))
 
+jest.mock('../forms/subscribe-shared', () => ({
+  __esModule: true,
+  default: () => <div data-testid="subscribe-shared-address-book" />,
+}))
+
 jest.mock('../create-contact-opener', () => ({
   __esModule: true,
   default: () => <div data-testid="create-contact-opener" />,
@@ -87,6 +92,7 @@ jest.mock('../sidebar-item', () => ({
     id,
     name,
     owner,
+    isShared,
     sharingAction,
     canImport,
     canExport,
@@ -94,6 +100,7 @@ jest.mock('../sidebar-item', () => ({
     id: string
     name: string
     owner?: string
+    isShared?: boolean
     sharingAction?: boolean
     canImport?: boolean
     canExport?: boolean
@@ -101,6 +108,7 @@ jest.mock('../sidebar-item', () => ({
     <div
       data-testid={`sidebar-item-${id}`}
       data-owner={owner}
+      data-shared={isShared}
       data-sharing-action={sharingAction}
       data-can-import={canImport}
       data-can-export={canExport}
@@ -133,6 +141,22 @@ describe('AddressBooks Sidebar', () => {
 
       render(<Sidebar />)
       expect(screen.getByTestId('sidebar-skeleton')).toBeInTheDocument()
+    })
+
+    it('keeps the address books, and their dialogs, mounted while refetching', () => {
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: {
+          personals: [{ id: 'p1', name: 'Personal', default: true }],
+          subscriptions: [],
+          globals: [],
+        },
+        isFetching: true,
+      })
+
+      render(<Sidebar />)
+
+      expect(screen.queryByTestId('sidebar-skeleton')).not.toBeInTheDocument()
+      expect(screen.getByText('personals.string')).toBeInTheDocument()
     })
 
     it('renders address book groups when data is loaded', () => {
@@ -228,12 +252,61 @@ describe('AddressBooks Sidebar', () => {
       )
     })
 
+    it('marks shared books so they offer Unsubscribe', () => {
+      render(<Sidebar />)
+      expect(screen.getByTestId('sidebar-item-theirs')).toHaveAttribute(
+        'data-shared',
+        'true'
+      )
+      expect(screen.getByTestId('sidebar-item-mine')).not.toHaveAttribute(
+        'data-shared'
+      )
+    })
+
+    it('shows the subscribe button in the shared group', () => {
+      render(<Sidebar />)
+      expect(
+        screen
+          .getByTestId('subscribe-shared-address-book')
+          .closest('[data-testid="sidebar-group"]')
+          ?.querySelector('[data-testid="sidebar-group-label"]')?.textContent
+      ).toBe('shared.string')
+    })
+
     it('does not offer sharing on shared books', () => {
       render(<Sidebar />)
       expect(screen.getByTestId('sidebar-item-theirs')).toHaveAttribute(
         'data-sharing-action',
         'false'
       )
+    })
+
+    it('sorts shared books by owner email, then by name', () => {
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: {
+          personals: [
+            { id: 'zoe-a', name: 'Alpha', owner: 'zoe@tutu.fr' },
+            { id: 'bob-w', name: 'Work', owner: 'bob@tutu.fr' },
+          ],
+          subscriptions: [
+            { id: 'bob-a', name: 'agenda', owner: 'Bob@tutu.fr' },
+            { id: 'alice-z', name: 'Zeta', owner: 'alice@tutu.fr' },
+          ],
+          globals: [],
+        },
+        isFetching: false,
+      })
+      render(<Sidebar />)
+      const sharedIds = screen
+        .getAllByTestId(/^sidebar-item-/)
+        .filter((item) => item.getAttribute('data-shared') === 'true')
+        .map((item) => item.dataset.testid)
+      expect(sharedIds).toEqual([
+        'sidebar-item-alice-z',
+        'sidebar-item-bob-a',
+        'sidebar-item-bob-w',
+        'sidebar-item-zoe-a',
+      ])
     })
   })
 

@@ -31,6 +31,19 @@ export function useCalendarVisibility() {
     return hiddenIds
   }, [folderPreferences])
 
+  // Calendars still in the list, matched by key or id like findCalendarByRef.
+  // Events of an unsubscribed or deleted calendar are then hidden.
+  const knownCalendars = useMemo(() => {
+    if (!calendarsData) return null
+
+    const refs = new Set<string>()
+    calendarsData.forEach((calendar) => {
+      if (calendar.key) refs.add(calendar.key)
+      if (calendar.id) refs.add(calendar.id)
+    })
+    return refs
+  }, [calendarsData])
+
   const setCalendarVisibility = useCallback(
     async (calendarId: string, isVisible: boolean) => {
       const calendar = calendarsData?.find(
@@ -47,9 +60,13 @@ export function useCalendarVisibility() {
     [calendarsData, isOtherOwner, updateFolderPreferences]
   )
 
+  // Visible when the calendar is in the list and not hidden (all visible until the list loads)
   const isCalendarVisible = useCallback(
-    (calendarId: string): boolean => !hiddenCalendars.has(calendarId),
-    [hiddenCalendars]
+    (calendarId: string): boolean => {
+      if (knownCalendars && !knownCalendars.has(calendarId)) return false
+      return !hiddenCalendars.has(calendarId)
+    },
+    [hiddenCalendars, knownCalendars]
   )
 
   return {

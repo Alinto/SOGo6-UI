@@ -7,6 +7,7 @@ import {
   getDemoData,
   setDemoData,
 } from '@/app/fakeApi/utils/demo-storage'
+import { getSubscribedAddressBooks } from '@/app/fakeApi/utils/shared-address-books-store'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -22,8 +23,15 @@ export async function GET(req: NextRequest) {
     DEFAULT_ADDRESS_BOOKS
   )
 
-  const response = NextResponse.json(userAddressBooks)
-  // Only if the cookie does not exist yet (first visit)
+  const response = NextResponse.json({
+    ...userAddressBooks,
+    subscriptions: getSubscribedAddressBooks(
+      req,
+      userAddressBooks.subscriptions
+    ),
+  })
+  // Only if the cookie does not exist yet (first visit). The subscriptions
+  // are rebuilt from the subscribed shared keys on each read.
   if (!req.cookies.get('demo_address_books')) {
     setDemoData(response, 'demo_address_books', userAddressBooks, req)
   }

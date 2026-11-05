@@ -8,16 +8,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { useGetCalendarsQuery } from '@/features/calendars'
-import { useTasksSource } from '../../hooks/use-tasks-source'
-import {
-  selectTasksUi,
-  setCalendarFilter,
-  setStatusFilter,
-} from '../../store/tasks-ui-slice'
-import type { TaskListFilter } from '../../tasks-types'
-import { taskMatchesListFilter } from '../../utils/task-list-filter'
+import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import {
   Calendar,
@@ -30,8 +22,16 @@ import {
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { memo, useMemo } from 'react'
-import CreateTaskOpener from './create-task-opener'
+import { useTasksSource } from '../../hooks/use-tasks-source'
+import {
+  selectTasksUi,
+  setCalendarFilter,
+  setStatusFilter,
+} from '../../store/tasks-ui-slice'
+import type { TaskListFilter } from '../../tasks-types'
+import { taskMatchesListFilter } from '../../utils/task-list-filter'
 import TaskOverdueCountBadge from '../task-overdue-count-badge'
+import CreateTaskOpener from './create-task-opener'
 import {
   tasksSidebarMenuButtonClassName,
   tasksSidebarMenuCountClassName,
@@ -193,7 +193,7 @@ function TasksSidebar() {
                   >
                     <Calendar className={tasksSidebarMenuIconClassName} />
                     <div className={tasksSidebarMenuLabelRowClassName}>
-                      <span className="min-w-0 shrink truncate leading-none text-sm">
+                      <span className="min-w-0 shrink truncate text-sm leading-none">
                         {t('sidebar.calendars.all.string')}
                       </span>
                     </div>
@@ -208,9 +208,7 @@ function TasksSidebar() {
                         className={tasksSidebarMenuButtonClassName}
                         isActive={isSelected}
                         onClick={() =>
-                          dispatch(
-                            setCalendarFilter(isSelected ? null : key)
-                          )
+                          dispatch(setCalendarFilter(isSelected ? null : key))
                         }
                         tooltip={calendar.name}
                         title={calendar.name}
@@ -224,7 +222,7 @@ function TasksSidebar() {
                           aria-hidden
                         />
                         <div className={tasksSidebarMenuLabelRowClassName}>
-                          <span className="min-w-0 shrink truncate leading-none text-sm">
+                          <span className="min-w-0 shrink truncate text-sm leading-none">
                             {calendar.name}
                           </span>
                         </div>

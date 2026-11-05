@@ -13,12 +13,14 @@ import {
   isSubscriptionCalendar,
 } from '@/features/calendars/utils/calendar-source-type'
 import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
+import { sortByOwnerThenName } from '@/lib/utils/owner'
 import { useTranslations } from 'next-intl'
 import React, { memo, useMemo } from 'react'
 import { useGetCalendarsQuery } from '../../store/calendars-api'
 import CreateEventOpener from './create-event-opener'
 import AddCalendar from './forms/add'
 import AddExternalCalendar from './forms/add-external'
+import SubscribeSharedCalendar from './forms/subscribe-shared'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -37,12 +39,14 @@ const Sidebar: React.FC = () => {
     )
     return {
       personals: nonSubscriptions.filter((calendar) => !isShared(calendar)),
-      shared: nonSubscriptions.filter(isShared),
+      shared: sortByOwnerThenName(nonSubscriptions.filter(isShared)),
       subscriptions: calendars.filter(isSubscriptionCalendar),
     }
   }, [data, isOtherOwner])
 
-  if (isFetching) {
+  // Skeleton on the first load only: a refetch (e.g. after subscribing to a
+  // shared calendar) must keep the sidebar, and its open dialogs, mounted.
+  if (!data && isFetching) {
     return <SidebarSkeleton />
   }
 
@@ -82,6 +86,7 @@ const Sidebar: React.FC = () => {
 
       <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('sidebar.shared.string')}</SidebarGroupLabel>
+        <SubscribeSharedCalendar />
         <SidebarMenu>
           {shared.map((calendar) => (
             <SidebarItem

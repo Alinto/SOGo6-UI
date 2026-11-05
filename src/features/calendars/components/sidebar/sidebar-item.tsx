@@ -21,6 +21,7 @@ import WorkInProgress from '@/components/work-in-progress'
 import {
   useGetSyncStatusQuery,
   useTriggerSyncMutation,
+  useUpdateSharedCalendarSubscriptionMutation,
 } from '@/features/calendars/store/calendars-api'
 import { useProfile } from '@/features/user-profile'
 import { useIsMobile } from '@/hooks/use-mobile'
@@ -115,6 +116,27 @@ const SyncNowItem = ({
     >
       {statusIcon()}
       <span>{t('external.sync_now.string')}</span>
+    </DropdownMenuItem>
+  )
+}
+
+const UnsubscribeItem = ({ calendarKey }: { calendarKey: string }) => {
+  const t = useTranslations('CALENDARS')
+  const [updateSubscription, { isLoading }] =
+    useUpdateSharedCalendarSubscriptionMutation()
+
+  return (
+    <DropdownMenuItem
+      disabled={isLoading}
+      onClick={(e) => {
+        e.stopPropagation()
+        // Errors are notified by RTK Query onQueryStarted.
+        updateSubscription({ key: calendarKey, subscribe: false })
+          .unwrap()
+          .catch(() => undefined)
+      }}
+    >
+      <span>{t('sidebar.unsubscribe.string')}</span>
     </DropdownMenuItem>
   )
 }
@@ -279,7 +301,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DropdownMenuItem>
               </DialogTrigger>
 
-              {!isDefault && (
+              {isShared && (
+                <UnsubscribeItem calendarKey={resolvedCalendarKey} />
+              )}
+
+              {!isDefault && !isShared && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem
                     onClick={() => {

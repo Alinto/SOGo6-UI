@@ -102,3 +102,14 @@ export function buildListQueryParams(
 
   return Object.keys(query).length ? query : undefined
 }
+
+export const sharedAddressBooksPath = () => 'shared-addressbooks'
+
+export const sharedAddressBookPath = (key: string) =>
+  `${sharedAddressBooksPath()}/${encodePathSegment(key)}`
+
+export const sharedAddressBookUsersPath = () =>
+  `${sharedAddressBooksPath()}/users`
+
+export const sharedAddressBooksByOwnerPath = (owner: string) =>
+  `${sharedAddressBooksPath()}/${encodePathSegment(owner)}`

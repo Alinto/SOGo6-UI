@@ -1,4 +1,4 @@
-import { isOtherOwner } from '../owner'
+import { isOtherOwner, sortByOwnerThenName } from '../owner'
 
 describe('isOtherOwner', () => {
   const user = { uid: 'test@tutu.fr', email: 'test@tutu.fr' }
@@ -31,5 +31,42 @@ describe('isOtherOwner', () => {
   it('returns false when the connected user is unknown', () => {
     expect(isOtherOwner('other@tutu.fr', null)).toBe(false)
     expect(isOtherOwner('other@tutu.fr', { uid: '', email: '' })).toBe(false)
+  })
+})
+
+describe('sortByOwnerThenName', () => {
+  it('sorts by owner email, then by name', () => {
+    const items = [
+      { owner: 'zoe@tutu.fr', name: 'Alpha' },
+      { owner: 'bob@tutu.fr', name: 'Work' },
+      { owner: 'bob@tutu.fr', name: 'Agenda' },
+      { owner: 'alice@tutu.fr', name: 'Zeta' },
+    ]
+    expect(sortByOwnerThenName(items)).toEqual([
+      { owner: 'alice@tutu.fr', name: 'Zeta' },
+      { owner: 'bob@tutu.fr', name: 'Agenda' },
+      { owner: 'bob@tutu.fr', name: 'Work' },
+      { owner: 'zoe@tutu.fr', name: 'Alpha' },
+    ])
+  })
+
+  it('ignores case and accents', () => {
+    const items = [
+      { owner: 'Bob@tutu.fr', name: 'école' },
+      { owner: 'bob@tutu.fr', name: 'Dossier' },
+      { owner: 'alice@tutu.fr', name: 'x' },
+    ]
+    expect(sortByOwnerThenName(items).map((item) => item.name)).toEqual([
+      'x',
+      'Dossier',
+      'école',
+    ])
+  })
+
+  it('puts items without owner first and does not mutate the input', () => {
+    const items = [{ owner: 'bob@tutu.fr', name: 'A' }, { name: 'B' }]
+    const sorted = sortByOwnerThenName(items)
+    expect(sorted.map((item) => item.name)).toEqual(['B', 'A'])
+    expect(items[0].name).toBe('A')
   })
 })

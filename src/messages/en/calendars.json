@@ -161,6 +161,60 @@
         }
       }
     },
+    "shared_subscribe": {
+      "add_title": {
+        "string": "Subscribe to a shared calendar"
+      },
+      "description": {
+        "string": "Calendars other users have shared with you."
+      },
+      "search_label": {
+        "string": "Search by owner"
+      },
+      "search_placeholder": {
+        "string": "Owner name or email…"
+      },
+      "subscribe": {
+        "string": "Subscribe"
+      },
+      "subscribed": {
+        "string": "Subscribed"
+      },
+      "empty": {
+        "string": "No users share calendars with you."
+      },
+      "error": {
+        "string": "Unable to load shared calendars."
+      },
+      "loading": {
+        "string": "Loading shared calendars…"
+      },
+      "owner_items": {
+        "loading": {
+          "string": "Loading this user's calendars…"
+        },
+        "error": {
+          "string": "Unable to load this user's calendars."
+        },
+        "empty": {
+          "string": "This user shares no calendars."
+        }
+      },
+      "pagination": {
+        "previous": {
+          "string": "Previous page"
+        },
+        "next": {
+          "string": "Next page"
+        },
+        "page": {
+          "string": "Page {page} of {total}"
+        },
+        "current": {
+          "string": "Page {page}"
+        }
+      }
+    },
     "external": {
       "add_title": {
         "string": "Subscribe to calendar"
@@ -225,6 +279,9 @@
       },
       "delete": {
         "string": "Delete Calendar"
+      },
+      "unsubscribe": {
+        "string": "Unsubscribe"
       },
       "sharing": {
         "string": "Sharing",

@@ -21,6 +21,8 @@ import { DynamicIcon, IconName } from 'lucide-react/dynamic'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import React from 'react'
+import { ALL_CONTACTS_BOOK_ID } from '../../address-books-constants'
+import { useUpdateSharedAddressBookSubscriptionMutation } from '../../store/address-books-api'
 import { routeParam } from '../../utils/route-param'
 import DeleteAction from './actions/delete'
 import ExportDialog from './actions/export-dialog'
@@ -33,6 +35,8 @@ interface SidebarItemProps {
   name: string
   id: string
   isDefault?: boolean
+  /** Shared by another user: offers Unsubscribe instead of Delete. */
+  isShared?: boolean
   disableActions?: boolean
   editAction?: boolean
   importAction?: boolean
@@ -48,11 +52,44 @@ interface SidebarItemProps {
   onClick: () => void
 }
 
+const UnsubscribeItem = ({
+  bookKey,
+  isActive,
+}: {
+  bookKey: string
+  /** The book is the one currently shown: leave its route once unsubscribed. */
+  isActive: boolean
+}) => {
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const { push } = useRouter()
+  const [updateSubscription, { isLoading }] =
+    useUpdateSharedAddressBookSubscriptionMutation()
+
+  return (
+    <DropdownMenuItem
+      disabled={isLoading}
+      onClick={(e) => {
+        e.stopPropagation()
+        // Errors are notified by RTK Query onQueryStarted.
+        updateSubscription({ key: bookKey, subscribe: false })
+          .unwrap()
+          .then(() => {
+            if (isActive) push(`/address_books/${ALL_CONTACTS_BOOK_ID}`)
+          })
+          .catch(() => undefined)
+      }}
+    >
+      <span>{t('options.unsubscribe.string')}</span>
+    </DropdownMenuItem>
+  )
+}
+
 const SidebarItem: React.FC<SidebarItemProps> = ({
   name,
   icon,
   disableActions,
   isDefault,
+  isShared = false,
   id,
   editAction = true,
   importAction = true,
@@ -127,7 +164,9 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 </DialogTrigger>
               )}
 
-              {!isDefault && (
+              {isShared && <UnsubscribeItem bookKey={id} isActive={isActive} />}
+
+              {!isDefault && !isShared && (
                 <DialogTrigger asChild>
                   <DropdownMenuItem onClick={() => setType('delete')}>
                     <span>{formT('delete.default.string')}</span>
