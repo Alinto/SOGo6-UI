@@ -163,4 +163,160 @@ describe('calendars-api', () => {
       expect(query.url).toBe('calendars/cal%20with%20space/share')
     })
   })
+
+  describe('shared calendars', () => {
+    it('exports the shared calendars hooks', () => {
+      expect(typeof CalendarsApi.useGetSharedCalendarUsersQuery).toBe(
+        'function'
+      )
+      expect(typeof CalendarsApi.useGetSharedCalendarsByOwnerQuery).toBe(
+        'function'
+      )
+      expect(
+        typeof CalendarsApi.useUpdateSharedCalendarSubscriptionMutation
+      ).toBe('function')
+    })
+
+    it('builds the paginated users query with a trimmed search', () => {
+      expect(
+        CalendarsApi.getSharedCalendarUsersQuery({
+          page: 2,
+          page_size: 20,
+          search: '  sogo ',
+        })
+      ).toEqual({
+        url: 'shared-calendars/users',
+        params: { page: 2, page_size: 20, search: 'sogo' },
+      })
+    })
+
+    it('omits an empty search from the users query', () => {
+      expect(
+        CalendarsApi.getSharedCalendarUsersQuery({
+          page: 1,
+          page_size: 20,
+          search: '   ',
+        }).params
+      ).toEqual({ page: 1, page_size: 20 })
+    })
+
+    it("builds the owner's calendars query with an encoded owner", () => {
+      expect(CalendarsApi.getSharedCalendarsByOwnerQuery('a b@x.org')).toBe(
+        'shared-calendars/a%20b%40x.org'
+      )
+    })
+
+    it('normalizes the backend users response (mail, no total)', () => {
+      expect(
+        CalendarsApi.normalizeSharedCalendarUsersResponse({
+          data: {
+            users: [
+              { mail: 'sogo-tests1@example.org', username: 'Didy' },
+              { mail: 'nameless@example.org', username: '' },
+              { username: 'No mail' },
+            ],
+          },
+          error_code: 'S000000',
+          error_msg: 'No Error',
+        })
+      ).toEqual({
+        users: [
+          { owner: 'sogo-tests1@example.org', username: 'Didy' },
+          { owner: 'nameless@example.org', username: 'nameless@example.org' },
+        ],
+      })
+    })
+
+    it('keeps the total and accepts `owner` when the backend sends them', () => {
+      expect(
+        CalendarsApi.normalizeSharedCalendarUsersResponse({
+          users: [{ owner: 'a@x.org', username: 'A' }],
+          total_count: 42,
+        })
+      ).toEqual({
+        users: [{ owner: 'a@x.org', username: 'A' }],
+        total_count: 42,
+      })
+    })
+
+    it('takes the totals from the X-Pagination header', () => {
+      expect(
+        CalendarsApi.normalizeSharedCalendarUsersResponse(
+          { data: { users: [{ mail: 'a@x.org', username: 'A' }] } },
+          { total: 21, totalPages: 2, page: 1 }
+        )
+      ).toEqual({
+        users: [{ owner: 'a@x.org', username: 'A' }],
+        total_count: 21,
+        total_pages: 2,
+      })
+    })
+    it('builds the subscribe query with an encoded key', () => {
+      expect(
+        CalendarsApi.updateSharedCalendarSubscriptionQuery({
+          key: 'cal 1',
+          subscribe: true,
+        })
+      ).toEqual({
+        url: 'shared-calendars/cal%201',
+        method: 'PUT',
+        body: { subscribe: 1 },
+      })
+    })
+
+    it('builds the unsubscribe query', () => {
+      expect(
+        CalendarsApi.updateSharedCalendarSubscriptionQuery({
+          key: 'cal-1',
+          subscribe: false,
+        })
+      ).toEqual({
+        url: 'shared-calendars/cal-1',
+        method: 'PUT',
+        body: { subscribe: 0 },
+      })
+    })
+
+    it("normalizes the wrapped owner's calendars response", () => {
+      const result = CalendarsApi.normalizeSharedCalendarsResponse({
+        data: {
+          calendars: [
+            {
+              key: 'cal-1',
+              name: 'Personal calendar',
+              description: null,
+              owner: 'sogo-tests1@example.org',
+              name_owner: 'Sogo test1',
+              subscribed: true,
+            },
+          ],
+        },
+        error_code: 'S000000',
+        error_msg: 'No Error',
+      } as never)
+      expect(result).toHaveLength(1)
+      expect(result[0]).toMatchObject({
+        key: 'cal-1',
+        id: 'cal-1',
+        owner: 'sogo-tests1@example.org',
+        name_owner: 'Sogo test1',
+        subscribed: true,
+      })
+    })
+
+    it('fills in the owner and the subscription flag when they are missing', () => {
+      const [calendar] = CalendarsApi.normalizeSharedCalendarsResponse(
+        {
+          data: [{ key: 'cal-2', name: 'Holidays', description: null }],
+        } as never,
+        'sogo-tests2@example.org'
+      )
+      expect(calendar).toMatchObject({
+        key: 'cal-2',
+        owner: 'sogo-tests2@example.org',
+        name_owner: null,
+        subscribed: false,
+      })
+    })
+  })
 })

@@ -43,8 +43,12 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarGroupContent: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
-  SidebarMenu: ({ children }: { children: React.ReactNode }) => <ul>{children}</ul>,
-  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => <li>{children}</li>,
+  SidebarMenu: ({ children }: { children: React.ReactNode }) => (
+    <ul>{children}</ul>
+  ),
+  SidebarMenuItem: ({ children }: { children: React.ReactNode }) => (
+    <li>{children}</li>
+  ),
   SidebarMenuButton: ({
     children,
     onClick,
@@ -72,7 +76,10 @@ jest.mock('next-intl', () => ({
 
 import { useGetCalendarsQuery } from '@/features/calendars'
 import { useTasksSource } from '../../../hooks/use-tasks-source'
-import { setCalendarFilter, setStatusFilter } from '../../../store/tasks-ui-slice'
+import {
+  setCalendarFilter,
+  setStatusFilter,
+} from '../../../store/tasks-ui-slice'
 import TasksSidebar from '../sidebar'
 
 const mockUseGetCalendarsQuery = useGetCalendarsQuery as jest.Mock
@@ -125,10 +132,16 @@ describe('TasksSidebar', () => {
       await waitFor(() => {
         expect(screen.getByTestId('create-task-opener')).toBeInTheDocument()
       })
-      expect(screen.getByText('sidebar.smart_views.all.string')).toBeInTheDocument()
-      expect(screen.getByText('sidebar.calendars.title.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('sidebar.smart_views.all.string')
+      ).toBeInTheDocument()
+      expect(
+        screen.getByText('sidebar.calendars.title.string')
+      ).toBeInTheDocument()
       expect(screen.getByText('Personal')).toBeInTheDocument()
-      expect(screen.getByText('sidebar.calendars.all.string')).toBeInTheDocument()
+      expect(
+        screen.getByText('sidebar.calendars.all.string')
+      ).toBeInTheDocument()
     })
   })
 

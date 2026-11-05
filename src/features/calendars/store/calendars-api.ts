@@ -1,4 +1,8 @@
 import {
+  type ParsedPagination,
+  parseXPaginationFromMeta,
+} from '@/features/address_books/utils/parse-x-pagination'
+import {
   ANY_AUTHENTICATED_UID,
   defaultCalendarShareRights,
 } from '@/features/calendars/utils/calendar-permission-mapping'
@@ -11,6 +15,7 @@ import {
   CALENDAR_SHARE_SLICE,
   CALENDAR_SYNC_SLICE,
   FOLDER_PREFERENCES_SLICE,
+  SHARED_CALENDARS_SLICE,
   apiSlice,
 } from '@/lib/redux/api/api-slice'
 import type { UnknownAction } from '@reduxjs/toolkit'
@@ -21,6 +26,7 @@ import type {
   ApiCalendarResponse,
   ApiCalendarsResponse,
   ApiDataResponse,
+  ApiSharedCalendarUsersResponse,
   AttendanceStatus,
   Calendar,
   CalendarCreateBody,
@@ -43,6 +49,12 @@ import type {
   FolderPreferences,
   FreeBusyApiResponse,
   FreeBusyRequest,
+  SharedCalendar,
+  SharedCalendarSubscriptionArg,
+  SharedCalendarUser,
+  SharedCalendarUsersQueryArg,
+  SharedCalendarUsersResponse,
+  SharedCalendarsResponse,
 } from '../calendars-types'
 import { DEFAULT_CALENDAR_COLOR } from '../calendars-types'
 import { patchEventInCachedTimeRangeQueries } from './calendars-events-cache'
@@ -107,6 +119,20 @@ function restoreFolderPreferences(
     else delete draftEntries[key]
   }
 }
+const SHARED_CALENDARS_URL = 'shared-calendars'
+/** PUT target to (un)subscribe, and GET target listing an owner's calendars. */
+const sharedCalendarUrl = (keyOrOwner: string) =>
+  `${SHARED_CALENDARS_URL}/${encodeURIComponent(keyOrOwner)}`
+
+/** Cache entries of the shared calendars dialog. */
+const SHARED_CALENDAR_USERS_TAG = {
+  type: SHARED_CALENDARS_SLICE,
+  id: 'USERS',
+} as const
+const SHARED_OWNER_CALENDARS_TAG = {
+  type: SHARED_CALENDARS_SLICE,
+  id: 'OWNER_CALENDARS',
+} as const
 
 const createCalendarNotifyMutation =
   (options: {
@@ -214,6 +240,48 @@ const setCalendarShareQuery = ({
       rights: u.rights,
     }
   }),
+})
+
+const notifySubscribeSharedCalendar = createCalendarNotifyMutation({
+  successTitle: 'shared_calendar_subscribe.success.title.string',
+  successMessage: 'shared_calendar_subscribe.success.message.string',
+  errorTitle: 'shared_calendar_subscribe.error.title.string',
+  errorMessage: 'shared_calendar_subscribe.error.message.string',
+})
+
+const notifyUnsubscribeSharedCalendar = createCalendarNotifyMutation({
+  successTitle: 'shared_calendar_unsubscribe.success.title.string',
+  successMessage: 'shared_calendar_unsubscribe.success.message.string',
+  errorTitle: 'shared_calendar_unsubscribe.error.title.string',
+  errorMessage: 'shared_calendar_unsubscribe.error.message.string',
+})
+
+export const getSharedCalendarUsersQuery = ({
+  page,
+  page_size,
+  search,
+}: SharedCalendarUsersQueryArg) => {
+  const trimmedSearch = search?.trim()
+  return {
+    url: `${SHARED_CALENDARS_URL}/users`,
+    params: {
+      page,
+      page_size,
+      ...(trimmedSearch ? { search: trimmedSearch } : {}),
+    },
+  }
+}
+
+export const getSharedCalendarsByOwnerQuery = (owner: string) =>
+  sharedCalendarUrl(owner)
+
+export const updateSharedCalendarSubscriptionQuery = ({
+  key,
+  subscribe,
+}: SharedCalendarSubscriptionArg) => ({
+  url: sharedCalendarUrl(key),
+  method: 'PUT' as const,
+  body: { subscribe: subscribe ? 1 : 0 },
 })
 
 const notifyCreateCalendarEvent = createCalendarNotifyMutation({
@@ -382,6 +450,58 @@ function normalizeCalendarsResponse(
   ].map(normalizeCalendar)
 }
 
+/**
+ * Normalizes GET /shared-calendars/users: the email comes as `mail` (or
+ * `owner`) and users without one are dropped. The totals come from the
+ * `X-Pagination` header, or from the body's `total_count`; they are left out
+ * when neither is sent.
+ */
+export function normalizeSharedCalendarUsersResponse(
+  response:
+    | ApiDataResponse<ApiSharedCalendarUsersResponse>
+    | ApiSharedCalendarUsersResponse,
+  pagination?: ParsedPagination | null
+): SharedCalendarUsersResponse {
+  const data = unwrapApiData(response)
+  const users = (data?.users ?? []).flatMap((user): SharedCalendarUser[] => {
+    const owner = user.mail || user.owner
+    return owner ? [{ owner, username: user.username || owner }] : []
+  })
+  if (pagination) {
+    return {
+      users,
+      total_count: pagination.total,
+      total_pages: pagination.totalPages,
+    }
+  }
+  return typeof data?.total_count === 'number'
+    ? { users, total_count: data.total_count }
+    : { users }
+}
+
+/**
+ * Normalizes GET /shared-calendars/{owner}; `owner` fills in calendars the
+ * backend returns without their owner.
+ */
+export function normalizeSharedCalendarsResponse(
+  response:
+    | ApiDataResponse<SharedCalendarsResponse | SharedCalendar[]>
+    | SharedCalendarsResponse
+    | SharedCalendar[],
+  owner?: string
+): SharedCalendar[] {
+  const data = unwrapApiData(response)
+  const calendars = (Array.isArray(data) ? data : data?.calendars) ?? []
+  return calendars.map(
+    (calendar): SharedCalendar => ({
+      ...normalizeCalendar(calendar),
+      owner: calendar.owner || owner || '',
+      name_owner: calendar.name_owner ?? null,
+      subscribed: Boolean(calendar.subscribed),
+    })
+  )
+}
+
 function normalizeCalendarResponse(
   response: ApiCalendarResponse | Calendar
 ): Calendar {
@@ -442,6 +562,45 @@ type UpdateQueryDataFn = <T>(
 
 const updateQueryData = apiSlice.util
   .updateQueryData as unknown as UpdateQueryDataFn
+
+type SelectCachedArgsFn = (state: unknown, endpointName: string) => unknown[]
+
+const selectCachedArgsForQuery = apiSlice.util
+  .selectCachedArgsForQuery as unknown as SelectCachedArgsFn
+
+type PatchUndo = { undo: () => void }
+
+/**
+ * Shows the new subscription state in every cached owner's calendar list right
+ * away, so the dialog's button does not flip back while the list refetches.
+ */
+function patchSharedOwnerCalendars(
+  dispatch: (action: UnknownAction) => unknown,
+  getState: () => unknown,
+  key: string,
+  subscribed: boolean
+): PatchUndo[] {
+  const owners = selectCachedArgsForQuery(
+    getState(),
+    'getSharedCalendarsByOwner'
+  ) as string[]
+  return owners.map(
+    (owner) =>
+      dispatch(
+        updateQueryData<SharedCalendar[]>(
+          'getSharedCalendarsByOwner',
+          owner,
+          (draft) => {
+            for (const calendar of draft) {
+              if ((calendar.key ?? calendar.id) === key) {
+                calendar.subscribed = subscribed
+              }
+            }
+          }
+        )
+      ) as PatchUndo
+  )
+}
 
 const injectedEndpoints = apiSlice.injectEndpoints({
   endpoints: (builder: EndpointBuilder<BaseQueryFn, string, 'api'>) => ({
@@ -531,6 +690,65 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    getSharedCalendarUsers: builder.query<
+      SharedCalendarUsersResponse,
+      SharedCalendarUsersQueryArg
+    >({
+      query: getSharedCalendarUsersQuery,
+      transformResponse: (
+        response:
+          | ApiDataResponse<ApiSharedCalendarUsersResponse>
+          | ApiSharedCalendarUsersResponse,
+        meta
+      ) =>
+        normalizeSharedCalendarUsersResponse(
+          response,
+          parseXPaginationFromMeta(meta)
+        ),
+      providesTags: [SHARED_CALENDAR_USERS_TAG],
+    }),
+    getSharedCalendarsByOwner: builder.query<SharedCalendar[], string>({
+      query: getSharedCalendarsByOwnerQuery,
+      transformResponse: (
+        response:
+          | ApiDataResponse<SharedCalendarsResponse | SharedCalendar[]>
+          | SharedCalendarsResponse
+          | SharedCalendar[],
+        _meta,
+        owner
+      ) => normalizeSharedCalendarsResponse(response, owner),
+      providesTags: [SHARED_OWNER_CALENDARS_TAG],
+    }),
+    updateSharedCalendarSubscription: builder.mutation<
+      void,
+      SharedCalendarSubscriptionArg
+    >({
+      query: updateSharedCalendarSubscriptionQuery,
+      transformResponse: () => undefined,
+      // Only the owners' calendar lists show the subscription state; the
+      // paginated list of users does not change.
+      invalidatesTags: [
+        CALENDARS_SLICE,
+        SHARED_OWNER_CALENDARS_TAG,
+        CALENDAR_EVENTS_SLICE,
+      ],
+      async onQueryStarted(
+        { key, subscribe },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        const patches = patchSharedOwnerCalendars(
+          dispatch,
+          getState,
+          key,
+          subscribe
+        )
+        queryFulfilled.catch(() => patches.forEach((patch) => patch.undo()))
+        const notify = subscribe
+          ? notifySubscribeSharedCalendar
+          : notifyUnsubscribeSharedCalendar
+        await notify(dispatch, queryFulfilled)
+      },
+    }),
     createExternalCalendar: builder.mutation<
       Calendar,
       ExternalCalendarCreateBody
@@ -1001,6 +1219,9 @@ export const {
   useGetCalendarShareQuery,
   useLazyGetCalendarShareQuery,
   useSetCalendarShareMutation,
+  useGetSharedCalendarUsersQuery,
+  useGetSharedCalendarsByOwnerQuery,
+  useUpdateSharedCalendarSubscriptionMutation,
   useGetEventsQuery,
   useGetEventsInTimeRangeQuery,
   useSearchEventsQuery,

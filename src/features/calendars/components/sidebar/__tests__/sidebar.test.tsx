@@ -70,6 +70,13 @@ jest.mock('../forms/add-external', () => ({
   },
 }))
 
+jest.mock('../forms/subscribe-shared', () => ({
+  __esModule: true,
+  default: function MockSubscribeSharedCalendar() {
+    return <div data-testid="subscribe-shared-calendar" />
+  },
+}))
+
 jest.mock('../sidebar-item', () => ({
   __esModule: true,
   default: function MockSidebarItem({
@@ -117,6 +124,16 @@ describe('Sidebar', () => {
       render(<Sidebar />)
       expect(screen.getByTestId('sidebar-skeleton')).toBeInTheDocument()
     })
+
+    it('keeps the calendars, and their dialogs, mounted while refetching', () => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: mockData,
+        isFetching: true,
+      })
+      render(<Sidebar />)
+      expect(screen.queryByTestId('sidebar-skeleton')).not.toBeInTheDocument()
+      expect(screen.getByText('sidebar.personals.string')).toBeInTheDocument()
+    })
   })
 
   describe('basic rendering', () => {
@@ -133,6 +150,20 @@ describe('Sidebar', () => {
       expect(
         screen.getByText('sidebar.subscriptions.string')
       ).toBeInTheDocument()
+    })
+
+    it('shows the subscribe action next to the shared calendars label', () => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: mockData,
+        isFetching: false,
+      })
+      render(<Sidebar />)
+      const group = screen
+        .getByTestId('subscribe-shared-calendar')
+        .closest('[data-testid="group"]')
+      expect(
+        group?.querySelector('[data-testid="group-label"]')?.textContent
+      ).toBe('sidebar.shared.string')
     })
 
     it('lists backend local calendars under personals', async () => {
@@ -204,6 +235,48 @@ describe('Sidebar', () => {
     it('falls back to source_type when there is no owner', () => {
       render(<Sidebar />)
       expect(groupOf('Legacy shared')).toBe('sidebar.shared.string')
+    })
+
+    it('sorts shared calendars by owner email, then by name', () => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: [
+          {
+            key: 'z',
+            name: 'Alpha',
+            source_type: 'local',
+            owner: 'zoe@tutu.fr',
+          },
+          {
+            key: 'bw',
+            name: 'Work',
+            source_type: 'local',
+            owner: 'bob@tutu.fr',
+          },
+          {
+            key: 'ba',
+            name: 'agenda',
+            source_type: 'local',
+            owner: 'Bob@tutu.fr',
+          },
+          {
+            key: 'a',
+            name: 'Zeta',
+            source_type: 'local',
+            owner: 'alice@tutu.fr',
+          },
+        ],
+        isFetching: false,
+      })
+      render(<Sidebar />)
+      const names = screen
+        .getAllByTestId(/^item-/)
+        .map((item) => item.dataset.testid)
+      expect(names).toEqual([
+        'item-Zeta',
+        'item-agenda',
+        'item-Work',
+        'item-Alpha',
+      ])
     })
   })
 })

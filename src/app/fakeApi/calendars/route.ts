@@ -8,6 +8,7 @@ import {
   getDemoData,
   setDemoData,
 } from '@/app/fakeApi/utils/demo-storage'
+import { getSubscribedSharedCalendars } from '@/app/fakeApi/utils/shared-calendars-store'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -47,15 +48,19 @@ export async function GET(req: NextRequest) {
         )
     ),
   ]
-  const responsePayload = {
+  const storedPayload = {
     ...userCalendars,
     subscriptions: mergedSubscriptions,
   }
 
-  const response = NextResponse.json(responsePayload)
-  // Only if the cookie does not exist yet (first visit)
+  const response = NextResponse.json({
+    ...storedPayload,
+    shared: getSubscribedSharedCalendars(req, userCalendars.shared),
+  })
+  // Only if the cookie does not exist yet (first visit). The shared list is
+  // rebuilt from the subscribed keys on each read, so it is not stored here.
   if (!req.cookies.get('demo_calendars')) {
-    setDemoData(response, 'demo_calendars', responsePayload, req)
+    setDemoData(response, 'demo_calendars', storedPayload, req)
   }
   return response
 }

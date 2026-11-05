@@ -1,7 +1,10 @@
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import type { AppDispatch, RootState } from '@/lib/redux/store'
-import type { BookEntriesQueryParams, BookEntriesResponse } from '../address-books-api-types'
-import type { VCard } from '../address-books-types'
+import type {
+  BookEntriesQueryParams,
+  BookEntriesResponse,
+} from '../address-books-api-types'
+import type { SharedAddressBook, VCard } from '../address-books-types'
 
 type GetAddressBookVCardsArg =
   | { bookId: string; params?: BookEntriesQueryParams }
@@ -82,6 +85,51 @@ export function removeEntryFromBookCaches(
       draft.contactTotal = Math.max(0, (draft.contactTotal ?? 1) - 1)
     }
   })
+}
+
+/** apiSlice is typed with empty endpoints; injected names are not on its util. */
+const selectCachedArgsByName = apiSlice.util
+  .selectCachedArgsForQuery as unknown as (
+  state: unknown,
+  endpointName: string
+) => unknown[]
+
+const updateQueryDataByName = apiSlice.util.updateQueryData as unknown as <T>(
+  endpointName: string,
+  arg: unknown,
+  updateRecipe: (draft: T) => void
+) => Parameters<AppDispatch>[0]
+
+/**
+ * Shows the new subscription state in every cached owner's address book list
+ * right away, so the dialog's button does not flip back while the list
+ * refetches.
+ */
+export function patchSharedOwnerAddressBooks(
+  dispatch: AppDispatch,
+  getState: () => RootState,
+  key: string,
+  subscribed: boolean
+): PatchUndo[] {
+  const owners = selectCachedArgsByName(
+    getState(),
+    'getSharedAddressBooksByOwner'
+  ) as string[]
+
+  return owners.map(
+    (owner) =>
+      dispatch(
+        updateQueryDataByName<SharedAddressBook[]>(
+          'getSharedAddressBooksByOwner',
+          owner,
+          (draft) => {
+            for (const book of draft) {
+              if (book.key === key) book.subscribed = subscribed
+            }
+          }
+        )
+      ) as unknown as PatchUndo
+  )
 }
 
 export function patchVCardDetailCache(

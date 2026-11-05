@@ -27,6 +27,16 @@ jest.mock('@/features/user-profile', () => ({
   useProfile: () => mockUseProfile(),
 }))
 
+const mockUpdateSubscription = jest.fn()
+jest.mock('@/features/calendars/store/calendars-api', () => ({
+  useGetSyncStatusQuery: () => ({ data: undefined }),
+  useTriggerSyncMutation: () => [jest.fn(), { isLoading: false }],
+  useUpdateSharedCalendarSubscriptionMutation: () => [
+    mockUpdateSubscription,
+    { isLoading: false },
+  ],
+}))
+
 // Mock UI components
 jest.mock('@/components/ui/checkbox', () => ({
   Checkbox: ({ checked, onCheckedChange, ...props }: any) => (
@@ -141,6 +151,9 @@ describe('SidebarItem', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUpdateSubscription.mockReturnValue({
+      unwrap: jest.fn().mockResolvedValue(undefined),
+    })
     mockIsCalendarVisible.mockReturnValue(true)
     mockUseProfile.mockReturnValue({ folderSharingDisabled: [] })
   })
@@ -334,6 +347,50 @@ describe('SidebarItem', () => {
         .getAllByTestId('dropdown-menu-item')
         .find((item) => item.textContent?.includes('sidebar.sharing.string'))
       expect(sharingItem).toBeUndefined()
+    })
+
+    const menuItemWithText = (text: string) =>
+      screen
+        .queryAllByTestId('dropdown-menu-item')
+        .find((item) => item.textContent?.includes(text))
+
+    it('should replace Delete with Unsubscribe for a shared calendar', () => {
+      render(
+        <SidebarItem
+          {...defaultProps}
+          calendarKey="shared-key"
+          isShared
+          owner="test@tutu.fr"
+        />
+      )
+
+      expect(menuItemWithText('sidebar.delete.string')).toBeUndefined()
+      expect(menuItemWithText('sidebar.unsubscribe.string')).toBeDefined()
+    })
+
+    it('should unsubscribe from the shared calendar on click', () => {
+      render(
+        <SidebarItem
+          {...defaultProps}
+          calendarKey="shared-key"
+          isShared
+          owner="test@tutu.fr"
+        />
+      )
+
+      fireEvent.click(menuItemWithText('sidebar.unsubscribe.string')!)
+
+      expect(mockUpdateSubscription).toHaveBeenCalledWith({
+        key: 'shared-key',
+        subscribe: false,
+      })
+    })
+
+    it('should not offer Unsubscribe for a personal calendar', () => {
+      render(<SidebarItem {...defaultProps} />)
+
+      expect(menuItemWithText('sidebar.unsubscribe.string')).toBeUndefined()
+      expect(menuItemWithText('sidebar.delete.string')).toBeDefined()
     })
   })
 

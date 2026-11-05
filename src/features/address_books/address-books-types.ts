@@ -24,6 +24,65 @@ export interface AddressBooks {
   subscriptions: AddressBook[]
 }
 
+/** Address book another user has shared with the connected account. */
+export interface SharedAddressBook {
+  key: string
+  name: string
+  description?: string | null
+  owner: string
+  name_owner?: string | null
+  is_default?: boolean
+  source_type?: string
+  rights?: AddressBookShareRights
+  subscribed: boolean
+}
+
+/** User sharing at least one address book, normalized from GET /shared-addressbooks/users */
+export type SharedAddressBookUser = {
+  /** Owner email, also the `{email}` segment of GET /shared-addressbooks/{email} */
+  owner: string
+  username: string
+}
+
+/** GET /shared-addressbooks/users item as sent by the backend */
+export type ApiSharedAddressBookUser = {
+  mail?: string
+  /** Older payloads name the email `owner`. */
+  owner?: string
+  username?: string | null
+}
+
+/** GET /shared-addressbooks/users `data` payload as sent by the backend */
+export interface ApiSharedAddressBookUsersResponse {
+  users?: ApiSharedAddressBookUser[]
+  total_count?: number
+}
+
+/** Normalized GET /shared-addressbooks/users payload */
+export interface SharedAddressBookUsersResponse {
+  users: SharedAddressBookUser[]
+  /** From the `X-Pagination` header; absent when the backend does not send it. */
+  total_count?: number
+  total_pages?: number
+}
+
+/** GET /shared-addressbooks/users query params */
+export type SharedAddressBookUsersQueryArg = {
+  page: number
+  page_size: number
+  search?: string
+}
+
+/** GET /shared-addressbooks/{owner} `data` payload (not paginated) */
+export interface SharedAddressBooksResponse {
+  addressbooks: SharedAddressBook[]
+}
+
+export type SharedAddressBookSubscriptionArg = {
+  key: string
+  subscribe: boolean
+}
+
 export type ContactKind = 'individual' | 'group' | 'org'
 
 export interface ContactMember {

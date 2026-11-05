@@ -616,6 +616,42 @@
                 }
             }
         },
+        "shared_calendar_subscribe": {
+            "success": {
+                "title": {
+                    "string": "Subscribed"
+                },
+                "message": {
+                    "string": "The shared calendar has been added to your calendars."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Subscription failed"
+                },
+                "message": {
+                    "string": "Unable to subscribe to this calendar."
+                }
+            }
+        },
+        "shared_calendar_unsubscribe": {
+            "success": {
+                "title": {
+                    "string": "Unsubscribed"
+                },
+                "message": {
+                    "string": "The shared calendar has been removed from your calendars."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Unsubscribe failed"
+                },
+                "message": {
+                    "string": "Unable to unsubscribe from this calendar."
+                }
+            }
+        },
         "calendar_event_create": {
             "success": {
                 "title": {
@@ -883,6 +919,42 @@
                 },
                 "message": {
                     "string": "Please try again."
+                }
+            }
+        },
+        "shared_address_book_subscribe": {
+            "success": {
+                "title": {
+                    "string": "Subscribed"
+                },
+                "message": {
+                    "string": "The shared address book has been added to your address books."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Subscription failed"
+                },
+                "message": {
+                    "string": "Unable to subscribe to this address book."
+                }
+            }
+        },
+        "shared_address_book_unsubscribe": {
+            "success": {
+                "title": {
+                    "string": "Unsubscribed"
+                },
+                "message": {
+                    "string": "The shared address book has been removed from your address books."
+                }
+            },
+            "error": {
+                "title": {
+                    "string": "Unsubscribe failed"
+                },
+                "message": {
+                    "string": "Unable to unsubscribe from this address book."
                 }
             }
         },

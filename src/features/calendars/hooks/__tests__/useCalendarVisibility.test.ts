@@ -29,7 +29,9 @@ const calendar = (key: string, extra: Record<string, unknown> = {}) => ({
 describe('useCalendarVisibility', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockGetCalendarsQuery.mockReturnValue({ data: [] })
+    mockGetCalendarsQuery.mockReturnValue({
+      data: [calendar('a'), calendar('b'), calendar('c')],
+    })
     mockGetFolderPreferencesQuery.mockReturnValue({ data: undefined })
   })
 
@@ -58,6 +60,29 @@ describe('useCalendarVisibility', () => {
       expect(result.current.isCalendarVisible('a')).toBe(false)
       expect(result.current.isCalendarVisible('b')).toBe(true)
       expect(result.current.isCalendarVisible('c')).toBe(false)
+    })
+
+    it('returns false for a calendar no longer in the list (unsubscribed)', () => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: [{ id: 'a', key: 'a', name: 'A', description: null }],
+      })
+      const { result } = renderHook(() => useCalendarVisibility())
+      expect(result.current.isCalendarVisible('shared-cal-1')).toBe(false)
+    })
+
+    it('matches a calendar by id when its key differs', () => {
+      mockGetCalendarsQuery.mockReturnValue({
+        data: [{ id: 'a-id', key: 'a-key', name: 'A', description: null }],
+      })
+      const { result } = renderHook(() => useCalendarVisibility())
+      expect(result.current.isCalendarVisible('a-id')).toBe(true)
+      expect(result.current.isCalendarVisible('a-key')).toBe(true)
+    })
+
+    it('returns true while the calendars are not loaded', () => {
+      mockGetCalendarsQuery.mockReturnValue({ data: undefined })
+      const { result } = renderHook(() => useCalendarVisibility())
+      expect(result.current.isCalendarVisible('a')).toBe(true)
     })
   })
 

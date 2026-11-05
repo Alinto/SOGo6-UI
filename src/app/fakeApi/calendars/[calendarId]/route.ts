@@ -1,18 +1,22 @@
 import { DEFAULT_CALENDARS } from '@/app/fakeApi/utils/default-data'
 import { getDemoData, setDemoData } from '@/app/fakeApi/utils/demo-storage'
+import { getSubscribedSharedCalendars } from '@/app/fakeApi/utils/shared-calendars-store'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
- * Find a calendar by ID in all categories
+ * Find a calendar by ID in all categories (shared = subscribed shared calendars)
  */
 function findCalendar(
+  req: NextRequest,
   userCalendars: typeof DEFAULT_CALENDARS,
   calendarId: string
 ): Calendar | undefined {
   return (
     userCalendars.personal.find((cal) => cal.id === calendarId) ||
-    userCalendars.shared.find((cal) => cal.id === calendarId) ||
+    getSubscribedSharedCalendars(req, userCalendars.shared).find(
+      (cal) => cal.id === calendarId
+    ) ||
     userCalendars.subscriptions.find((cal) => cal.id === calendarId)
   )
 }
@@ -49,7 +53,7 @@ export async function GET(
   const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
 
   // Find the calendar
-  const calendar = findCalendar(userCalendars, calendarId)
+  const calendar = findCalendar(req, userCalendars, calendarId)
 
   if (!calendar) {
     return NextResponse.json({ error: 'Calendar not found' }, { status: 404 })
@@ -74,7 +78,7 @@ export async function PATCH(
   const userCalendars = getDemoData(req, 'demo_calendars', DEFAULT_CALENDARS)
 
   // Find the calendar
-  const calendar = findCalendar(userCalendars, calendarId)
+  const calendar = findCalendar(req, userCalendars, calendarId)
 
   if (!calendar) {
     return NextResponse.json({ error: 'Calendar not found' }, { status: 404 })

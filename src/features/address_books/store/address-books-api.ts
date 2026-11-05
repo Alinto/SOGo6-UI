@@ -7,6 +7,7 @@ import {
   ADDRESS_BOOK_SHARE_SLICE,
   CONTACTS_AUTOCOMPLETE_SLICE,
   GAB_AUTOCOMPLETE_SLICE,
+  SHARED_ADDRESS_BOOKS_SLICE,
   VCARD_SLICE,
   apiSlice,
 } from '@/lib/redux/api/api-slice'
@@ -14,6 +15,7 @@ import type { AppDispatch } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
+  ApiDataResponse,
   ApiDistributionList,
   BookEntriesQueryParams,
   BookEntriesResponse,
@@ -25,11 +27,19 @@ import type {
   AddressBookShareData,
   AddressBookShareUser,
   AddressBooks,
+  ApiSharedAddressBookUsersResponse,
   ContactKind,
+  SharedAddressBook,
+  SharedAddressBookSubscriptionArg,
+  SharedAddressBookUser,
+  SharedAddressBookUsersQueryArg,
+  SharedAddressBookUsersResponse,
+  SharedAddressBooksResponse,
   VCard,
 } from '../address-books-types'
 import {
   patchAllBookEntryCaches,
+  patchSharedOwnerAddressBooks,
   patchVCardDetailCache,
   removeEntryFromBookCaches,
   undoEntryCachePatches,
@@ -58,6 +68,9 @@ import {
   legacyAddressBookEntriesPath,
   legacyVCardPath,
   mapContactSortToListSort,
+  sharedAddressBookPath,
+  sharedAddressBookUsersPath,
+  sharedAddressBooksByOwnerPath,
 } from '../utils/api-routes'
 import { createContactApiNotificationHandler } from '../utils/contact-api-notification-handler'
 import {
@@ -83,7 +96,10 @@ import {
   normalizeContact,
   normalizeContactsList,
 } from '../utils/normalize-contact'
-import { parseXPaginationFromMeta } from '../utils/parse-x-pagination'
+import {
+  type ParsedPagination,
+  parseXPaginationFromMeta,
+} from '../utils/parse-x-pagination'
 import { resolveListsQueryResult } from '../utils/resolve-lists-query-result'
 import {
   serializeAddressBookCreate,
@@ -200,6 +216,110 @@ const notifyBookSubscribeUser = notifyMutation({
   errorTitle: 'address_book_subscribe_user.error.title.string',
   errorMessage: 'address_book_subscribe_user.error.message.string',
 })
+
+const notifySubscribeSharedBook = notifyMutation({
+  successTitle: 'shared_address_book_subscribe.success.title.string',
+  successMessage: 'shared_address_book_subscribe.success.message.string',
+  errorTitle: 'shared_address_book_subscribe.error.title.string',
+  errorMessage: 'shared_address_book_subscribe.error.message.string',
+})
+
+const notifyUnsubscribeSharedBook = notifyMutation({
+  successTitle: 'shared_address_book_unsubscribe.success.title.string',
+  successMessage: 'shared_address_book_unsubscribe.success.message.string',
+  errorTitle: 'shared_address_book_unsubscribe.error.title.string',
+  errorMessage: 'shared_address_book_unsubscribe.error.message.string',
+})
+
+/** Cache entries of the shared address books dialog. */
+const SHARED_ADDRESS_BOOK_USERS_TAG = {
+  type: SHARED_ADDRESS_BOOKS_SLICE,
+  id: 'USERS',
+} as const
+const SHARED_OWNER_ADDRESS_BOOKS_TAG = {
+  type: SHARED_ADDRESS_BOOKS_SLICE,
+  id: 'OWNER_ADDRESS_BOOKS',
+} as const
+
+export const getSharedAddressBookUsersQuery = ({
+  page,
+  page_size,
+  search,
+}: SharedAddressBookUsersQueryArg) => {
+  const trimmedSearch = search?.trim()
+  return {
+    url: sharedAddressBookUsersPath(),
+    params: {
+      page,
+      page_size,
+      ...(trimmedSearch ? { search: trimmedSearch } : {}),
+    },
+  }
+}
+
+export const getSharedAddressBooksByOwnerQuery = (owner: string) =>
+  sharedAddressBooksByOwnerPath(owner)
+
+export const updateSharedAddressBookSubscriptionQuery = ({
+  key,
+  subscribe,
+}: SharedAddressBookSubscriptionArg) => ({
+  url: sharedAddressBookPath(key),
+  method: 'PUT' as const,
+  body: { subscribe: subscribe ? 1 : 0 },
+})
+
+/**
+ * Normalizes GET /shared-addressbooks/users: the email comes as `mail` (or
+ * `owner`) and users without one are dropped. The totals come from the
+ * `X-Pagination` header, or from the body's `total_count`; they are left out
+ * when neither is sent.
+ */
+export function normalizeSharedAddressBookUsersResponse(
+  response:
+    | ApiDataResponse<ApiSharedAddressBookUsersResponse>
+    | ApiSharedAddressBookUsersResponse,
+  pagination?: ParsedPagination | null
+): SharedAddressBookUsersResponse {
+  const data = unwrapApiData(response)
+  const users = (data?.users ?? []).flatMap((user): SharedAddressBookUser[] => {
+    const owner = user.mail || user.owner
+    return owner ? [{ owner, username: user.username || owner }] : []
+  })
+  if (pagination) {
+    return {
+      users,
+      total_count: pagination.total,
+      total_pages: pagination.totalPages,
+    }
+  }
+  return typeof data?.total_count === 'number'
+    ? { users, total_count: data.total_count }
+    : { users }
+}
+
+/**
+ * Normalizes GET /shared-addressbooks/{owner}; `owner` fills in address books
+ * the backend returns without their owner.
+ */
+export function normalizeSharedAddressBooksResponse(
+  response:
+    | ApiDataResponse<SharedAddressBooksResponse | SharedAddressBook[]>
+    | SharedAddressBooksResponse
+    | SharedAddressBook[],
+  owner?: string
+): SharedAddressBook[] {
+  const data = unwrapApiData(response)
+  const addressbooks = (Array.isArray(data) ? data : data?.addressbooks) ?? []
+  return addressbooks.map(
+    (book): SharedAddressBook => ({
+      ...book,
+      owner: book.owner || owner || '',
+      name_owner: book.name_owner ?? null,
+      subscribed: Boolean(book.subscribed),
+    })
+  )
+}
 
 function toWireAddressBookShareUserClass(
   userClass: AddressBookShareUser['userClass']
@@ -814,6 +934,63 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    getSharedAddressBookUsers: builder.query<
+      SharedAddressBookUsersResponse,
+      SharedAddressBookUsersQueryArg
+    >({
+      query: getSharedAddressBookUsersQuery,
+      transformResponse: (
+        response:
+          | ApiDataResponse<ApiSharedAddressBookUsersResponse>
+          | ApiSharedAddressBookUsersResponse,
+        meta
+      ) =>
+        normalizeSharedAddressBookUsersResponse(
+          response,
+          parseXPaginationFromMeta(meta)
+        ),
+      providesTags: [SHARED_ADDRESS_BOOK_USERS_TAG],
+    }),
+
+    getSharedAddressBooksByOwner: builder.query<SharedAddressBook[], string>({
+      query: getSharedAddressBooksByOwnerQuery,
+      transformResponse: (
+        response:
+          | ApiDataResponse<SharedAddressBooksResponse | SharedAddressBook[]>
+          | SharedAddressBooksResponse
+          | SharedAddressBook[],
+        _meta,
+        owner
+      ) => normalizeSharedAddressBooksResponse(response, owner),
+      providesTags: [SHARED_OWNER_ADDRESS_BOOKS_TAG],
+    }),
+
+    updateSharedAddressBookSubscription: builder.mutation<
+      void,
+      SharedAddressBookSubscriptionArg
+    >({
+      query: updateSharedAddressBookSubscriptionQuery,
+      // Only the owners' address book lists show the subscription state; the
+      // paginated list of users does not change.
+      invalidatesTags: [ADDRESS_BOOKS_SLICE, SHARED_OWNER_ADDRESS_BOOKS_TAG],
+      async onQueryStarted(
+        { key, subscribe },
+        { dispatch, getState, queryFulfilled }
+      ) {
+        const patches = patchSharedOwnerAddressBooks(
+          dispatch,
+          getState,
+          key,
+          subscribe
+        )
+        queryFulfilled.catch(() => undoEntryCachePatches(patches))
+        const notify = subscribe
+          ? notifySubscribeSharedBook
+          : notifyUnsubscribeSharedBook
+        await notify(dispatch, { queryFulfilled })
+      },
+    }),
+
     searchContactsAutocomplete: builder.query<
       ContactSuggestion[],
       { q: string }
@@ -1058,6 +1235,9 @@ export const {
   useLazyGetAddressBookShareQuery,
   useSetAddressBookShareMutation,
   useSubscribeAddressBookUserMutation,
+  useGetSharedAddressBookUsersQuery,
+  useGetSharedAddressBooksByOwnerQuery,
+  useUpdateSharedAddressBookSubscriptionMutation,
   useSearchContactsAutocompleteQuery,
   useLazySearchContactsAutocompleteQuery,
   useSearchGabAutocompleteQuery,

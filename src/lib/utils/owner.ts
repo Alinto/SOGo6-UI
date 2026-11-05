@@ -23,3 +23,24 @@ export function isOtherOwner(
 
   return !own.includes(normalize(owner))
 }
+
+const compareText = (
+  a: string | null | undefined,
+  b: string | null | undefined
+) =>
+  (a ?? '').trim().localeCompare((b ?? '').trim(), undefined, {
+    sensitivity: 'base',
+    numeric: true,
+  })
+
+/**
+ * Sorts shared elements alphabetically by owner email, then by name.
+ * Case and accents are ignored. Returns a new array.
+ */
+export function sortByOwnerThenName<
+  T extends { owner?: string | null; name?: string | null },
+>(items: readonly T[]): T[] {
+  return [...items].sort(
+    (a, b) => compareText(a.owner, b.owner) || compareText(a.name, b.name)
+  )
+}

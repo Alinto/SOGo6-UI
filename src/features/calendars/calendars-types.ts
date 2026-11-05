@@ -194,6 +194,60 @@ export interface CalendarsResponse {
 
 export type CalendarType = 'personal' | 'shared' | 'subscription'
 
+/** Calendar shared with the connected user — GET /shared-calendars item */
+export type SharedCalendar = Calendar & {
+  owner: string
+  name_owner?: string | null
+  subscribed: boolean
+}
+
+/** User sharing at least one calendar, normalized from GET /shared-calendars/users */
+export type SharedCalendarUser = {
+  /** Owner email, also the `{email}` segment of GET /shared-calendars/{email} */
+  owner: string
+  username: string
+}
+
+/** GET /shared-calendars/users item as sent by the backend */
+export type ApiSharedCalendarUser = {
+  mail?: string
+  /** Older payloads name the email `owner`. */
+  owner?: string
+  username?: string | null
+}
+
+/** GET /shared-calendars/users `data` payload as sent by the backend */
+export interface ApiSharedCalendarUsersResponse {
+  users?: ApiSharedCalendarUser[]
+  total_count?: number
+}
+
+/** Normalized GET /shared-calendars/users payload */
+export interface SharedCalendarUsersResponse {
+  users: SharedCalendarUser[]
+  /** From the `X-Pagination` header; absent when the backend does not send it. */
+  total_count?: number
+  total_pages?: number
+}
+
+/** GET /shared-calendars/users query params */
+export type SharedCalendarUsersQueryArg = {
+  page: number
+  page_size: number
+  search?: string
+}
+
+/** GET /shared-calendars/{owner} `data` payload (not paginated) */
+export interface SharedCalendarsResponse {
+  calendars: SharedCalendar[]
+}
+
+/** PUT /shared-calendars/{key} — sent as `{ subscribe: 1 | 0 }` */
+export type SharedCalendarSubscriptionArg = {
+  key: string
+  subscribe: boolean
+}
+
 /** POST /calendars — matches backend CalendarCreateSchema */
 export type CalendarCreateBody = {
   name: string

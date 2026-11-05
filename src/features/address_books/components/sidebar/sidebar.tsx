@@ -12,6 +12,7 @@ import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-con
 import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppSelector } from '@/lib/redux/hooks'
+import { sortByOwnerThenName } from '@/lib/utils/owner'
 import { Contact2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
@@ -26,6 +27,7 @@ import { getAddressBookPermissions } from '../../utils/address-book-permissions'
 import { routeParam } from '../../utils/route-param'
 import CreateContactOpener from './create-contact-opener'
 import AddAddressBook from './forms/add'
+import SubscribeSharedAddressBook from './forms/subscribe-shared'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
@@ -61,14 +63,16 @@ function Sidebar() {
     const isShared = (book: AddressBook) => isOtherOwner(book.owner)
     return {
       personals: (data?.personals ?? []).filter((book) => !isShared(book)),
-      shared: all.filter(isShared),
+      shared: sortByOwnerThenName(all.filter(isShared)),
       subscriptions: (data?.subscriptions ?? []).filter(
         (book) => !isShared(book)
       ),
     }
   }, [data, isOtherOwner])
 
-  if (isFetching) {
+  // Skeleton on the first load only: a refetch (e.g. after subscribing to a
+  // shared address book) must keep the sidebar, and its open dialogs, mounted.
+  if (!data && isFetching) {
     return <SidebarSkeleton />
   }
 
@@ -122,12 +126,14 @@ function Sidebar() {
       </SidebarGroup>
       <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('shared.string')}</SidebarGroupLabel>
+        <SubscribeSharedAddressBook />
         <SidebarMenu>
           {shared.map((book) => (
             <SidebarItem
               key={book.id}
               icon="contact-2"
               isDefault={book.default}
+              isShared
               sharingAction={false}
               id={book.id}
               name={book.name}
