@@ -15,6 +15,33 @@
     "create_error": {
       "string": "The domain could not be created."
     },
+    "add_title": {
+      "string": "Add custom domain"
+    },
+    "add_description": {
+      "string": "Enter the custom domain name you want to add."
+    },
+    "domain_name_label": {
+      "string": "Custom domain name"
+    },
+    "domain_name_placeholder": {
+      "string": "Enter custom domain name"
+    },
+    "domain_description_label": {
+      "string": "Custom domain description"
+    },
+    "domain_description_placeholder": {
+      "string": "Enter custom domain description"
+    },
+    "cancel": {
+      "string": "Cancel"
+    },
+    "add": {
+      "string": "Add"
+    },
+    "adding": {
+      "string": "Adding…"
+    },
     "no_result": {
       "string": "No results."
     },

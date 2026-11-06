@@ -2,6 +2,7 @@
 
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import type { ImapFolderType } from '@/features/mails/mails-types'
+import { isDraftFolderType } from '@/features/mails/utils/folder-type-helpers'
 import { Link } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { Star } from 'lucide-react'
@@ -29,25 +30,35 @@ export function useMailRowLink({
   const href = `/u/${accountId}/${encodeURIComponent(mailFolderPath)}/${mailId}`
 
   const onClick = useCallback(
-    async (event: React.MouseEvent<HTMLAnchorElement>) => {
+    (event: React.MouseEvent<HTMLAnchorElement>) => {
+      if (
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey ||
+        event.button !== 0
+      ) {
+        return
+      }
       if (shouldIgnoreClick?.()) {
         event.preventDefault()
         return
       }
-      const openedDraft = await openDraftIfNeeded({
-        folderType,
-        folderPath: mailFolderPath,
-        accountId,
-        mailId,
-      })
-      if (openedDraft) {
+      // preventDefault must run before the first await, or the browser follows href.
+      if (onOpenMail || isDraftFolderType(folderType)) {
         event.preventDefault()
-        return
       }
-      if (onOpenMail) {
-        event.preventDefault()
+
+      void (async () => {
+        const openedDraft = await openDraftIfNeeded({
+          folderType,
+          folderPath: mailFolderPath,
+          accountId,
+          mailId,
+        })
+        if (openedDraft || !onOpenMail) return
         await onOpenMail(String(mailId), mailFolderPath)
-      }
+      })()
     },
     [
       accountId,
@@ -136,10 +147,12 @@ export function MailFlagButton({
     >
       <Star
         aria-hidden
-        fill={flagged ? 'yellow' : 'white'}
         strokeWidth={1}
         className={cn(
           'h-4 w-4 transition-all duration-200 hover:h-5 hover:w-5',
+          flagged
+            ? 'fill-warning text-warning'
+            : 'text-muted-foreground fill-transparent',
           disabled ? 'cursor-default' : 'cursor-pointer',
           iconClassName
         )}

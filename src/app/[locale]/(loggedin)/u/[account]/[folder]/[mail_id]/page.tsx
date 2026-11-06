@@ -80,7 +80,7 @@ export function MailDetailPage({
       active: isOfflineOverlay || isError,
     })
   const data = fetchedMail ?? cachedMail ?? undefined
-  useDocumentTitle(data?.subject)
+  useDocumentTitle(data?.subject, 1)
 
   useEffect(() => {
     if (!fetchedMail) return

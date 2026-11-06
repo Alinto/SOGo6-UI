@@ -68,7 +68,7 @@ const VisualizationPage: React.FC = () => {
       mailId: mail_id,
       mail: data,
     })
-  useDocumentTitle(data?.subject)
+  useDocumentTitle(data?.subject, 1)
 
   if (!mail_id) return null
   if (isLoading)

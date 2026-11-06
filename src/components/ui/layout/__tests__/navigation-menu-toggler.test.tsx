@@ -13,7 +13,11 @@ jest.mock('@/hooks/useHover', () => ({
 // Mock NavigationToggler component
 jest.mock('../navigation-toggler', () => {
   return function MockNavigationToggler() {
-    return <div data-testid="navigation-toggler">Navigation Toggler</div>
+    return (
+      <div data-testid="navigation-toggler">
+        <button type="button">Mail</button>
+      </div>
+    )
   }
 })
 
@@ -42,13 +46,16 @@ jest.mock('@/components/ui/popover', () => {
       align,
       side,
       className,
+      id,
     }: {
       children: React.ReactNode
       align?: string
       side?: string
       className?: string
+      id?: string
     }) => (
       <div
+        id={id}
         data-testid="popover-content"
         data-align={align}
         data-side={side}
@@ -98,6 +105,8 @@ describe('NavigationMenuToggler', () => {
     render(<NavigationMenuToggler />)
     const button = screen.getByRole('button', { name: 'open_menu.string' })
     expect(button).toHaveAttribute('aria-label', 'open_menu.string')
+    expect(button).toHaveAttribute('aria-haspopup', 'dialog')
+    expect(button).toHaveAttribute('aria-controls', 'module-switcher')
   })
 
   it('should render the Grid2X2 icon', () => {
@@ -165,8 +174,10 @@ describe('NavigationMenuToggler', () => {
     fireEvent.click(button)
     expect(screen.getByTestId('popover')).toHaveAttribute('data-open', 'true')
     expect(button).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('button', { name: 'Mail' })).toHaveFocus()
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.getByTestId('popover')).toHaveAttribute('data-open', 'false')
+    expect(button).toHaveFocus()
   })
 
   it('should have button with p-0 class', () => {

@@ -8,6 +8,16 @@ import { Button } from '../button'
 import { Popover, PopoverContent, PopoverTrigger } from '../popover'
 import NavigationToggler from './navigation-toggler'
 
+const MODULE_MENU_ID = 'module-switcher'
+
+function focusFirstMenuItem(container: HTMLElement | null) {
+  container
+    ?.querySelector<HTMLElement>(
+      'button, a[href], [tabindex]:not([tabindex="-1"])'
+    )
+    ?.focus()
+}
+
 const NavigationMenuToggler: React.FC = () => {
   const t = useTranslations('COMMONS')
   const navigationRef = useRef<HTMLButtonElement>(null)
@@ -56,19 +66,23 @@ const NavigationMenuToggler: React.FC = () => {
       setIsOpen(false)
       setPinned(false)
       dismissedWhileHovered.current = true
+      navigationRef.current?.focus()
     }
     document.addEventListener('keydown', onKeyDown)
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [isOpen])
 
   const toggleFromClick = () => {
-    setIsOpen((current) => {
-      const next = !current
-      setPinned(next)
-      if (!next) dismissedWhileHovered.current = true
-      return next
-    })
+    const next = !isOpen
+    setIsOpen(next)
+    setPinned(next)
+    if (!next) dismissedWhileHovered.current = true
   }
+
+  useEffect(() => {
+    if (!isOpen || !pinned) return
+    focusFirstMenuItem(contentRef.current)
+  }, [isOpen, pinned])
 
   return (
     <Popover
@@ -83,6 +97,8 @@ const NavigationMenuToggler: React.FC = () => {
         <Button
           aria-label={t('open_menu.string')}
           aria-expanded={isOpen}
+          aria-haspopup="dialog"
+          aria-controls={MODULE_MENU_ID}
           className="p-0"
           ref={navigationRef}
           onClick={toggleFromClick}
@@ -90,7 +106,12 @@ const NavigationMenuToggler: React.FC = () => {
           <Grid2X2 className="h-7 w-7" data-sidebar="menu-button" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" side="right" className="w-fit p-0">
+      <PopoverContent
+        id={MODULE_MENU_ID}
+        align="start"
+        side="right"
+        className="w-fit p-0"
+      >
         <div
           ref={contentRef}
           className="h-full w-full"
