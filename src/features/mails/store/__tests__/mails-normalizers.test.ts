@@ -1,6 +1,7 @@
 import type { ImapMessagesBackendResponse } from '../../mails-types'
 import {
   mapMailToListItem,
+  normalizeAttachments,
   normalizeFolderRights,
   normalizeImapFolder,
   recomputePagination,
@@ -196,5 +197,33 @@ describe('recomputePagination', () => {
     const draft = { ...base(), total: 40 }
     recomputePagination(draft, 0)
     expect(draft.totalPages).toBe(2)
+  })
+})
+
+describe('normalizeAttachments', () => {
+  it('keeps the content id of an inline image', () => {
+    expect(
+      normalizeAttachments([
+        {
+          filename: 'logo.png',
+          contentType: 'image/png',
+          size: 120,
+          extension: 'png',
+          contentId: 'logo.png',
+        },
+      ])
+    ).toEqual({
+      count: 1,
+      zipUri: undefined,
+      parts: [
+        {
+          partId: 'logo.png',
+          name: 'logo.png',
+          contentType: 'image/png',
+          size: 120,
+          contentId: 'logo.png',
+        },
+      ],
+    })
   })
 })

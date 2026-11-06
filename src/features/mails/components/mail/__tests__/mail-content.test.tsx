@@ -22,6 +22,10 @@ jest.mock('../mail-show-image', () => ({
   ),
 }))
 
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: () => null,
+}))
+
 describe('MailContent', () => {
   const mockPlainBody = '<p>This is a plain email body</p>'
   const mockBase64Body = 'PHA+VGhpcyBpcyBhIGJhc2U2NCBlbWFpbCBib2R5PC9wPg=='

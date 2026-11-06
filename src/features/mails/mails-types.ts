@@ -79,6 +79,8 @@ export interface ImapAttachmentPart {
   name: string
   contentType: string
   size: number
+  /** Content-ID of an inline image, without the cid: prefix or angle brackets. */
+  contentId?: string
 }
 
 export interface ImapAttachments {
@@ -106,6 +108,7 @@ export interface ImapMessages {
         extension: string
         filename: string
         size: number
+        contentId?: string
       }>
   contentUri?: string
   seen: boolean

@@ -89,7 +89,13 @@ export function MailDetailPage({
   const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
   const invitation = useMailInvitation(data, currentUserEmail)
 
-  const { handlePrint, isPrintDisabled } = usePrintMail(data)
+  const { handlePrint, isPrintDisabled } = usePrintMail(data, {
+    attachmentsUrl: buildAttachmentsUrl({
+      accountId: account,
+      folder,
+      mailId: mail_id,
+    }),
+  })
   const { rightActions, handleMailAction } = useMailReplyActions({
     mail: data,
     mailId: mail_id,

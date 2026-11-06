@@ -3,6 +3,10 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import MailContent from '../mail-content'
 
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key) => key,
+}))
+
 jest.mock('../mail-attachment', () => ({
   AttachmentDisplay: ({ attachments }) => (
     <div data-testid="attachment-display">Attachments: {attachments.count}</div>
@@ -15,6 +19,10 @@ jest.mock('../mail-show-image', () => ({
       Show Images
     </button>
   ),
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppSelector: () => null,
 }))
 
 describe('MailContent', () => {
