@@ -53,7 +53,7 @@ function DomainActionsCell({ domain }: { domain: string }) {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+          <DropdownMenuLabel>{t('actions.string')}</DropdownMenuLabel>
 
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -66,13 +66,13 @@ function DomainActionsCell({ domain }: { domain: string }) {
             }
             className="cursor-pointer"
           >
-            Modify
+            {t('edit.string')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => setConfirmOpen(true)}
             className="cursor-pointer"
           >
-            Delete
+            {t('delete.string')}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -80,10 +80,9 @@ function DomainActionsCell({ domain }: { domain: string }) {
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm deletion</DialogTitle>
+            <DialogTitle>{t('confirm_delete.title.string')}</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this {domain} item? This action
-              cannot be undone.
+              {t('confirm_delete.description.string', { domain })}
             </DialogDescription>
           </DialogHeader>
           {deleteError ? (
@@ -97,7 +96,7 @@ function DomainActionsCell({ domain }: { domain: string }) {
               variant="ghost"
               onClick={() => setConfirmOpen(false)}
             >
-              Cancel
+              {t('cancel.string')}
             </Button>
             <Button
               type="button"
@@ -105,9 +104,7 @@ function DomainActionsCell({ domain }: { domain: string }) {
               onClick={confirmAndDelete}
               disabled={isLoading}
             >
-              {isLoading
-                ? t('ADMIN_PANNEL_DOMAIN.deleting')
-                : t('ADMIN_PANNEL_DOMAIN.delete')}
+              {isLoading ? t('deleting.string') : t('delete.string')}
             </Button>
           </DialogFooter>
         </DialogContent>

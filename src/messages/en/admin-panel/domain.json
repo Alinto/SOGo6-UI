@@ -31,6 +31,20 @@
     "delete": {
       "string": "Delete"
     },
+    "deleting": {
+      "string": "Deleting…"
+    },
+    "cancel": {
+      "string": "Cancel"
+    },
+    "confirm_delete": {
+      "title": {
+        "string": "Confirm deletion"
+      },
+      "description": {
+        "string": "Are you sure you want to delete {domain}? This action cannot be undone."
+      }
+    },
     "delete_error": {
       "string": "The domain could not be deleted."
     }

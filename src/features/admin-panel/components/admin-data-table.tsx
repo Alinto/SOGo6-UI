@@ -152,26 +152,28 @@ export function AdminDataTable<TData>({
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add custom domain</DialogTitle>
+            <DialogTitle>{t('DATA_TABLE.add_title.string')}</DialogTitle>
             <DialogDescription>
-              Enter the custom domain name you want to add.
+              {t('DATA_TABLE.add_description.string')}
             </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleCreateConfirm} className="mt-2 space-y-4">
             <Input
-              placeholder="Enter custom domain name"
+              placeholder={t('DATA_TABLE.domain_name_placeholder.string')}
               value={newDomainName}
               onChange={(e) => setNewDomainName(e.target.value)}
-              aria-label="Custom domain name"
+              aria-label={t('DATA_TABLE.domain_name_label.string')}
               autoFocus
             />
 
             <Textarea
-              placeholder="Enter custom domain description here"
+              placeholder={t(
+                'DATA_TABLE.domain_description_placeholder.string'
+              )}
               value={newDomainDescription}
               onChange={(e) => setNewDomainDescription(e.target.value)}
-              aria-label="Custom domain description"
+              aria-label={t('DATA_TABLE.domain_description_label.string')}
               className="min-h-30"
             />
 
@@ -188,7 +190,7 @@ export function AdminDataTable<TData>({
                 onClick={() => setIsDialogOpen(false)}
                 disabled={isSaving}
               >
-                Cancel
+                {t('DATA_TABLE.cancel.string')}
               </Button>
               <Button
                 type="submit"
@@ -200,8 +202,8 @@ export function AdminDataTable<TData>({
                 className="ml-2"
               >
                 {isSaving
-                  ? t('ADMIN_PANNEL_DOMAIN.adding.string')
-                  : t('ADMIN_PANNEL_DOMAIN.add.string')}
+                  ? t('DATA_TABLE.adding.string')
+                  : t('DATA_TABLE.add.string')}
               </Button>
             </DialogFooter>
           </form>

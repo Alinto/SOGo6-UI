@@ -8,7 +8,9 @@ exports[`NavigationMenuToggler should match snapshot 1`] = `
   >
     <div>
       <button
+        aria-controls="module-switcher"
         aria-expanded="false"
+        aria-haspopup="dialog"
         aria-label="open_menu.string"
         class="p-0"
       >
@@ -24,6 +26,7 @@ exports[`NavigationMenuToggler should match snapshot 1`] = `
       data-align="start"
       data-side="right"
       data-testid="popover-content"
+      id="module-switcher"
     >
       <div
         class="h-full w-full"
@@ -31,7 +34,11 @@ exports[`NavigationMenuToggler should match snapshot 1`] = `
         <div
           data-testid="navigation-toggler"
         >
-          Navigation Toggler
+          <button
+            type="button"
+          >
+            Mail
+          </button>
         </div>
       </div>
     </div>
