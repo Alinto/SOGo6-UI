@@ -9,6 +9,8 @@ const mockPrepareMailBodyHtml = jest.fn()
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
+  useAppSelector: (selector: (state: { auth: { token: string } }) => unknown) =>
+    selector({ auth: { token: 'token' } }),
 }))
 
 jest.mock('@/features/mails/utils/open-print-window', () => ({
@@ -72,6 +74,9 @@ describe('usePrintMail', () => {
 
       expect(mockPrepareMailBodyHtml).toHaveBeenCalledWith(baseMail.body, {
         includeExternalImages: true,
+        inlineImages: {
+          parts: [],
+        },
       })
       expect(mockBuildPrintDocument).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -126,6 +131,9 @@ describe('usePrintMail', () => {
 
       expect(mockPrepareMailBodyHtml).toHaveBeenCalledWith(baseMail.body, {
         includeExternalImages: false,
+        inlineImages: {
+          parts: [],
+        },
       })
     })
   })

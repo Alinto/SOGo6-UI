@@ -92,6 +92,8 @@ export type ImapAttachmentPart = {
   name: string
   contentType: string
   size: number
+  /** Content-ID of an inline image, without the cid: prefix or angle brackets. */
+  contentId?: string
 }
 
 export type AttachmentNameProps = {

@@ -244,6 +244,7 @@ export function normalizeAttachments(
         contentType: string
         size: number
         extension: string
+        contentId?: string
       }>
 ): ImapAttachments {
   // Strict type guard: verify it's already a valid ImapAttachments
@@ -264,6 +265,7 @@ export function normalizeAttachments(
         name: att.filename || 'unnamed',
         contentType: att.contentType || 'application/octet-stream',
         size: att.size || 0,
+        ...(att.contentId ? { contentId: att.contentId } : {}),
       }))
 
       return {

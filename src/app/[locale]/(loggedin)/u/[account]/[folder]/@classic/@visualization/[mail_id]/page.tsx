@@ -50,7 +50,13 @@ const VisualizationPage: React.FC = () => {
     accountId: account,
   })
 
-  const { handlePrint, isPrintDisabled } = usePrintMail(data)
+  const { handlePrint, isPrintDisabled } = usePrintMail(data, {
+    attachmentsUrl: buildAttachmentsUrl({
+      accountId: account,
+      folder,
+      mailId: mail_id,
+    }),
+  })
   const { folderType } = useCurrentFolder(folder, account)
   const { rightActions, handleMailAction, hideReplyActions } =
     useMailReplyActions({
