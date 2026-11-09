@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { LoginForm } from '../login-form'
 
 jest.mock('next-intl', () => ({
@@ -101,6 +101,13 @@ describe('LoginForm - Step 1 (Email + Language)', () => {
     render(<LoginForm />)
     const languageLabel = screen.getByText(/language.label.string/i)
     expect(languageLabel).toBeInTheDocument()
+  })
+
+  it('shows the email error on a light background', async () => {
+    render(<LoginForm />)
+    fireEvent.click(screen.getByRole('button', { name: /next.string/i }))
+    const error = await screen.findByText('email.error.required.string')
+    expect(error).toHaveClass('bg-white', 'text-red-900')
   })
 
   it('shows an offline banner and disables submit while offline', () => {

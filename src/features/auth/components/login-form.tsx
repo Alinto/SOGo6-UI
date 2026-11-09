@@ -21,12 +21,16 @@ import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { getErrorMessage } from '@/lib/redux/api/error-handlers'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, Languages, Loader2 } from 'lucide-react'
+import { Languages, Loader2 } from 'lucide-react'
 import { useLocale, useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import LoginErrorNotice, {
+  loginFieldErrorClassName,
+  loginInvalidControlClassName,
+} from './login-error-notice'
 
 const localeLabels: Record<string, string> = {
   en: 'English',
@@ -177,10 +181,7 @@ export function LoginForm({
   if (systemTimedOut || (systemError && !isOffline)) {
     return (
       <div className="mx-auto flex w-full max-w-xs flex-col gap-4 py-4">
-        <div className="border-destructive/50 bg-destructive/10 text-destructive flex items-start gap-2 rounded-lg border p-3 text-sm">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>{t('error.system_timeout.string')}</p>
-        </div>
+        <LoginErrorNotice>{t('error.system_timeout.string')}</LoginErrorNotice>
         <Button type="button" variant="outline" onClick={handleRetrySystem}>
           {t('system_retry.string')}
         </Button>
@@ -196,10 +197,7 @@ export function LoginForm({
     >
       {isOffline && <LoginOfflineBanner />}
       {serverError && (
-        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-4 flex items-start gap-2 rounded-lg border p-3 text-sm">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>{serverError}</p>
-        </div>
+        <LoginErrorNotice className="mb-4">{serverError}</LoginErrorNotice>
       )}
       {/* Email field group */}
       <div className="mb-6 grid gap-2">
@@ -215,7 +213,7 @@ export function LoginForm({
           placeholder={t('email.placeholder.string')}
           className={cn(
             'border-primary-foreground/60 text-primary-foreground placeholder:text-primary-foreground/70 focus-visible:ring-ring autofill:text-primary-foreground bg-transparent autofill:bg-transparent focus-visible:ring-2',
-            errors.email && 'border-destructive focus-visible:ring-destructive'
+            errors.email && loginInvalidControlClassName
           )}
           disabled={isLoading}
           aria-invalid={errors.email ? 'true' : 'false'}
@@ -224,7 +222,7 @@ export function LoginForm({
           autoComplete="username"
         />
         {errors.email && (
-          <p id="email-error" className="text-destructive text-sm">
+          <p id="email-error" className={loginFieldErrorClassName}>
             {errors.email.message}
           </p>
         )}

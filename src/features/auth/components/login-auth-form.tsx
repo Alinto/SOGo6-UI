@@ -15,12 +15,16 @@ import { useAppDispatch } from '@/lib/redux/hooks'
 import { clearAuthenticatedApiCache } from '@/lib/redux/listeners/reset-cache-on-logout'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle, ArrowLeft } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import LoginErrorNotice, {
+  loginFieldErrorClassName,
+  loginInvalidControlClassName,
+} from './login-error-notice'
 
 interface JwtPayload {
   uid: string
@@ -161,10 +165,7 @@ export function LoginAuthForm({
     >
       {isOffline && <LoginOfflineBanner />}
       {serverError && (
-        <div className="border-destructive/50 bg-destructive/10 text-destructive mb-4 flex items-start gap-2 rounded-lg border p-3 text-sm">
-          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>{serverError}</p>
-        </div>
+        <LoginErrorNotice className="mb-4">{serverError}</LoginErrorNotice>
       )}
 
       <div className="mb-6 grid gap-2">
@@ -201,8 +202,7 @@ export function LoginAuthForm({
           placeholder={t('password.placeholder.string')}
           className={cn(
             'border-primary-foreground/60 text-primary-foreground placeholder:text-primary-foreground/70 focus-visible:ring-ring autofill:text-primary-foreground bg-transparent autofill:bg-transparent focus-visible:ring-2',
-            errors.password &&
-              'border-destructive focus-visible:ring-destructive'
+            errors.password && loginInvalidControlClassName
           )}
           disabled={isLoading}
           aria-invalid={errors.password ? 'true' : 'false'}
@@ -212,7 +212,7 @@ export function LoginAuthForm({
           {...register('password')}
         />
         {errors.password && (
-          <p id="password-error" className="text-destructive text-sm">
+          <p id="password-error" className={loginFieldErrorClassName}>
             {errors.password.message}
           </p>
         )}
