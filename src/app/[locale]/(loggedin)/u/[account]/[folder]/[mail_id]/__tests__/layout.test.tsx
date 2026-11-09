@@ -20,6 +20,19 @@ describe('Mail ID Layout', () => {
     expect(layoutDiv).toHaveClass('w-full')
   })
 
+  it('keeps the pane fixed so only the mail body scrolls', () => {
+    const { container } = render(<Layout>{mockChildren}</Layout>)
+    const layoutDiv = container.firstChild as HTMLElement
+    expect(layoutDiv).toHaveClass(
+      'flex',
+      'h-full',
+      'min-h-0',
+      'flex-col',
+      'overflow-hidden'
+    )
+    expect(layoutDiv).not.toHaveClass('overflow-y-auto')
+  })
+
   it('should render multiple children', () => {
     render(
       <Layout>

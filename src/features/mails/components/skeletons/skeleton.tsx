@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export default function MailDetailSkeleton() {
   return (
-    <div className="w-full overflow-hidden">
+    <div className="h-full w-full overflow-y-auto">
       {/* Top action bar */}
       <div className="mb-6 flex flex-wrap items-center gap-2 px-2 pt-4 sm:px-6">
         <Skeleton className="h-8 w-8 rounded-full" />

@@ -172,8 +172,8 @@ export function MailDetailPage({
   const accountId = Array.isArray(account) ? account[0] : account
 
   return (
-    <div className="flex w-full flex-col">
-      <div className="mb-4 flex items-center gap-2">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden">
+      <div className="mb-4 flex shrink-0 items-center gap-2">
         <MailReturnButton
           folderPath={folder}
           onBack={onBack}
@@ -205,7 +205,7 @@ export function MailDetailPage({
       </div>
       <MailSubject
         subject={subject}
-        className="h-auto min-h-fit"
+        className="h-auto min-h-fit shrink-0"
         labels={
           <MailSubjectLabels
             accountId={accountId}
@@ -215,42 +215,46 @@ export function MailDetailPage({
           />
         }
       />
-      <CachedDataIndicator className="px-1 pb-2" />
-      <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
-        {isMobile ? (
-          <MailHeaderMobile
-            from={from}
-            to={to}
-            cc={cc}
-            showUnsubscribeButton={!!isMailingList}
-            date={date}
-          />
-        ) : (
-          <MailHeader
-            from={from}
-            to={to}
-            cc={cc}
-            showUnsubscribeButton={!!isMailingList}
-            date={date}
-            mail={data}
-            mailId={mail_id}
-            folder={folder}
-            accountId={account}
-          />
-        )}
-        {invitation.kind !== 'none' ? (
-          <MailInvitationWidget state={invitation} />
-        ) : null}
+      <CachedDataIndicator className="shrink-0 px-1 pb-2" />
+      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg border shadow">
+        <div className="shrink-0 p-4 pb-0">
+          {isMobile ? (
+            <MailHeaderMobile
+              from={from}
+              to={to}
+              cc={cc}
+              showUnsubscribeButton={!!isMailingList}
+              date={date}
+            />
+          ) : (
+            <MailHeader
+              from={from}
+              to={to}
+              cc={cc}
+              showUnsubscribeButton={!!isMailingList}
+              date={date}
+              mail={data}
+              mailId={mail_id}
+              folder={folder}
+              accountId={account}
+            />
+          )}
+          {invitation.kind !== 'none' ? (
+            <MailInvitationWidget state={invitation} />
+          ) : null}
+        </div>
         {invitation.kind === 'none' || data.body?.trim() ? (
-          <MailContent
-            body={data.body}
-            attachments={data.attachments}
-            attachmentsUrl={buildAttachmentsUrl({
-              accountId: account,
-              folder,
-              mailId: mail_id,
-            })}
-          />
+          <div className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto p-4 pt-0">
+            <MailContent
+              body={data.body}
+              attachments={data.attachments}
+              attachmentsUrl={buildAttachmentsUrl({
+                accountId: account,
+                folder,
+                mailId: mail_id,
+              })}
+            />
+          </div>
         ) : null}
       </div>
     </div>

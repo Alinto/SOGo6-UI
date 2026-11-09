@@ -3,5 +3,9 @@
 import React from 'react'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return <div className="h-full w-full overflow-y-auto">{children}</div>
+  return (
+    <div className="flex h-full min-h-0 w-full flex-col overflow-hidden">
+      {children}
+    </div>
+  )
 }

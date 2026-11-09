@@ -138,9 +138,9 @@ const VisualizationPage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-full w-full flex-col overflow-y-auto">
-      <div className="flex w-full flex-col p-3">
-        <div className="mb-4 flex items-center gap-2">
+    <div className="flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden p-3">
+      <div className="flex min-h-0 w-full flex-1 flex-col">
+        <div className="mb-4 flex shrink-0 items-center gap-2">
           <MailReturnButton folderPath={folder} returnUrl={returnToListUrl} />
           <MailDetailActionBar
             accountId={Array.isArray(account) ? account[0] : account}
@@ -176,7 +176,7 @@ const VisualizationPage: React.FC = () => {
         </div>
         <MailSubject
           subject={subject}
-          className="h-auto min-h-fit"
+          className="h-auto min-h-fit shrink-0"
           labels={
             <MailSubjectLabels
               accountId={account}
@@ -186,37 +186,41 @@ const VisualizationPage: React.FC = () => {
             />
           }
         />
-        <div className="w-full overflow-hidden rounded-lg border p-4 shadow">
-          {isMobile ? (
-            <MailHeaderMobile
-              from={from}
-              to={to}
-              cc={cc}
-              showUnsubscribeButton={!!isMailingList}
-              date={date}
+        <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg border shadow">
+          <div className="shrink-0 p-4 pb-0">
+            {isMobile ? (
+              <MailHeaderMobile
+                from={from}
+                to={to}
+                cc={cc}
+                showUnsubscribeButton={!!isMailingList}
+                date={date}
+              />
+            ) : (
+              <MailHeader
+                from={from}
+                to={to}
+                cc={cc}
+                showUnsubscribeButton={!!isMailingList}
+                date={date}
+                mail={data}
+                mailId={mail_id}
+                folder={folder}
+                accountId={account}
+              />
+            )}
+          </div>
+          <div className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto p-4 pt-0">
+            <MailContent
+              body={data.body}
+              attachments={data.attachments}
+              attachmentsUrl={buildAttachmentsUrl({
+                accountId: account,
+                folder,
+                mailId: mail_id,
+              })}
             />
-          ) : (
-            <MailHeader
-              from={from}
-              to={to}
-              cc={cc}
-              showUnsubscribeButton={!!isMailingList}
-              date={date}
-              mail={data}
-              mailId={mail_id}
-              folder={folder}
-              accountId={account}
-            />
-          )}
-          <MailContent
-            body={data.body}
-            attachments={data.attachments}
-            attachmentsUrl={buildAttachmentsUrl({
-              accountId: account,
-              folder,
-              mailId: mail_id,
-            })}
-          />
+          </div>
         </div>
       </div>
     </div>
