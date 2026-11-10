@@ -3,7 +3,9 @@
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import type { MailNavigationContext } from '@/features/mails/utils/mail-detail-navigation'
 import {
+  appendQuery,
   isMailDetailPath,
+  keptListQuery,
   resolveMailIdFromPath,
 } from '@/features/mails/utils/mail-detail-navigation'
 import {
@@ -12,11 +14,12 @@ import {
 } from '@/features/mails/utils/mail-search-form'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppSelector } from '@/lib/redux/hooks'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 
 export function useMailDetailNavigation() {
   const params = useParams()
+  const searchParams = useSearchParams()
   const pathname = usePathname()
   const { push } = useRouter()
   const mailNavigation = useAppSelector((state) => state.mailNavigation)
@@ -81,25 +84,42 @@ export function useMailDetailNavigation() {
   // empty search.
   const encodedListFolder = encodeURIComponent(listFolder)
 
+  // The list's quick filter (?filter=…) follows the user from the list to
+  // the mail and back.
+  const listQuery = keptListQuery(searchParams)
+
   const buildListPageUrl = useCallback(
     (page: number) => {
       if (listFolder === ADVANCED_SEARCH_ROUTE_SEGMENT) {
         const query = mailSearchParamsToUrlSearchParams(mailSearch.params ?? {})
         query.set('page', String(page))
-        return `/u/${account}/${ADVANCED_SEARCH_ROUTE_SEGMENT}?${query.toString()}`
+        return appendQuery(
+          `/u/${account}/${ADVANCED_SEARCH_ROUTE_SEGMENT}?${query.toString()}`,
+          listQuery
+        )
       }
-      return `/u/${account}/${encodedListFolder}?page=${page}`
+      return appendQuery(
+        `/u/${account}/${encodedListFolder}?page=${page}`,
+        listQuery
+      )
     },
-    [account, listFolder, encodedListFolder, mailSearch.params]
+    [account, listFolder, encodedListFolder, mailSearch.params, listQuery]
+  )
+
+  const buildMailUrl = useCallback(
+    (folderPath: string, id: string) =>
+      appendQuery(
+        `/u/${account}/${encodeURIComponent(folderPath)}/${encodeURIComponent(id)}`,
+        listQuery
+      ),
+    [account, listQuery]
   )
 
   const goPrev = useCallback(() => {
     if (!mailId) return
     if (prevId) {
       const prevFolder = mailNavigation.folderById[prevId] ?? listFolder
-      push(
-        `/u/${account}/${encodeURIComponent(prevFolder)}/${encodeURIComponent(prevId)}`
-      )
+      push(buildMailUrl(prevFolder, prevId))
     } else if (isNavigationValid && isFirstOfPage && hasPrevPage) {
       push(buildListPageUrl(mailNavigation.page - 1))
     }
@@ -107,7 +127,7 @@ export function useMailDetailNavigation() {
     mailId,
     prevId,
     push,
-    account,
+    buildMailUrl,
     listFolder,
     buildListPageUrl,
     mailNavigation.folderById,
@@ -121,9 +141,7 @@ export function useMailDetailNavigation() {
     if (!mailId) return
     if (nextId) {
       const nextFolder = mailNavigation.folderById[nextId] ?? listFolder
-      push(
-        `/u/${account}/${encodeURIComponent(nextFolder)}/${encodeURIComponent(nextId)}`
-      )
+      push(buildMailUrl(nextFolder, nextId))
     } else if (isNavigationValid && isLastOfPage && hasNextPage) {
       push(buildListPageUrl(mailNavigation.page + 1))
     }
@@ -131,7 +149,7 @@ export function useMailDetailNavigation() {
     mailId,
     nextId,
     push,
-    account,
+    buildMailUrl,
     listFolder,
     buildListPageUrl,
     mailNavigation.folderById,
@@ -150,9 +168,18 @@ export function useMailDetailNavigation() {
     if (listFolder === ADVANCED_SEARCH_ROUTE_SEGMENT) {
       return buildListPageUrl(page)
     }
-    if (page <= 1) return null
-    return buildListPageUrl(page)
-  }, [listFolder, buildListPageUrl, isNavigationValid, mailNavigation.page])
+    if (page > 1) return buildListPageUrl(page)
+    if (listQuery) return `/u/${account}/${encodedListFolder}?${listQuery}`
+    return null
+  }, [
+    listFolder,
+    buildListPageUrl,
+    isNavigationValid,
+    mailNavigation.page,
+    listQuery,
+    account,
+    encodedListFolder,
+  ])
 
   const navigationContext: MailNavigationContext = mailNavigation
 

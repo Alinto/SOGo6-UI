@@ -2,7 +2,6 @@ import React from 'react'
 import {
   ActionId,
   type Action,
-  type AttachmentNameProps,
   type EmailContact,
   type ImapAttachmentPart,
   type ImapAttachments,
@@ -181,17 +180,6 @@ describe('Mail Types', () => {
       expect(attachment.name).toBe('document.pdf')
       expect(attachment.size).toBe(1024)
       expect(attachment.contentType).toBe('application/pdf')
-    })
-
-    it('should allow AttachmentNameProps to be defined', () => {
-      const props: AttachmentNameProps = {
-        name: 'file.txt',
-        maxLength: 50,
-        className: 'attachment-name',
-      }
-      expect(props.name).toBe('file.txt')
-      expect(props.maxLength).toBe(50)
-      expect(props.className).toBe('attachment-name')
     })
 
     it('should allow MailAttachmentProps to be defined', () => {

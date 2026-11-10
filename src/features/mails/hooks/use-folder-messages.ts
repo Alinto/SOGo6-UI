@@ -19,6 +19,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { nanoid } from '@reduxjs/toolkit'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { toMailListApiFilter } from '../utils/client-mail-list-filter'
 import { isMailDetailPath } from '../utils/mail-detail-navigation'
 import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '../utils/mail-search-form'
 import { useCurrentFolder } from './use-current-folder'
@@ -141,6 +142,10 @@ export function useFolderMessages({
     } else {
       delete merged.sort
     }
+
+    // Quick filter (read, unread…): applied by the server before pagination.
+    const apiFilter = toMailListApiFilter(searchParams.get('filter'))
+    if (apiFilter) merged.filter = apiFilter
 
     return merged
   }, [searchParams])

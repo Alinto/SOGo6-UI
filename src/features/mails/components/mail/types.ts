@@ -96,12 +96,6 @@ export type ImapAttachmentPart = {
   contentId?: string
 }
 
-export type AttachmentNameProps = {
-  name: string
-  maxLength?: number
-  className?: string
-}
-
 export type MailAttachmentProps = {
   part: ImapAttachmentPart
   className?: string

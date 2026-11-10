@@ -1,6 +1,6 @@
 'use client'
 
-import { formatFileSize } from '@/features/mails/components/utils'
+import { useFormatSize } from '@/features/mails/hooks/use-format-size'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { Download, Paperclip, X } from 'lucide-react'
@@ -29,6 +29,7 @@ export function ComposeAttachmentList({
   const dispatch = useAppDispatch()
   const [deleteAttachment] = useDeleteAttachmentMutation()
   const [triggerDownloadAttachment] = useLazyDownloadAttachmentQuery()
+  const formatSize = useFormatSize()
 
   if (attachments.length === 0) return null
 
@@ -111,7 +112,7 @@ export function ComposeAttachmentList({
                 />
                 <span className="truncate">{att.name}</span>
                 <span className="text-muted-foreground shrink-0">
-                  {formatFileSize(att.size)}
+                  {formatSize(att.size)}
                 </span>
                 {att.uploadStatus === 'error' && (
                   <span className="text-destructive shrink-0">

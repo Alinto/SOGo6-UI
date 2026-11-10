@@ -24,7 +24,10 @@ jest.mock('@/lib/i18n/navigation', () => ({
   usePathname: jest.fn(() => mockPathname),
 }))
 
+let mockSearchParams = new URLSearchParams()
+
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => mockSearchParams,
   useParams: jest.fn(() => ({
     account: '0',
     folder: 'INBOX',
@@ -214,5 +217,55 @@ describe('useMailDetailNavigation', () => {
 
     expect(result.current.returnToListUrl).toBe('/u/0/INBOX?page=2')
     mockMailNavigation.page = originalPage
+  })
+
+  describe('with a quick filter on the list', () => {
+    beforeEach(() => {
+      const { usePathname } = require('@/lib/i18n/navigation')
+      const { useParams } = require('next/navigation')
+      usePathname.mockReturnValue(mockPathname)
+      useParams.mockReturnValue({ account: '0', folder: 'INBOX', mail_id: '2' })
+      mockSearchParams = new URLSearchParams('filter=attachments&sort=t_asc')
+    })
+
+    afterEach(() => {
+      mockSearchParams = new URLSearchParams()
+    })
+
+    it('returns to the filtered list on the first page', () => {
+      const { result } = renderHook(() => useMailDetailNavigation())
+
+      expect(result.current.returnToListUrl).toBe(
+        '/u/0/INBOX?filter=attachments'
+      )
+    })
+
+    it('returns to the filtered list on the current page', () => {
+      const originalPage = mockMailNavigation.page
+      mockMailNavigation.page = 2
+
+      const { result } = renderHook(() => useMailDetailNavigation())
+
+      expect(result.current.returnToListUrl).toBe(
+        '/u/0/INBOX?page=2&filter=attachments'
+      )
+      mockMailNavigation.page = originalPage
+    })
+
+    it('keeps the filter when going to the previous or next mail', () => {
+      const { result } = renderHook(() => useMailDetailNavigation())
+
+      result.current.goPrev()
+      result.current.goNext()
+
+      expect(mockPush).toHaveBeenNthCalledWith(
+        1,
+        '/u/0/INBOX/1?filter=attachments'
+      )
+      expect(mockPush).toHaveBeenNthCalledWith(
+        2,
+        '/u/0/INBOX/3?filter=attachments'
+      )
+    })
   })
 })

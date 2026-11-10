@@ -23,12 +23,13 @@ import { useMailReplyActions } from '@/features/mails/hooks/use-mail-reply-actio
 import { usePrintMail } from '@/features/mails/hooks/use-print-mail'
 import { useGetMailQuery } from '@/features/mails/store/mails-api'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { withKeptListParams } from '@/features/mails/utils/mail-detail-navigation'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useRouter } from '@/lib/i18n/navigation'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useParams } from 'next/navigation'
+import { useParams, useSearchParams } from 'next/navigation'
 import React from 'react'
 
 const VisualizationPage: React.FC = () => {
@@ -39,6 +40,7 @@ const VisualizationPage: React.FC = () => {
     mail_id: string
   }
   const { push } = useRouter()
+  const searchParams = useSearchParams()
   const { account, mail_id } = params
   const folder = folderPathFromParams(params.folder)
   const isMobile = useIsMobile()
@@ -113,11 +115,17 @@ const VisualizationPage: React.FC = () => {
     if (action.id === ActionId.GO_BACK) {
       const prevId = Math.max(1, Number(mail_id) - 1)
       push(
-        `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(prevId))}`
+        withKeptListParams(
+          `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(prevId))}`,
+          searchParams
+        )
       )
     } else if (action.id === ActionId.GO_NEXT) {
       push(
-        `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(Number(mail_id) + 1))}`
+        withKeptListParams(
+          `/u/${account}/${encodeURIComponent(folder)}/${encodeURIComponent(String(Number(mail_id) + 1))}`,
+          searchParams
+        )
       )
     }
   }

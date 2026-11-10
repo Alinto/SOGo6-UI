@@ -58,7 +58,9 @@ const Page = () => {
     dispatch(setSkipFolderFetch(false))
   }, [folderPath, dispatch])
 
-  const clientFilterActive = activeFilter !== 'all'
+  // The server filters folder lists; only search results are filtered here.
+  const clientFilter = isSearchActive ? activeFilter : 'all'
+  const clientFilterActive = clientFilter !== 'all'
 
   // Keep the URL page in range: if the current page no longer exists (e.g. the
   // last mail of the last page was deleted/moved), fall back to the last valid page.
@@ -88,8 +90,8 @@ const Page = () => {
   ])
 
   const filteredMails = React.useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
-    [data, activeFilter]
+    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
+    [data, clientFilter]
   )
 
   if (isVirtualFolder && !isSearchActive) {

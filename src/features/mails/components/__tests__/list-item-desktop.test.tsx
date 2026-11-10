@@ -9,6 +9,7 @@ import ListItemDesktop from '../list-item-desktop'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
   useParams: jest.fn(() => ({ mail_id: '456' })),
 }))
 

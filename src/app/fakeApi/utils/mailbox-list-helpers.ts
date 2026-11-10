@@ -177,6 +177,46 @@ function loadFolderMessages(
   })
 }
 
+const MAIL_LIST_FILTER_PREDICATES: Record<
+  string,
+  (msg: ImapMessagesList) => boolean
+> = {
+  read: (msg) => msg.seen,
+  unread: (msg) => !msg.seen,
+  flagged: (msg) => msg.flagged,
+  unflagged: (msg) => !msg.flagged,
+  attachments: (msg) => msg.hasAttachment,
+}
+
+const CONTRADICTORY_FILTERS: Array<[string, string]> = [
+  ['read', 'unread'],
+  ['flagged', 'unflagged'],
+]
+
+/**
+ * Parses the comma separated `filter` query param (all filters must match).
+ * Unknown or contradictory filters (e.g. `read,unread`) are an error (400).
+ */
+export function parseMailListFilter(
+  raw: string | null
+):
+  | { predicates: Array<(msg: ImapMessagesList) => boolean> }
+  | { error: string } {
+  const filters = (raw ?? '')
+    .split(',')
+    .map((f) => f.trim())
+    .filter(Boolean)
+  const unknown = filters.find((f) => !MAIL_LIST_FILTER_PREDICATES[f])
+  if (unknown) return { error: `Unknown filter: ${unknown}` }
+  const contradiction = CONTRADICTORY_FILTERS.find(
+    ([a, b]) => filters.includes(a) && filters.includes(b)
+  )
+  if (contradiction) {
+    return { error: `Contradictory filters: ${contradiction.join(',')}` }
+  }
+  return { predicates: filters.map((f) => MAIL_LIST_FILTER_PREDICATES[f]) }
+}
+
 export function buildFolderMessagesListResponse(
   folder: string,
   searchParams: URLSearchParams,
@@ -190,7 +230,7 @@ export function buildFolderMessagesListResponse(
   hasNextPage: boolean
   hasPreviousPage: boolean
 } {
-  const filter = searchParams.get('filter') || undefined
+  const filter = searchParams.get('filter')
   const sortBy = searchParams.get('sort_by')
   const sortOrder = searchParams.get('sort_order')
   const pageParam = searchParams.get('page')
@@ -211,21 +251,12 @@ export function buildFolderMessagesListResponse(
 
   messages = sortFolderMessages(messages, sortBy, sortOrder)
 
-  switch (filter) {
-    case 'starred':
-      messages = messages.filter((msg) => msg.flagged)
-      break
-    case 'attachments':
-      messages = messages.filter((msg) => msg.hasAttachment)
-      break
-    case 'read':
-      messages = messages.filter((msg) => msg.seen)
-      break
-    case 'unread':
-      messages = messages.filter((msg) => !msg.seen)
-      break
-    default:
-      break
+  // Invalid filters are rejected by the route (400) before reaching here.
+  const parsedFilter = parseMailListFilter(filter)
+  if ('predicates' in parsedFilter) {
+    messages = messages.filter((msg) =>
+      parsedFilter.predicates.every((matches) => matches(msg))
+    )
   }
 
   const total = messages.length

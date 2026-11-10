@@ -79,7 +79,7 @@ describe('ListFilter', () => {
       render(<ListFilter />)
       expect(screen.getByText('filter.read.string')).toBeInTheDocument()
       expect(screen.getByText('filter.unread.string')).toBeInTheDocument()
-      expect(screen.getByText('filter.starred.string')).toBeInTheDocument()
+      expect(screen.getByText('filter.flagged.string')).toBeInTheDocument()
       expect(screen.getByText('filter.attachments.string')).toBeInTheDocument()
     })
 

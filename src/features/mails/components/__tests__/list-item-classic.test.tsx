@@ -28,6 +28,7 @@ jest.mock('@/lib/i18n/navigation', () => ({
 }))
 
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
   useParams: jest.fn(),
   usePathname: jest.fn(),
 }))

@@ -1,5 +1,8 @@
 import type { ImapMessagesList } from '@/features/mails/mails-types'
-import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
+import {
+  getClientFilteredMails,
+  toMailListApiFilter,
+} from '@/features/mails/utils/client-mail-list-filter'
 
 function makeMail(overrides: Partial<ImapMessagesList> = {}): ImapMessagesList {
   return {
@@ -34,19 +37,28 @@ describe('getClientFilteredMails', () => {
     })
 
     it('returns only unseen for unread', () => {
-      expect(getClientFilteredMails(mails, 'unread').map((m) => m.id)).toEqual(['1'])
+      expect(getClientFilteredMails(mails, 'unread').map((m) => m.id)).toEqual([
+        '1',
+      ])
     })
 
     it('returns only seen for read', () => {
-      expect(getClientFilteredMails(mails, 'read').map((m) => m.id)).toEqual(['2', '3'])
+      expect(getClientFilteredMails(mails, 'read').map((m) => m.id)).toEqual([
+        '2',
+        '3',
+      ])
     })
 
-    it('returns only flagged for starred', () => {
-      expect(getClientFilteredMails(mails, 'starred').map((m) => m.id)).toEqual(['2'])
+    it('returns only flagged for flagged', () => {
+      expect(getClientFilteredMails(mails, 'flagged').map((m) => m.id)).toEqual(
+        ['2']
+      )
     })
 
     it('returns only mails with attachments', () => {
-      expect(getClientFilteredMails(mails, 'attachments').map((m) => m.id)).toEqual(['2'])
+      expect(
+        getClientFilteredMails(mails, 'attachments').map((m) => m.id)
+      ).toEqual(['2'])
     })
   })
 
@@ -59,4 +71,20 @@ describe('getClientFilteredMails', () => {
       expect(getClientFilteredMails(mails, 'unknown')).toEqual(mails)
     })
   })
+})
+
+describe('toMailListApiFilter', () => {
+  it.each(['read', 'unread', 'flagged', 'attachments'])(
+    'keeps the %s filter',
+    (value) => {
+      expect(toMailListApiFilter(value)).toBe(value)
+    }
+  )
+
+  it.each(['all', 'starred', '', null, undefined])(
+    'returns undefined for %p',
+    (value) => {
+      expect(toMailListApiFilter(value)).toBeUndefined()
+    }
+  )
 })

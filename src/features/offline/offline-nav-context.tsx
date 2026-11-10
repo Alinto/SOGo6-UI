@@ -1,6 +1,7 @@
 'use client'
 
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
+import { appendQuery } from '@/features/mails/utils/mail-detail-navigation'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useParams } from 'next/navigation'
 import {
@@ -62,10 +63,12 @@ interface OfflineNavApi {
   folderPathOverride: string | null
   openFolder: (accountId: string, path: string, label?: string) => Promise<void>
   openOutbox: (accountId: string) => void
+  /** `listQuery`: list params (e.g. `filter=unread`) kept in the mail URL. */
   openMail: (
     accountId: string,
     folderPath: string,
-    mailId: string
+    mailId: string,
+    listQuery?: string
   ) => Promise<void>
   navigateApp: (href: string) => void
   closeOverlay: () => void
@@ -89,8 +92,18 @@ function routeFallbackApi(): OfflineNavApi {
     openOutbox: (accountId: string) => {
       assignHref(`/u/${accountId}/outbox`)
     },
-    openMail: async (accountId: string, folderPath: string, mailId: string) => {
-      assignHref(`/u/${accountId}/${encodeURIComponent(folderPath)}/${mailId}`)
+    openMail: async (
+      accountId: string,
+      folderPath: string,
+      mailId: string,
+      listQuery = ''
+    ) => {
+      assignHref(
+        appendQuery(
+          `/u/${accountId}/${encodeURIComponent(folderPath)}/${mailId}`,
+          listQuery
+        )
+      )
     },
     navigateApp: (href: string) => {
       assignHref(href)
@@ -146,10 +159,20 @@ export function OfflineNavProvider({ children }: { children: ReactNode }) {
   )
 
   const openMail = useCallback(
-    async (accountIdArg: string, folderPath: string, mailId: string) => {
+    async (
+      accountIdArg: string,
+      folderPath: string,
+      mailId: string,
+      listQuery = ''
+    ) => {
       if (!isPwaMailCacheEnabled() || !skipNav) {
         setView({ kind: 'route' })
-        push(`/u/${accountIdArg}/${encodeURIComponent(folderPath)}/${mailId}`)
+        push(
+          appendQuery(
+            `/u/${accountIdArg}/${encodeURIComponent(folderPath)}/${mailId}`,
+            listQuery
+          )
+        )
         return
       }
       const userId = getAuthUserId()

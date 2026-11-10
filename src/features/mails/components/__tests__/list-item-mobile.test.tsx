@@ -7,6 +7,7 @@ import { Provider } from 'react-redux'
 import ListItemMobile from '../list-item-mobile'
 
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
   useParams: jest.fn(() => ({ mail_id: '456', folder: 'inbox' })),
 }))
 

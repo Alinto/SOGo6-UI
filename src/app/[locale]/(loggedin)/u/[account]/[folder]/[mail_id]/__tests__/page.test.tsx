@@ -34,6 +34,7 @@ const createTestStore = (preloadedState: Record<string, unknown> = {}) =>
 
 // Mock des hooks Next.js
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
   useParams: jest.fn(() => ({
     account: 'test@example.com',
     folder: 'inbox',

@@ -5,16 +5,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactElement } from 'react'
 import { Provider } from 'react-redux'
-import {
-  AttachmentDisplay,
-  AttachmentName,
-  MailAttachment,
-} from '../mail-attachment'
+import { AttachmentDisplay, MailAttachment } from '../mail-attachment'
 import type { ImapAttachmentPart, ImapAttachments } from '../types'
 
 // Mock next-intl
 jest.mock('next-intl', () => ({
-  useTranslations: () => (key: string) => key,
+  useTranslations: () => (key: string, values?: { name?: string }) =>
+    values?.name ? `${key} ${values.name}` : key,
+  useFormatter: () => ({
+    number: (value: number, options: Intl.NumberFormatOptions) =>
+      new Intl.NumberFormat('fr', options).format(value),
+  }),
 }))
 
 // Mock lucide-react
@@ -60,12 +61,6 @@ function renderWithStore(ui: ReactElement, store = createTestStore()) {
   return { store, ...render(<Provider store={store}>{ui}</Provider>) }
 }
 
-describe('AttachmentName', () => {
-  it('renders without crashing', () => {
-    expect(() => render(<AttachmentName name="test.txt" />)).not.toThrow()
-  })
-})
-
 describe('MailAttachment', () => {
   const mockPart: ImapAttachmentPart = {
     partId: '1',
@@ -87,12 +82,69 @@ describe('MailAttachment', () => {
     ).not.toThrow()
   })
 
+  it('shows the type badge, the size and the name', () => {
+    renderWithStore(
+      <MailAttachment part={mockPart} attachmentsUrl="/mail/1/" />
+    )
+    expect(screen.getByText('PDF')).toBeInTheDocument()
+    expect(screen.getByText('1,0 ko')).toBeInTheDocument()
+    expect(screen.getByTestId('attachment-name')).toHaveTextContent(
+      /^test\.pdf$/
+    )
+  })
+
+  it('keeps the extension on one line with the last character of the name', () => {
+    renderWithStore(
+      <MailAttachment
+        part={{ ...mockPart, name: 'A704-68517D00-D-7EC9C580.ics' }}
+        attachmentsUrl="/mail/1/"
+      />
+    )
+    const tail = screen.getByText('0.ics')
+    expect(tail).toHaveClass('whitespace-nowrap')
+    expect(screen.getByTestId('attachment-name')).toHaveTextContent(
+      /^A704-68517D00-D-7EC9C580\.ics$/
+    )
+  })
+
+  it('cuts long names in the middle and keeps the full name in a tooltip', () => {
+    const longName = `${'a'.repeat(80)}-end.pdf`
+    renderWithStore(
+      <MailAttachment
+        part={{ ...mockPart, name: longName }}
+        attachmentsUrl="/mail/1/"
+      />
+    )
+    const shortName = screen.getByTestId('attachment-name')
+    expect(shortName).toHaveTextContent(/^a+….*-end\.pdf$/)
+    // The short name is hidden from screen readers, which read the full one.
+    expect(shortName).toHaveAttribute('aria-hidden', 'true')
+    const fullName = screen.getByText(longName)
+    expect(fullName).toHaveClass('sr-only')
+    expect(fullName.parentElement).toHaveAttribute('tabindex', '0')
+    expect(screen.getAllByTestId('tooltip')[0]).toHaveAttribute(
+      'data-content',
+      longName
+    )
+  })
+
+  it('does not render a type badge when no type is known', () => {
+    renderWithStore(
+      <MailAttachment
+        part={{ ...mockPart, name: 'README', contentType: '' }}
+        attachmentsUrl="/mail/1/"
+      />
+    )
+    expect(screen.getByTestId('attachment-name')).toHaveTextContent(/^README$/)
+    expect(screen.queryByText('PDF')).not.toBeInTheDocument()
+  })
+
   it('builds the download link href from the attachment URL', () => {
     renderWithStore(
       <MailAttachment part={mockPart} attachmentsUrl="/mail/1/" />
     )
     const link = screen.getByRole('link', {
-      name: 'mail_display.content.download_attachment.string',
+      name: 'mail_display.content.download_attachment_named.string test.pdf',
     })
     expect(link).toHaveAttribute(
       'href',
@@ -111,7 +163,7 @@ describe('MailAttachment', () => {
       <MailAttachment part={mockPart} attachmentsUrl="/mail/1/" />
     )
     const link = screen.getByRole('link', {
-      name: 'mail_display.content.download_attachment.string',
+      name: 'mail_display.content.download_attachment_named.string test.pdf',
     })
 
     // Stub DOM APIs only after the initial render so React's own DOM
@@ -147,7 +199,7 @@ describe('MailAttachment', () => {
       <MailAttachment part={mockPart} attachmentsUrl="/mail/1/" />
     )
     const link = screen.getByRole('link', {
-      name: 'mail_display.content.download_attachment.string',
+      name: 'mail_display.content.download_attachment_named.string test.pdf',
     })
 
     await userEvent.click(link)

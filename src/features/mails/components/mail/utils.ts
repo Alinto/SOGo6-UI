@@ -98,15 +98,52 @@ export function formatMailTime(date: number) {
     .replace(',', '')
 }
 
-export function formatSize(size: number) {
-  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} Mo`
-  if (size >= 1024) return `${(size / 1024).toFixed(1)} Ko`
-  return `${size} o`
+/**
+ * The file extension, without the dot. Only a short suffix with at least one
+ * letter counts: "Facture 12.2024" or "rapport v2.1" have no extension.
+ */
+export function getFileExtension(filename: string) {
+  const match = filename.match(/\.([a-zA-Z0-9]{1,10})$/)
+  return match && /[a-zA-Z]/.test(match[1]) ? match[1] : ''
 }
 
-export function getFileExtension(filename: string) {
-  const match = filename.match(/\.([a-zA-Z0-9]+)$/)
-  return match ? match[1] : ''
+/**
+ * Short file type label shown on an attachment (e.g. "PDF", "TXT").
+ * Uses the file extension, then the MIME subtype when it is short enough.
+ */
+export function getAttachmentType(name: string, contentType?: string) {
+  const ext = getFileExtension(name)
+  if (ext) return ext.toUpperCase()
+
+  const subtype = contentType?.split(';')[0].split('/')[1]?.trim() ?? ''
+  return /^[a-zA-Z0-9]{1,5}$/.test(subtype) ? subtype.toUpperCase() : ''
+}
+
+/**
+ * Shortens a file name by cutting its middle ("rapport-fin…ctions.pdf"),
+ * so the beginning and the extension stay visible.
+ */
+export function truncateFileNameMiddle(name: string, maxLength = 60) {
+  if (name.length <= maxLength) return name
+
+  const ext = getFileExtension(name)
+  const minTail = ext ? ext.length + 1 : 0
+  const tailLength = Math.max(minTail, Math.floor((maxLength - 1) / 3))
+  const headLength = Math.max(1, maxLength - 1 - tailLength)
+
+  return `${name.slice(0, headLength)}…${name.slice(-tailLength)}`
+}
+
+/**
+ * Splits a file name so the extension and the character before it can be
+ * kept together on one line ("report.pdf" → "repor" + "t.pdf").
+ */
+export function splitFileNameTail(name: string) {
+  const ext = getFileExtension(name)
+  if (!ext) return { head: name, tail: '' }
+
+  const tailStart = Math.max(0, name.length - ext.length - 2)
+  return { head: name.slice(0, tailStart), tail: name.slice(tailStart) }
 }
 
 export function isBase64(str: string) {

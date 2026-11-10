@@ -735,7 +735,7 @@ export async function GET(
   )
 
   switch (filter) {
-    case 'starred':
+    case 'flagged':
       messages = messages.filter((msg) => msg.flagged)
       break
     case 'attachments':

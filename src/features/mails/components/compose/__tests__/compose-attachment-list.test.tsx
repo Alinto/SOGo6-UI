@@ -12,6 +12,10 @@ jest.mock('next-intl', () => ({
   useTranslations: jest.fn(() => (key: string) => key),
 }))
 
+jest.mock('@/features/mails/hooks/use-format-size', () => ({
+  useFormatSize: () => (size: number) => `${size} B`,
+}))
+
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
 }))
