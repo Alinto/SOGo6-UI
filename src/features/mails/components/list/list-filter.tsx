@@ -63,11 +63,11 @@ const ListFilter: React.FC = () => {
               {t('filter.unread.string')}
             </ToggleGroupItem>
             <ToggleGroupItem
-              value="starred"
-              aria-label={t('filter.starred.string')}
+              value="flagged"
+              aria-label={t('filter.flagged.string')}
               className="w-auto flex-none"
             >
-              {t('filter.starred.string')}
+              {t('filter.flagged.string')}
             </ToggleGroupItem>
             <ToggleGroupItem
               value="attachments"

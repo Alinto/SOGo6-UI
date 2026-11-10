@@ -23,6 +23,7 @@ import type {
   MailSearchParams,
   UpdateFolderBody,
 } from '../mails-types'
+import type { MailListFilter } from '../utils/client-mail-list-filter'
 import { getFolderPermissions } from '../utils/folder-permissions'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
 import { getMailBatchActionNotificationKeys } from '../utils/get-mail-batch-action-notification-keys'
@@ -61,6 +62,7 @@ export interface MailListQueryParams {
   sort_order?: 'asc' | 'desc'
   fields?: string
   fields_action?: 'include' | 'exclude'
+  filter?: MailListFilter
 }
 
 const getFoldersQuery = ({ accountId = '0' }: { accountId?: string } = {}) =>

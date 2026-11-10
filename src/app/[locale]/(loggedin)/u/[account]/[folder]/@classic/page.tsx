@@ -28,12 +28,19 @@ const Page: React.FC = () => {
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
 
-  const { data, isUserFetching, isRefreshing, isLoading, error, refetch } =
-    useFolderMessages({
-      folder: folderPath,
-      accountId: accountString,
-      reloadOnFolderSwitch: true,
-    })
+  const {
+    data,
+    isUserFetching,
+    isRefreshing,
+    isLoading,
+    error,
+    refetch,
+    isSearchActive,
+  } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+    reloadOnFolderSwitch: true,
+  })
 
   const { cachedMails, cachedAt, isShowingCache } = useOfflineMailList({
     accountId: accountString,
@@ -42,9 +49,12 @@ const Page: React.FC = () => {
     hasError: !!error,
   })
 
+  // The server filters folder lists; only search results are filtered here.
+  const clientFilter = isSearchActive ? activeFilter : 'all'
+
   const filteredMails = React.useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
-    [data, activeFilter]
+    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
+    [data, clientFilter]
   )
 
   const listVisibilityClass =

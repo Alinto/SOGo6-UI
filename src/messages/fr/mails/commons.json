@@ -224,6 +224,14 @@
                     "string": "Télécharger la pièce jointe",
                     "description": "ARIA label for the download attachment link"
                 },
+                "download_attachment_named": {
+                    "string": "Télécharger {name}",
+                    "description": "ARIA label for the download link of one attachment, with its file name"
+                },
+                "size_bytes": {
+                    "string": "{size} o",
+                    "description": "File size in bytes (e.g. 500 o)"
+                },
                 "download_all_attachments": {
                     "string": "Télécharger toutes les pièces jointes",
                     "description": "ARIA label for the download all attachments link"

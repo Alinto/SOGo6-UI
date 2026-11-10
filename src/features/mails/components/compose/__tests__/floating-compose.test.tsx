@@ -103,6 +103,7 @@ jest.mock('@/lib/redux/hooks', () => ({
 jest.mock('next-intl', () => ({
   useLocale: jest.fn(() => 'en'),
   useTranslations: jest.fn(() => (key: string) => key),
+  useFormatter: jest.fn(() => ({ number: (value: number) => String(value) })),
 }))
 
 jest.mock('next/navigation', () => ({

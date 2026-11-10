@@ -95,6 +95,7 @@ jest.mock('@/lib/i18n/navigation', () => ({
 }))
 
 jest.mock('next/navigation', () => ({
+  useSearchParams: () => new URLSearchParams(),
   useParams: jest.fn(() => ({
     account: '0',
     folder: 'INBOX',

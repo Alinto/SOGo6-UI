@@ -6,10 +6,14 @@ import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Provider } from 'react-redux'
-import { AttachmentName, MailAttachment } from '../mail-attachment'
+import { MailAttachment } from '../mail-attachment'
 
 jest.mock('next-intl', () => ({
   useTranslations: () => () => 'Download',
+  useFormatter: () => ({
+    number: (value, options) =>
+      new Intl.NumberFormat('en', options).format(value),
+  }),
 }))
 
 jest.mock('@/lib/env-service', () => ({
@@ -48,8 +52,10 @@ describe('MailAttachment', () => {
     renderWithProviders(
       <MailAttachment part={mockPart} attachmentsUrl="/mail/1/" />
     )
-    expect(screen.getByText('image.png')).toBeInTheDocument()
-    expect(screen.getByText('15.1 Ko')).toBeInTheDocument()
+    expect(screen.getByTestId('attachment-name')).toHaveTextContent(
+      /^image\.png$/
+    )
+    expect(screen.getByText('15.1 kB')).toBeInTheDocument()
     const downloadLink = screen.getByRole('link', { name: 'Download' })
     expect(downloadLink).toBeInTheDocument()
     expect(downloadLink).toHaveAttribute(
@@ -67,29 +73,33 @@ describe('MailAttachment', () => {
     const tooltip = await screen.findByRole('tooltip')
     expect(tooltip).toHaveTextContent('Download')
   })
-})
 
-describe('AttachmentName', () => {
-  it('renders name without tooltip if not long', () => {
-    render(
-      <TooltipProvider>
-        <AttachmentName name="shortname.txt" />
-      </TooltipProvider>
+  it('renders the file type badge', () => {
+    renderWithProviders(
+      <MailAttachment part={mockPart} attachmentsUrl="/mail/1/" />
     )
-    expect(screen.getByText('shortname.txt')).toBeInTheDocument()
-    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+    expect(screen.getByText('PNG')).toBeInTheDocument()
   })
 
-  it('renders truncated name and tooltip if long', async () => {
-    const longName = 'verylongfilenameforanattachment.pdf'
-    render(
-      <TooltipProvider>
-        <AttachmentName name={longName} maxLength={10} />
-      </TooltipProvider>
+  it('renders names up to the limit in full', () => {
+    const name = 'verylongfilenameforanattachment.pdf'
+    renderWithProviders(
+      <MailAttachment part={{ ...mockPart, name }} attachmentsUrl="/mail/1/" />
     )
-    expect(screen.getByText(/verylongfi.*pdf/)).toBeInTheDocument()
+    expect(screen.getByTestId('attachment-name')).toHaveTextContent(name)
+  })
 
-    await userEvent.hover(screen.getByText(/verylongfi.*pdf/))
+  it('shows the full name in a tooltip when the name is cut', async () => {
+    const longName = `${'x'.repeat(80)}.pdf`
+    renderWithProviders(
+      <MailAttachment
+        part={{ ...mockPart, name: longName }}
+        attachmentsUrl="/mail/1/"
+      />
+    )
+    const shortName = screen.getByTestId('attachment-name')
+    expect(shortName).toHaveTextContent(/^x+…x+\.pdf$/)
+    await userEvent.hover(shortName)
     const tooltip = await screen.findByRole('tooltip')
     expect(tooltip).toHaveTextContent(longName)
   })

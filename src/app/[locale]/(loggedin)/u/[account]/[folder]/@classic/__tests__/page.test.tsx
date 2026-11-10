@@ -19,6 +19,12 @@ jest.mock('@/lib/redux/hooks', () => ({
 jest.mock('@/features/mails/store/mail-navigation-slice', () => ({
   selectSkipFolderFetch: (s: any) =>
     s?.mailNavigation?.skipFolderFetch ?? false,
+  selectIsManualRefresh: (s: any) =>
+    (s?.mailNavigation?.manualRefreshId ?? null) !== null,
+  selectMailNavigationFolderKey: (s: any) =>
+    s?.mailNavigation?.folderKey ?? null,
+  manualRefreshStarted: jest.fn(() => ({ type: 'manualRefreshStarted' })),
+  manualRefreshEnded: jest.fn(() => ({ type: 'manualRefreshEnded' })),
   setMailNavigation: jest.fn((p) => ({
     type: 'mailNavigation/setMailNavigation',
     payload: p,
@@ -84,9 +90,18 @@ describe('Classic Page', () => {
   const mockUseGetFolderMessagesQuery =
     require('@/features/mails/store/mails-api')
       .useGetFolderMessagesQuery as jest.Mock
+  const mockUseSearchMailsQuery = require('@/features/mails/store/mails-api')
+    .useSearchMailsQuery as jest.Mock
+  const mockUseAppSelector = require('@/lib/redux/hooks')
+    .useAppSelector as jest.Mock
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseAppSelector.mockImplementation(() => false)
+    mockUseSearchMailsQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+    })
     mockUseParams.mockReturnValue({ folder: 'INBOX', mail_id: undefined })
     mockUseSearchParams.mockReturnValue(
       Object.assign(new URLSearchParams(), { get: (k: string) => null })
@@ -136,7 +151,9 @@ describe('Classic Page', () => {
   })
 
   describe('integration', () => {
-    it('filters mails by attachments when filter=attachments', async () => {
+    // Folder lists are filtered by the server: the page sends the quick
+    // filter with the request and shows the returned mails as they are.
+    it('sends the quick filter to the server for folder lists', async () => {
       const searchParams = new URLSearchParams()
       searchParams.set('filter', 'attachments')
       mockUseSearchParams.mockReturnValue(searchParams)
@@ -153,7 +170,7 @@ describe('Classic Page', () => {
             },
             {
               id: 2,
-              hasAttachment: false,
+              hasAttachment: true,
               seen: true,
               flagged: false,
               date: '2024-01-02',
@@ -169,16 +186,35 @@ describe('Classic Page', () => {
         isFetching: false,
       })
       render(<Page />)
+      expect(mockUseGetFolderMessagesQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          params: expect.objectContaining({ filter: 'attachments' }),
+        }),
+        expect.anything()
+      )
       await waitFor(() => {
-        expect(screen.getByTestId('items-count')).toHaveTextContent('1')
+        expect(screen.getByTestId('items-count')).toHaveTextContent('2')
       })
     })
 
-    it('passes filtered mails to MessagesList', async () => {
+    // Search results cannot be filtered by the server: the page filters them.
+    it('filters search results on the client', async () => {
       const searchParams = new URLSearchParams()
       searchParams.set('filter', 'unread')
       mockUseSearchParams.mockReturnValue(searchParams)
-      mockUseGetFolderMessagesQuery.mockReturnValue({
+      mockUseAppSelector.mockImplementation(
+        (selector: (state: unknown) => unknown) =>
+          selector({
+            mailSearch: {
+              isActive: true,
+              accountId: '0',
+              folder: 'INBOX',
+              params: {},
+            },
+            mailNavigation: { skipFolderFetch: false, manualRefreshId: null },
+          })
+      )
+      mockUseSearchMailsQuery.mockReturnValue({
         data: {
           mails: [
             {

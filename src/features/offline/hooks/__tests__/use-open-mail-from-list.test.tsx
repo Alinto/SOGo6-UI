@@ -14,8 +14,11 @@ jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: () => ({ push: mockPush }),
 }))
 
+let mockSearchParams = new URLSearchParams()
+
 jest.mock('next/navigation', () => ({
   useParams: () => ({ account: '0', folder: 'INBOX' }),
+  useSearchParams: () => mockSearchParams,
 }))
 
 jest.mock('../../flags', () => ({
@@ -47,6 +50,18 @@ describe('useOpenMailFromList', () => {
     mockPush.mockReset()
     mockReadBody.mockReset()
     mockIsOnline = true
+    mockSearchParams = new URLSearchParams()
+  })
+
+  it('keeps the list quick filter in the mail URL', async () => {
+    mockSearchParams = new URLSearchParams('filter=attachments&page=2')
+    const { result } = renderHook(() => useOpenMailFromList(), { wrapper })
+
+    await act(async () => {
+      await result.current.openMail('m1')
+    })
+
+    expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX/m1?filter=attachments')
   })
 
   it('navigates online without reading the cache', async () => {

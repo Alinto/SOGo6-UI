@@ -35,7 +35,7 @@ const ListFilterDropdown: React.FC = () => {
         <SelectItem value="all">{t('filter.all.string')}</SelectItem>
         <SelectItem value="read">{t('filter.read.string')}</SelectItem>
         <SelectItem value="unread">{t('filter.unread.string')}</SelectItem>
-        <SelectItem value="starred">{t('filter.starred.string')}</SelectItem>
+        <SelectItem value="flagged">{t('filter.flagged.string')}</SelectItem>
         <SelectItem value="attachments">
           {t('filter.attachments.string')}
         </SelectItem>

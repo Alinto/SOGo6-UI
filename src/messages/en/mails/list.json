@@ -73,8 +73,8 @@
       "read": {
         "string": "Read"
       },
-      "starred": {
-        "string": "Starred"
+      "flagged": {
+        "string": "Important"
       },
       "attachments": {
         "string": "Attachments"

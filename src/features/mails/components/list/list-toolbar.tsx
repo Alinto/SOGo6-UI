@@ -50,7 +50,6 @@ const ListToolbar: React.FC = () => {
   const accountString = Array.isArray(account) ? account[0] : (account ?? '0')
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
-  const clientFilterActive = activeFilter !== 'all'
 
   const { data, currentPage, isSearchActive, refresh, isRefreshing } =
     useFolderMessages({
@@ -70,9 +69,13 @@ const ListToolbar: React.FC = () => {
     return map
   }, [isSearchActive, data])
 
+  // The server filters folder lists; only search results are filtered here.
+  const clientFilter = isSearchActive ? activeFilter : 'all'
+  const clientFilterActive = clientFilter !== 'all'
+
   const filteredMails = useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
-    [data, activeFilter]
+    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
+    [data, clientFilter]
   )
 
   const displayedCount = clientFilterActive

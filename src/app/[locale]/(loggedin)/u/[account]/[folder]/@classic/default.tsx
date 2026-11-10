@@ -52,12 +52,14 @@ const Page: React.FC = () => {
     dispatch(setSkipFolderFetch(false))
   }, [folderPath, dispatch])
 
-  const filteredMails = useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], activeFilter),
-    [data, activeFilter]
-  )
+  // The server filters folder lists; only search results are filtered here.
+  const clientFilter = isSearchActive ? activeFilter : 'all'
+  const clientFilterActive = clientFilter !== 'all'
 
-  const clientFilterActive = activeFilter !== 'all'
+  const filteredMails = useMemo(
+    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
+    [data, clientFilter]
+  )
 
   const containerClassName = `${mail_id ? 'hidden lg:flex' : 'flex'} w-full`
 

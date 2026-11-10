@@ -1,4 +1,8 @@
-import { buildMailSearchResponse } from '@/app/fakeApi/utils/mailbox-list-helpers'
+import {
+  buildFolderMessagesListResponse,
+  buildMailSearchResponse,
+  parseMailListFilter,
+} from '@/app/fakeApi/utils/mailbox-list-helpers'
 import type { MailSearchParams } from '@/features/mails/mails-types'
 
 const search = (body: MailSearchParams, query = 'page_size=100') =>
@@ -117,5 +121,52 @@ describe('buildMailSearchResponse', () => {
     expect(result.mails).toHaveLength(15)
     expect(result.hasPreviousPage).toBe(true)
     expect(result.hasNextPage).toBe(false)
+  })
+})
+
+describe('parseMailListFilter', () => {
+  it('accepts no filter', () => {
+    expect(parseMailListFilter(null)).toEqual({ predicates: [] })
+  })
+
+  it('accepts comma separated filters', () => {
+    const parsed = parseMailListFilter('unread,attachments')
+    expect('predicates' in parsed && parsed.predicates).toHaveLength(2)
+  })
+
+  it.each(['read,unread', 'flagged,unflagged'])(
+    'rejects contradictory filters %s',
+    (raw) => {
+      expect(parseMailListFilter(raw)).toHaveProperty('error')
+    }
+  )
+
+  it('rejects unknown filters', () => {
+    expect(parseMailListFilter('starred')).toHaveProperty('error')
+  })
+})
+
+describe('buildFolderMessagesListResponse filter', () => {
+  const list = (filter?: string) => {
+    const query = new URLSearchParams({ page_size: '100' })
+    if (filter) query.set('filter', filter)
+    return buildFolderMessagesListResponse('INBOX', query)
+  }
+
+  it('applies all filters before pagination', () => {
+    const all = list().mails
+    const result = list('unread,attachments')
+    const expected = all.filter((m) => !m.seen && m.has_attachment)
+    expect(result.mails.map((m) => m.id)).toEqual(expected.map((m) => m.id))
+    expect(result.total).toBe(expected.length)
+  })
+
+  it('supports flagged and unflagged', () => {
+    const all = list().mails
+    const flagged = list('flagged').mails
+    const unflagged = list('unflagged').mails
+    expect(flagged.every((m) => m.flagged)).toBe(true)
+    expect(unflagged.every((m) => !m.flagged)).toBe(true)
+    expect(flagged.length + unflagged.length).toBe(all.length)
   })
 })

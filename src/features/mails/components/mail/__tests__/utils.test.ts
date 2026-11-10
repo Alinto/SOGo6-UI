@@ -3,12 +3,14 @@ import {
   containsExternalImages,
   decodeBase64,
   formatMailTime,
-  formatSize,
+  getAttachmentType,
   getFileExtension,
   isBase64,
   parseEmailContact,
   replaceDataSrcWithSrc,
   sanitizeEmailHtml,
+  splitFileNameTail,
+  truncateFileNameMiddle,
 } from '../utils'
 
 // parseEmailContact
@@ -42,19 +44,6 @@ describe('formatMailTime', () => {
   })
 })
 
-// formatSize
-describe('formatSize', () => {
-  it('formats bytes', () => {
-    expect(formatSize(500)).toBe('500 o')
-  })
-  it('formats kilobytes', () => {
-    expect(formatSize(2048)).toBe('2.0 Ko')
-  })
-  it('formats megabytes', () => {
-    expect(formatSize(2 * 1024 * 1024)).toBe('2.0 Mo')
-  })
-})
-
 // getFileExtension
 describe('getFileExtension', () => {
   it('returns extension', () => {
@@ -63,6 +52,67 @@ describe('getFileExtension', () => {
   })
   it('returns empty string if no extension', () => {
     expect(getFileExtension('README')).toBe('')
+  })
+  it('ignores suffixes without letters (dates, versions)', () => {
+    expect(getFileExtension('Facture 12.2024')).toBe('')
+    expect(getFileExtension('rapport v2.1')).toBe('')
+    expect(getFileExtension('archive.7z')).toBe('7z')
+  })
+  it('ignores suffixes longer than 10 characters', () => {
+    expect(getFileExtension('export.backupfile2024')).toBe('')
+    expect(getFileExtension('notebook.ipynb')).toBe('ipynb')
+  })
+})
+
+// getAttachmentType
+describe('getAttachmentType', () => {
+  it('uses the file extension in upper case', () => {
+    expect(getAttachmentType('report.pdf', 'application/pdf')).toBe('PDF')
+    expect(getAttachmentType('notes.txt')).toBe('TXT')
+  })
+  it('falls back to a short MIME subtype', () => {
+    expect(getAttachmentType('README', 'application/pdf')).toBe('PDF')
+    expect(getAttachmentType('image', 'image/png; name=image')).toBe('PNG')
+  })
+  it('returns empty string when no type can be found', () => {
+    expect(getAttachmentType('README')).toBe('')
+    expect(getAttachmentType('README', 'application/vnd.ms-excel')).toBe('')
+  })
+})
+
+// truncateFileNameMiddle
+describe('truncateFileNameMiddle', () => {
+  it('keeps names up to the limit unchanged', () => {
+    expect(truncateFileNameMiddle('report.pdf')).toBe('report.pdf')
+    expect(truncateFileNameMiddle('a'.repeat(60))).toBe('a'.repeat(60))
+  })
+  it('cuts the middle and keeps the start and the extension', () => {
+    const result = truncateFileNameMiddle(`start-${'x'.repeat(100)}-end.pdf`)
+    expect(result).toHaveLength(60)
+    expect(result.startsWith('start-')).toBe(true)
+    expect(result.endsWith('-end.pdf')).toBe(true)
+    expect(result).toContain('…')
+  })
+  it('honours a custom max length', () => {
+    expect(truncateFileNameMiddle('abcdefghijklmnop.txt', 10)).toBe(
+      'abcde….txt'
+    )
+  })
+})
+
+// splitFileNameTail
+describe('splitFileNameTail', () => {
+  it('keeps the extension with the character before it', () => {
+    expect(splitFileNameTail('report.pdf')).toEqual({
+      head: 'repor',
+      tail: 't.pdf',
+    })
+  })
+  it('returns no tail when there is no extension', () => {
+    expect(splitFileNameTail('README')).toEqual({ head: 'README', tail: '' })
+  })
+  it('handles names that are only an extension', () => {
+    expect(splitFileNameTail('.ics')).toEqual({ head: '', tail: '.ics' })
   })
 })
 

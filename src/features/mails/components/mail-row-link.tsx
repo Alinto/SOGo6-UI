@@ -3,10 +3,12 @@
 import { useOpenDraftOnClick } from '@/features/mails/hooks/use-open-draft-on-click'
 import type { ImapFolderType } from '@/features/mails/mails-types'
 import { isDraftFolderType } from '@/features/mails/utils/folder-type-helpers'
+import { withKeptListParams } from '@/features/mails/utils/mail-detail-navigation'
 import { Link } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { Star } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
 import React, { useCallback } from 'react'
 
 interface MailRowLinkOptions {
@@ -27,7 +29,11 @@ export function useMailRowLink({
   shouldIgnoreClick,
 }: MailRowLinkOptions) {
   const { openDraftIfNeeded } = useOpenDraftOnClick()
-  const href = `/u/${accountId}/${encodeURIComponent(mailFolderPath)}/${mailId}`
+  const searchParams = useSearchParams()
+  const href = withKeptListParams(
+    `/u/${accountId}/${encodeURIComponent(mailFolderPath)}/${mailId}`,
+    searchParams
+  )
 
   const onClick = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>) => {

@@ -7,6 +7,12 @@ jest.mock('@/lib/i18n/navigation', () => ({
   Link: 'a',
 }))
 
+let mockSearchParams = new URLSearchParams()
+
+jest.mock('next/navigation', () => ({
+  useSearchParams: () => mockSearchParams,
+}))
+
 jest.mock('@/features/mails/hooks/use-open-draft-on-click', () => ({
   useOpenDraftOnClick: () => ({ openDraftIfNeeded }),
 }))
@@ -50,6 +56,26 @@ describe('useMailRowLink', () => {
   beforeEach(() => {
     openDraftIfNeeded.mockReset()
     openDraftIfNeeded.mockResolvedValue(false)
+    mockSearchParams = new URLSearchParams()
+  })
+
+  it('links to the mail without query when the list is not filtered', () => {
+    render(<Row />)
+
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute(
+      'href',
+      '/u/0/INBOX/42'
+    )
+  })
+
+  it('keeps the list quick filter in the mail link', () => {
+    mockSearchParams = new URLSearchParams('filter=attachments&page=3')
+    render(<Row />)
+
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute(
+      'href',
+      '/u/0/INBOX/42?filter=attachments'
+    )
   })
 
   it('blocks navigation before a draft finishes opening', () => {

@@ -232,6 +232,14 @@
                     "string": "Download attachment",
                     "description": "ARIA label for the download attachment link"
                 },
+                "download_attachment_named": {
+                    "string": "Download {name}",
+                    "description": "ARIA label for the download link of one attachment, with its file name"
+                },
+                "size_bytes": {
+                    "string": "{size} B",
+                    "description": "File size in bytes (e.g. 500 B)"
+                },
                 "download_all_attachments": {
                     "string": "Download all attachments",
                     "description": "ARIA label for the download all attachments link"

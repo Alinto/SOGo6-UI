@@ -165,11 +165,34 @@ describe('useFolderMessages', () => {
       })
     })
 
-    it('excludes filter param from backend call', () => {
+    it.each(['read', 'unread', 'flagged', 'attachments'])(
+      'sends the %s quick filter to the backend',
+      (filter) => {
+        mockSearchParams.set('filter', filter)
+        renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+        const [args] = mockGetFolderMessagesQuery.mock.calls[0]
+        expect(args.params.filter).toBe(filter)
+      }
+    )
+
+    it.each(['all', 'starred', 'unknown'])(
+      'does not send the %s filter to the backend',
+      (filter) => {
+        mockSearchParams.set('filter', filter)
+        renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+        const [args] = mockGetFolderMessagesQuery.mock.calls[0]
+        expect(args.params).not.toHaveProperty('filter')
+      }
+    )
+
+    it('does not send the quick filter to the search endpoint', () => {
       mockSearchParams.set('filter', 'unread')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
       renderHook(() => useFolderMessages({ folder: 'INBOX' }))
-      const [args] = mockGetFolderMessagesQuery.mock.calls[0]
-      expect(args.params).not.toHaveProperty('filter')
+      const [searchArgs] = mockSearchMailsQuery.mock.calls[0]
+      expect(searchArgs.params).toEqual({ page: 1, page_size: '20' })
     })
 
     it('includes page param when set in URL', () => {

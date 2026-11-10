@@ -52,7 +52,7 @@ describe('ListFilterDropdown Component', () => {
       'filter.all.string': 'All',
       'filter.read.string': 'Read',
       'filter.unread.string': 'Unread',
-      'filter.starred.string': 'Starred',
+      'filter.flagged.string': 'Important',
       'filter.attachments.string': 'Attachments',
     }
     return translations[key] || key
@@ -101,7 +101,7 @@ describe('ListFilterDropdown Component', () => {
     expect(screen.getByTestId('select-item-all')).toBeInTheDocument()
     expect(screen.getByTestId('select-item-read')).toBeInTheDocument()
     expect(screen.getByTestId('select-item-unread')).toBeInTheDocument()
-    expect(screen.getByTestId('select-item-starred')).toBeInTheDocument()
+    expect(screen.getByTestId('select-item-flagged')).toBeInTheDocument()
     expect(screen.getByTestId('select-item-attachments')).toBeInTheDocument()
   })
 
@@ -124,9 +124,9 @@ describe('ListFilterDropdown Component', () => {
 
     render(<ListFilterDropdown />)
     const input = screen.getByTestId('select-input') as HTMLInputElement
-    fireEvent.change(input, { target: { value: 'starred' } })
+    fireEvent.change(input, { target: { value: 'flagged' } })
 
-    expect(mockPush).toHaveBeenCalledWith('?filter=starred')
+    expect(mockPush).toHaveBeenCalledWith('?filter=flagged')
   })
 
   it('should handle filter change for "read"', () => {
