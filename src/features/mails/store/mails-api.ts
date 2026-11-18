@@ -174,6 +174,42 @@ const searchMailsQuery = ({
   body,
 })
 
+export function downloadSelectedMailsQuery({
+  accountId = '0',
+  folders,
+}: {
+  accountId?: string
+  folders: Record<string, number[]>
+}) {
+  return {
+    url: `mailboxes/${accountId}/batch-action`,
+    method: 'POST' as const,
+    body: { action: 'download' as const, uids: folders },
+    responseHandler: async (response: Response) => ({
+      blob: await response.blob(),
+      contentDisposition: response.headers.get('Content-Disposition'),
+    }),
+  }
+}
+
+export function folderActionQuery({
+  accountId,
+  folderPath,
+  action,
+  data,
+}: {
+  accountId: string
+  folderPath: string
+  action: 'rename' | 'type'
+  data: string
+}) {
+  return {
+    url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}/action`,
+    method: 'POST' as const,
+    body: { action, data },
+  }
+}
+
 const mailBatchActionQuery = ({
   accountId = '0',
   folders,
@@ -654,6 +690,13 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }),
     }),
 
+    downloadSelectedMails: builder.mutation<
+      { blob: Blob; contentDisposition: string | null },
+      { accountId?: string; folders: Record<string, number[]> }
+    >({
+      query: downloadSelectedMailsQuery,
+    }),
+
     getMailRaw: builder.query<
       string,
       {
@@ -820,11 +863,13 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       ImapFolder,
       { accountId: string; folderPath: string; body: UpdateFolderBody }
     >({
-      query: ({ accountId, folderPath, body }) => ({
-        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
-        method: 'PATCH',
-        body,
-      }),
+      query: ({ accountId, folderPath, body }) =>
+        folderActionQuery({
+          accountId,
+          folderPath,
+          action: 'rename',
+          data: body.name ?? '',
+        }),
       transformResponse: (response: BackendResponse<RawImapFolder>) =>
         normalizeImapFolder(response.data),
       invalidatesTags: (_result, _error, { folderPath }) => [
@@ -846,11 +891,13 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       ImapFolder,
       { accountId: string; folderPath: string; type: string }
     >({
-      query: ({ accountId, folderPath, type }) => ({
-        url: `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`,
-        method: 'PATCH',
-        body: { type },
-      }),
+      query: ({ accountId, folderPath, type }) =>
+        folderActionQuery({
+          accountId,
+          folderPath,
+          action: 'type',
+          data: type,
+        }),
       transformResponse: (response: BackendResponse<RawImapFolder>) =>
         normalizeImapFolder(response.data),
       invalidatesTags: [MAILS_FOLDERS_SLICE],
@@ -992,6 +1039,7 @@ export const {
   useMailActionMutation,
   useMailBatchActionMutation,
   useDownloadMailMutation,
+  useDownloadSelectedMailsMutation,
   useLazyGetMailRawQuery,
   usePurgeFolderMutation,
   useExpungeFolderMutation,

@@ -1,7 +1,10 @@
 'use client'
 
 import { Checkbox } from '@/components/ui/checkbox'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import {
+  downloadBlobAsFile,
+  filenameFromContentDisposition,
+} from '@/features/jobs'
 import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
@@ -15,7 +18,6 @@ import MailMoveCopyMenu, {
   type MailMoveCopyMenuMode,
 } from '@/features/mails/components/mail/mail-move-copy-menu'
 import MailMoveDialog from '@/features/mails/components/mail/mail-move-dialog'
-import FeatureIncoming from '@/features/mails/components/sidebars/fast-access/content/feature-incoming'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useMailBatchActions } from '@/features/mails/hooks/use-mail-batch-actions'
@@ -23,6 +25,7 @@ import {
   clearSelectedMails,
   setSelectedMails,
 } from '@/features/mails/store/mail-layout-slice'
+import { useDownloadSelectedMailsMutation } from '@/features/mails/store/mails-api'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import {
   folderPathFromParams,
@@ -161,7 +164,8 @@ const ListToolbar: React.FC = () => {
   }, [filteredMails, selectedIds])
 
   const [labelDialogOpen, setLabelDialogOpen] = useState(false)
-  const [downloadComingSoonOpen, setDownloadComingSoonOpen] = useState(false)
+  const [downloadSelectedMails, { isLoading: isDownloading }] =
+    useDownloadSelectedMailsMutation()
   const [createFolderMode, setCreateFolderMode] =
     useState<MailMoveCopyMenuMode | null>(null)
 
@@ -212,6 +216,38 @@ const ListToolbar: React.FC = () => {
       dispatch,
     ]
   )
+
+  const handleBulkDownload = useCallback(async () => {
+    if (selectedIds.length === 0) return
+    const folders: Record<string, number[]> = {}
+    for (const id of selectedIds) {
+      const uid = Number(id)
+      if (!Number.isInteger(uid)) continue
+      const targetFolder = folderById?.[id] ?? folderPath
+      ;(folders[targetFolder] ??= []).push(uid)
+    }
+    if (Object.keys(folders).length === 0) return
+    try {
+      const result = await downloadSelectedMails({
+        accountId: accountString,
+        folders,
+      }).unwrap()
+      downloadBlobAsFile(
+        result.blob,
+        filenameFromContentDisposition(result.contentDisposition, 'mails.zip')
+      )
+      dispatch(clearSelectedMails())
+    } catch {
+      // Keep the selection so the user can retry the download.
+    }
+  }, [
+    accountString,
+    downloadSelectedMails,
+    dispatch,
+    folderById,
+    folderPath,
+    selectedIds,
+  ])
 
   const handleBulkMarkImportant = useCallback(async () => {
     const selectedIdSet = new Set(selectedIds)
@@ -361,7 +397,7 @@ const ListToolbar: React.FC = () => {
                 onCreateFolder={setCreateFolderMode}
               />
               <MailBulkMoreActionsMenu
-                disabled={isBatchActionLoading}
+                disabled={isBatchActionLoading || isDownloading}
                 moveDisabled={!permissions.canMoveOut}
                 showMarkImportant={
                   hasNotImportantSelected && permissions.canWriteFlags
@@ -373,7 +409,7 @@ const ListToolbar: React.FC = () => {
                 onRemoveImportant={() => void handleBulkRemoveImportant()}
                 onPhishing={() => void handleBulkPhishing()}
                 onIllegal={() => void handleBulkIllegal()}
-                onDownload={() => setDownloadComingSoonOpen(true)}
+                onDownload={() => void handleBulkDownload()}
                 triggerClassName="h-8 w-8 rounded-r-md"
               />
             </MailActionsBar>
@@ -408,15 +444,6 @@ const ListToolbar: React.FC = () => {
         onRemoveLabels={handleRemoveBulkLabels}
         isLoading={isBatchActionLoading}
       />
-
-      <Dialog
-        open={downloadComingSoonOpen}
-        onOpenChange={setDownloadComingSoonOpen}
-      >
-        <DialogContent>
-          <FeatureIncoming />
-        </DialogContent>
-      </Dialog>
 
       <MailMoveDialog
         open={createFolderMode != null}

@@ -66,7 +66,19 @@ jest.mock('@/features/mails/hooks/use-folder-messages', () => ({
   })),
 }))
 
+const mockDownloadSelectedMails = jest.fn()
+
+jest.mock('@/features/jobs', () => ({
+  downloadBlobAsFile: jest.fn(),
+  filenameFromContentDisposition: (_header: string | null, fallback: string) =>
+    fallback,
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
+  useDownloadSelectedMailsMutation: () => [
+    mockDownloadSelectedMails,
+    { isLoading: false },
+  ],
   useGetFolderMessagesQuery: jest.fn(() => ({
     data: {
       mails: [
@@ -687,9 +699,34 @@ describe('ListToolbar', () => {
       ).not.toBeDisabled()
     })
 
-    it('opens the download coming-soon dialog without clearing the selection', () => {
+    it('downloads the selection as a zip and clears it on success', async () => {
+      mockDownloadSelectedMails.mockReturnValue({
+        unwrap: () =>
+          Promise.resolve({
+            blob: new Blob(['zip']),
+            contentDisposition: null,
+          }),
+      })
+      const { useParams } = require('next/navigation')
+      useParams.mockReturnValue({ folder: 'INBOX', account: '0' })
       render(<ListToolbar />)
       fireEvent.click(screen.getByTestId('mock-bulk-download'))
+      await waitFor(() =>
+        expect(mockDownloadSelectedMails).toHaveBeenCalledWith({
+          accountId: '0',
+          folders: { INBOX: [1, 2] },
+        })
+      )
+      expect(mockDispatch).toHaveBeenCalled()
+    })
+
+    it('keeps the selection when the zip download fails', async () => {
+      mockDownloadSelectedMails.mockReturnValue({
+        unwrap: () => Promise.reject(new Error('download failed')),
+      })
+      render(<ListToolbar />)
+      fireEvent.click(screen.getByTestId('mock-bulk-download'))
+      await waitFor(() => expect(mockDownloadSelectedMails).toHaveBeenCalled())
       expect(mockDispatch).not.toHaveBeenCalled()
     })
   })

@@ -22,6 +22,15 @@ export async function POST(req: NextRequest) {
     data?: string | string[] | null
   }
 
+  if (action === 'download') {
+    return new NextResponse(new Uint8Array([0x50, 0x4b, 0x05, 0x06]), {
+      headers: {
+        'Content-Type': 'application/zip',
+        'Content-Disposition': 'attachment; filename="mails.zip"',
+      },
+    })
+  }
+
   const uidsByFolder = Object.entries(uids ?? {}).map(
     ([folder, uids]) => [folder, (uids ?? []).map(String)] as const
   )

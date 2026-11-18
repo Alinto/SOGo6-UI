@@ -91,7 +91,6 @@ describe('getFolderActions', () => {
         'mark_as_read',
         'export',
         'move_to',
-        'set_as',
       ])
     })
 
@@ -154,7 +153,6 @@ describe('getFolderActions', () => {
       'mark_as_read',
       'export',
       'move_to',
-      'set_as',
     ])
   })
 })
