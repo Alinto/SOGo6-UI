@@ -32,6 +32,7 @@ describe('calendars-api', () => {
       expect(typeof CalendarsApi.useCreateCalendarMutation).toBe('function')
       expect(typeof CalendarsApi.useUpdateCalendarMutation).toBe('function')
       expect(typeof CalendarsApi.useDeleteCalendarMutation).toBe('function')
+      expect(typeof CalendarsApi.useExportCalendarMutation).toBe('function')
     })
 
     it('exports folder preferences query and mutation', () => {
@@ -107,6 +108,21 @@ describe('calendars-api', () => {
       expect(
         'rights' in CalendarsApi.normalizeCalendarEvent(event as never)
       ).toBe(false)
+    })
+  })
+
+  describe('exportCalendarQuery', () => {
+    it('requests the calendar export endpoint', () => {
+      expect(CalendarsApi.exportCalendarQuery('cal-1')).toEqual({
+        url: 'calendars/cal-1/export',
+        method: 'GET',
+      })
+    })
+
+    it('encodes the calendar key', () => {
+      expect(CalendarsApi.exportCalendarQuery('cal 1').url).toBe(
+        'calendars/cal%201/export'
+      )
     })
   })
 

@@ -388,7 +388,31 @@
         }
       },
       "export": {
-        "string": "Export Calendar"
+        "string": "Export Calendar",
+        "title": {
+          "string": "Export {name}"
+        },
+        "description": {
+          "string": "Download this calendar as an .ics file."
+        },
+        "submit": {
+          "string": "Start export"
+        },
+        "processing": {
+          "string": "Export in progress..."
+        },
+        "success": {
+          "string": "Export completed. Your download should start shortly."
+        },
+        "error": {
+          "string": "The calendar could not be exported."
+        },
+        "close": {
+          "string": "Close"
+        },
+        "cancel": {
+          "string": "Cancel"
+        }
       },
       "color": {
         "string": "Calendar Color"

@@ -6,6 +6,8 @@ import {
   ANY_AUTHENTICATED_UID,
   defaultCalendarShareRights,
 } from '@/features/calendars/utils/calendar-permission-mapping'
+import type { ContactJobEnqueueResponse } from '@/features/jobs/jobs-api-types'
+import { unwrapJobId } from '@/features/jobs/utils/unwrap-job-data'
 import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
@@ -60,6 +62,13 @@ import { DEFAULT_CALENDAR_COLOR } from '../calendars-types'
 import { patchEventInCachedTimeRangeQueries } from './calendars-events-cache'
 
 const calendarUrl = (key: string) => `calendars/${encodeURIComponent(key)}`
+
+export function exportCalendarQuery(calendarKey: string) {
+  return {
+    url: `${calendarUrl(calendarKey)}/export`,
+    method: 'GET' as const,
+  }
+}
 const calendarShareUrl = (key: string) => `${calendarUrl(key)}/share`
 const externalCalendarUrl = (key: string) =>
   `external-calendars/${encodeURIComponent(key)}`
@@ -659,7 +668,17 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         await notifyDeleteCalendar(dispatch, queryFulfilled)
       },
     }),
-
+    exportCalendar: builder.mutation<
+      { job_id: string },
+      { calendarKey: string }
+    >({
+      query: ({ calendarKey }) => exportCalendarQuery(calendarKey),
+      transformResponse: (
+        response: ContactJobEnqueueResponse | { job_id: string }
+      ) => ({
+        job_id: unwrapJobId(response),
+      }),
+    }),
     getCalendarShare: builder.query<CalendarShareData, { calendarKey: string }>(
       {
         query: ({ calendarKey }) => ({
@@ -1216,6 +1235,7 @@ export const {
   useDeleteCalendarEventMutation,
   usePostEventAttendanceMutation,
   useDeleteCalendarMutation,
+  useExportCalendarMutation,
   useGetCalendarShareQuery,
   useLazyGetCalendarShareQuery,
   useSetCalendarShareMutation,

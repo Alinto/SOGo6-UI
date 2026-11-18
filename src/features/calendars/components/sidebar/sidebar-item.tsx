@@ -17,7 +17,6 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
-import WorkInProgress from '@/components/work-in-progress'
 import {
   useGetSyncStatusQuery,
   useTriggerSyncMutation,
@@ -42,6 +41,7 @@ import {
   isSubscriptionCalendar,
 } from '../../utils/calendar-source-type'
 import DeleteAction from './actions/delete'
+import ExportAction from './actions/export'
 import LinkAction from './actions/link'
 import ShareCalendarAction from './actions/share'
 import EditForm from './forms/edit'
@@ -384,7 +384,11 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
               />
             )}
             {type === 'export' && (
-              <WorkInProgress title={t('sidebar.export.string')} />
+              <ExportAction
+                calendarKey={resolvedCalendarKey}
+                name={name}
+                onClose={() => setDialogOpen(false)}
+              />
             )}
           </DialogContent>
         </Dialog>
