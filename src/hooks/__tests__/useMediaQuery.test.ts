@@ -29,6 +29,14 @@ describe('useMediaQuery', () => {
     expect(result.current).toBe(false)
   })
 
+  it('never matches nor listens without a query', () => {
+    const matchMedia = jest.fn(createMatchMedia(true))
+    window.matchMedia = matchMedia
+    const { result } = renderHook(() => useMediaQuery(null))
+    expect(result.current).toBe(false)
+    expect(matchMedia).not.toHaveBeenCalled()
+  })
+
   it('should return true when query matches', async () => {
     window.matchMedia = createMatchMedia(true)
     const { result } = renderHook(() => useMediaQuery('(max-width: 768px)'))

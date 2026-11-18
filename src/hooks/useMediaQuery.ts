@@ -1,18 +1,25 @@
 'use client'
 
 import { CALENDAR_BREAKPOINTS } from '@/lib/constants/calendar-breakpoints'
-import { useSyncExternalStore } from 'react'
+import { useCallback, useSyncExternalStore } from 'react'
 
-export function useMediaQuery(query: string): boolean {
-  const subscribe = (callback: () => void) => {
-    const media = window.matchMedia(query)
-    media.addEventListener('change', callback)
-    return () => media.removeEventListener('change', callback)
-  }
+const noopUnsubscribe = () => {}
 
-  const getSnapshot = () => {
-    return window.matchMedia(query).matches
-  }
+/** Whether the media query matches. A `null` query never matches and
+ *  listens to nothing (for an optional breakpoint). */
+export function useMediaQuery(query: string | null): boolean {
+  const subscribe = useCallback(
+    (callback: () => void) => {
+      if (query === null) return noopUnsubscribe
+      const media = window.matchMedia(query)
+      media.addEventListener('change', callback)
+      return () => media.removeEventListener('change', callback)
+    },
+    [query]
+  )
+
+  const getSnapshot = () =>
+    query === null ? false : window.matchMedia(query).matches
 
   const getServerSnapshot = () => {
     // Always return false on server to prevent hydration mismatch

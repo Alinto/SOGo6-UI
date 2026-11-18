@@ -83,9 +83,6 @@ jest.mock('@/features/mails/components/list/list-toolbar', () => ({
   __esModule: true,
   default: () => <div data-testid="list-toolbar">Toolbar</div>,
 }))
-jest.mock('@/features/mails/hooks/use-list-toolbar-mode', () => ({
-  useListToolbarMode: jest.fn(() => 'list'),
-}))
 jest.mock('@/features/mails/hooks/use-sync-advanced-search-from-url', () => ({
   useSyncAdvancedSearchFromUrl: jest.fn(),
 }))
@@ -223,30 +220,20 @@ describe('Mail Folder Layout', () => {
     expect(screen.getByTestId('modern-content')).toBeInTheDocument()
   })
 
-  it('should use full content height when toolbar is hidden on mail detail', () => {
-    const {
-      useListToolbarMode,
-    } = require('@/features/mails/hooks/use-list-toolbar-mode')
-    useListToolbarMode.mockReturnValue('hidden')
-
-    const { container } = render(
-      <Layout classic={mockClassic}>{mockChildren}</Layout>
+  it('gives the content the height left by the toolbar, whatever its size', () => {
+    render(<Layout classic={mockClassic}>{mockChildren}</Layout>)
+    expect(screen.getByTestId('sidebar-inset')).toHaveClass(
+      'h-[calc(100vh-var(--header-height))]',
+      'min-h-0',
+      'flex-col'
     )
-    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
-    expect(contentDiv).toHaveClass('h-[calc(100vh-var(--header-height))]')
-  })
-
-  it('should reserve toolbar height when list toolbar is visible', () => {
-    const {
-      useListToolbarMode,
-    } = require('@/features/mails/hooks/use-list-toolbar-mode')
-    useListToolbarMode.mockReturnValue('list')
-
-    const { container } = render(
-      <Layout classic={mockClassic}>{mockChildren}</Layout>
+    expect(screen.getByTestId('folder-content')).toHaveClass(
+      'min-h-0',
+      'flex-1'
     )
-    const contentDiv = container.querySelector('[class*="overflow-hidden"]')
-    expect(contentDiv).toHaveClass('h-[calc(100vh-var(--header-height)-52px)]')
+    expect(screen.getByTestId('folder-content').className).not.toMatch(
+      /h-\[calc/
+    )
   })
 
   it('should render children with flexbox column layout', () => {
@@ -277,7 +264,6 @@ describe('Mail Folder Layout', () => {
     expect(screen.getAllByTestId('offline-unavailable')).toHaveLength(1)
     expect(screen.queryByTestId('modern-content')).not.toBeInTheDocument()
     expect(screen.queryByTestId('list-toolbar')).not.toBeInTheDocument()
-    const contentDiv = document.querySelector('[class*="overflow-hidden"]')
-    expect(contentDiv).toHaveClass('h-[calc(100vh-var(--header-height))]')
+    expect(screen.getByTestId('folder-content')).toHaveClass('flex-1')
   })
 })

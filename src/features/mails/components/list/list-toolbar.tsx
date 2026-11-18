@@ -5,6 +5,7 @@ import {
   downloadBlobAsFile,
   filenameFromContentDisposition,
 } from '@/features/jobs'
+import ListBreadcrumb from '@/features/mails/components/list/list-breadcrumb'
 import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
 import ListPagination from '@/features/mails/components/list/list-pagination'
@@ -18,6 +19,7 @@ import MailMoveCopyMenu, {
   type MailMoveCopyMenuMode,
 } from '@/features/mails/components/mail/mail-move-copy-menu'
 import MailMoveDialog from '@/features/mails/components/mail/mail-move-dialog'
+import { useFastAccess } from '@/features/mails/components/sidebars/fast-access/context'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useMailBatchActions } from '@/features/mails/hooks/use-mail-batch-actions'
@@ -32,18 +34,30 @@ import {
   getFolderDisplayName,
 } from '@/features/mails/utils/folder-path-from-params'
 import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '@/features/mails/utils/mail-search-form'
+import { useMinWidth } from '@/hooks/use-min-width'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
+import { cn } from '@/lib/utils'
 import { Inbox, Mail, MailOpen, ShieldX, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams, useSearchParams } from 'next/navigation'
 import React, { useCallback, useMemo, useState } from 'react'
 
+/** Toolbar content width from which everything fits on one line: a 1600px
+ *  window with the full left menu (1600 - 272 menu - 40 rail - 24 padding). */
+const WIDE_TOOLBAR_MIN_WIDTH = 1264
+
 const ListToolbar: React.FC = () => {
   const t = useTranslations('MAILS_LIST')
   const tCommons = useTranslations('MAILS_COMMONS')
   const isMobile = useIsMobile()
+  // Measured in JS (not a container query) so that the DOM order, hence the
+  // keyboard order, follows the layout.
+  const { ref: toolbarRef, matches: isWide } = useMinWidth<HTMLDivElement>(
+    WIDE_TOOLBAR_MIN_WIDTH
+  )
+  const isSidePanelOpen = useFastAccess()?.isOpen ?? false
   const toolbarMode = useListToolbarMode()
   const dispatch = useAppDispatch()
   const { folder, account } = useParams()
@@ -319,10 +333,48 @@ const ListToolbar: React.FC = () => {
     )
   }
 
+  const breadcrumb =
+    selectedIds.length === 0 ? (
+      <div
+        data-testid="list-toolbar-breadcrumb"
+        className={cn(
+          'flex h-9 min-w-0 grow',
+          isWide ? 'basis-0' : 'basis-full'
+        )}
+      >
+        <ListBreadcrumb
+          accountId={accountString}
+          folderPath={folderPath}
+          fallbackTitle={folderTitle}
+          suffix={
+            <span className="text-muted-foreground hidden text-sm leading-none md:inline">
+              {t('messages_number.string', { number: displayedCount })}
+            </span>
+          }
+        />
+      </div>
+    ) : null
+
   return (
-    <div className="bg-background border-border flex w-full min-w-0 shrink-0 flex-col gap-1 overflow-x-hidden border-b px-3 py-2">
-      <div className="flex min-w-0 flex-row flex-wrap items-center justify-between gap-y-1">
-        <div className="flex h-8 min-w-0 flex-row items-center gap-2">
+    <div
+      ref={toolbarRef}
+      className="bg-background border-border @container/list-toolbar flex w-full min-w-0 shrink-0 flex-col gap-1 overflow-x-hidden border-b px-3 py-2"
+    >
+      {/* Layout, without selection (the DOM order follows the visual order,
+          for keyboard navigation):
+          - narrow toolbar (< WIDE_TOOLBAR_MIN_WIDTH): mobile (menu in a
+            drawer, < 768px), tablet (menu as an icon rail, < 1024px) and
+            windows up to ~1600px (full menu): the breadcrumb alone on the
+            first line, with the full width; checkbox, refresh and controls on
+            a second line, with compact filters (dropdown);
+          - wide toolbar (large screen): everything on one line, the
+            breadcrumb taking the width left between the checkbox group and
+            the controls, with the filter toggle buttons.
+          With a selection, the actions bar sits next to the checkbox and the
+          controls wrap below when needed. */}
+      <div className="flex min-w-0 flex-row flex-wrap items-center justify-between gap-x-2 gap-y-1">
+        {!isWide && breadcrumb}
+        <div className="flex h-9 min-w-0 flex-row items-center gap-2">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center">
             <Checkbox
               checked={
@@ -337,7 +389,7 @@ const ListToolbar: React.FC = () => {
             />
           </span>
           <ListRefresh onRefresh={refresh} isRefreshing={isRefreshing} />
-          {selectedIds.length > 0 ? (
+          {selectedIds.length > 0 && (
             <MailActionsBar
               compact
               actions={[
@@ -413,21 +465,43 @@ const ListToolbar: React.FC = () => {
                 triggerClassName="h-8 w-8 rounded-r-md"
               />
             </MailActionsBar>
-          ) : (
-            <div className="flex min-w-0 items-baseline gap-2">
-              <span className="text-lg leading-none font-semibold">
-                {folderTitle}
-              </span>
-              <span className="text-muted-foreground hidden text-sm leading-none md:inline">
-                {t('messages_number.string', { number: displayedCount })}
-              </span>
-            </div>
           )}
         </div>
-        <div className="flex min-w-0 flex-row flex-wrap items-center gap-2">
-          {isMobile ? <ListFilterDropdown /> : <ListFilter />}
-          {!isMobile && <ListSort />}
+        {isWide && breadcrumb}
+        {/* On two lines, the controls never wrap below the checkbox (that
+            would make a third line): they take the width left (basis-0), get
+            more compact as the toolbar narrows (sort icon only < 560px, no
+            page menu < 500px, no layout toggle < 460px when the right panel
+            is open) and scroll as a last resort. The first item's auto margin
+            aligns them right yet keeps an overflow scrollable (justify-end
+            would hide it); the padding keeps focus rings visible. With a
+            selection, they wrap below the actions bar. */}
+        <div
+          data-testid="list-toolbar-controls"
+          className={cn(
+            'flex min-w-0 flex-row items-center gap-2',
+            selectedIds.length > 0
+              ? 'shrink-0 flex-wrap'
+              : isWide
+                ? 'shrink-0 flex-nowrap'
+                : '-m-0.75 grow basis-0 flex-nowrap overflow-x-auto p-0.75 [scrollbar-width:none] *:first:ml-auto'
+          )}
+        >
+          {/* Compact filters (dropdown) on two lines, toggle buttons on one. */}
+          {!isWide && <ListFilterDropdown />}
+          {!isMobile && (
+            <ListFilter
+              showFilters={isWide}
+              layoutToggleClassName={
+                isSidePanelOpen ? '@max-[460px]/list-toolbar:hidden' : undefined
+              }
+            />
+          )}
+          {!isMobile && (
+            <ListSort labelClassName="@max-[560px]/list-toolbar:hidden" />
+          )}
           <ListPagination
+            pageMenuClassName="@max-[500px]/list-toolbar:hidden"
             hasNextPage={currentPage < (data?.totalPages ?? 1)}
             hasPreviousPage={currentPage > 1}
             currentPage={currentPage}

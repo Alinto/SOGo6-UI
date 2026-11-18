@@ -101,6 +101,17 @@ describe('ListPagination', () => {
       expect(screen.getByText('2 / 5')).toBeInTheDocument()
     })
 
+    it('applies pageMenuClassName to the page indicator', () => {
+      render(
+        <ListPagination
+          currentPage={2}
+          totalPages={5}
+          pageMenuClassName="hidden"
+        />
+      )
+      expect(screen.getByText('2 / 5').closest('button')).toHaveClass('hidden')
+    })
+
     it('treats totalPages 0 as a single page (1 / 1)', () => {
       render(<ListPagination currentPage={1} totalPages={0} />)
       expect(screen.getByText('1 / 1')).toBeInTheDocument()

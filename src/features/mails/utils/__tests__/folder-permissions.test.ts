@@ -2,6 +2,7 @@ import type { FolderShareRights } from '../../mails-types'
 import {
   FULL_FOLDER_PERMISSIONS,
   NO_FOLDER_PERMISSIONS,
+  canOpenFolder,
   getFolderPermissions,
   getPermissionsForFolder,
   intersectFolderPermissions,
@@ -128,5 +129,25 @@ describe('intersectFolderPermissions', () => {
     expect(result.canRead).toBe(true)
     expect(result.canDelete).toBe(false)
     expect(result.canMarkRead).toBe(false)
+  })
+})
+
+describe('canOpenFolder', () => {
+  it('opens a selectable folder the user can read', () => {
+    expect(canOpenFolder({ selectable: true })).toBe(true)
+    expect(canOpenFolder({ selectable: true, rights: readOnly })).toBe(true)
+  })
+
+  it('does not open a virtual folder', () => {
+    expect(canOpenFolder({ selectable: false })).toBe(false)
+  })
+
+  it('does not open a folder the user cannot read', () => {
+    expect(
+      canOpenFolder({
+        selectable: true,
+        rights: { ...readOnly, userCanReadMails: 0 },
+      })
+    ).toBe(false)
   })
 })

@@ -88,6 +88,13 @@ describe('ListSort component', () => {
       )
       expect(triggerIcon).toHaveAttribute('data-name', 'clock-arrow-down')
     })
+
+    it('applies labelClassName to the visible label only', () => {
+      render(<ListSort labelClassName="hidden" />)
+      const button = screen.getByTestId('sort-button')
+      expect(button.querySelector('span')).toHaveClass('hidden')
+      expect(button).not.toHaveClass('hidden')
+    })
   })
 
   describe('configuration', () => {

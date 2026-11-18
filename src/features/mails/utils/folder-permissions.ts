@@ -1,4 +1,5 @@
 import type { FolderShareRights, ImapFolder } from '../mails-types'
+import { isVirtualFolder } from './folder-type-helpers'
 
 /**
  * What the connected user may do in a mail folder, derived from the IMAP ACL
@@ -138,4 +139,14 @@ export function intersectFolderPermissions(
     }
   }
   return result
+}
+
+/**
+ * Whether the folder can be opened in the mail list: it holds mails (not a
+ * virtual / non-selectable folder) and the user may read it (`l` + `r`).
+ */
+export function canOpenFolder(
+  folder: Pick<ImapFolder, 'rights' | 'selectable'>
+): boolean {
+  return !isVirtualFolder(folder) && getPermissionsForFolder(folder).canRead
 }

@@ -18,7 +18,10 @@ import { useCallback, useEffect, useState } from 'react'
 import { ImapFolder } from '../../mails-types'
 import { useGetFoldersQuery } from '../../store/mails-api'
 import { folderPathFromParams } from '../../utils/folder-path-from-params'
-import { getPermissionsForFolder } from '../../utils/folder-permissions'
+import {
+  canOpenFolder,
+  getPermissionsForFolder,
+} from '../../utils/folder-permissions'
 import {
   getFolderTranslationKey,
   isVirtualFolder,
@@ -53,7 +56,7 @@ function RecursiveFolderItem({ folder }: RecursiveFolderItemProps) {
   const isVirtual = isVirtualFolder(folder)
   const permissions = getPermissionsForFolder(folder)
   // A folder the user can see (`l`) but not read (`r`) is listed, but can't be opened.
-  const isOpenable = !isVirtual && permissions.canRead
+  const isOpenable = canOpenFolder(folder)
 
   const hasSubfolders =
     Array.isArray(folder.subfolders) && folder.subfolders.length > 0

@@ -20,6 +20,8 @@ interface ListPaginationProps {
   totalPages: number
   hasNextPage?: boolean
   hasPreviousPage?: boolean
+  /** Classes of the "page / total" menu (e.g. to hide it when narrow). */
+  pageMenuClassName?: string
 }
 
 const ListPagination: React.FC<ListPaginationProps> = ({
@@ -27,6 +29,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
   totalPages,
   hasNextPage,
   hasPreviousPage,
+  pageMenuClassName,
 }) => {
   const { push } = useRouter()
   const pathname = usePathname()
@@ -86,6 +89,7 @@ const ListPagination: React.FC<ListPaginationProps> = ({
             <Button
               variant="outline"
               size={'sm'}
+              className={pageMenuClassName}
               // eslint-disable-next-line react/jsx-no-literals
             >{`${effectivePage} / ${effectiveTotalPages}`}</Button>
           </DropdownMenuTrigger>

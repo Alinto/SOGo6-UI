@@ -126,7 +126,9 @@ describe('ListFilterDropdown Component', () => {
     const input = screen.getByTestId('select-input') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'flagged' } })
 
-    expect(mockPush).toHaveBeenCalledWith('?filter=flagged')
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/test@example.com/inbox?filter=flagged'
+    )
   })
 
   it('should handle filter change for "read"', () => {
@@ -138,7 +140,9 @@ describe('ListFilterDropdown Component', () => {
     const input = screen.getByTestId('select-input') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'read' } })
 
-    expect(mockPush).toHaveBeenCalledWith('?filter=read')
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/test@example.com/inbox?filter=read'
+    )
   })
 
   it('should handle filter change for "unread"', () => {
@@ -150,7 +154,9 @@ describe('ListFilterDropdown Component', () => {
     const input = screen.getByTestId('select-input') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'unread' } })
 
-    expect(mockPush).toHaveBeenCalledWith('?filter=unread')
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/test@example.com/inbox?filter=unread'
+    )
   })
 
   it('should handle filter change for "attachments"', () => {
@@ -162,7 +168,9 @@ describe('ListFilterDropdown Component', () => {
     const input = screen.getByTestId('select-input') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'attachments' } })
 
-    expect(mockPush).toHaveBeenCalledWith('?filter=attachments')
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/test@example.com/inbox?filter=attachments'
+    )
   })
 
   it('should translate filter labels', () => {
@@ -187,5 +195,19 @@ describe('ListFilterDropdown Component', () => {
     fireEvent.change(input, { target: { value: '' } })
 
     expect(mockPush).toHaveBeenCalledWith('/u/test@example.com/inbox')
+  })
+
+  it('keeps the other parameters and goes back to the first page', () => {
+    ;(useSearchParams as jest.Mock).mockReturnValue(
+      new URLSearchParams('sort=s_desc&page=3')
+    )
+
+    render(<ListFilterDropdown />)
+    const input = screen.getByTestId('select-input') as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'unread' } })
+
+    expect(mockPush).toHaveBeenCalledWith(
+      '/u/test@example.com/inbox?sort=s_desc&filter=unread'
+    )
   })
 })
