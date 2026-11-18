@@ -535,7 +535,28 @@
             },
             "delegate": {
                 "string": "Delegate",
-                "description": "Label for the delegate action in the account switcher menu (not yet implemented)"
+                "description": "Label for the delegate action in the account switcher menu",
+                "title": {
+                    "string": "Mailbox delegates"
+                },
+                "dialog_description": {
+                    "string": "People who can access this mailbox. Delegates can be added on the primary account."
+                },
+                "email": {
+                    "string": "Email"
+                },
+                "add": {
+                    "string": "Add delegate"
+                },
+                "empty": {
+                    "string": "No delegates yet."
+                },
+                "error": {
+                    "string": "The delegate could not be added."
+                },
+                "close": {
+                    "string": "Close"
+                }
             },
             "quota": {
                 "string": "{percent}% used on {total} MB",

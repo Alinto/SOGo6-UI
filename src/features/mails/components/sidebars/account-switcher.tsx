@@ -23,6 +23,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { CreateFolderDialog } from '@/features/mails/components/sidebars/create-folder-dialog'
+import { DelegateDialog } from '@/features/mails/components/sidebars/delegate-dialog'
 import { useProfile } from '@/features/user-profile'
 import { AddExternalAccountDialog } from '@/features/user-settings/mail/external-accounts/components/add-external-account-dialog'
 import { useRouter } from '@/lib/i18n/navigation'
@@ -42,6 +43,7 @@ export function AccountSwitcher() {
   } = useProfile()
   const [createFolderOpen, setCreateFolderOpen] = React.useState(false)
   const [addAccountOpen, setAddAccountOpen] = React.useState(false)
+  const [delegateOpen, setDelegateOpen] = React.useState(false)
 
   // Index courant depuis l'URL (/u/0/INBOX → 0)
   const currentIndex = account ? Number(account) : 0
@@ -127,7 +129,12 @@ export function AccountSwitcher() {
                 <FolderPlus className="mr-1.5 h-4 w-4" />
                 <span>{t('account_switcher.new_folder.string')}</span>
               </DropdownMenuItem>
-              <DropdownMenuItem disabled>
+              <DropdownMenuItem
+                disabled={accountId !== '0'}
+                onClick={() => {
+                  if (accountId === '0') setDelegateOpen(true)
+                }}
+              >
                 <Users className="mr-1.5 h-4 w-4" />
                 <span>{t('account_switcher.delegate.string')}</span>
               </DropdownMenuItem>
@@ -162,6 +169,7 @@ export function AccountSwitcher() {
         open={addAccountOpen}
         onOpenChange={setAddAccountOpen}
       />
+      <DelegateDialog open={delegateOpen} onOpenChange={setDelegateOpen} />
     </>
   )
 }

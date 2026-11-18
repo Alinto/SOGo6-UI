@@ -86,6 +86,24 @@ export const userMailboxesApi = apiSlice.injectEndpoints({
       onQueryStarted: mailboxesOnQueryStarted,
     }),
 
+    getMailboxDelegates: builder.query<string[], void>({
+      query: () => 'mailboxes/0/delegate',
+      transformResponse: (response: { data?: string[] } | string[]) =>
+        Array.isArray(response) ? response : (response.data ?? []),
+      providesTags: [{ type: MAILBOXES_SLICE, id: 'delegates' }],
+    }),
+
+    addMailboxDelegate: builder.mutation<string[], { email: string }>({
+      query: ({ email }) => ({
+        url: 'mailboxes/0/delegate',
+        method: 'POST',
+        body: { email },
+      }),
+      transformResponse: (response: { data?: string[] } | string[]) =>
+        Array.isArray(response) ? response : (response.data ?? []),
+      invalidatesTags: [{ type: MAILBOXES_SLICE, id: 'delegates' }],
+    }),
+
     deleteUserMailbox: builder.mutation<
       void,
       { id: string; _skipNotification?: boolean }
@@ -108,4 +126,6 @@ export const {
   useUpdateUserMailboxMutation,
   useUpdateUserMailboxProfileMutation,
   useDeleteUserMailboxMutation,
+  useGetMailboxDelegatesQuery,
+  useAddMailboxDelegateMutation,
 } = userMailboxesApi

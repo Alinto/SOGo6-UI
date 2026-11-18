@@ -20,8 +20,10 @@ jest.mock('@/components/ui/dropdown-menu', () => ({
   DropdownMenu: ({ children }: any) => <div>{children}</div>,
   DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
   DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onClick }: any) => (
-    <button onClick={onClick}>{children}</button>
+  DropdownMenuItem: ({ children, onClick, disabled }: any) => (
+    <button onClick={onClick} disabled={disabled}>
+      {children}
+    </button>
   ),
   DropdownMenuSeparator: () => <hr />,
 }))
@@ -47,6 +49,11 @@ jest.mock(
       open ? <div data-testid="add-external-account-dialog" /> : null,
   })
 )
+
+jest.mock('../delegate-dialog', () => ({
+  DelegateDialog: ({ open }: { open: boolean }) =>
+    open ? <div data-testid="delegate-dialog" /> : null,
+}))
 
 // --- Imports after mocks ---
 
@@ -167,6 +174,25 @@ describe('AccountSwitcher', () => {
         screen.getByTestId('add-external-account-dialog')
       ).toBeInTheDocument()
       expect(mockPush).not.toHaveBeenCalled()
+    })
+
+    it('opens the delegate dialog on the primary account', async () => {
+      const user = userEvent.setup()
+      mockProfile()
+      render(<AccountSwitcher />)
+      await user.click(
+        screen.getByText('account_switcher.delegate.string').closest('button')!
+      )
+      expect(screen.getByTestId('delegate-dialog')).toBeInTheDocument()
+    })
+
+    it('keeps delegation disabled on a secondary account', () => {
+      ;(useParams as jest.Mock).mockReturnValue({ account: '1' })
+      mockProfile()
+      render(<AccountSwitcher />)
+      expect(
+        screen.getByText('account_switcher.delegate.string').closest('button')
+      ).toBeDisabled()
     })
   })
 
