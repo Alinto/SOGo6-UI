@@ -59,7 +59,10 @@
         },
         "calendarDefault": {
             "string": "Default Calendar chosen when creating a new event",
-            "context": "Label for the setting that determines the default calendar"
+            "context": "Label for the setting that determines the default calendar",
+            "SOGO_DEFAULT_CALENDAR": "Default calendar",
+            "SOGO_BIRTHDAY_CALENDAR": "Birthday calendar",
+            "SOGO_ANNIVERSARY_CALENDAR": "Anniversary calendar"
         },
         "calendarStatus": {
             "PUBLIC": "Public",

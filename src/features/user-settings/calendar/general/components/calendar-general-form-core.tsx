@@ -36,17 +36,54 @@ interface Props {
 import { EmailsTagInput } from '@/components/ui/emails-tag-input'
 
 import { MultiSelect } from '@/components/ui/combomultiple'
+import { useGetCalendarsQuery } from '@/features/calendars/store/calendars-api'
 
-const calendarDefaultOptions = [
-  // //TODO: fetch calendar list from API instead of hardcoding these values
-  { value: 'SOGO_DEFAULT_CALENDAR', label: 'Default calendar' },
-  { value: 'SOGO_BIRTHDAY_CALENDAR', label: 'Birthday calendar' },
-  { value: 'SOGO_ANNIVERSARY_CALENDAR', label: 'Anniversary calendar' },
-]
+type CalendarOptionSource = {
+  key?: string
+  id?: string
+  name: string
+}
+
+export function calendarDefaultLabel(
+  value: string,
+  translate: (key: string) => string
+) {
+  switch (value) {
+    case 'SOGO_DEFAULT_CALENDAR':
+      return translate('calendarDefault.SOGO_DEFAULT_CALENDAR')
+    case 'SOGO_BIRTHDAY_CALENDAR':
+      return translate('calendarDefault.SOGO_BIRTHDAY_CALENDAR')
+    case 'SOGO_ANNIVERSARY_CALENDAR':
+      return translate('calendarDefault.SOGO_ANNIVERSARY_CALENDAR')
+    default:
+      return value
+  }
+}
+
+export function buildCalendarDefaultOptions(
+  current: string,
+  calendars: CalendarOptionSource[] | undefined,
+  translate: (key: string) => string
+) {
+  const options = (calendars ?? [])
+    .map((calendar) => ({
+      value: calendar.key ?? calendar.id ?? '',
+      label: calendar.name,
+    }))
+    .filter((option) => option.value)
+  if (current && !options.some((option) => option.value === current)) {
+    options.unshift({
+      value: current,
+      label: calendarDefaultLabel(current, translate),
+    })
+  }
+  return options
+}
 
 const LabelsForm: React.FC<Props> = ({ data, update }) => {
   const t = useTranslations('US_CALENDARS')
   const formT = useTranslations('FORM_COMMONS')
+  const { data: calendars } = useGetCalendarsQuery()
 
   const calendarDaysShowedOptions = useMemo(
     () =>
@@ -245,7 +282,11 @@ const LabelsForm: React.FC<Props> = ({ data, update }) => {
                 <SelectForm
                   onValueChange={field.onChange}
                   value={field.value.toString()}
-                  options={calendarDefaultOptions}
+                  options={buildCalendarDefaultOptions(
+                    field.value?.toString() ?? '',
+                    calendars,
+                    t
+                  )}
                 />
               </FormItem>
             )}

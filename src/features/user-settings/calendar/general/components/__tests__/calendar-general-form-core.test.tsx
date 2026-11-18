@@ -1,7 +1,9 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useTranslations } from 'next-intl'
-import LabelsForm from '../calendar-general-form-core'
+import LabelsForm, {
+  buildCalendarDefaultOptions,
+} from '../calendar-general-form-core'
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -119,6 +121,15 @@ jest.mock('@/components/ui/forms/fixed-form-button-group', () => {
   }
 })
 
+jest.mock('@/features/calendars/store/calendars-api', () => ({
+  useGetCalendarsQuery: () => ({
+    data: [
+      { key: 'personal', name: 'Personal' },
+      { key: 'work', name: 'Work' },
+    ],
+  }),
+}))
+
 jest.mock('../../../store/calendar-utils', () => ({
   apiToCalendarGeneral: jest.fn((data) => data),
   calendarGeneralToApi: jest.fn((data) => data),
@@ -211,6 +222,30 @@ beforeEach(() => {
 
 describe('CalendarGeneralForm', () => {
   describe('rendering', () => {
+    it('lists calendars from the API in the default calendar selector', () => {
+      render(<LabelsForm data={undefined} update={mockUpdate} />)
+      expect(
+        screen.getByRole('option', { name: 'Personal' })
+      ).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Work' })).toBeInTheDocument()
+    })
+
+    it('keeps a stored default that is not in the calendar list', () => {
+      const options = buildCalendarDefaultOptions(
+        'SOGO_DEFAULT_CALENDAR',
+        [{ key: 'personal', name: 'Personal' }],
+        (key) =>
+          key === 'calendarDefault.SOGO_DEFAULT_CALENDAR'
+            ? 'Default calendar'
+            : key
+      )
+      expect(options[0]).toEqual({
+        value: 'SOGO_DEFAULT_CALENDAR',
+        label: 'Default calendar',
+      })
+      expect(options).toContainEqual({ value: 'personal', label: 'Personal' })
+    })
+
     it('renders without crashing when data is undefined', () => {
       render(<LabelsForm data={undefined} update={mockUpdate} />)
 
