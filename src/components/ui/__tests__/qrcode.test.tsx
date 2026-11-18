@@ -38,8 +38,8 @@ describe('QRCode', () => {
         scale: 4,
         width: 200,
         color: {
-          dark: '#010599FF',
-          light: '#FFBF60FF',
+          dark: '#000000FF',
+          light: '#FFFFFFFF',
         },
       })
     )

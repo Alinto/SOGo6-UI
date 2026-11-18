@@ -1,8 +1,8 @@
-import TotpSettings from '@/features/user-settings/security'
+import SecuritySettings from '@/features/user-settings/security'
 import React from 'react'
 
 const Page: React.FC = () => {
-  return <TotpSettings />
+  return <SecuritySettings />
 }
 
 export default Page

@@ -1,0 +1,127 @@
+{
+  "MFA": {
+    "code": {
+      "label": {
+        "string": "Verification code",
+        "context": "Label of the field for a code from the authenticator app"
+      }
+    },
+    "back_to_login": {
+      "string": "Back to login",
+      "context": "Button to leave the second login step"
+    },
+    "verify": {
+      "title": {
+        "string": "Two-factor authentication",
+        "context": "Title of the second login step"
+      },
+      "description": {
+        "string": "Enter the code shown in your authenticator app."
+      },
+      "submit": {
+        "string": "Verify",
+        "context": "Button to check the code at login"
+      }
+    },
+    "enroll": {
+      "title": {
+        "string": "Set up two-factor authentication",
+        "context": "Title of the forced setup at login"
+      },
+      "description": {
+        "string": "Two-factor authentication is required for your account. Set up a method to continue."
+      },
+      "start": {
+        "string": "Set up {method}",
+        "context": "Button to start the setup of a method, {method} is e.g. totp"
+      }
+    },
+    "setup": {
+      "scan": {
+        "string": "Scan this QR code with your authenticator app."
+      },
+      "manual": {
+        "string": "Or enter this key manually:"
+      },
+      "confirm": {
+        "string": "Confirm",
+        "context": "Button to confirm the setup with a code"
+      }
+    },
+    "settings": {
+      "title": {
+        "string": "Two-factor authentication",
+        "context": "Title of the MFA section in security settings"
+      },
+      "not_available": {
+        "string": "Two-factor authentication is not available for your account."
+      },
+      "inactive": {
+        "string": "Two-factor authentication is not enabled."
+      },
+      "active": {
+        "string": "Active method: {method}"
+      },
+      "created_at": {
+        "string": "Set up on: {date}"
+      },
+      "last_used_at": {
+        "string": "Last used: {date}"
+      },
+      "enforced": {
+        "string": "Two-factor authentication is required by your administrator."
+      },
+      "enable": {
+        "string": "Enable {method}"
+      },
+      "replace": {
+        "string": "Replace with {method}"
+      },
+      "disable": {
+        "string": "Disable",
+        "context": "Button to remove the MFA method"
+      },
+      "current_code": {
+        "string": "Enter a code from your current method to replace it."
+      },
+      "disable_code": {
+        "string": "Enter a code from your current method to disable it."
+      },
+      "continue": {
+        "string": "Continue"
+      },
+      "cancel": {
+        "string": "Cancel"
+      },
+      "enabled_ok": {
+        "string": "Two-factor authentication is enabled."
+      },
+      "disabled_ok": {
+        "string": "Two-factor authentication is disabled."
+      }
+    },
+    "error": {
+      "generic": {
+        "string": "An error occurred. Please try again."
+      },
+      "session_invalid": {
+        "string": "Your login session has expired. Please log in again."
+      },
+      "code_invalid": {
+        "string": "Invalid code."
+      },
+      "too_many_attempts": {
+        "string": "Too many attempts. Please try again later."
+      },
+      "enforced": {
+        "string": "Two-factor authentication is required and cannot be disabled."
+      },
+      "no_pending_enrollment": {
+        "string": "The setup has expired. Please start again."
+      },
+      "code_required": {
+        "string": "A code from your current method is required."
+      }
+    }
+  }
+}

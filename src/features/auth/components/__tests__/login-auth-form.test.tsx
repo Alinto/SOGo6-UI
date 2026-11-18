@@ -185,6 +185,78 @@ describe('LoginAuthForm - Step 2 (Password)', () => {
     expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
   })
 
+  it('goes to the MFA verify step without creating a session', async () => {
+    // makeStore() reloads a session left in storage by a previous test
+    sessionStorage.clear()
+    localStorage.clear()
+    mockLogin.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { mfa_required: true, provider: 'totp', mfa_token: 'mfa-tok' },
+        }),
+    })
+    const store = makeStore()
+    render(
+      <Provider store={store}>
+        <LoginAuthForm />
+      </Provider>
+    )
+
+    fireEvent.change(screen.getByLabelText(/password.label.string/i), {
+      target: { value: 'secret' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /login.string/i }))
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/auth/login/mfa')
+    })
+    const auth = store.getState().auth
+    expect(auth.token).toBeNull()
+    expect(auth.mfaPending).toEqual({
+      token: 'mfa-tok',
+      stage: 'verify',
+      provider: 'totp',
+      allowedMethods: [],
+      email: 'test@example.com',
+      rememberMe: false,
+    })
+  })
+
+  it('goes to the forced MFA enrollment when required', async () => {
+    // makeStore() reloads a session left in storage by a previous test
+    sessionStorage.clear()
+    localStorage.clear()
+    mockLogin.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: {
+            enrollment_required: true,
+            allowed_methods: ['totp'],
+            mfa_token: 'mfa-tok',
+          },
+        }),
+    })
+    const store = makeStore()
+    render(
+      <Provider store={store}>
+        <LoginAuthForm />
+      </Provider>
+    )
+
+    fireEvent.change(screen.getByLabelText(/password.label.string/i), {
+      target: { value: 'secret' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /login.string/i }))
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/auth/login/mfa/enroll')
+    })
+    const auth = store.getState().auth
+    expect(auth.token).toBeNull()
+    expect(auth.mfaPending?.stage).toBe('enroll')
+    expect(auth.mfaPending?.allowedMethods).toEqual(['totp'])
+  })
+
   it('shows an offline banner and disables submit while offline', () => {
     Object.defineProperty(navigator, 'onLine', {
       configurable: true,

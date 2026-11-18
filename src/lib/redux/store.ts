@@ -22,7 +22,7 @@ import { sseApi } from './sse/sse-api'
 const loadPreloadedState = () => {
   const savedAuth = loadAuthFromStorage()
   // Return saved auth or undefined to use slice's initialState
-  return savedAuth ? { auth: savedAuth } : undefined
+  return savedAuth ? { auth: { ...savedAuth, mfaPending: null } } : undefined
 }
 
 const staticReducers = {

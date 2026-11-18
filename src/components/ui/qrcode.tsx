@@ -12,8 +12,9 @@ export function QRCode({ text }: { text: string }) {
         scale: 4,
         width: 200,
         color: {
-          dark: '#010599FF',
-          light: '#FFBF60FF',
+          // Plain black on white: some authenticator apps fail on colored QR codes
+          dark: '#000000FF',
+          light: '#FFFFFFFF',
         },
       }}
     />

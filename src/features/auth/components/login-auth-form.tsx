@@ -5,14 +5,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
 import { useLoginMutation } from '@/features/auth/components/store/auth.api'
-import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import { setMfaPending } from '@/features/auth/components/store/auth.slice'
+import { useCompleteLogin } from '@/features/auth/hooks/use-complete-login'
 import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
 import { useEnvVars } from '@/lib/env-service'
 import { useRouter } from '@/lib/i18n/navigation'
 import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
-import { clearAuthenticatedApiCache } from '@/lib/redux/listeners/reset-cache-on-logout'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowLeft } from 'lucide-react'
@@ -25,19 +25,6 @@ import LoginErrorNotice, {
   loginFieldErrorClassName,
   loginInvalidControlClassName,
 } from './login-error-notice'
-
-interface JwtPayload {
-  uid: string
-  cn: string
-  email: string
-}
-
-function decodeJwtPayload(token: string): JwtPayload {
-  const [, payloadB64] = token.split('.')
-  // Convertir base64url → base64 standard
-  const base64 = payloadB64.replace(/-/g, '+').replace(/_/g, '/')
-  return JSON.parse(atob(base64)) as JwtPayload
-}
 
 const createPasswordSchema = (t: (key: string) => string) =>
   z.object({
@@ -62,6 +49,7 @@ export function LoginAuthForm({
 
   const dispatch = useAppDispatch()
   const [login] = useLoginMutation()
+  const completeLogin = useCompleteLogin()
   const { envVars } = useEnvVars()
 
   const [isLoading, setIsLoading] = React.useState(false)
@@ -115,29 +103,30 @@ export function LoginAuthForm({
         password: data.password,
       }).unwrap()
 
-      if (!result.data?.jwt_token) {
+      const loginData = result.data
+
+      // Second factor: no user session yet, only an MFA token
+      if (loginData && 'mfa_token' in loginData && loginData.mfa_token) {
+        const isVerify = 'mfa_required' in loginData
+        dispatch(
+          setMfaPending({
+            token: loginData.mfa_token,
+            stage: isVerify ? 'verify' : 'enroll',
+            provider: isVerify ? loginData.provider : null,
+            allowedMethods: isVerify ? [] : loginData.allowed_methods,
+            email,
+            rememberMe: data.rememberMe,
+          })
+        )
+        push(isVerify ? '/auth/login/mfa' : '/auth/login/mfa/enroll')
+        return
+      }
+
+      if (!loginData || !('jwt_token' in loginData) || !loginData.jwt_token) {
         throw new Error(t('error.invalid_credentials.string'))
       }
 
-      const payload = decodeJwtPayload(result.data.jwt_token)
-
-      // Cache keys do not include the user. The login page has no mailbox
-      // subscriptions, so this drops the previous account before the new one.
-      clearAuthenticatedApiCache(dispatch)
-
-      dispatch(
-        setCredentials({
-          token: result.data.jwt_token,
-          user: {
-            uid: payload.uid,
-            cn: payload.cn,
-            email: payload.email,
-          },
-          rememberMe: data.rememberMe,
-        })
-      )
-
-      push('/u/0/INBOX')
+      completeLogin(loginData.jwt_token, data.rememberMe)
     } catch (error: unknown) {
       const status = getErrorStatus(error)
 

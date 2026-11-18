@@ -7,6 +7,7 @@ import { clearEnvCache, fetchEnvVars } from '@/lib/env-service'
 import type { RootState } from '@/lib/redux/store'
 import type { BaseQueryFn } from '@reduxjs/toolkit/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { pickAuthToken } from './auth-token'
 import { withApiFetchSemaphore } from './fetch-semaphore'
 import { shouldEndSession } from './session-expired'
 
@@ -57,6 +58,7 @@ export const GAB_AUTOCOMPLETE_SLICE = 'contacts_gab_autocomplete'
 export const JOBS_SLICE = 'jobs'
 export const CALENDAR_REMINDERS_SLICE = 'calendar_reminders'
 export const ADMIN_SESSIONS_SLICE = 'admin_sessions'
+export const MFA_SLICE = 'mfa'
 
 // ---------------------------------------------------------------------------
 // Tag types array
@@ -107,6 +109,7 @@ const tagTypes = [
   JOBS_SLICE,
   CALENDAR_REMINDERS_SLICE,
   ADMIN_SESSIONS_SLICE,
+  MFA_SLICE,
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call
@@ -116,9 +119,6 @@ const ENV_RESOLVE_MS = 6000
 
 /** Release semaphore slots when the back never responds (dev mono-worker / IMAP hang). */
 export const API_FETCH_TIMEOUT_MS = 20_000
-
-/** RTK endpoint names that must not send Authorization (pre-login / public). */
-const PUBLIC_AUTH_ENDPOINTS = new Set(['getSystem', 'getAuthMode', 'login'])
 
 let sessionRedirectStarted = false
 
@@ -167,9 +167,9 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
     timeout: API_FETCH_TIMEOUT_MS,
     prepareHeaders: (headers, { getState, endpoint }) => {
       const state = getState() as RootState
-      const token = state.auth?.token
+      const token = pickAuthToken(state.auth, endpoint)
 
-      if (token && !PUBLIC_AUTH_ENDPOINTS.has(endpoint)) {
+      if (token) {
         headers.set('Authorization', `Bearer ${token}`)
       }
 
