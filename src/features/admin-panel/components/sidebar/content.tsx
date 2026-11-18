@@ -1,4 +1,4 @@
-import { Database, Palette } from 'lucide-react'
+import { Database, Palette, Users } from 'lucide-react'
 
 const navItems = [
   {
@@ -29,6 +29,11 @@ const navItems = [
   {
     title: 'AP_SIDEBAR.config.rules.string',
     url: '/admin_panel/rules',
+  },
+  {
+    title: 'AP_SIDEBAR.sessions.string',
+    collapsedIcon: Users,
+    url: '/admin_panel/sessions',
   },
 ]
 

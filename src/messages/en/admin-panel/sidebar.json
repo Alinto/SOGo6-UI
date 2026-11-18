@@ -3,6 +3,9 @@
     "system": {
       "string": "System"
     },
+    "sessions": {
+      "string": "Sessions"
+    },
     "theme": {
       "string": "Theme"
     },

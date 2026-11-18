@@ -1,0 +1,41 @@
+{
+  "AP_SESSIONS": {
+    "title": {
+      "string": "Active sessions"
+    },
+    "description": {
+      "string": "Revoke one session or every session inactive since a chosen time."
+    },
+    "empty": {
+      "string": "No active sessions."
+    },
+    "loading": {
+      "string": "Loading sessions..."
+    },
+    "error": {
+      "string": "Sessions could not be updated."
+    },
+    "columns": {
+      "uid": {
+        "string": "User"
+      },
+      "domain": {
+        "string": "Domain"
+      },
+      "last_activity": {
+        "string": "Last activity"
+      }
+    },
+    "revoke": {
+      "string": "Revoke"
+    },
+    "inactive": {
+      "label": {
+        "string": "Revoke sessions inactive since"
+      },
+      "submit": {
+        "string": "Revoke inactive sessions"
+      }
+    }
+  }
+}

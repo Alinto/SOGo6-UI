@@ -4,6 +4,7 @@ import type {
 } from '@/features/admin-panel/types/admin-panel'
 import {
   ADMIN_CONFIG_SLICE,
+  ADMIN_SESSIONS_SLICE,
   ADMIN_V1_CONFIG_DOMAIN_DEFAULT_SLICE,
   ADMIN_V1_CONFIG_DOMAINS_ALT_SLICE,
   ADMIN_V1_CONFIG_DOMAINS_SLICE,
@@ -18,6 +19,20 @@ import { Rule } from '../types/admin-panel'
 export type DomainItem = {
   name: string
   extra_infos?: Record<string, string>
+}
+
+export type AdminActiveSession = {
+  uid: string
+  domain: string
+  last_activity: string
+  session_key: string
+}
+
+function unwrapData<T>(response: { data?: T } | T, fallback: T): T {
+  if (response && typeof response === 'object' && 'data' in response) {
+    return response.data ?? fallback
+  }
+  return response
 }
 
 const injectedEndpoints = apiSlice.injectEndpoints({
@@ -116,7 +131,36 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       ],
     }),
 
-    // DELETE domain mutation
+    getActiveSessions: builder.query<AdminActiveSession[], void>({
+      query: () => ({
+        url: '/admin/v1/users/active',
+        method: 'GET',
+      }),
+      transformResponse: (
+        response: { data?: AdminActiveSession[] } | AdminActiveSession[]
+      ) => unwrapData(response, []),
+      providesTags: [ADMIN_SESSIONS_SLICE],
+    }),
+    revokeSessions: builder.mutation<
+      void,
+      { uid: string[] } | { redis_key: string[] }
+    >({
+      query: (body) => ({
+        url: '/admin/v1/users/revoke',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [ADMIN_SESSIONS_SLICE],
+    }),
+    revokeInactiveSessions: builder.mutation<void, { timestamp: number }>({
+      query: (body) => ({
+        url: '/admin/v1/users/inactive',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [ADMIN_SESSIONS_SLICE],
+    }),
+
     deleteDomain: builder.mutation<Record<string, unknown>, string>({
       query: (domainName) => ({
         url: `/admin/v1/config/domains/${domainName}`,
@@ -142,4 +186,7 @@ export const {
   usePatchDomainDefaultMutation,
   usePatchCustomDomainConfigMutation,
   useDeleteDomainMutation,
+  useGetActiveSessionsQuery,
+  useRevokeSessionsMutation,
+  useRevokeInactiveSessionsMutation,
 } = injectedEndpoints
