@@ -11,7 +11,11 @@ import LoginOfflineBanner from '@/features/offline/components/login-offline-bann
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
 import { useEnvVars } from '@/lib/env-service'
 import { useRouter } from '@/lib/i18n/navigation'
-import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
+import {
+  getErrorCode,
+  getErrorMessage,
+  getErrorStatus,
+} from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { cn } from '@/lib/utils'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -119,7 +123,10 @@ export function LoginAuthForm({
     } catch (error: unknown) {
       const status = getErrorStatus(error)
 
-      if (status === 401) {
+      if (getErrorCode(error) === 'S000216') {
+        // The domain uses a SSO: the password is refused, the user must go through the identity provider
+        setServerError(t('error.sso_required.string'))
+      } else if (status === 401) {
         setServerError(t('error.invalid_credentials.string'))
       } else if (status === 404) {
         setServerError(t('error.route_not_found.string'))

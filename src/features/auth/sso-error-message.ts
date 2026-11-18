@@ -9,6 +9,9 @@ const SSO_ERROR_MESSAGES = {
   S000213: 'error.sso_state_invalid.string',
   S000214: 'error.sso_state_storage.string',
   S000215: 'error.sso_redirect_not_allowed.string',
+  S000216: 'error.sso_required.string',
+  S000217: 'error.sso_email_not_verified.string',
+  nonce_mismatch: 'error.sso_not_started_here.string',
 } as const
 
 type SsoErrorCode = keyof typeof SSO_ERROR_MESSAGES
@@ -44,6 +47,12 @@ export function getSsoErrorMessage(
       return t('error.sso_state_storage.string')
     case 'S000215':
       return t('error.sso_redirect_not_allowed.string')
+    case 'S000216':
+      return t('error.sso_required.string')
+    case 'S000217':
+      return t('error.sso_email_not_verified.string')
+    case 'nonce_mismatch':
+      return t('error.sso_not_started_here.string')
     default:
       return code
         ? t('error.sso_failed.string', { code })

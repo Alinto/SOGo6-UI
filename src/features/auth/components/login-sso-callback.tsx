@@ -3,16 +3,25 @@
 import { Button } from '@/components/ui/button'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
 import { useSsoErrorMessage } from '@/features/auth/sso-error-message'
-import { decodeJwtPayload } from '@/features/auth/utils'
+import {
+  consumeSsoNonce,
+  decodeJwtPayload,
+  SSO_NONCE_PARAM,
+} from '@/features/auth/utils'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 
+/** Error shown when the result does not carry the nonce of this tab (see consumeSsoNonce) */
+export const SSO_NONCE_MISMATCH = 'nonce_mismatch'
+
 /**
  * Landing page after a SSO login: the API callback redirects here with the result in the fragment,
  * `#token=<jwt>` or `#error=<error code>`. The fragment is never sent to a server.
+ * The url also carries the nonce created by the login form of this tab: a result without it
+ * comes from a login started elsewhere (login CSRF) and is refused.
  */
 export function LoginSsoCallback() {
   const t = useTranslations('AUTH')
@@ -28,16 +37,20 @@ export function LoginSsoCallback() {
     handled.current = true
 
     const params = new URLSearchParams(window.location.hash.slice(1))
-    // Remove the token from the url right away, so it does not stay in the browser history
-    window.history.replaceState(
-      null,
-      '',
-      window.location.pathname + window.location.search
+    const nonce = new URLSearchParams(window.location.search).get(
+      SSO_NONCE_PARAM
     )
+    // Remove the token and the nonce from the url right away, so they do not stay in the browser history
+    window.history.replaceState(null, '', window.location.pathname)
 
+    const nonceValid = consumeSsoNonce(nonce)
     const token = params.get('token')
     if (!token) {
       setError(params.get('error') ?? '')
+      return
+    }
+    if (!nonceValid) {
+      setError(SSO_NONCE_MISMATCH)
       return
     }
 

@@ -1,3 +1,4 @@
+import { createSsoRedirectUrl } from '@/features/auth/utils'
 import '@testing-library/jest-dom'
 import { render, screen } from '@testing-library/react'
 import { LoginSsoCallback } from '../login-sso-callback'
@@ -22,13 +23,18 @@ const TOKEN = `h.${btoa(
   JSON.stringify({ uid: 'user', cn: 'John Doe', email: 'user@example.com' })
 )}.s`
 
-const setHash = (hash: string) => {
-  window.history.replaceState(null, '', `/en/auth/login/sso${hash}`)
+// Start a login in this tab (as the login form does): returns the query with the nonce
+const startLogin = () =>
+  new URL(createSsoRedirectUrl(window.location.origin, 'en')).search
+
+const setHash = (hash: string, search = startLogin()) => {
+  window.history.replaceState(null, '', `/en/auth/login/sso${search}${hash}`)
 }
 
 describe('LoginSsoCallback', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    window.sessionStorage.clear()
   })
 
   it('stores the token from the fragment and goes to the inbox', () => {
@@ -48,13 +54,61 @@ describe('LoginSsoCallback', () => {
     expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
   })
 
-  it('removes the token from the url', () => {
+  it('removes the token and the nonce from the url', () => {
     setHash(`#token=${encodeURIComponent(TOKEN)}`)
 
     render(<LoginSsoCallback />)
 
     expect(window.location.hash).toBe('')
+    expect(window.location.search).toBe('')
     expect(window.location.pathname).toBe('/en/auth/login/sso')
+  })
+
+  it.each([
+    ['no nonce', ''],
+    ['another nonce', '?sso_nonce=0123456789abcdef'],
+  ])(
+    'refuses a token with %s: login started elsewhere (login CSRF)',
+    (_label, search) => {
+      startLogin() // This tab started its own login
+      setHash(`#token=${encodeURIComponent(TOKEN)}`, search)
+
+      render(<LoginSsoCallback />)
+
+      expect(mockDispatch).not.toHaveBeenCalled()
+      expect(mockPush).not.toHaveBeenCalled()
+      expect(
+        screen.getByText('error.sso_not_started_here.string')
+      ).toBeInTheDocument()
+    }
+  )
+
+  it('refuses a token when no login was started in this tab', () => {
+    setHash(`#token=${encodeURIComponent(TOKEN)}`, startLogin())
+    window.sessionStorage.clear()
+
+    render(<LoginSsoCallback />)
+
+    expect(mockDispatch).not.toHaveBeenCalled()
+    expect(
+      screen.getByText('error.sso_not_started_here.string')
+    ).toBeInTheDocument()
+  })
+
+  it('accepts a nonce only once', () => {
+    const search = startLogin()
+    setHash(`#token=${encodeURIComponent(TOKEN)}`, search)
+    const { unmount } = render(<LoginSsoCallback />)
+    expect(mockDispatch).toHaveBeenCalledTimes(1)
+    unmount()
+
+    setHash(`#token=${encodeURIComponent(TOKEN)}`, search)
+    render(<LoginSsoCallback />)
+
+    expect(mockDispatch).toHaveBeenCalledTimes(1)
+    expect(
+      screen.getByText('error.sso_not_started_here.string')
+    ).toBeInTheDocument()
   })
 
   it('shows the loader while the token is stored', () => {

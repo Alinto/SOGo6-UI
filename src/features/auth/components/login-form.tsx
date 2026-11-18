@@ -19,6 +19,7 @@ import {
   useSsoErrorMessage,
 } from '@/features/auth/sso-error-message'
 import {
+  createSsoRedirectUrl,
   isAbsoluteHttpUrl,
   redirectToExternalLogin,
 } from '@/features/auth/utils'
@@ -134,7 +135,8 @@ export function LoginForm({
     try {
       const result = await getAuthMode({
         username: data.email,
-        redirect: `${window.location.origin}/${locale}/auth/login/sso`,
+        // Carries a nonce kept by this tab, checked when the user comes back (login CSRF)
+        redirect: createSsoRedirectUrl(window.location.origin, locale),
       }).unwrap()
       const { kind, location } = result.data
 

@@ -160,6 +160,28 @@ describe('LoginForm auth mode', () => {
     expect(mockPush).not.toHaveBeenCalled()
   })
 
+  it('gives a redirect carrying a nonce kept by this tab', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { kind: 'openid', location: 'https://idp.example/auth' },
+        }),
+    })
+
+    await submit()
+
+    const { username, redirect } = mockGetAuthMode.mock.calls[0][0]
+    expect(username).toBe('user@example.com')
+    const url = new URL(redirect)
+    expect(`${url.origin}${url.pathname}`).toBe(
+      `${window.location.origin}/en/auth/login/sso`
+    )
+    expect(url.searchParams.get('sso_nonce')).toMatch(/^[0-9a-f]{64}$/)
+    expect(Object.values(window.sessionStorage)).toContain(
+      url.searchParams.get('sso_nonce')
+    )
+  })
+
   it('stays on the form when the openid location is missing or relative', async () => {
     mockGetAuthMode.mockReturnValue({
       unwrap: () =>

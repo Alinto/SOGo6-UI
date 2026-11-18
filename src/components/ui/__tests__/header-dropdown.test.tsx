@@ -13,6 +13,14 @@ import HeaderDropdown from '../header-dropdown'
 // Mock next-intl
 jest.mock('next-intl', () => ({
   useTranslations: jest.fn(),
+  useLocale: () => 'en',
+}))
+
+const mockRedirectToExternalLogin = jest.fn()
+jest.mock('@/features/auth/utils', () => ({
+  ...jest.requireActual('@/features/auth/utils'),
+  redirectToExternalLogin: (location: string) =>
+    mockRedirectToExternalLogin(location),
 }))
 
 // Mock next-themes
@@ -30,8 +38,8 @@ jest.mock('@/hooks/use-mobile', () => ({
 
 const mockPush = jest.fn()
 const mockDispatch = jest.fn()
-const mockRevokeSession = jest.fn(() => ({
-  unwrap: () => Promise.resolve(),
+const mockRevokeSession = jest.fn((_args?: { redirect?: string }) => ({
+  unwrap: (): Promise<unknown> => Promise.resolve(),
 }))
 let mockPendingCount = 0
 
@@ -426,6 +434,7 @@ describe('HeaderDropdown component', () => {
     mockPush.mockReset()
     mockDispatch.mockReset()
     mockRevokeSession.mockClear()
+    mockRedirectToExternalLogin.mockClear()
     mockRevokeSession.mockImplementation(() => ({
       unwrap: () => Promise.resolve(),
     }))
@@ -486,6 +495,51 @@ describe('HeaderDropdown component', () => {
       expect(mockDispatch).toHaveBeenCalled()
       expect(mockPush).toHaveBeenCalledWith('/auth/login')
     })
+  })
+
+  it('gives the login page as return url to the logout', async () => {
+    render(<HeaderDropdown />)
+    fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
+    fireEvent.click(screen.getByText('logout.string'))
+
+    await waitFor(() => {
+      expect(mockRevokeSession).toHaveBeenCalledWith({
+        redirect: `${window.location.origin}/en/auth/login`,
+      })
+    })
+  })
+
+  it('sends the browser to the identity provider logout for a SSO user', async () => {
+    mockRevokeSession.mockImplementation(() => ({
+      unwrap: () =>
+        Promise.resolve({ data: { location: 'https://idp.example/logout' } }),
+    }))
+    render(<HeaderDropdown />)
+    fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
+    fireEvent.click(screen.getByText('logout.string'))
+
+    await waitFor(() => {
+      expect(mockRedirectToExternalLogin).toHaveBeenCalledWith(
+        'https://idp.example/logout'
+      )
+    })
+    expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
+    expect(mockDispatch).toHaveBeenCalled()
+    expect(mockPush).not.toHaveBeenCalled()
+  })
+
+  it('goes to the login page when the logout request fails', async () => {
+    mockRevokeSession.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error('offline')),
+    }))
+    render(<HeaderDropdown />)
+    fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
+    fireEvent.click(screen.getByText('logout.string'))
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith('/auth/login')
+    })
+    expect(mockRedirectToExternalLogin).not.toHaveBeenCalled()
   })
 
   it('warns before logout when the outbox has pending messages', async () => {

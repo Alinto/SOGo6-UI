@@ -23,6 +23,10 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { useLogoutMutation } from '@/features/auth/components/store/auth.api'
 import { logout } from '@/features/auth/components/store/auth.slice'
+import {
+  isAbsoluteHttpUrl,
+  redirectToExternalLogin,
+} from '@/features/auth/utils'
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import { redirectAfterLogout } from '@/features/offline/auth/redirect-after-logout'
 import { countPendingOutbox } from '@/features/offline/db/outbox-store'
@@ -44,7 +48,7 @@ import {
   Mail,
   UserRoundCog,
 } from 'lucide-react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { useTheme } from 'next-themes'
 import { ThemeSwitcher } from '../theme-switcher'
 
@@ -52,6 +56,7 @@ const HeaderDropdown: React.FC = () => {
   const t = useTranslations('HEADER')
   const tPwa = useTranslations('PWA')
   const isMobile = useIsMobile()
+  const locale = useLocale()
   const { theme } = useTheme()
   const dispatch = useAppDispatch()
   const { push } = useRouter()
@@ -73,9 +78,14 @@ const HeaderDropdown: React.FC = () => {
     preferences?.USER_GENERAL?.SOGO_U_PROFILE_PICTURE || PP_DEFAULT
 
   const performLogout = useCallback(() => {
-    const finishLocalLogout = () => {
+    // ssoLogoutLocation: SSO only, the identity provider must end its session too (single logout)
+    const finishLocalLogout = (ssoLogoutLocation = '') => {
       void wipeOnLogout(authUser?.uid).finally(() => {
         dispatch(logout())
+        if (isAbsoluteHttpUrl(ssoLogoutLocation)) {
+          redirectToExternalLogin(ssoLogoutLocation)
+          return
+        }
         redirectAfterLogout(push)
       })
     }
@@ -87,11 +97,14 @@ const HeaderDropdown: React.FC = () => {
       return
     }
 
-    void revokeSession()
+    void revokeSession({
+      redirect: `${window.location.origin}/${locale}/auth/login`,
+    })
       .unwrap()
-      .catch(() => undefined)
-      .finally(finishLocalLogout)
-  }, [authUser?.uid, dispatch, push, revokeSession])
+      .then((result) => result?.data?.location ?? '')
+      .catch(() => '')
+      .then(finishLocalLogout)
+  }, [authUser?.uid, dispatch, locale, push, revokeSession])
 
   const handleLogoutClick = async () => {
     let count = pendingCount

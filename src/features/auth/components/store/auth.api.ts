@@ -26,7 +26,8 @@ export interface SystemResponse {
 }
 
 export interface LogoutResponse {
-  data: null
+  // location: SSO only, url of the identity provider where the browser must go to end its session too, empty if none
+  data: { location: string } | null
   error_code: string
   error_msg: string
 }
@@ -60,10 +61,12 @@ export const authApi = apiSlice.injectEndpoints({
       keepUnusedDataFor: 3600,
     }),
 
-    logout: builder.mutation<LogoutResponse, void>({
-      query: () => ({
+    // redirect: page where the identity provider sends the user back after its own logout (SSO)
+    logout: builder.mutation<LogoutResponse, { redirect?: string } | void>({
+      query: (args) => ({
         url: 'auth/logout',
         method: 'POST',
+        params: args?.redirect ? { redirect: args.redirect } : undefined,
       }),
     }),
   }),
