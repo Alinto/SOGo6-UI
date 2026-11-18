@@ -169,6 +169,7 @@ export type Calendar = {
   source_type?: string
   ctag?: number
   share_token?: string | null
+  public_url?: string | null
   created_at?: string
   updated_at?: string
 
@@ -442,6 +443,22 @@ export interface CalendarShareData {
       rights: CalendarShareRights
     }
   >
+}
+
+export type CalendarSubscription = {
+  share_token?: string | null
+  public_url?: string | null
+}
+
+export type CalendarReminder = {
+  event_key: string
+  title?: string
+  location?: string
+  date_start?: string
+  date_end?: string
+  method?: string
+  minutes_before?: number
+  trigger_at: string
 }
 
 /** Default calendar color used across the calendar feature. */

@@ -127,9 +127,14 @@ jest.mock('../actions/delete', () => ({
 
 jest.mock('../actions/link', () => ({
   __esModule: true,
-  default: ({ id }: any) => (
-    <div data-testid="link-action">Link Action for {id}</div>
+  default: ({ calendarKey }: any) => (
+    <div data-testid="link-action">Link Action for {calendarKey}</div>
   ),
+}))
+
+jest.mock('../actions/import', () => ({
+  __esModule: true,
+  default: () => <div data-testid="import-action">Import Action</div>,
 }))
 
 jest.mock('../actions/share', () => ({
@@ -234,16 +239,24 @@ describe('SidebarItem', () => {
     render(<SidebarItem {...defaultProps} isDefault={false} />)
 
     const menuItems = screen.getAllByTestId('dropdown-menu-item')
-    // Edit, Delete, Link, Sharing, Export
-    expect(menuItems.length).toBeGreaterThanOrEqual(5)
+    // Edit, Delete, Link, Sharing, Export, Import
+    expect(menuItems.length).toBeGreaterThanOrEqual(6)
   })
 
   it('should not render delete option for default calendar', () => {
     render(<SidebarItem {...defaultProps} isDefault={true} />)
 
     const menuItems = screen.getAllByTestId('dropdown-menu-item')
-    // Edit, Link, Sharing, Export (no Delete)
-    expect(menuItems.length).toBeLessThan(5)
+    expect(
+      menuItems.find((item) =>
+        item.textContent?.includes('sidebar.delete.string')
+      )
+    ).toBeUndefined()
+    expect(
+      menuItems.find((item) =>
+        item.textContent?.includes('sidebar.import.string')
+      )
+    ).toBeDefined()
   })
 
   it('should use translations from CALENDARS namespace', () => {
@@ -422,6 +435,16 @@ describe('SidebarItem', () => {
         item.textContent?.includes('sidebar.sharing.string')
       )
       expect(sharingItem).toBeUndefined()
+    })
+
+    it('should hide the import menu item for a subscription calendar', () => {
+      render(<SidebarItem {...defaultProps} sourceType="subscription" />)
+
+      const menuItems = screen.getAllByTestId('dropdown-menu-item')
+      const importItem = menuItems.find((item) =>
+        item.textContent?.includes('sidebar.import.string')
+      )
+      expect(importItem).toBeUndefined()
     })
 
     it('should hide the Sharing menu item for a subscription calendar', () => {

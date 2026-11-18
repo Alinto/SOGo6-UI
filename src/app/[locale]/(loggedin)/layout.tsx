@@ -14,6 +14,7 @@ import { useAddressBookDragEnd } from '@/features/address_books/hooks/use-addres
 import { LoginForm } from '@/features/auth/components/login-form'
 import LoginShell from '@/features/auth/components/login-shell'
 import EventCreateHost from '@/features/calendars/components/event-create-host'
+import ReminderPoller from '@/features/calendars/components/reminder-poller'
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import MailDragOverlay from '@/features/mails/components/mail-drag-overlay'
 import MailDragSession from '@/features/mails/components/mail-drag-session'
@@ -190,6 +191,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <DemoWarningToast />
       <NotificationToaster />
       <NotificationProvider />
+      <ReminderPoller />
       <SidebarProvider name="left-global-sidebar">
         <DndContext
           sensors={sensors}

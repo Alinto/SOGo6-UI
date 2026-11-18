@@ -77,6 +77,7 @@ const Sidebar: React.FC = () => {
                 sourceType={calendar.source_type}
                 name={calendar.name}
                 color={calendar.color}
+                publicUrl={calendar.public_url}
                 onClick={() => {}}
               />
             ))}
@@ -98,6 +99,7 @@ const Sidebar: React.FC = () => {
               name={calendar.name}
               color={calendar.color}
               owner={calendar.owner}
+              publicUrl={calendar.public_url}
               isShared
               onClick={() => {}}
             />
@@ -120,6 +122,7 @@ const Sidebar: React.FC = () => {
               sourceType={calendar.source_type}
               name={calendar.name}
               color={calendar.color}
+              publicUrl={calendar.public_url}
               onClick={() => {}}
             />
           ))}

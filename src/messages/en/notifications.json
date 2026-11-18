@@ -22,6 +22,14 @@
                 "developer_comment": "Advise the user of an informational message."
             }
         },
+        "calendar_reminder": {
+            "title": {
+                "string": "Upcoming event"
+            },
+            "message": {
+                "string": "A reminder is due."
+            }
+        },
         "mail_action": {
             "spam": {
                 "successTitle": {

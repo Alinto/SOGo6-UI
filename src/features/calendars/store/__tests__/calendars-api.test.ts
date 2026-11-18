@@ -33,6 +33,14 @@ describe('calendars-api', () => {
       expect(typeof CalendarsApi.useUpdateCalendarMutation).toBe('function')
       expect(typeof CalendarsApi.useDeleteCalendarMutation).toBe('function')
       expect(typeof CalendarsApi.useExportCalendarMutation).toBe('function')
+      expect(typeof CalendarsApi.useImportCalendarMutation).toBe('function')
+      expect(typeof CalendarsApi.useEnableCalendarSubscriptionMutation).toBe(
+        'function'
+      )
+      expect(typeof CalendarsApi.useRevokeCalendarSubscriptionMutation).toBe(
+        'function'
+      )
+      expect(typeof CalendarsApi.useGetRemindersQuery).toBe('function')
     })
 
     it('exports folder preferences query and mutation', () => {
@@ -123,6 +131,49 @@ describe('calendars-api', () => {
       expect(CalendarsApi.exportCalendarQuery('cal 1').url).toBe(
         'calendars/cal%201/export'
       )
+    })
+  })
+
+  describe('importCalendarQuery', () => {
+    it('posts the ics file as multipart form data', () => {
+      const file = new File(['BEGIN:VCALENDAR'], 'agenda.ics', {
+        type: 'text/calendar',
+      })
+
+      const query = CalendarsApi.importCalendarQuery('cal-1', file)
+
+      expect(query.url).toBe('calendars/cal-1/import')
+      expect(query.method).toBe('POST')
+      expect(query.body).toBeInstanceOf(FormData)
+      expect(query.body.get('file')).toBe(file)
+    })
+  })
+
+  describe('calendar subscription', () => {
+    it('enables the public link with a POST', () => {
+      expect(CalendarsApi.enableCalendarSubscriptionQuery('cal-1')).toEqual({
+        url: 'calendars/cal-1/subscription',
+        method: 'POST',
+      })
+    })
+
+    it('revokes the public link with a DELETE', () => {
+      expect(CalendarsApi.revokeCalendarSubscriptionQuery('cal 1')).toEqual({
+        url: 'calendars/cal%201/subscription',
+        method: 'DELETE',
+      })
+    })
+  })
+
+  describe('remindersQuery', () => {
+    it('requests popup reminders with a lookahead', () => {
+      expect(
+        CalendarsApi.remindersQuery({ method: 'popup', lookahead: 15 })
+      ).toEqual({
+        url: 'reminders',
+        method: 'GET',
+        params: { method: 'popup', lookahead: 15 },
+      })
     })
   })
 

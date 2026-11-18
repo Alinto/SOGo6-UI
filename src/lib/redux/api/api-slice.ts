@@ -55,6 +55,8 @@ export const FOLDER_SHARE_SLICE = 'folder/share'
 export const CONTACTS_AUTOCOMPLETE_SLICE = 'contacts_autocomplete'
 export const GAB_AUTOCOMPLETE_SLICE = 'contacts_gab_autocomplete'
 export const JOBS_SLICE = 'jobs'
+export const CALENDAR_REMINDERS_SLICE = 'calendar_reminders'
+export const ADMIN_SESSIONS_SLICE = 'admin_sessions'
 
 // ---------------------------------------------------------------------------
 // Tag types array
@@ -103,6 +105,8 @@ const tagTypes = [
   CONTACTS_AUTOCOMPLETE_SLICE,
   GAB_AUTOCOMPLETE_SLICE,
   JOBS_SLICE,
+  CALENDAR_REMINDERS_SLICE,
+  ADMIN_SESSIONS_SLICE,
 ] as const
 
 // Cache the base URL to avoid fetching env vars on every API call

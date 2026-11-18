@@ -152,6 +152,11 @@ jest.mock('@/features/mails/components/mail-drag-session', () => ({
   default: () => null,
 }))
 
+jest.mock('@/features/calendars/components/reminder-poller', () => ({
+  __esModule: true,
+  default: () => null,
+}))
+
 jest.mock('@/features/notifications', () => ({
   NotificationProvider: () => (
     <div data-testid="notification-provider">Provider</div>

@@ -14,6 +14,7 @@ import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
 import {
   CALENDARS_SLICE,
   CALENDAR_EVENTS_SLICE,
+  CALENDAR_REMINDERS_SLICE,
   CALENDAR_SHARE_SLICE,
   CALENDAR_SYNC_SLICE,
   FOLDER_PREFERENCES_SLICE,
@@ -37,9 +38,11 @@ import type {
   CalendarEventUpdateBody,
   CalendarEventsResponse,
   CalendarFolderScope,
+  CalendarReminder,
   CalendarShareData,
   CalendarShareRights,
   CalendarShareUser,
+  CalendarSubscription,
   CalendarSyncResult,
   CalendarSyncStatus,
   CalendarUpdateBody,
@@ -67,6 +70,38 @@ export function exportCalendarQuery(calendarKey: string) {
   return {
     url: `${calendarUrl(calendarKey)}/export`,
     method: 'GET' as const,
+  }
+}
+
+export function importCalendarQuery(calendarKey: string, file: File) {
+  const body = new FormData()
+  body.append('file', file)
+  return {
+    url: `${calendarUrl(calendarKey)}/import`,
+    method: 'POST' as const,
+    body,
+  }
+}
+
+export function enableCalendarSubscriptionQuery(calendarKey: string) {
+  return {
+    url: `${calendarUrl(calendarKey)}/subscription`,
+    method: 'POST' as const,
+  }
+}
+
+export function revokeCalendarSubscriptionQuery(calendarKey: string) {
+  return {
+    url: `${calendarUrl(calendarKey)}/subscription`,
+    method: 'DELETE' as const,
+  }
+}
+
+export function remindersQuery(args: { method: string; lookahead: number }) {
+  return {
+    url: 'reminders',
+    method: 'GET' as const,
+    params: args,
   }
 }
 const calendarShareUrl = (key: string) => `${calendarUrl(key)}/share`
@@ -437,6 +472,7 @@ export function normalizeCalendar(calendar: Calendar): Calendar {
       false,
     ctag: calendar.ctag ?? 0,
     share_token: calendar.share_token ?? null,
+    public_url: calendar.public_url ?? null,
     ...withRights(calendar),
   }
 }
@@ -678,6 +714,42 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       ) => ({
         job_id: unwrapJobId(response),
       }),
+    }),
+    importCalendar: builder.mutation<
+      { job_id: string },
+      { calendarKey: string; file: File }
+    >({
+      query: ({ calendarKey, file }) => importCalendarQuery(calendarKey, file),
+      transformResponse: (
+        response: ContactJobEnqueueResponse | { job_id: string }
+      ) => ({
+        job_id: unwrapJobId(response),
+      }),
+    }),
+    enableCalendarSubscription: builder.mutation<
+      CalendarSubscription,
+      { calendarKey: string }
+    >({
+      query: ({ calendarKey }) => enableCalendarSubscriptionQuery(calendarKey),
+      transformResponse: (response: ApiDataResponse<CalendarSubscription>) =>
+        unwrapApiData(response),
+    }),
+    revokeCalendarSubscription: builder.mutation<void, { calendarKey: string }>(
+      {
+        query: ({ calendarKey }) =>
+          revokeCalendarSubscriptionQuery(calendarKey),
+        transformResponse: () => undefined,
+      }
+    ),
+    getReminders: builder.query<
+      CalendarReminder[],
+      { method: string; lookahead: number }
+    >({
+      query: remindersQuery,
+      transformResponse: (
+        response: ApiDataResponse<CalendarReminder[]> | CalendarReminder[]
+      ) => unwrapApiData(response) ?? [],
+      providesTags: [CALENDAR_REMINDERS_SLICE],
     }),
     getCalendarShare: builder.query<CalendarShareData, { calendarKey: string }>(
       {
@@ -1236,6 +1308,10 @@ export const {
   usePostEventAttendanceMutation,
   useDeleteCalendarMutation,
   useExportCalendarMutation,
+  useImportCalendarMutation,
+  useEnableCalendarSubscriptionMutation,
+  useRevokeCalendarSubscriptionMutation,
+  useGetRemindersQuery,
   useGetCalendarShareQuery,
   useLazyGetCalendarShareQuery,
   useSetCalendarShareMutation,

@@ -381,10 +381,64 @@
           "string": "Cancel"
         }
       },
+      "import": {
+        "string": "Import Calendar",
+        "title": {
+          "string": "Import into {name}"
+        },
+        "description": {
+          "string": "Add events from an .ics file to this calendar."
+        },
+        "file": {
+          "string": "ICS file"
+        },
+        "submit": {
+          "string": "Start import"
+        },
+        "processing": {
+          "string": "Import in progress..."
+        },
+        "success": {
+          "string": "Import completed."
+        },
+        "error": {
+          "string": "The calendar could not be imported."
+        },
+        "close": {
+          "string": "Close"
+        },
+        "cancel": {
+          "string": "Cancel"
+        }
+      },
       "link": {
         "string": "Get Calendar Link",
         "description": {
-          "string": "Copy this link to subscribe to this calendar in other calendar applications."
+          "string": "Share a public read-only link to this calendar."
+        },
+        "active": {
+          "string": "Anyone with this link can read this calendar."
+        },
+        "url": {
+          "string": "Public link"
+        },
+        "enable": {
+          "string": "Create public link"
+        },
+        "revoke": {
+          "string": "Revoke link"
+        },
+        "copy": {
+          "string": "Copy"
+        },
+        "copied": {
+          "string": "Copied"
+        },
+        "empty": {
+          "string": "This calendar has no public link yet."
+        },
+        "error": {
+          "string": "The public link could not be updated."
         }
       },
       "export": {

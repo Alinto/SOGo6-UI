@@ -42,6 +42,7 @@ import {
 } from '../../utils/calendar-source-type'
 import DeleteAction from './actions/delete'
 import ExportAction from './actions/export'
+import ImportAction from './actions/import'
 import LinkAction from './actions/link'
 import ShareCalendarAction from './actions/share'
 import EditForm from './forms/edit'
@@ -59,6 +60,8 @@ interface SidebarItemProps {
   owner?: string
   /** Calendar owned by someone else and shared with the connected user. */
   isShared?: boolean
+  /** Public read-only URL already published for this calendar. */
+  publicUrl?: string | null
   onClick: () => void
 }
 
@@ -166,6 +169,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
   calendarKey,
   owner,
   isShared,
+  publicUrl,
 }) => {
   const [type, setType] = React.useState('')
   const [dialogOpen, setDialogOpen] = React.useState(false)
@@ -181,6 +185,8 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
     !isShared &&
     isPersonalCalendar({ source_type: sourceType }) &&
     !folderSharingDisabled.includes('calendar')
+  const canImportCalendar =
+    !isShared && !isReadOnly && isPersonalCalendar({ source_type: sourceType })
   const sharedOwner = isShared && owner ? owner : null
   const fullLabel = sharedOwner ? `${name} - ${sharedOwner}` : name
   const labelId = `calendar-${id}-label`
@@ -356,6 +362,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                   <span>{t('sidebar.export.string')}</span>
                 </DropdownMenuItem>
               </DialogTrigger>
+              {canImportCalendar && (
+                <DialogTrigger asChild>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setType('import')
+                      setDialogOpen(true)
+                    }}
+                  >
+                    <span>{t('sidebar.import.string')}</span>
+                  </DropdownMenuItem>
+                </DialogTrigger>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
           <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl">
@@ -374,7 +392,12 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 onClose={() => setDialogOpen(false)}
               />
             )}
-            {type === 'link' && <LinkAction id={id} />}
+            {type === 'link' && (
+              <LinkAction
+                calendarKey={resolvedCalendarKey}
+                publicUrl={publicUrl}
+              />
+            )}
             {type === 'sharing' && (
               <ShareCalendarAction
                 id={id}
@@ -385,6 +408,13 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
             )}
             {type === 'export' && (
               <ExportAction
+                calendarKey={resolvedCalendarKey}
+                name={name}
+                onClose={() => setDialogOpen(false)}
+              />
+            )}
+            {type === 'import' && (
+              <ImportAction
                 calendarKey={resolvedCalendarKey}
                 name={name}
                 onClose={() => setDialogOpen(false)}
