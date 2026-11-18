@@ -44,17 +44,26 @@ export function useJobPolling(
 
   const shouldPoll = Boolean(enabled && jobId)
   const previousStatusRef = useRef<JobStatus | undefined>(undefined)
+  const trackedJobIdRef = useRef(jobId)
 
-  const { data: jobState, isLoading, isFetching, error } = useGetJobQuery(
-    jobId ?? '',
-    {
-      skip: !shouldPoll,
-      pollingInterval: shouldPoll ? pollIntervalMs : 0,
-    }
-  )
+  const {
+    data: jobState,
+    isLoading,
+    isFetching,
+    error,
+  } = useGetJobQuery(jobId ?? '', {
+    skip: !shouldPoll,
+    pollingInterval: shouldPoll ? pollIntervalMs : 0,
+  })
 
   const status = jobState?.status
   const isTerminal = isTerminalJobStatus(status)
+
+  useEffect(() => {
+    if (trackedJobIdRef.current === jobId) return
+    trackedJobIdRef.current = jobId
+    previousStatusRef.current = undefined
+  }, [jobId])
 
   useEffect(() => {
     if (!jobState || !status) return
@@ -70,12 +79,6 @@ export function useJobPolling(
       onCanceled?.(jobState)
     }
   }, [jobState, status, onCanceled, onFailure, onSuccess])
-
-  useEffect(() => {
-    if (!jobId) {
-      previousStatusRef.current = undefined
-    }
-  }, [jobId])
 
   return {
     jobState,

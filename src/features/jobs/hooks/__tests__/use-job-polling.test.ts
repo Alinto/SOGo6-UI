@@ -43,15 +43,28 @@ describe('useJobPolling', () => {
 
   it('skips polling when job id is missing', () => {
     renderHook(() => useJobPolling(null))
-    expect(mockUseGetJobQuery).toHaveBeenCalledWith('', expect.objectContaining({ skip: true }))
+    expect(mockUseGetJobQuery).toHaveBeenCalledWith(
+      '',
+      expect.objectContaining({ skip: true })
+    )
   })
 
   it('resets status tracking when job id changes', () => {
+    mockUseGetJobQuery.mockReturnValue({
+      data: { status: 'success', job_id: 'job-1' },
+      isLoading: false,
+      isFetching: false,
+      error: undefined,
+    })
+
     const onSuccess = jest.fn()
     const { rerender } = renderHook(
-      ({ jobId }: { jobId: string | null }) => useJobPolling(jobId, { onSuccess }),
+      ({ jobId }: { jobId: string | null }) =>
+        useJobPolling(jobId, { onSuccess }),
       { initialProps: { jobId: 'job-1' as string | null } }
     )
+
+    expect(onSuccess).toHaveBeenCalledTimes(1)
 
     mockUseGetJobQuery.mockReturnValue({
       data: { status: 'success', job_id: 'job-2' },
@@ -64,6 +77,6 @@ describe('useJobPolling', () => {
       rerender({ jobId: 'job-2' })
     })
 
-    expect(onSuccess).toHaveBeenCalled()
+    expect(onSuccess).toHaveBeenCalledTimes(2)
   })
 })
