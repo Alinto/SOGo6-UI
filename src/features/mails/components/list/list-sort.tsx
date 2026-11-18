@@ -40,7 +40,13 @@ const sortList: { label: string; value: string; icon: IconName }[] = [
   },
 ]
 
-const ListSort: React.FC = () => {
+interface ListSortProps {
+  /** Classes of the visible label (e.g. to keep only the icon); the button
+   *  keeps its accessible name. */
+  labelClassName?: string
+}
+
+const ListSort: React.FC<ListSortProps> = ({ labelClassName }) => {
   const router = useRouter()
   const params = useSearchParams()
   const pathname = usePathname()
@@ -67,7 +73,9 @@ const ListSort: React.FC = () => {
               size={'sm'}
               aria-label={t('MAILS_LIST.sort.label.string')}
             >
-              <span>{t('MAILS_LIST.sort.label.string')}</span>
+              <span className={labelClassName}>
+                {t('MAILS_LIST.sort.label.string')}
+              </span>
               <DynamicIcon
                 name={
                   sortList.find((s) => s.value === sort)?.icon ??

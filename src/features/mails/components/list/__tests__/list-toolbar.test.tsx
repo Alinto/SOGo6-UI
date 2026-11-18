@@ -95,6 +95,23 @@ jest.mock('@/features/mails/store/mails-api', () => ({
   })),
 }))
 
+// The breadcrumb has its own tests; here it only shows the folder title.
+jest.mock('@/features/mails/components/list/list-breadcrumb', () => ({
+  __esModule: true,
+  default: ({
+    fallbackTitle,
+    suffix,
+  }: {
+    fallbackTitle: string
+    suffix?: React.ReactNode
+  }) => (
+    <span>
+      {fallbackTitle}
+      {suffix}
+    </span>
+  ),
+}))
+
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(() => ({ folder: 'INBOX', account: '0' })),
   useSearchParams: jest.fn(() => new URLSearchParams()),
@@ -258,17 +275,38 @@ jest.mock(
 
 jest.mock('../list-filter', () => ({
   __esModule: true,
-  default: () => <div data-testid="list-filter" />,
+  default: ({
+    showFilters = true,
+    layoutToggleClassName,
+  }: {
+    showFilters?: boolean
+    layoutToggleClassName?: string
+  }) => (
+    <div
+      data-testid="list-filter"
+      data-show-filters={String(showFilters)}
+      data-layout-toggle-class={layoutToggleClassName}
+    />
+  ),
+}))
+
+const mockUseFastAccess = jest.fn<{ isOpen: boolean } | null, []>(() => null)
+jest.mock('@/features/mails/components/sidebars/fast-access/context', () => ({
+  useFastAccess: () => mockUseFastAccess(),
 }))
 
 jest.mock('../list-filter-dropdown', () => ({
   __esModule: true,
-  default: () => <div data-testid="list-filter-dropdown" />,
+  default: ({ className }: { className?: string }) => (
+    <div data-testid="list-filter-dropdown" className={className} />
+  ),
 }))
 
 jest.mock('../list-sort', () => ({
   __esModule: true,
-  default: () => <div data-testid="list-sort" />,
+  default: ({ labelClassName }: { labelClassName?: string }) => (
+    <div data-testid="list-sort" data-label-class={labelClassName} />
+  ),
 }))
 
 jest.mock('../list-refresh', () => ({
@@ -280,7 +318,12 @@ jest.mock('../list-refresh', () => ({
 
 jest.mock('../list-pagination', () => ({
   __esModule: true,
-  default: () => <div data-testid="list-pagination" />,
+  default: ({ pageMenuClassName }: { pageMenuClassName?: string }) => (
+    <div
+      data-testid="list-pagination"
+      data-page-menu-class={pageMenuClassName}
+    />
+  ),
 }))
 
 jest.mock('@/features/mails/components/mail/mail-detail-navigation', () => ({
@@ -376,6 +419,147 @@ describe('ListToolbar', () => {
       expect(screen.getByTestId('checkbox')).toHaveAttribute(
         'aria-label',
         'actions.select_all.string'
+      )
+    })
+  })
+
+  describe('two-line layout', () => {
+    // The toolbar width is measured in JS (clientWidth: 0 in jsdom = narrow).
+    const renderWide = () => {
+      jest
+        .spyOn(HTMLElement.prototype, 'clientWidth', 'get')
+        .mockReturnValue(1300)
+      return render(<ListToolbar />)
+    }
+
+    afterEach(() => {
+      jest.restoreAllMocks()
+      mockUseFastAccess.mockReturnValue(null)
+    })
+
+    // Children of the toolbar row, in DOM (= keyboard) order.
+    const rowOrder = () => {
+      const row = screen.getByTestId('list-toolbar-controls').parentElement!
+      const checkbox = screen.getByTestId('checkbox')
+      return Array.from(row.children).map((child) =>
+        child.contains(checkbox) ? 'left' : child.getAttribute('data-testid')
+      )
+    }
+
+    it('puts the breadcrumb first, on its own line, when the toolbar is narrow', () => {
+      const { container } = render(<ListToolbar />)
+      expect(container.firstChild).toHaveClass('@container/list-toolbar')
+      expect(rowOrder()).toEqual([
+        'list-toolbar-breadcrumb',
+        'left',
+        'list-toolbar-controls',
+      ])
+      expect(screen.getByTestId('list-toolbar-breadcrumb')).toHaveClass(
+        'basis-full'
+      )
+    })
+
+    it('puts the breadcrumb between the checkbox and the controls when wide', () => {
+      renderWide()
+      expect(rowOrder()).toEqual([
+        'left',
+        'list-toolbar-breadcrumb',
+        'list-toolbar-controls',
+      ])
+      expect(screen.getByTestId('list-toolbar-breadcrumb')).toHaveClass(
+        'grow',
+        'basis-0'
+      )
+      expect(screen.getByTestId('list-toolbar-controls')).toHaveClass(
+        'shrink-0'
+      )
+    })
+
+    it('shows compact filters on two lines', () => {
+      render(<ListToolbar />)
+      expect(screen.getByTestId('list-filter-dropdown')).toBeInTheDocument()
+      // Only its layout toggle remains visible.
+      expect(screen.getByTestId('list-filter')).toHaveAttribute(
+        'data-show-filters',
+        'false'
+      )
+    })
+
+    it('shows the filter toggle buttons on one line', () => {
+      renderWide()
+      expect(
+        screen.queryByTestId('list-filter-dropdown')
+      ).not.toBeInTheDocument()
+      expect(screen.getByTestId('list-filter')).toHaveAttribute(
+        'data-show-filters',
+        'true'
+      )
+    })
+
+    it('hides the layout toggle when narrow only if the right panel is open', () => {
+      const { unmount } = render(<ListToolbar />)
+      expect(screen.getByTestId('list-filter')).not.toHaveAttribute(
+        'data-layout-toggle-class'
+      )
+      unmount()
+
+      mockUseFastAccess.mockReturnValue({ isOpen: true })
+      render(<ListToolbar />)
+      expect(screen.getByTestId('list-filter')).toHaveAttribute(
+        'data-layout-toggle-class',
+        '@max-[460px]/list-toolbar:hidden'
+      )
+    })
+
+    it('only shows the compact filters on mobile', () => {
+      const { useIsMobile } = require('@/hooks/use-mobile')
+      useIsMobile.mockReturnValue(true)
+      render(<ListToolbar />)
+      expect(screen.getByTestId('list-filter-dropdown')).toBeInTheDocument()
+      expect(screen.queryByTestId('list-filter')).not.toBeInTheDocument()
+      useIsMobile.mockReturnValue(false)
+    })
+
+    it('shows the actions bar instead of the breadcrumb when items are selected', () => {
+      const { useAppSelector } = require('@/lib/redux/hooks')
+      useAppSelector.mockImplementation((fn: (s: any) => any) =>
+        fn({
+          mailLayout: { selectedMailIds: ['1'] },
+          mailNavigation: { skipFolderFetch: false },
+        })
+      )
+      render(<ListToolbar />)
+      expect(
+        screen.queryByTestId('list-toolbar-breadcrumb')
+      ).not.toBeInTheDocument()
+      expect(screen.getByTestId('mail-actions-bar')).toBeInTheDocument()
+      // The controls may wrap below the actions bar.
+      const controls = screen.getByTestId('list-toolbar-controls')
+      expect(controls).toHaveClass('shrink-0', 'flex-wrap')
+      expect(controls).not.toHaveClass('basis-0')
+    })
+
+    it('never wraps the controls onto a third line when narrow', () => {
+      render(<ListToolbar />)
+      const controls = screen.getByTestId('list-toolbar-controls')
+      // Zero flex-basis: never pushed below the checkbox, takes what is left.
+      expect(controls).toHaveClass(
+        'grow',
+        'basis-0',
+        'flex-nowrap',
+        'overflow-x-auto'
+      )
+    })
+
+    it('makes sort and pagination more compact as the toolbar narrows', () => {
+      render(<ListToolbar />)
+      expect(screen.getByTestId('list-sort')).toHaveAttribute(
+        'data-label-class',
+        '@max-[560px]/list-toolbar:hidden'
+      )
+      expect(screen.getByTestId('list-pagination')).toHaveAttribute(
+        'data-page-menu-class',
+        '@max-[500px]/list-toolbar:hidden'
       )
     })
   })

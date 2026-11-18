@@ -16,7 +16,6 @@ import {
   useFastAccessRequired,
 } from '@/features/mails/components/sidebars/fast-access/context'
 import { useCurrentFolder } from '@/features/mails/hooks/use-current-folder'
-import { useListToolbarMode } from '@/features/mails/hooks/use-list-toolbar-mode'
 import { useSyncAdvancedSearchFromUrl } from '@/features/mails/hooks/use-sync-advanced-search-from-url'
 import { getFolderDisplayName } from '@/features/mails/utils/folder-path-from-params'
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
@@ -26,7 +25,6 @@ import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
-import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import { MailDetailPage } from './[mail_id]/page'
@@ -56,7 +54,6 @@ function MailLayoutInner({
   )
   const { isOpen, activeModule, openModule, closeModule } =
     useFastAccessRequired()
-  const toolbarMode = useListToolbarMode()
   const { view, closeOverlay } = useOfflineNav()
   useSyncAdvancedSearchFromUrl()
 
@@ -66,7 +63,6 @@ function MailLayoutInner({
     view.kind === 'outbox' ||
     view.kind === 'mail' ||
     view.kind === 'unavailable'
-  const effectiveToolbarMode = isFullPaneOverlay ? 'hidden' : toolbarMode
 
   const folderContent = isClassicLayout ? classic : children
   const content =
@@ -111,16 +107,14 @@ function MailLayoutInner({
       >
         <SidebarInset
           as="div"
-          className="flex min-w-0 flex-col overflow-x-hidden"
+          // Fixed height: the toolbar takes what it needs (one or two lines,
+          // or none) and the content gets the rest.
+          className="flex h-[calc(100vh-var(--header-height))] min-h-0 min-w-0 flex-col overflow-x-hidden"
         >
           {!isFullPaneOverlay && <ListToolbar />}
           <div
-            className={cn(
-              'flex w-full min-w-0 overflow-hidden p-1',
-              effectiveToolbarMode === 'hidden'
-                ? 'h-[calc(100vh-var(--header-height))]'
-                : 'h-[calc(100vh-var(--header-height)-52px)]'
-            )}
+            data-testid="folder-content"
+            className="flex min-h-0 w-full min-w-0 flex-1 overflow-hidden p-1"
           >
             <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
               {content}

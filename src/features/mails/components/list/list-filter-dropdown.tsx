@@ -18,17 +18,26 @@ const ListFilterDropdown: React.FC = () => {
   const { push } = useRouter()
   const filter = searchParams.get('filter') || 'all'
 
+  // Same URL handling as ListFilter: keep the other parameters (sort…) and
+  // go back to the first page.
   const handleFilterChange = (value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
     if (!value || value === 'all') {
-      push(pathname)
+      params.delete('filter')
     } else {
-      push(`?filter=${value}`)
+      params.set('filter', value)
     }
+    params.delete('page')
+    const query = params.toString()
+    push(query ? `${pathname}?${query}` : pathname)
   }
 
   return (
     <Select value={filter} onValueChange={handleFilterChange}>
-      <SelectTrigger className="hover:bg-accent hover:text-accent-foreground w-auto cursor-pointer">
+      <SelectTrigger
+        aria-label={t('filter.label.string')}
+        className="hover:bg-accent hover:text-accent-foreground w-auto cursor-pointer"
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

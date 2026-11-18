@@ -32,8 +32,8 @@ jest.mock('@/hooks/use-mobile', () => ({
 }))
 
 jest.mock('@/components/ui/toggle-group', () => ({
-  ToggleGroup: ({ children, onValueChange, value }: any) => (
-    <div data-testid="toggle-group" data-value={value}>
+  ToggleGroup: ({ children, onValueChange, value, className }: any) => (
+    <div data-testid="toggle-group" data-value={value} className={className}>
       {React.Children.map(children, (child: any) =>
         child?.props?.value
           ? React.cloneElement(child, {
@@ -89,6 +89,24 @@ describe('ListFilter', () => {
       const fullToggle = screen.queryByTestId('toggle-full')
       const splitToggle = screen.queryByTestId('toggle-split')
       expect(fullToggle || splitToggle).toBeTruthy()
+    })
+
+    it('renders only the layout toggle without the filter buttons', () => {
+      mockUseIsMobile.mockReturnValue(false)
+      render(<ListFilter showFilters={false} />)
+      expect(screen.queryByTestId('toggle-read')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('toggle-all')).not.toBeInTheDocument()
+      expect(screen.getByTestId('toggle-full')).toBeInTheDocument()
+    })
+
+    it('applies layoutToggleClassName to the layout toggle only', () => {
+      mockUseIsMobile.mockReturnValue(false)
+      render(<ListFilter layoutToggleClassName="hidden" />)
+      const layoutToggle = screen.getByTestId('toggle-full').parentElement!
+      expect(layoutToggle).toHaveClass('hidden')
+      expect(screen.getByTestId('toggle-read').parentElement!).not.toHaveClass(
+        'hidden'
+      )
     })
 
     it('hides layout toggle on mobile', () => {

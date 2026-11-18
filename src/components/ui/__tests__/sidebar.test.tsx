@@ -1,6 +1,6 @@
 import '@/__mocks__/matchMedia.mock'
 import '@testing-library/jest-dom'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import React from 'react'
 
 // Mock next-intl navigation
@@ -653,5 +653,68 @@ describe('Sidebar Components', () => {
     )
 
     expect(screen.getByTestId('chevrons-left')).toBeInTheDocument()
+  })
+})
+
+describe('SidebarProvider compactBreakpoint', () => {
+  const originalMatchMedia = window.matchMedia
+
+  const mockWindowWidth = (width: number) => {
+    window.matchMedia = jest.fn((query: string) => {
+      const max = /max-width:\s*(\d+)px/.exec(query)
+      return {
+        matches: max ? width <= Number(max[1]) : false,
+        media: query,
+        onchange: null,
+        addListener: jest.fn(),
+        removeListener: jest.fn(),
+        addEventListener: jest.fn(),
+        removeEventListener: jest.fn(),
+        dispatchEvent: jest.fn(),
+      }
+    }) as unknown as typeof window.matchMedia
+  }
+
+  const renderCompactSidebar = () =>
+    render(
+      <SidebarProvider name="compact-test" compactBreakpoint={1024}>
+        <Sidebar collapsible="icon">Menu</Sidebar>
+        <SidebarTrigger />
+      </SidebarProvider>
+    )
+  const sidebarState = () =>
+    document.querySelector('[data-state]')?.getAttribute('data-state')
+
+  beforeEach(() => {
+    document.cookie = 'compact-test:state=true; path=/'
+  })
+
+  afterEach(() => {
+    window.matchMedia = originalMatchMedia
+  })
+
+  it('collapses to the icon rail below its breakpoint, whatever the saved state', () => {
+    mockWindowWidth(900)
+    renderCompactSidebar()
+    expect(sidebarState()).toBe('collapsed')
+    expect(document.querySelector('[data-collapsible]')).toHaveAttribute(
+      'data-collapsible',
+      'icon'
+    )
+  })
+
+  it('can be expanded there without changing the saved state', () => {
+    mockWindowWidth(900)
+    document.cookie = 'compact-test:state=false; path=/'
+    renderCompactSidebar()
+    fireEvent.click(screen.getByRole('button'))
+    expect(sidebarState()).toBe('expanded')
+    expect(document.cookie).toContain('compact-test:state=false')
+  })
+
+  it('keeps the saved state from its breakpoint', () => {
+    mockWindowWidth(1024)
+    renderCompactSidebar()
+    expect(sidebarState()).toBe('expanded')
   })
 })

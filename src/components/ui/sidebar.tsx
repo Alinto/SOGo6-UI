@@ -18,6 +18,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { useIsMobile } from '@/hooks/use-mobile'
+import { useMediaQuery } from '@/hooks/useMediaQuery'
 import { Link } from '@/lib/i18n/navigation'
 import { cn } from '@/lib/utils'
 import { useTranslations } from 'next-intl'
@@ -30,6 +31,9 @@ export const SIDEBAR_WIDTH = '17rem'
 const SIDEBAR_WIDTH_MOBILE = '18rem'
 const SIDEBAR_WIDTH_ICON = '3rem'
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b'
+/** Below this window width (and above mobile), the main menu is collapsed to
+ *  its icon rail, so that the mail toolbar keeps room for its two lines. */
+export const MAIN_SIDEBAR_COMPACT_BREAKPOINT = 1024
 
 type SidebarContext = {
   state: 'expanded' | 'collapsed'
@@ -38,6 +42,8 @@ type SidebarContext = {
   openMobile: boolean
   setOpenMobile: (_open: boolean) => void
   isMobile: boolean
+  /** Collapsed to its icon rail by `compactBreakpoint` (expandable). */
+  isCompact: boolean
   toggleSidebar: () => void
 }
 
@@ -61,6 +67,10 @@ const SidebarProvider = React.forwardRef<
     name?: string
     widthIcon?: string
     width?: string
+    /** Window width below which the (desktop) sidebar is collapsed to its
+     *  icon rail. It can still be expanded there, temporarily: the user's
+     *  saved preference is neither used nor changed. */
+    compactBreakpoint?: number
   }
 >(
   (
@@ -74,12 +84,27 @@ const SidebarProvider = React.forwardRef<
       name = SIDEBAR_COOKIE_NAME,
       widthIcon = SIDEBAR_WIDTH_ICON,
       width = SIDEBAR_WIDTH,
+      compactBreakpoint,
       ...props
     },
     ref
   ) => {
     const isMobile = useIsMobile()
+    const isBelowCompactBreakpoint = useMediaQuery(
+      compactBreakpoint === undefined
+        ? null
+        : `(max-width: ${compactBreakpoint - 1}px)`
+    )
+    // On mobile the sidebar is a drawer, whatever the compact breakpoint.
+    const isCompact = isBelowCompactBreakpoint && !isMobile
     const [openMobile, setOpenMobile] = React.useState(false)
+    // Expanded state in compact mode: collapsed each time the mode starts.
+    const [openCompact, setOpenCompact] = React.useState(false)
+    const [wasCompact, setWasCompact] = React.useState(isCompact)
+    if (wasCompact !== isCompact) {
+      setWasCompact(isCompact)
+      if (isCompact) setOpenCompact(false)
+    }
 
     // This is the internal state of the sidebar.
     // We use openProp and setOpenProp for control from outside the component.
@@ -93,10 +118,14 @@ const SidebarProvider = React.forwardRef<
         ?.split('=')[1]
       _setOpen(cookieValue === 'true' ? true : defaultOpen)
     }, [name, defaultOpen])
-    const open = openProp ?? _open
+    const open = isCompact ? openCompact : (openProp ?? _open)
     const setOpen = React.useCallback(
       (value: boolean | ((value: boolean) => boolean)) => {
         const openState = typeof value === 'function' ? value(open) : value
+        if (isCompact) {
+          setOpenCompact(openState)
+          return
+        }
         if (setOpenProp) {
           setOpenProp(openState)
         } else {
@@ -106,7 +135,7 @@ const SidebarProvider = React.forwardRef<
         // This sets the cookie to keep the sidebar state.
         document.cookie = `${name}:state=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`
       },
-      [setOpenProp, open, name]
+      [isCompact, setOpenProp, open, name]
     )
 
     // Helper to toggle the sidebar.
@@ -142,11 +171,21 @@ const SidebarProvider = React.forwardRef<
         open,
         setOpen,
         isMobile,
+        isCompact,
         openMobile,
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [
+        state,
+        open,
+        setOpen,
+        isMobile,
+        isCompact,
+        openMobile,
+        setOpenMobile,
+        toggleSidebar,
+      ]
     )
 
     return (

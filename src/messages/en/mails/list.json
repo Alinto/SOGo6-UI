@@ -1,5 +1,17 @@
 {
   "MAILS_LIST": {
+    "breadcrumb": {
+      "string": "Folder path",
+      "context": "Accessible label of the current folder breadcrumb above the mail list."
+    },
+    "breadcrumb_hidden_folders": {
+      "string": "Hidden folders: {path}",
+      "context": "Screen reader text of the \"…\" item replacing the middle folders of a long breadcrumb. {path} is the list of hidden folder names separated by slashes."
+    },
+    "breadcrumb_open_hidden_folder": {
+      "string": "Open {folder} (hidden folders: {path})",
+      "context": "Screen reader text of the \"…\" link of a long breadcrumb, which opens the first hidden folder. {folder} is that folder's name, {path} the list of hidden folder names separated by slashes."
+    },
     "messages_number": {
       "string": "{number, plural, one {# message} other {# messages}}",
       "context": "Displays the number of messages in an mail folder."
@@ -64,6 +76,10 @@
       }
     },
     "filter": {
+      "label": {
+        "string": "Filter messages",
+        "context": "Accessible label of the compact message filter dropdown in the mail list toolbar."
+      },
       "all": {
         "string": "All"
       },

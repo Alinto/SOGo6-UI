@@ -7,7 +7,11 @@ import { isMailDragData, type AppDragData } from '@/components/dnd/types'
 import MobileCreateFab from '@/components/mobile-create-fab'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 import { SkipLink } from '@/components/skip-link'
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import {
+  MAIN_SIDEBAR_COMPACT_BREAKPOINT,
+  SidebarInset,
+  SidebarProvider,
+} from '@/components/ui/sidebar'
 import ContactFormHost from '@/features/address_books/components/contact-form-host'
 import DistributionListFormHost from '@/features/address_books/components/distribution-list-form-host'
 import { useAddressBookDragEnd } from '@/features/address_books/hooks/use-address-book-drag-end'
@@ -192,7 +196,10 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <NotificationToaster />
       <NotificationProvider />
       <ReminderPoller />
-      <SidebarProvider name="left-global-sidebar">
+      <SidebarProvider
+        name="left-global-sidebar"
+        compactBreakpoint={MAIN_SIDEBAR_COMPACT_BREAKPOINT}
+      >
         <DndContext
           sensors={sensors}
           collisionDetection={appCollisionDetection}

@@ -12,7 +12,18 @@ import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import React from 'react'
 
-const ListFilter: React.FC = () => {
+interface ListFilterProps {
+  /** Whether to show the filter toggle buttons (false when the compact
+   *  dropdown is used instead); the layout toggle is not affected. */
+  showFilters?: boolean
+  /** Classes of the full / split layout toggle (e.g. to hide it when narrow). */
+  layoutToggleClassName?: string
+}
+
+const ListFilter: React.FC<ListFilterProps> = ({
+  showFilters = true,
+  layoutToggleClassName,
+}) => {
   const t = useTranslations('MAILS_LIST')
   const searchParams = useSearchParams()
   const pathname = usePathname()
@@ -27,62 +38,65 @@ const ListFilter: React.FC = () => {
   return (
     <div className="flex flex-col items-start gap-1">
       <div className="flex flex-row flex-wrap items-center gap-2">
-        <div className="flex flex-col items-start gap-1">
-          <ToggleGroup
-            variant={'outline'}
-            type="single"
-            value={filter}
-            defaultValue="all"
-            onValueChange={(value) => {
-              const newParams = new URLSearchParams(searchParams.toString())
-              if (!value || value === 'all') {
-                newParams.delete('filter')
-              } else {
-                newParams.set('filter', value)
-              }
-              newParams.delete('page')
-              const query = newParams.toString()
-              push(query ? `${pathname}?${query}` : pathname)
-            }}
-          >
-            <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>
-              {t('filter.all.string')}
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="read"
-              aria-label={t('filter.read.string')}
-              className="w-auto flex-none"
+        {showFilters && (
+          <div className="flex flex-col items-start gap-1">
+            <ToggleGroup
+              variant={'outline'}
+              type="single"
+              value={filter}
+              defaultValue="all"
+              onValueChange={(value) => {
+                const newParams = new URLSearchParams(searchParams.toString())
+                if (!value || value === 'all') {
+                  newParams.delete('filter')
+                } else {
+                  newParams.set('filter', value)
+                }
+                newParams.delete('page')
+                const query = newParams.toString()
+                push(query ? `${pathname}?${query}` : pathname)
+              }}
             >
-              {t('filter.read.string')}
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="unread"
-              aria-label={t('filter.unread.string')}
-              className="w-auto flex-none"
-            >
-              {t('filter.unread.string')}
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="flagged"
-              aria-label={t('filter.flagged.string')}
-              className="w-auto flex-none"
-            >
-              {t('filter.flagged.string')}
-            </ToggleGroupItem>
-            <ToggleGroupItem
-              value="attachments"
-              aria-label={t('filter.attachments.string')}
-              className="w-auto flex-none"
-            >
-              {t('filter.attachments.string')}
-            </ToggleGroupItem>
-          </ToggleGroup>
-        </div>
+              <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>
+                {t('filter.all.string')}
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="read"
+                aria-label={t('filter.read.string')}
+                className="w-auto flex-none"
+              >
+                {t('filter.read.string')}
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="unread"
+                aria-label={t('filter.unread.string')}
+                className="w-auto flex-none"
+              >
+                {t('filter.unread.string')}
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="flagged"
+                aria-label={t('filter.flagged.string')}
+                className="w-auto flex-none"
+              >
+                {t('filter.flagged.string')}
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                value="attachments"
+                aria-label={t('filter.attachments.string')}
+                className="w-auto flex-none"
+              >
+                {t('filter.attachments.string')}
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
+        )}
 
         {!isMobile && (
           <ToggleGroup
             variant="outline"
             type="single"
+            className={layoutToggleClassName}
             value={mailLayoutMode}
             onValueChange={(value) => {
               if (value) {
