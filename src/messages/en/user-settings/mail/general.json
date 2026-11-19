@@ -32,6 +32,14 @@
             "string": "Mark messages as read after (defined) seconds",
             "context": "Checkbox to automatically mark messages as read"
         },
+        "immediately_on_display": {
+            "string": "Immediately on display",
+            "context": "Option to mark a message as read as soon as it is displayed"
+        },
+        "after_displaying_for_seconds": {
+            "string": "After 5 seconds on display",
+            "context": "Option to mark a message as read once it has been displayed for 5 seconds"
+        },
         "collect_unknown_addresses": {
             "string": "Save unknown mail addresses into an addressbook",
             "context": "Checkbox to collect unknown mail addresses"
