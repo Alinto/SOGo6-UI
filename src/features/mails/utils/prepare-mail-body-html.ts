@@ -109,5 +109,7 @@ export function prepareMailBodyHtml(
   } else {
     html = blockExternalImages(html)
   }
-  return sanitizeEmailHtml(html)
+  return sanitizeEmailHtml(html, {
+    allowRemoteContent: options.includeExternalImages,
+  })
 }
