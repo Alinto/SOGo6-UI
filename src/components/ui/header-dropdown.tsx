@@ -24,10 +24,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useLogoutMutation } from '@/features/auth/components/store/auth.api'
 import { logout } from '@/features/auth/components/store/auth.slice'
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
+import { waitForLogoutWipe } from '@/features/offline/auth/logout-wipe'
 import { redirectAfterLogout } from '@/features/offline/auth/redirect-after-logout'
 import { countPendingOutbox } from '@/features/offline/db/outbox-store'
 import { isPwaOutboxEnabled } from '@/features/offline/flags'
-import { wipeOnLogout } from '@/features/offline/hooks/use-offline-draft-sync'
 import { useOutboxList } from '@/features/offline/hooks/use-outbox'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { ProfileAvatar } from '@/features/user-profile/components/profile-avatar'
@@ -74,10 +74,9 @@ const HeaderDropdown: React.FC = () => {
 
   const performLogout = useCallback(() => {
     const finishLocalLogout = () => {
-      void wipeOnLogout(authUser?.uid).finally(() => {
-        dispatch(logout())
-        redirectAfterLogout(push)
-      })
+      // The logout listener wipes the offline data; leave once it is done.
+      dispatch(logout())
+      void waitForLogoutWipe().finally(() => redirectAfterLogout(push))
     }
 
     const online =
@@ -91,7 +90,7 @@ const HeaderDropdown: React.FC = () => {
       .unwrap()
       .catch(() => undefined)
       .finally(finishLocalLogout)
-  }, [authUser?.uid, dispatch, push, revokeSession])
+  }, [dispatch, push, revokeSession])
 
   const handleLogoutClick = async () => {
     let count = pendingCount

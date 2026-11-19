@@ -3,6 +3,7 @@ import { clearAllDrafts } from '@/features/mails/store/mail-compose-slice'
 import { clearSelectedMails } from '@/features/mails/store/mail-layout-slice'
 import { clearMailNavigation } from '@/features/mails/store/mail-navigation-slice'
 import { clearMailSearch } from '@/features/mails/store/mail-search-slice'
+import { startLogoutWipe } from '@/features/offline/auth/logout-wipe'
 import { apiSlice } from '@/lib/redux/api/api-slice'
 import { startAppListening } from '@/lib/redux/listener-middleware'
 import { getSSEServiceInstance, sseApi } from '@/lib/redux/sse/sse-api'
@@ -22,6 +23,10 @@ startAppListening({
   actionCreator: logout,
   effect: (_, listenerApi) => {
     listenerApi.cancelActiveListeners()
+
+    // The reducer already cleared auth: read the uid from the state before it.
+    const userId = listenerApi.getOriginalState().auth?.user?.uid
+    void startLogoutWipe(userId)
 
     getSSEServiceInstance()?.disconnect()
     listenerApi.dispatch(clearAllDrafts())
