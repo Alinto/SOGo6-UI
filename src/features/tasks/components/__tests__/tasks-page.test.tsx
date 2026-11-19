@@ -17,9 +17,13 @@ jest.mock('../task-selection-toolbar', () => ({
   default: () => <div data-testid="task-selection-toolbar" />,
 }))
 
+const mockTaskListProps = jest.fn()
 jest.mock('../task-list', () => ({
   __esModule: true,
-  default: () => <div data-testid="task-list" />,
+  default: (props: Record<string, unknown>) => {
+    mockTaskListProps(props)
+    return <div data-testid="task-list" />
+  },
 }))
 
 jest.mock('@/components/ui/alert-dialog', () => ({
@@ -116,5 +120,19 @@ describe('TasksPage', () => {
       expect(screen.getByText('page_title.string')).toBeInTheDocument()
       expect(screen.getByTestId('task-list')).toBeInTheDocument()
     })
+  })
+
+  it('passes the load error and retry to the task list', () => {
+    const refetch = jest.fn()
+    mockUseTaskState.mockReturnValue({
+      ...mockUseTaskState(),
+      isError: true,
+      refetch,
+    })
+    render(<TasksPage />)
+
+    expect(mockTaskListProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({ isError: true, onRetry: refetch })
+    )
   })
 })

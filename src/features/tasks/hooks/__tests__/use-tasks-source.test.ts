@@ -1,6 +1,6 @@
+import { skipToken } from '@reduxjs/toolkit/query'
 import '@testing-library/jest-dom'
 import { renderHook } from '@testing-library/react'
-import { skipToken } from '@reduxjs/toolkit/query'
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppSelector: jest.fn(),
@@ -38,6 +38,45 @@ describe('useTasksSource', () => {
       data: undefined,
       isLoading: false,
       isFetching: false,
+    })
+  })
+
+  describe('errors', () => {
+    it('reports the global query error and its refetch', () => {
+      const refetch = jest.fn()
+      mockUseGetTasksQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isFetching: false,
+        isError: true,
+        refetch,
+      })
+      const { result } = renderHook(() => useTasksSource())
+      expect(result.current.isError).toBe(true)
+      result.current.refetch()
+      expect(refetch).toHaveBeenCalledTimes(1)
+    })
+
+    it('reports the calendar query error when a calendar is selected', () => {
+      mockUseAppSelector.mockReturnValue({
+        selectedCalendarKey: 'cal-1',
+        searchQuery: '',
+      })
+      mockUseGetTasksQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isFetching: false,
+        isError: false,
+      })
+      mockUseGetCalendarTasksQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isFetching: false,
+        isError: true,
+        refetch: jest.fn(),
+      })
+      const { result } = renderHook(() => useTasksSource())
+      expect(result.current.isError).toBe(true)
     })
   })
 

@@ -21,6 +21,17 @@
     "empty_description": {
       "string": "Create your first task to get organized."
     },
+    "load_error": {
+      "title": {
+        "string": "Tasks could not be loaded"
+      },
+      "description": {
+        "string": "Check your connection, then try again."
+      },
+      "retry": {
+        "string": "Try again"
+      }
+    },
     "overdue": {
       "string": "Overdue"
     },

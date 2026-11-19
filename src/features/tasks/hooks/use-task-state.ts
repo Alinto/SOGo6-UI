@@ -2,8 +2,8 @@
 
 import { useGetCalendarsQuery } from '@/features/calendars'
 import { isPersonalCalendar } from '@/features/calendars/utils/calendar-source-type'
-import type { Task, TaskListFilter } from '../tasks-types'
-import { taskMatchesListFilter } from '../utils/task-list-filter'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
+import { useCallback, useMemo } from 'react'
 import {
   useCreateTaskMutation,
   useDeleteTaskMutation,
@@ -18,14 +18,20 @@ import {
   setSearchQuery,
   setStatusFilter,
 } from '../store/tasks-ui-slice'
-import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
-import { useCallback, useMemo } from 'react'
+import type { Task, TaskListFilter } from '../tasks-types'
+import { taskMatchesListFilter } from '../utils/task-list-filter'
 import { useTasksSource } from './use-tasks-source'
 
 export function useTaskState() {
   const dispatch = useAppDispatch()
   const ui = useAppSelector(selectTasksUi)
-  const { tasks: tasksSource, isLoading, isFetching } = useTasksSource()
+  const {
+    tasks: tasksSource,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useTasksSource()
 
   const { data: calendars = [], isLoading: calendarsLoading } =
     useGetCalendarsQuery()
@@ -67,6 +73,8 @@ export function useTaskState() {
     tasks: filteredTasks,
     isLoading,
     isFetching,
+    isError,
+    refetch,
     calendars,
     writableCalendars,
     calendarsLoading,
