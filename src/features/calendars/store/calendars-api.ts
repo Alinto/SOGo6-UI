@@ -379,6 +379,25 @@ const notifyTriggerSync = createCalendarNotifyMutation({
   errorMessage: 'external_calendar_sync.error.message.string',
 })
 
+type RemindersPayload = {
+  reminders?: CalendarReminder[] | null
+  total_count?: number
+}
+
+/** The server wraps the list as `data: { reminders, total_count }`. */
+export function extractReminders(
+  response:
+    | ApiDataResponse<RemindersPayload | CalendarReminder[] | null>
+    | RemindersPayload
+    | CalendarReminder[]
+    | null
+    | undefined
+): CalendarReminder[] {
+  const payload = response ? unwrapApiData(response) : null
+  if (Array.isArray(payload)) return payload
+  return Array.isArray(payload?.reminders) ? payload.reminders : []
+}
+
 function unwrapApiData<T>(response: ApiDataResponse<T> | T): T {
   if (response && typeof response === 'object' && 'data' in response) {
     return (response as ApiDataResponse<T>).data
@@ -755,9 +774,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       { method: string; lookahead: number }
     >({
       query: remindersQuery,
-      transformResponse: (
-        response: ApiDataResponse<CalendarReminder[]> | CalendarReminder[]
-      ) => unwrapApiData(response) ?? [],
+      transformResponse: extractReminders,
       providesTags: [CALENDAR_REMINDERS_SLICE],
     }),
     getCalendarShare: builder.query<CalendarShareData, { calendarKey: string }>(
