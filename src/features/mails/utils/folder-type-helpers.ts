@@ -1,5 +1,9 @@
 import type { IconName } from 'lucide-react/dynamic'
-import type { ImapFolderType, ImapMessagesList } from '../mails-types'
+import type {
+  ImapFolder,
+  ImapFolderType,
+  ImapMessagesList,
+} from '../mails-types'
 
 export type NormalizedFolderType = ImapFolderType | undefined
 
@@ -14,6 +18,19 @@ export function normalizeFolderType(
 export function isDraftFolderType(type?: ImapFolderType): boolean {
   const normalized = normalizeFolderType(type)
   return normalized === 'DRAFT'
+}
+
+/** Path of the account's drafts folder, whatever its IMAP name, if any. */
+export function findDraftFolderPath(folders: ImapFolder[]): string | undefined {
+  for (const folder of folders) {
+    if (isDraftFolderType(folder.type)) return folder.path
+    const nested = folder.subfolders ?? folder.children
+    if (nested?.length) {
+      const found = findDraftFolderPath(nested)
+      if (found) return found
+    }
+  }
+  return undefined
 }
 
 export function isSentFolderType(type?: ImapFolderType): boolean {
