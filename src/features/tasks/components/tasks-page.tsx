@@ -22,6 +22,8 @@ function TasksPage() {
   const {
     tasks,
     isLoading,
+    isError,
+    refetch,
     calendars,
     ui,
     handleToggleComplete,
@@ -112,6 +114,8 @@ function TasksPage() {
             tasks={tasks}
             calendars={calendars}
             isLoading={isLoading}
+            isError={isError}
+            onRetry={refetch}
             onToggleComplete={handleToggleComplete}
             onEdit={openEditForm}
             onDelete={setDeleteKey}
