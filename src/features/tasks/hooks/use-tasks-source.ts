@@ -1,12 +1,9 @@
 'use client'
 
-import {
-  useGetCalendarTasksQuery,
-  useGetTasksQuery,
-} from '../store/tasks-api'
-import { selectTasksUi } from '../store/tasks-ui-slice'
 import { useAppSelector } from '@/lib/redux/hooks'
 import { skipToken } from '@reduxjs/toolkit/query'
+import { useGetCalendarTasksQuery, useGetTasksQuery } from '../store/tasks-api'
+import { selectTasksUi } from '../store/tasks-ui-slice'
 
 /** Raw task list from global or calendar-scoped query (same source as useTaskState). */
 export function useTasksSource() {
@@ -28,7 +25,8 @@ export function useTasksSource() {
       : skipToken
   )
 
-  const tasks = selectedCalendarKey ? calendarQuery.data : globalQuery.data
+  const activeQuery = selectedCalendarKey ? calendarQuery : globalQuery
+  const tasks = activeQuery.data
 
   const isLoading = selectedCalendarKey
     ? calendarQuery.isLoading
@@ -42,6 +40,8 @@ export function useTasksSource() {
     tasks,
     isLoading,
     isFetching,
+    isError: activeQuery.isError,
+    refetch: activeQuery.refetch,
     selectedCalendarKey,
   }
 }

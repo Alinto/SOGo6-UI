@@ -1,16 +1,22 @@
 'use client'
 
+import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { Calendar } from '@/features/calendars/calendars-types'
 import type { Task } from '@/features/tasks/tasks-types'
+import { AlertCircle } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { memo } from 'react'
 import TaskEmptyState from './task-empty-state'
 import TaskItem from './task-item'
-import { memo } from 'react'
 
 type TaskListProps = {
   tasks: Task[]
   calendars: Calendar[]
   isLoading: boolean
+  /** The task request failed: show an error, never the empty state. */
+  isError?: boolean
+  onRetry?: () => void
   onToggleComplete: (task: Task) => Promise<void>
   onEdit: (taskKey: string) => void
   onDelete: (taskKey: string) => void
@@ -33,10 +39,37 @@ function TaskListSkeleton() {
   )
 }
 
+function TaskListError({ onRetry }: { onRetry?: () => void }) {
+  const t = useTranslations('TASKS')
+
+  return (
+    <div
+      role="alert"
+      data-testid="tasks-error-state"
+      className="flex flex-col items-center justify-center gap-4 py-16 text-center"
+    >
+      <AlertCircle className="text-destructive h-12 w-12 opacity-60" />
+      <div className="space-y-1">
+        <p className="text-sm font-medium">{t('load_error.title.string')}</p>
+        <p className="text-muted-foreground max-w-sm text-xs">
+          {t('load_error.description.string')}
+        </p>
+      </div>
+      {onRetry && (
+        <Button type="button" variant="outline" onClick={onRetry}>
+          {t('load_error.retry.string')}
+        </Button>
+      )}
+    </div>
+  )
+}
+
 function TaskList({
   tasks,
   calendars,
   isLoading,
+  isError = false,
+  onRetry,
   onToggleComplete,
   onEdit,
   onDelete,
@@ -47,6 +80,10 @@ function TaskList({
 }: TaskListProps) {
   if (isLoading) {
     return <TaskListSkeleton />
+  }
+
+  if (isError) {
+    return <TaskListError onRetry={onRetry} />
   }
 
   if (tasks.length === 0) {
