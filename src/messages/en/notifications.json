@@ -31,6 +31,14 @@
             }
         },
         "mail_action": {
+            "bulk_partial": {
+                "title": {
+                    "string": "Action partly applied"
+                },
+                "message": {
+                    "string": "Some messages could not be processed and were left in place. Folders affected:"
+                }
+            },
             "spam": {
                 "successTitle": {
                     "string": "Marked as spam"

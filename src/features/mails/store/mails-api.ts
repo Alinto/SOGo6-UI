@@ -1,3 +1,4 @@
+import { addNotification } from '@/features/notifications'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import { USER_CLASS_ANY, USER_CLASS_USER } from '@/lib/constants/user-class'
 import {
@@ -27,6 +28,10 @@ import type { MailListFilter } from '../utils/client-mail-list-filter'
 import { getFolderPermissions } from '../utils/folder-permissions'
 import { getMailActionNotificationKeys } from '../utils/get-mail-action-notification-keys'
 import { getMailBatchActionNotificationKeys } from '../utils/get-mail-batch-action-notification-keys'
+import {
+  toMailBatchActionResult,
+  type MailBatchActionResult,
+} from '../utils/mail-batch-action-result'
 import {
   buildRightsFromPermissions,
   getActiveAdvancedCodes,
@@ -657,7 +662,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
 
     mailBatchAction: builder.mutation<
-      void,
+      MailBatchActionResult,
       {
         accountId?: string
         folders: MailBatchActionFolders
@@ -666,15 +671,19 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       }
     >({
       query: mailBatchActionQuery,
+      transformResponse: toMailBatchActionResult,
       async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
-        const patchResults: Array<{ undo: () => void }> = []
+        // Optimistic patches per folder, so a folder the server rejected can be restored alone.
+        const patchesByFolder = new Map<string, Array<{ undo: () => void }>>()
         const folderEntries = Object.entries(arg.folders)
+        const seenToggle = isMailActionSeenFlagToggle(arg)
 
-        if (isMailActionSeenFlagToggle(arg)) {
+        if (seenToggle) {
           const seen = arg.action === 'tag'
           for (const [folder, mailIds] of folderEntries) {
-            patchResults.push(
-              ...dispatchSeenPatchOnAllFolderMessageCachesBatch(
+            patchesByFolder.set(
+              folder,
+              dispatchSeenPatchOnAllFolderMessageCachesBatch(
                 dispatch,
                 getState() as RootState,
                 {
@@ -686,18 +695,11 @@ const injectedEndpoints = apiSlice.injectEndpoints({
               )
             )
           }
-          try {
-            await queryFulfilled
-          } catch {
-            patchResults.forEach((p) => p.undo())
-          }
-          return
-        }
-
-        if (isFolderRemovingAction(arg.action)) {
+        } else if (isFolderRemovingAction(arg.action)) {
           for (const [folder, mailIds] of folderEntries) {
-            patchResults.push(
-              ...removeMailsFromAllFolderCaches(
+            patchesByFolder.set(
+              folder,
+              removeMailsFromAllFolderCaches(
                 dispatch,
                 getState() as RootState,
                 {
@@ -708,14 +710,59 @@ const injectedEndpoints = apiSlice.injectEndpoints({
               )
             )
           }
-          try {
-            await queryFulfilled
-          } catch {
-            patchResults.forEach((p) => p.undo())
+        }
+
+        const undoFolders = (folders: Iterable<string>) => {
+          for (const folder of folders) {
+            patchesByFolder.get(folder)?.forEach((patch) => patch.undo())
           }
         }
 
+        let failedFolders: string[]
+        try {
+          const { data } = await queryFulfilled
+          failedFolders = data.failedFolders
+        } catch {
+          undoFolders(patchesByFolder.keys())
+          const notifKeys = getMailBatchActionNotificationKeys(arg)
+          if (notifKeys) {
+            await createApiNotificationHandler(dispatch, notifKeys)(undefined, {
+              queryFulfilled,
+            })
+          }
+          return
+        }
+
+        undoFolders(failedFolders)
+        const allFailed =
+          failedFolders.length > 0 &&
+          failedFolders.length >= folderEntries.length
         const notifKeys = getMailBatchActionNotificationKeys(arg)
+
+        if (allFailed && notifKeys) {
+          dispatch(
+            addNotification({
+              type: 'error',
+              title: notifKeys.errorTitle ?? '',
+              message: notifKeys.errorMessage ?? '',
+              details: failedFolders.join(', '),
+              duration: 5000,
+            })
+          )
+          return
+        }
+        if (failedFolders.length > 0) {
+          dispatch(
+            addNotification({
+              type: 'info',
+              title: 'mail_action.bulk_partial.title.string',
+              message: 'mail_action.bulk_partial.message.string',
+              details: failedFolders.join(', '),
+              duration: 8000,
+            })
+          )
+          return
+        }
         if (notifKeys) {
           await createApiNotificationHandler(dispatch, notifKeys)(undefined, {
             queryFulfilled,
