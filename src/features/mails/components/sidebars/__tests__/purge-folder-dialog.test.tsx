@@ -1,15 +1,25 @@
 import '@testing-library/jest-dom'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { PurgeFolderDialog } from '../purge-folder-dialog'
+import { getDateFromPreset, PurgeFolderDialog } from '../purge-folder-dialog'
 
 // --- Mocks ---
 
 const mockPurgeFolder = jest.fn(() => ({
   unwrap: () => Promise.resolve(),
 }))
+const mockPurgeMailbox = jest.fn(() => ({
+  unwrap: () => Promise.resolve(),
+}))
 jest.mock('@/features/mails/store/mails-api', () => ({
-  usePurgeFolderMutation: jest.fn(() => [mockPurgeFolder, { isLoading: false }]),
+  usePurgeFolderMutation: jest.fn(() => [
+    mockPurgeFolder,
+    { isLoading: false },
+  ]),
+  usePurgeMailboxMutation: jest.fn(() => [
+    mockPurgeMailbox,
+    { isLoading: false },
+  ]),
 }))
 
 jest.mock('next-intl', () => ({
@@ -19,10 +29,7 @@ jest.mock('next-intl', () => ({
 jest.mock('@/components/ui/calendar-core', () => ({
   Calendar: ({ onSelect, selected }: any) => (
     <div data-testid="calendar">
-      <button
-        type="button"
-        onClick={() => onSelect?.(new Date('2024-01-15'))}
-      >
+      <button type="button" onClick={() => onSelect?.(new Date('2024-01-15'))}>
         Pick
       </button>
     </div>
@@ -86,12 +93,7 @@ describe('PurgeFolderDialog', () => {
 
   describe('configuration', () => {
     it('should display folder name in title', () => {
-      render(
-        <PurgeFolderDialog
-          {...defaultProps}
-          folderName="Custom Folder"
-        />
-      )
+      render(<PurgeFolderDialog {...defaultProps} folderName="Custom Folder" />)
       const heading = screen.getByRole('heading', {
         name: /Custom Folder/,
       })
@@ -167,10 +169,7 @@ describe('PurgeFolderDialog', () => {
       const user = userEvent.setup()
       const onOpenChange = jest.fn()
       render(
-        <PurgeFolderDialog
-          {...defaultProps}
-          onOpenChange={onOpenChange}
-        />
+        <PurgeFolderDialog {...defaultProps} onOpenChange={onOpenChange} />
       )
 
       const cancelButton = screen.getByRole('button', {
@@ -182,5 +181,55 @@ describe('PurgeFolderDialog', () => {
         expect(onOpenChange).toHaveBeenCalledWith(false)
       })
     })
+  })
+  describe('mailbox scope', () => {
+    it('purges every folder of the mailbox when no folder is given', async () => {
+      const user = userEvent.setup()
+      render(
+        <PurgeFolderDialog
+          {...defaultProps}
+          folderPath={undefined}
+          folderName="me@example.com"
+          hasSubfolders
+        />
+      )
+
+      expect(
+        screen.getByRole('heading', {
+          name: /folders.actions.purge.confirmTitleMailbox/,
+        })
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByText('folders.actions.purge.applyToSubfolders.string')
+      ).not.toBeInTheDocument()
+
+      const purgeButton = screen.getByRole('button', {
+        name: 'folders.actions.purge.confirm.string',
+      })
+      await waitFor(() => expect(purgeButton).not.toBeDisabled())
+      await user.click(purgeButton)
+
+      await waitFor(() => {
+        expect(mockPurgeMailbox).toHaveBeenCalledWith(
+          expect.objectContaining({ accountId: '0', permanentlyDelete: false })
+        )
+      })
+      expect(mockPurgeFolder).not.toHaveBeenCalled()
+    })
+  })
+})
+
+describe('getDateFromPreset', () => {
+  afterEach(() => jest.useRealTimers())
+
+  it('sends tomorrow for "all" so mails received today are purged', () => {
+    jest.useFakeTimers().setSystemTime(new Date('2026-11-19T10:00:00'))
+    expect(getDateFromPreset('all')).toBe('2026-11-20')
+  })
+
+  it('formats a custom date', () => {
+    expect(getDateFromPreset('custom', new Date('2024-01-15T12:00:00'))).toBe(
+      '2024-01-15'
+    )
   })
 })

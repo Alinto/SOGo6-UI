@@ -32,6 +32,7 @@ import {
   getActiveAdvancedCodes,
 } from '../utils/permission-mapping'
 import { sortImapFoldersTree } from '../utils/sort-folders'
+import { refreshFolderUnseenCount } from './folder-tree-cache'
 import {
   dispatchGetMailSeenPatch,
   dispatchSeenPatchOnAllFolderMessageCaches,
@@ -192,6 +193,61 @@ export function downloadSelectedMailsQuery({
   }
 }
 
+const folderUrl = (accountId: string, folderPath: string) =>
+  `mailboxes/${accountId}/folders/${encodeURIComponent(folderPath)}`
+
+export const getFolderQuery = ({
+  accountId,
+  folderPath,
+}: {
+  accountId: string
+  folderPath: string
+}) => folderUrl(accountId, folderPath)
+
+export const mailboxTagsQuery = ({ accountId }: { accountId: string }) =>
+  `mailboxes/${accountId}/tags`
+
+export const emptyFolderQuery = ({
+  accountId,
+  folderPath,
+}: {
+  accountId: string
+  folderPath: string
+}) => ({
+  url: `${folderUrl(accountId, folderPath)}/empty`,
+  method: 'POST' as const,
+})
+
+/** Flags every mail of the folder as seen, through the folder batch action. */
+export const markFolderAsReadQuery = ({
+  accountId,
+  folderPath,
+}: {
+  accountId: string
+  folderPath: string
+}) => ({
+  url: `${folderUrl(accountId, folderPath)}/batch-action`,
+  method: 'POST' as const,
+  body: { action: 'tag' as const, data: ['\\Seen'] },
+})
+
+export const purgeMailboxQuery = ({
+  accountId,
+  date,
+  permanentlyDelete,
+}: {
+  accountId: string
+  date?: string
+  permanentlyDelete?: boolean
+}) => ({
+  url: `mailboxes/${accountId}/purge`,
+  method: 'POST' as const,
+  body: {
+    permanently_delete: permanentlyDelete ?? false,
+    date: date ?? new Date().toISOString().slice(0, 10),
+  },
+})
+
 export function folderActionQuery({
   accountId,
   folderPath,
@@ -333,6 +389,23 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         return sortImapFoldersTree(folders)
       },
       providesTags: [MAILS_FOLDERS_SLICE],
+    }),
+
+    /** One folder with its counters (no children, no rights). */
+    getFolder: builder.query<
+      ImapFolder,
+      { accountId: string; folderPath: string }
+    >({
+      query: getFolderQuery,
+      transformResponse: (response: BackendResponse<RawImapFolder>) =>
+        normalizeImapFolder(response.data),
+    }),
+
+    /** Distinct IMAP flags/keywords used on the mails of a mailbox. */
+    getMailboxTags: builder.query<string[], { accountId: string }>({
+      query: mailboxTagsQuery,
+      transformResponse: (response: BackendResponse<string[]>) =>
+        response.data ?? [],
     }),
 
     getFolderMessages: builder.query<
@@ -752,6 +825,84 @@ const injectedEndpoints = apiSlice.injectEndpoints({
       },
     }),
 
+    /** Purges the mails older than `date` in every folder of the mailbox. */
+    purgeMailbox: builder.mutation<
+      { mails_deleted: number },
+      { accountId: string; date?: string; permanentlyDelete?: boolean }
+    >({
+      query: purgeMailboxQuery,
+      transformResponse: (
+        response: BackendResponse<{ mails_deleted: number }>
+      ) => response.data ?? { mails_deleted: 0 },
+      invalidatesTags: (_result, _error, { accountId }) => [
+        FOLDER_MESSAGES_SLICE,
+        { type: SEARCH_MAILS_SLICE, id: accountId },
+        MAILS_FOLDERS_SLICE,
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'mailbox_purge.successTitle.string',
+          successMessage: 'mailbox_purge.successMessage.string',
+          errorTitle: 'mailbox_purge.errorTitle.string',
+          errorMessage: 'mailbox_purge.errorMessage.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
+    /** Flags every mail of a folder as seen, without listing their uids. */
+    markFolderAsRead: builder.mutation<
+      void,
+      { accountId: string; folderPath: string }
+    >({
+      query: markFolderAsReadQuery,
+      transformResponse: () => undefined,
+      invalidatesTags: (_result, _error, { accountId, folderPath }) => [
+        { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        { type: SEARCH_MAILS_SLICE, id: accountId },
+      ],
+      async onQueryStarted(arg, { dispatch, getState, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_mark_as_read.successTitle.string',
+          successMessage: 'folders_mark_as_read.successMessage.string',
+          errorTitle: 'folders_mark_as_read.errorTitle.string',
+          errorMessage: 'folders_mark_as_read.errorMessage.string',
+        })(undefined, { queryFulfilled })
+        try {
+          await queryFulfilled
+        } catch {
+          return
+        }
+        await refreshFolderUnseenCount(dispatch, getState, arg)
+      },
+    }),
+
+    /**
+     * Permanently deletes every mail of a Trash or Junk folder. The back also
+     * deletes all its subfolders, so the whole folder tree is reloaded.
+     */
+    emptyFolder: builder.mutation<
+      { mails_deleted: number },
+      { accountId: string; folderPath: string }
+    >({
+      query: emptyFolderQuery,
+      transformResponse: (
+        response: BackendResponse<{ mails_deleted: number }>
+      ) => response.data ?? { mails_deleted: 0 },
+      invalidatesTags: (_result, _error, { accountId, folderPath }) => [
+        { type: FOLDER_MESSAGES_SLICE, folder: folderPath },
+        { type: SEARCH_MAILS_SLICE, id: accountId },
+        MAILS_FOLDERS_SLICE,
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        await createApiNotificationHandler(dispatch, {
+          successTitle: 'folders_empty.successTitle.string',
+          successMessage: 'folders_empty.successMessage.string',
+          errorTitle: 'folders_empty.errorTitle.string',
+          errorMessage: 'folders_empty.errorMessage.string',
+        })(undefined, { queryFulfilled })
+      },
+    }),
+
     expungeFolder: builder.mutation<
       { mail_deleted: number },
       { accountId: string; folderPath: string }
@@ -1041,7 +1192,12 @@ export const {
   useDownloadMailMutation,
   useDownloadSelectedMailsMutation,
   useLazyGetMailRawQuery,
+  useGetFolderQuery,
+  useGetMailboxTagsQuery,
   usePurgeFolderMutation,
+  usePurgeMailboxMutation,
+  useMarkFolderAsReadMutation,
+  useEmptyFolderMutation,
   useExpungeFolderMutation,
   useGetFolderShareQuery,
   useLazyGetFolderShareQuery,

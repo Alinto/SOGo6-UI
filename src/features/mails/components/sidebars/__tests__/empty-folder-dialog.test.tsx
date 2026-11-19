@@ -3,12 +3,15 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EmptyFolderDialog } from '../empty-folder-dialog'
 
-const mockPurgeFolder = jest.fn(() => ({
+const mockEmptyFolder = jest.fn(() => ({
   unwrap: () => Promise.resolve(),
 }))
 
 jest.mock('@/features/mails/store/mails-api', () => ({
-  usePurgeFolderMutation: jest.fn(() => [mockPurgeFolder, { isLoading: false }]),
+  useEmptyFolderMutation: jest.fn(() => [
+    mockEmptyFolder,
+    { isLoading: false },
+  ]),
 }))
 
 jest.mock('next-intl', () => ({
@@ -31,7 +34,7 @@ const defaultProps = {
 describe('EmptyFolderDialog', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockPurgeFolder.mockImplementation(() => ({
+    mockEmptyFolder.mockImplementation(() => ({
       unwrap: () => Promise.resolve(),
     }))
   })
@@ -43,7 +46,7 @@ describe('EmptyFolderDialog', () => {
     ).toBeInTheDocument()
   })
 
-  it('purges folder permanently on confirm', async () => {
+  it('empties the folder on confirm', async () => {
     const user = userEvent.setup()
     const onOpenChange = jest.fn()
     render(<EmptyFolderDialog {...defaultProps} onOpenChange={onOpenChange} />)
@@ -55,15 +58,29 @@ describe('EmptyFolderDialog', () => {
     )
 
     await waitFor(() => {
-      expect(mockPurgeFolder).toHaveBeenCalledWith(
-        expect.objectContaining({
-          accountId: '0',
-          folderPath: 'Trash',
-          permanentlyDelete: true,
-          applyToSubfolders: false,
-        })
-      )
+      expect(mockEmptyFolder).toHaveBeenCalledWith({
+        accountId: '0',
+        folderPath: 'Trash',
+      })
       expect(onOpenChange).toHaveBeenCalledWith(false)
     })
+  })
+
+  it('keeps the dialog open when emptying fails', async () => {
+    const user = userEvent.setup()
+    const onOpenChange = jest.fn()
+    mockEmptyFolder.mockImplementation(() => ({
+      unwrap: () => Promise.reject(new Error('boom')),
+    }))
+    render(<EmptyFolderDialog {...defaultProps} onOpenChange={onOpenChange} />)
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'folders.actions.empty_folder_dialog.confirm.string',
+      })
+    )
+
+    await waitFor(() => expect(mockEmptyFolder).toHaveBeenCalled())
+    expect(onOpenChange).not.toHaveBeenCalledWith(false)
   })
 })

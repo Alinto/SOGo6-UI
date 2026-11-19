@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Loader2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { usePurgeFolderMutation } from '../../store/mails-api'
+import { useEmptyFolderMutation } from '../../store/mails-api'
 
 export interface EmptyFolderDialogProps {
   open: boolean
@@ -30,17 +30,11 @@ export function EmptyFolderDialog({
   folderName,
 }: EmptyFolderDialogProps) {
   const t = useTranslations('MAILS_COMMONS')
-  const [purgeFolder, { isLoading }] = usePurgeFolderMutation()
+  const [emptyFolder, { isLoading }] = useEmptyFolderMutation()
 
   const handleConfirm = async () => {
     try {
-      await purgeFolder({
-        accountId,
-        folderPath,
-        permanentlyDelete: true,
-        applyToSubfolders: false,
-        date: new Date().toISOString().slice(0, 10),
-      }).unwrap()
+      await emptyFolder({ accountId, folderPath }).unwrap()
       onOpenChange(false)
     } catch {
       // handled by notification handler

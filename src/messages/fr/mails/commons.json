@@ -359,6 +359,10 @@
                 "string": "Déléguer",
                 "description": "Label for the delegate action in the account switcher menu (not yet implemented)"
             },
+            "purge": {
+                "string": "Purger la boîte",
+                "description": "Label for the action purging every folder of the current mailbox in the account switcher menu"
+            },
             "quota": {
                 "string": "{percent}% utilisé sur {total} Mo",
                 "description": "Storage quota usage summary shown below the account switcher",
@@ -427,6 +431,24 @@
                 "mark_as_read": {
                     "string": "Marquer comme lu",
                     "description": "Button to mark the current folder as read"
+                },
+                "mark_as_read_dialog": {
+                    "title": {
+                        "string": "Marquer le dossier comme lu",
+                        "description": "Title of the dialog confirming that every mail of a folder is marked as read"
+                    },
+                    "description": {
+                        "string": "Marquer tous les messages de « {folder} » comme lus ?",
+                        "description": "Body of the mark-folder-as-read dialog; {folder} is the folder name"
+                    },
+                    "confirm": {
+                        "string": "Marquer comme lu",
+                        "description": "Confirm button of the mark-folder-as-read dialog"
+                    },
+                    "cancel": {
+                        "string": "Annuler",
+                        "description": "Cancel button of the mark-folder-as-read dialog"
+                    }
                 },
                 "export": {
                     "string": "Exporter",
@@ -674,6 +696,14 @@
                     },
                     "confirmDesc": {
                         "string": "Voulez-vous vraiment purger \"{folder}\" ? Tous les messages supprimés seront définitivement effacés. Cette action est irréversible."
+                    },
+                    "confirmTitleMailbox": {
+                        "string": "Purger la boîte",
+                        "description": "Title of the purge dialog opened from the account switcher, for the whole mailbox"
+                    },
+                    "confirmDescMailbox": {
+                        "string": "Voulez-vous vraiment purger tous les dossiers de « {mailbox} » ? Les messages sélectionnés seront supprimés de tous les dossiers. Cette action est irréversible.",
+                        "description": "Description of the purge dialog for the whole mailbox; {mailbox} is the mailbox address"
                     },
                     "confirm": {
                         "string": "Purger"

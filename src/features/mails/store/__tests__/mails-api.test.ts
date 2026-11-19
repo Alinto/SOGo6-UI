@@ -1,11 +1,16 @@
 import type { FolderShareUser } from '../../mails-types'
 import {
+  emptyFolderQuery,
   getFolderMessagesQuery,
+  getFolderQuery,
   getFoldersQuery,
   getMailQuery,
   mailActionQuery,
   mailBatchActionQuery,
+  mailboxTagsQuery,
+  markFolderAsReadQuery,
   moveToTrashQuery,
+  purgeMailboxQuery,
   setFolderShareQuery,
 } from '../mails-api'
 
@@ -285,6 +290,54 @@ describe('mailsApi', () => {
         ],
       })
       expect(query.body[0].permissions).toEqual(['p'])
+    })
+  })
+
+  describe('folder and mailbox actions', () => {
+    it('targets one folder, encoding its path', () => {
+      expect(getFolderQuery({ accountId: '1', folderPath: 'INBOX/Work' })).toBe(
+        'mailboxes/1/folders/INBOX%2FWork'
+      )
+    })
+
+    it('lists the mailbox tags', () => {
+      expect(mailboxTagsQuery({ accountId: '0' })).toBe('mailboxes/0/tags')
+    })
+
+    it('empties a folder with the dedicated endpoint', () => {
+      expect(emptyFolderQuery({ accountId: '0', folderPath: 'Trash' })).toEqual(
+        { url: 'mailboxes/0/folders/Trash/empty', method: 'POST' }
+      )
+    })
+
+    it('marks a folder as read by tagging every mail as seen', () => {
+      expect(
+        markFolderAsReadQuery({ accountId: '0', folderPath: 'INBOX' })
+      ).toEqual({
+        url: 'mailboxes/0/folders/INBOX/batch-action',
+        method: 'POST',
+        body: { action: 'tag', data: ['\\Seen'] },
+      })
+    })
+
+    it('purges the whole mailbox', () => {
+      expect(
+        purgeMailboxQuery({
+          accountId: '2',
+          date: '2026-01-01',
+          permanentlyDelete: true,
+        })
+      ).toEqual({
+        url: 'mailboxes/2/purge',
+        method: 'POST',
+        body: { permanently_delete: true, date: '2026-01-01' },
+      })
+    })
+
+    it('defaults the mailbox purge to a soft delete before today', () => {
+      const { body } = purgeMailboxQuery({ accountId: '0' })
+      expect(body.permanently_delete).toBe(false)
+      expect(body.date).toMatch(/^\d{4}-\d{2}-\d{2}$/)
     })
   })
 })

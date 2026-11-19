@@ -27,6 +27,7 @@ import { CreateFolderDialog } from './create-folder-dialog'
 import { DeleteFolderDialog } from './delete-folder-dialog'
 import { EmptyFolderDialog } from './empty-folder-dialog'
 import { ExpungeFolderDialog } from './expunge-folder-dialog'
+import { MarkFolderReadDialog } from './mark-folder-read-dialog'
 import { MoveFolderDialog } from './move-folder-dialog'
 import { PurgeFolderDialog } from './purge-folder-dialog'
 import { RenameFolderDialog } from './rename-folder-dialog'
@@ -232,6 +233,18 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
                 folderPath={folderPath}
                 folderName={folderName}
                 hasSubfolders={hasSubfolders ?? false}
+              />
+            )}
+          {activeAction === 'mark_as_read' &&
+            folderPath &&
+            folderName &&
+            accountId && (
+              <MarkFolderReadDialog
+                open
+                onOpenChange={(open) => !open && closeAction()}
+                accountId={accountId}
+                folderPath={folderPath}
+                folderName={folderName}
               />
             )}
           {activeAction === 'empty_folder' &&

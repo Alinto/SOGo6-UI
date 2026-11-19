@@ -19,6 +19,14 @@ jest.mock('../../hooks/use-mail-category-picker', () => ({
   useMailCategoryPicker: () => ({ allCategories: [] }),
 }))
 
+const mockUseGetMailboxTagsQuery = jest.fn(
+  (_args: unknown, _options?: unknown) => ({ data: undefined })
+)
+jest.mock('../../store/mails-api', () => ({
+  useGetMailboxTagsQuery: (args: unknown, options?: unknown) =>
+    mockUseGetMailboxTagsQuery(args, options),
+}))
+
 const mockUseRecipientSuggestions = jest.fn()
 jest.mock('@/features/address_books/hooks/use-recipient-suggestions', () => ({
   useRecipientSuggestions: (...args: unknown[]) =>
@@ -81,8 +89,10 @@ jest.mock('@/components/ui/inputs/input-with-tags', () => ({
 
 function TestHost({
   onValuesChange,
+  accountId,
 }: {
   onValuesChange?: (values: SearchFormValues) => void
+  accountId?: string
 }) {
   const form = useForm<SearchFormValues>({
     resolver: zodResolver(searchFormSchema),
@@ -91,7 +101,7 @@ function TestHost({
   onValuesChange?.(form.getValues())
   return (
     <Form {...form}>
-      <SearchMoreOptions form={form} open />
+      <SearchMoreOptions form={form} open accountId={accountId} />
     </Form>
   )
 }
@@ -216,5 +226,31 @@ describe('SearchMoreOptions — from/to/bcc autocomplete', () => {
         )
       ).not.toBeInTheDocument()
     }
+  })
+})
+
+describe('SearchMoreOptions — mailbox tags', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockUseRecipientSuggestions.mockReturnValue({
+      suggestions: [],
+      isFetching: false,
+    })
+  })
+
+  it('loads the tags of the searched mailbox', () => {
+    render(<TestHost accountId="1" />)
+    expect(mockUseGetMailboxTagsQuery).toHaveBeenCalledWith(
+      { accountId: '1' },
+      { skip: false }
+    )
+  })
+
+  it('skips the tags request without an account', () => {
+    render(<TestHost />)
+    expect(mockUseGetMailboxTagsQuery).toHaveBeenCalledWith(
+      { accountId: '' },
+      { skip: true }
+    )
   })
 })

@@ -575,7 +575,11 @@ export function MailsSearch() {
 
                 <Separator className="my-1" />
 
-                <SearchMoreOptions form={advancedForm} open={advancedOpen} />
+                <SearchMoreOptions
+                  form={advancedForm}
+                  open={advancedOpen}
+                  accountId={accountId}
+                />
               </div>
 
               <Separator className="my-1" />

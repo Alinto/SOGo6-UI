@@ -1,20 +1,17 @@
 'use client'
 
-import { useEffect } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import { z } from 'zod'
-import { format, subMonths, subYears } from 'date-fns'
-import { useTranslations } from 'next-intl'
 import {
   AlertDialog,
+  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
   AlertDialogDescription,
   AlertDialogFooter,
-  AlertDialogCancel,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
+import { Calendar } from '@/components/ui/calendar-core'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Form,
   FormControl,
@@ -22,17 +19,23 @@ import {
   FormItem,
   FormLabel,
 } from '@/components/ui/form'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar-core'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { CalendarIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { usePurgeFolderMutation } from '../../store/mails-api'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { addDays, format, subMonths, subYears } from 'date-fns'
+import { CalendarIcon } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import {
+  usePurgeFolderMutation,
+  usePurgeMailboxMutation,
+} from '../../store/mails-api'
 
 // --- Zod schema ---
 const purgeFolderSchema = z
@@ -43,20 +46,14 @@ const purgeFolderSchema = z
     permanentlyDelete: z.boolean(),
     confirmPermanent: z.boolean(),
   })
-  .refine(
-    (data) => !data.permanentlyDelete || data.confirmPermanent,
-    {
-      message: 'You must confirm permanent deletion',
-      path: ['confirmPermanent'],
-    }
-  )
-  .refine(
-    (data) => data.datePreset !== 'custom' || !!data.customDate,
-    {
-      message: 'Please select a date',
-      path: ['customDate'],
-    }
-  )
+  .refine((data) => !data.permanentlyDelete || data.confirmPermanent, {
+    message: 'You must confirm permanent deletion',
+    path: ['confirmPermanent'],
+  })
+  .refine((data) => data.datePreset !== 'custom' || !!data.customDate, {
+    message: 'Please select a date',
+    path: ['customDate'],
+  })
 
 type PurgeFolderFormValues = z.infer<typeof purgeFolderSchema>
 
@@ -65,19 +62,15 @@ interface PurgeFolderDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   accountId: string
-  folderPath: string
+  /** Folder to purge; omitted, every folder of the mailbox is purged. */
+  folderPath?: string
+  /** Folder name, or the mailbox address when purging the whole mailbox. */
   folderName: string
   hasSubfolders: boolean
 }
 
 // --- Date presets ---
-const DATE_PRESETS = [
-  '3months',
-  '6months',
-  '1year',
-  'custom',
-  'all',
-] as const
+const DATE_PRESETS = ['3months', '6months', '1year', 'custom', 'all'] as const
 
 function getDatePresetLabel(
   value: (typeof DATE_PRESETS)[number],
@@ -99,7 +92,11 @@ function getDatePresetLabel(
   }
 }
 
-const getDateFromPreset = (
+/**
+ * Purge date sent to the back, which deletes the mails strictly before it
+ * (IMAP BEFORE). "All mails" sends tomorrow so today's mails go too.
+ */
+export const getDateFromPreset = (
   preset: string,
   customDate?: Date
 ): string | undefined => {
@@ -114,7 +111,7 @@ const getDateFromPreset = (
     case 'custom':
       return customDate ? format(customDate, 'yyyy-MM-dd') : undefined
     case 'all':
-      return undefined
+      return format(addDays(today, 1), 'yyyy-MM-dd')
     default:
       return undefined
   }
@@ -130,7 +127,11 @@ export function PurgeFolderDialog({
   hasSubfolders,
 }: PurgeFolderDialogProps) {
   const t = useTranslations('MAILS_COMMONS')
-  const [purgeFolder, { isLoading }] = usePurgeFolderMutation()
+  const [purgeFolder, { isLoading: isPurgingFolder }] = usePurgeFolderMutation()
+  const [purgeMailbox, { isLoading: isPurgingMailbox }] =
+    usePurgeMailboxMutation()
+  const isLoading = isPurgingFolder || isPurgingMailbox
+  const isMailboxScope = folderPath === undefined
 
   const form = useForm<PurgeFolderFormValues>({
     resolver: zodResolver(purgeFolderSchema),
@@ -155,13 +156,21 @@ export function PurgeFolderDialog({
   const handleSubmit = async (values: PurgeFolderFormValues) => {
     try {
       const date = getDateFromPreset(values.datePreset, values.customDate)
-      await purgeFolder({
-        accountId,
-        folderPath,
-        date,
-        applyToSubfolders: values.applyToSubfolders,
-        permanentlyDelete: values.permanentlyDelete,
-      }).unwrap()
+      if (folderPath === undefined) {
+        await purgeMailbox({
+          accountId,
+          date,
+          permanentlyDelete: values.permanentlyDelete,
+        }).unwrap()
+      } else {
+        await purgeFolder({
+          accountId,
+          folderPath,
+          date,
+          applyToSubfolders: values.applyToSubfolders,
+          permanentlyDelete: values.permanentlyDelete,
+        }).unwrap()
+      }
       form.reset()
       onOpenChange(false)
     } catch {
@@ -179,12 +188,19 @@ export function PurgeFolderDialog({
       <AlertDialogContent className="max-w-md">
         <AlertDialogHeader>
           <AlertDialogTitle>
-            {t('folders.actions.purge.confirmTitle.string')} — {folderName}
+            {isMailboxScope
+              ? t('folders.actions.purge.confirmTitleMailbox.string')
+              : t('folders.actions.purge.confirmTitle.string')}{' '}
+            — {folderName}
           </AlertDialogTitle>
           <AlertDialogDescription>
-            {t('folders.actions.purge.confirmDesc.string', {
-              folder: folderName,
-            })}
+            {isMailboxScope
+              ? t('folders.actions.purge.confirmDescMailbox.string', {
+                  mailbox: folderName,
+                })
+              : t('folders.actions.purge.confirmDesc.string', {
+                  folder: folderName,
+                })}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -261,7 +277,7 @@ export function PurgeFolderDialog({
             )}
 
             {/* Apply to subfolders — only shown if folder has subfolders */}
-            {hasSubfolders && (
+            {hasSubfolders && !isMailboxScope && (
               <FormField
                 control={form.control}
                 name="applyToSubfolders"
@@ -311,7 +327,7 @@ export function PurgeFolderDialog({
                 control={form.control}
                 name="confirmPermanent"
                 render={({ field }) => (
-                  <FormItem className="flex items-center gap-2 space-y-0 rounded-md border border-destructive p-3">
+                  <FormItem className="border-destructive flex items-center gap-2 space-y-0 rounded-md border p-3">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -319,10 +335,8 @@ export function PurgeFolderDialog({
                         className="border-destructive"
                       />
                     </FormControl>
-                    <FormLabel className="cursor-pointer font-normal text-destructive">
-                      {t(
-                        'folders.actions.purge.confirmPermanent.string'
-                      )}
+                    <FormLabel className="text-destructive cursor-pointer font-normal">
+                      {t('folders.actions.purge.confirmPermanent.string')}
                     </FormLabel>
                   </FormItem>
                 )}

@@ -44,12 +44,8 @@ export interface GetFolderActionsOptions {
 const ACTION_UNAVAILABLE_KEY = 'folders.actions.action_unavailable.string'
 const PERMISSION_DENIED_KEY = 'folders.actions.permission_denied.string'
 
-/** Mark-as-read, folder export and move stay unimplemented on the backend. */
-const BACKEND_BLOCKED_ACTIONS = new Set<FolderActionId>([
-  'mark_as_read',
-  'export',
-  'move_to',
-])
+/** Folder export and move stay unimplemented on the backend. */
+const BACKEND_BLOCKED_ACTIONS = new Set<FolderActionId>(['export', 'move_to'])
 
 /** Whether the user's rights on the folder allow the given action. */
 function isActionPermitted(

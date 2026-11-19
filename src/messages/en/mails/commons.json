@@ -558,6 +558,10 @@
                     "string": "Close"
                 }
             },
+            "purge": {
+                "string": "Purge mailbox",
+                "description": "Label for the action purging every folder of the current mailbox in the account switcher menu"
+            },
             "quota": {
                 "string": "{percent}% used on {total} MB",
                 "description": "Storage quota usage summary shown below the account switcher",
@@ -637,6 +641,24 @@
                     "string": "Mark as Read",
                     "description": "Button to mark the current folder as read"
                 },
+                "mark_as_read_dialog": {
+                    "title": {
+                        "string": "Mark folder as read",
+                        "description": "Title of the dialog confirming that every mail of a folder is marked as read"
+                    },
+                    "description": {
+                        "string": "Mark every message of \"{folder}\" as read?",
+                        "description": "Body of the mark-folder-as-read dialog; {folder} is the folder name"
+                    },
+                    "confirm": {
+                        "string": "Mark as read",
+                        "description": "Confirm button of the mark-folder-as-read dialog"
+                    },
+                    "cancel": {
+                        "string": "Cancel",
+                        "description": "Cancel button of the mark-folder-as-read dialog"
+                    }
+                },
                 "export": {
                     "string": "Export",
                     "description": "Button to export all messages in the current folder"
@@ -666,7 +688,7 @@
                         "string": "Empty folder"
                     },
                     "description": {
-                        "string": "Permanently delete all messages in \"{folder}\"? This action cannot be undone."
+                        "string": "Permanently delete all messages and subfolders in \"{folder}\"? This action cannot be undone."
                     },
                     "confirm": {
                         "string": "Empty folder"
@@ -887,6 +909,14 @@
                     },
                     "confirmDesc": {
                         "string": "Are you sure you want to purge \"{folder}\"? All deleted messages will be permanently removed. This action cannot be undone."
+                    },
+                    "confirmTitleMailbox": {
+                        "string": "Purge mailbox",
+                        "description": "Title of the purge dialog opened from the account switcher, for the whole mailbox"
+                    },
+                    "confirmDescMailbox": {
+                        "string": "Are you sure you want to purge every folder of \"{mailbox}\"? The selected messages will be removed from all folders. This action cannot be undone.",
+                        "description": "Description of the purge dialog for the whole mailbox; {mailbox} is the mailbox address"
                     },
                     "confirm": {
                         "string": "Purge"

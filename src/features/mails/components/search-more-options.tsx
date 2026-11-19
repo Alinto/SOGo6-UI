@@ -14,10 +14,15 @@ import { useTranslations } from 'next-intl'
 import React, { useMemo } from 'react'
 import type { UseFormReturn } from 'react-hook-form'
 import { useMailCategoryPicker } from '../hooks/use-mail-category-picker'
+import { useGetMailboxTagsQuery } from '../store/mails-api'
 import {
   dateRangePresets,
   type SearchFormValues,
 } from '../utils/mail-search-form'
+import {
+  mergeLabelOptions,
+  toSearchableMailTags,
+} from '../utils/searchable-mail-tags'
 
 const SIZE_UNIT_OPTIONS = [
   { value: 'kb', label: 'KB' },
@@ -44,14 +49,21 @@ const ATTACHMENT_TYPE_OPTIONS = [
 interface SearchMoreOptionsProps {
   form: UseFormReturn<SearchFormValues>
   open: boolean
+  /** Mailbox whose mail tags are offered as label filters. */
+  accountId?: string
 }
 
 const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
   form,
   open,
+  accountId,
 }) => {
   const t = useTranslations('MAILS_COMMONS')
   const { allCategories } = useMailCategoryPicker(open)
+  const { data: mailboxTags } = useGetMailboxTagsQuery(
+    { accountId: accountId ?? '' },
+    { skip: !open || !accountId }
+  )
   const loadingLabel = t('recipient_search.loading.string')
 
   const makeRecipientFieldHandlers = (
@@ -84,11 +96,11 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
 
   const labelOptions = useMemo(
     () =>
-      allCategories.map((category) => ({
-        value: category.name,
-        label: category.name,
-      })),
-    [allCategories]
+      mergeLabelOptions(
+        allCategories.map((category) => category.name),
+        toSearchableMailTags(mailboxTags)
+      ).map((name) => ({ value: name, label: name })),
+    [allCategories, mailboxTags]
   )
 
   const operatorOptions = [

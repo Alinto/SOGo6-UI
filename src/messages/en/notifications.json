@@ -362,6 +362,60 @@
                 "string": "An error occurred while purging the folder. Please try again."
             }
         },
+        "folders_empty": {
+            "successTitle": {
+                "string": "Folder emptied",
+                "description": "Title of the toast shown after a Trash or Junk folder was emptied"
+            },
+            "successMessage": {
+                "string": "All messages of the folder have been permanently deleted.",
+                "description": "Message of the toast shown after a Trash or Junk folder was emptied"
+            },
+            "errorTitle": {
+                "string": "Empty failed",
+                "description": "Title of the error toast shown when emptying a Trash or Junk folder fails"
+            },
+            "errorMessage": {
+                "string": "An error occurred while emptying the folder. Please try again.",
+                "description": "Message of the error toast shown when emptying a Trash or Junk folder fails"
+            }
+        },
+        "mailbox_purge": {
+            "successTitle": {
+                "string": "Mailbox purged",
+                "description": "Title of the toast shown after every folder of a mailbox was purged"
+            },
+            "successMessage": {
+                "string": "The selected messages have been removed from all folders.",
+                "description": "Message of the toast shown after every folder of a mailbox was purged"
+            },
+            "errorTitle": {
+                "string": "Purge failed",
+                "description": "Title of the error toast shown when purging a mailbox fails"
+            },
+            "errorMessage": {
+                "string": "An error occurred while purging the mailbox. Please try again.",
+                "description": "Message of the error toast shown when purging a mailbox fails"
+            }
+        },
+        "folders_mark_as_read": {
+            "successTitle": {
+                "string": "Folder marked as read",
+                "description": "Title of the toast shown after every mail of a folder was marked as read"
+            },
+            "successMessage": {
+                "string": "All messages of the folder are now marked as read.",
+                "description": "Message of the toast shown after every mail of a folder was marked as read"
+            },
+            "errorTitle": {
+                "string": "Mark as read failed",
+                "description": "Title of the error toast shown when marking a folder as read fails"
+            },
+            "errorMessage": {
+                "string": "An error occurred while marking the folder as read. Please try again.",
+                "description": "Message of the error toast shown when marking a folder as read fails"
+            }
+        },
         "folders_expunge": {
             "successTitle": {
                 "string": "Folder expunged"

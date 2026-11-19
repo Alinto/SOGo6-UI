@@ -88,7 +88,6 @@ describe('getFolderActions', () => {
 
     it('does not restrict folders without rights', () => {
       expect(disabledIds(baseFolder({ type: 'NORMAL' }))).toEqual([
-        'mark_as_read',
         'export',
         'move_to',
       ])
@@ -149,10 +148,6 @@ describe('getFolderActions', () => {
   it('disables backend-blocked actions', () => {
     const actions = getFolderActions(baseFolder({ type: 'NORMAL' }))
     const blocked = actions.filter((action) => action.disabled)
-    expect(blocked.map((action) => action.id)).toEqual([
-      'mark_as_read',
-      'export',
-      'move_to',
-    ])
+    expect(blocked.map((action) => action.id)).toEqual(['export', 'move_to'])
   })
 })

@@ -50,6 +50,23 @@ jest.mock(
   })
 )
 
+jest.mock('../purge-folder-dialog', () => ({
+  PurgeFolderDialog: ({
+    open,
+    folderPath,
+    folderName,
+  }: {
+    open: boolean
+    folderPath?: string
+    folderName: string
+  }) =>
+    open ? (
+      <div data-testid="purge-mailbox-dialog">
+        {folderPath ?? 'all-folders'}:{folderName}
+      </div>
+    ) : null,
+}))
+
 jest.mock('../delegate-dialog', () => ({
   DelegateDialog: ({ open }: { open: boolean }) =>
     open ? <div data-testid="delegate-dialog" /> : null,
@@ -211,6 +228,28 @@ describe('AccountSwitcher', () => {
       render(<AccountSwitcher />)
       expect(screen.getAllByText('jdoe@sogo.nu')).toHaveLength(2)
       expect(screen.getByText('perso@gmail.com')).toBeInTheDocument()
+    })
+  })
+
+  describe('purge mailbox', () => {
+    it('hides the purge entry when purge is not allowed', () => {
+      mockProfile({ mailPurgeAllow: false })
+      render(<AccountSwitcher />)
+      expect(
+        screen.queryByText('account_switcher.purge.string')
+      ).not.toBeInTheDocument()
+    })
+
+    it('opens the purge dialog for the whole mailbox', async () => {
+      const user = userEvent.setup()
+      mockProfile({ mailPurgeAllow: true })
+      render(<AccountSwitcher />)
+
+      await user.click(screen.getByText('account_switcher.purge.string'))
+
+      expect(screen.getByTestId('purge-mailbox-dialog')).toHaveTextContent(
+        'all-folders:jdoe@sogo.nu'
+      )
     })
   })
 })
