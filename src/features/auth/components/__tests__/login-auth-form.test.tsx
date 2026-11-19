@@ -13,6 +13,12 @@ jest.mock('@/features/auth/components/store/auth.api', () => ({
   useLoginMutation: () => [mockLogin],
 }))
 
+const mockWaitForLogoutWipe = jest.fn(() => Promise.resolve())
+jest.mock('@/features/offline/auth/logout-wipe', () => ({
+  ...jest.requireActual('@/features/offline/auth/logout-wipe'),
+  waitForLogoutWipe: () => mockWaitForLogoutWipe(),
+}))
+
 // Mock next-intl
 const mockTranslate = jest.fn((key: string) => key)
 jest.mock('next-intl', () => ({
@@ -182,6 +188,49 @@ describe('LoginAuthForm - Step 2 (Password)', () => {
       expect(store.getState().auth.user?.email).toBe(payload.email)
     })
     expect(store.getState().api.queries).toEqual({})
+    expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
+  })
+
+  it('waits for a running logout wipe before storing the new session', async () => {
+    const payload = {
+      uid: 'cmallatrait@dev.alinto.org',
+      cn: 'Centre Maltraitance',
+      email: 'cmallatrait@dev.alinto.org',
+    }
+    const token = `e30.${Buffer.from(JSON.stringify(payload)).toString('base64')}.sig`
+    mockLogin.mockReturnValue({
+      unwrap: () => Promise.resolve({ data: { jwt_token: token } }),
+    })
+    let finishWipe: () => void = () => undefined
+    mockWaitForLogoutWipe.mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finishWipe = resolve
+      })
+    )
+    // makeStore rehydrates the session a previous test left in storage.
+    window.localStorage.clear()
+    window.sessionStorage.clear()
+
+    const store = makeStore()
+    expect(store.getState().auth.user).toBeNull()
+    render(
+      <Provider store={store}>
+        <LoginAuthForm />
+      </Provider>
+    )
+    fireEvent.change(screen.getByLabelText(/password.label.string/i), {
+      target: { value: 'secret' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /login.string/i }))
+
+    await waitFor(() => expect(mockWaitForLogoutWipe).toHaveBeenCalled())
+    expect(store.getState().auth.user).toBeNull()
+    expect(mockPush).not.toHaveBeenCalled()
+
+    finishWipe()
+    await waitFor(() => {
+      expect(store.getState().auth.user?.email).toBe(payload.email)
+    })
     expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX')
   })
 

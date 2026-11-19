@@ -1,4 +1,5 @@
-import { wipeOnLogout } from '@/features/offline/hooks/use-offline-draft-sync'
+import { logout } from '@/features/auth/components/store/auth.slice'
+import { waitForLogoutWipe } from '@/features/offline/auth/logout-wipe'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import '@testing-library/jest-dom'
@@ -63,8 +64,8 @@ jest.mock('@/features/offline/auth/redirect-after-logout', () => ({
   redirectAfterLogout: (push: (href: string) => void) => push('/auth/login'),
 }))
 
-jest.mock('@/features/offline/hooks/use-offline-draft-sync', () => ({
-  wipeOnLogout: jest.fn(() => Promise.resolve()),
+jest.mock('@/features/offline/auth/logout-wipe', () => ({
+  waitForLogoutWipe: jest.fn(() => Promise.resolve()),
 }))
 
 jest.mock('@/features/offline/offline-nav-context', () => ({
@@ -429,7 +430,7 @@ describe('HeaderDropdown component', () => {
     mockRevokeSession.mockImplementation(() => ({
       unwrap: () => Promise.resolve(),
     }))
-    ;(wipeOnLogout as jest.Mock).mockClear()
+    ;(waitForLogoutWipe as jest.Mock).mockClear()
     ;(useTranslations as jest.Mock).mockReturnValue((key: string) => key)
     ;(useRouter as jest.Mock).mockReturnValue({ push: mockPush })
     ;(useAppDispatch as jest.Mock).mockReturnValue(mockDispatch)
@@ -482,10 +483,29 @@ describe('HeaderDropdown component', () => {
     expect(screen.queryByTestId('logout-outbox-dialog')).not.toBeInTheDocument()
     await waitFor(() => {
       expect(mockRevokeSession).toHaveBeenCalled()
-      expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
-      expect(mockDispatch).toHaveBeenCalled()
+      // The logout listener wipes offline data; the button only waits for it.
+      expect(mockDispatch).toHaveBeenCalledWith(logout())
+      expect(waitForLogoutWipe).toHaveBeenCalled()
       expect(mockPush).toHaveBeenCalledWith('/auth/login')
     })
+  })
+
+  it('waits for the offline wipe before leaving the page', async () => {
+    let finishWipe: () => void = () => undefined
+    ;(waitForLogoutWipe as jest.Mock).mockReturnValueOnce(
+      new Promise<void>((resolve) => {
+        finishWipe = resolve
+      })
+    )
+    render(<HeaderDropdown />)
+    fireEvent.click(screen.getByTestId('header-dropdown-trigger'))
+    fireEvent.click(screen.getByText('logout.string'))
+
+    await waitFor(() => expect(mockDispatch).toHaveBeenCalledWith(logout()))
+    expect(mockPush).not.toHaveBeenCalled()
+
+    finishWipe()
+    await waitFor(() => expect(mockPush).toHaveBeenCalledWith('/auth/login'))
   })
 
   it('warns before logout when the outbox has pending messages', async () => {
@@ -500,10 +520,10 @@ describe('HeaderDropdown component', () => {
     expect(
       screen.getByText('logout_outbox_confirm_title.string')
     ).toBeInTheDocument()
-    expect(wipeOnLogout).not.toHaveBeenCalled()
+    expect(mockDispatch).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByText('outbox_cancel.string'))
-    expect(wipeOnLogout).not.toHaveBeenCalled()
+    expect(mockDispatch).not.toHaveBeenCalled()
 
     fireEvent.click(screen.getByText('logout.string'))
     await waitFor(() => {
@@ -511,7 +531,7 @@ describe('HeaderDropdown component', () => {
     })
     fireEvent.click(screen.getByText('logout_outbox_confirm_action.string'))
     await waitFor(() => {
-      expect(wipeOnLogout).toHaveBeenCalledWith('jdoe@sogo.nu')
+      expect(mockDispatch).toHaveBeenCalledWith(logout())
       expect(mockPush).toHaveBeenCalledWith('/auth/login')
     })
   })

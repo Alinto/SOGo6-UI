@@ -1,4 +1,5 @@
 import { logout } from '@/features/auth/components/store/auth.slice'
+import { waitForLogoutWipe } from '@/features/offline/auth/logout-wipe'
 import {
   redirectAfterLogout,
   SESSION_EXPIRED_REASON,
@@ -191,7 +192,10 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
   if (!sessionRedirectStarted && shouldEndSession(api.endpoint, status)) {
     sessionRedirectStarted = true
     api.dispatch(logout())
-    redirectAfterLogout(navigateToLogin, SESSION_EXPIRED_REASON)
+    // Full-page navigation: let the logout listener finish wiping offline data first.
+    void waitForLogoutWipe().finally(() =>
+      redirectAfterLogout(navigateToLogin, SESSION_EXPIRED_REASON)
+    )
   }
 
   return result
