@@ -1,0 +1,12 @@
+{
+    "US_MAIL_GENERAL": {
+        "immediately_on_display": {
+            "string": "Dès l'affichage",
+            "context": "Option to mark a message as read as soon as it is displayed"
+        },
+        "after_displaying_for_seconds": {
+            "string": "Après 5 secondes d'affichage",
+            "context": "Option to mark a message as read once it has been displayed for 5 seconds"
+        }
+    }
+}
