@@ -1135,6 +1135,14 @@
                     }
                 }
             },
+            "obsolete": {
+                "title": {
+                    "string": "Event changed"
+                },
+                "message": {
+                    "string": "The organizer updated this event since you opened it. Check the new details, then answer again."
+                }
+            },
             "error": {
                 "title": {
                     "string": "Attendance update failed"

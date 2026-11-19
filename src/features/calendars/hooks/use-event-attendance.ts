@@ -47,10 +47,11 @@ export function useEventAttendance(event: CalendarEvent | null | undefined) {
       await postAttendance({
         eventKey,
         status,
+        sequence: event?.sequence ?? 0,
         recurrence_id: recurrenceId ?? event?.recurrence_id ?? undefined,
       }).unwrap()
     },
-    [event?.recurrence_id, eventKey, postAttendance]
+    [event?.recurrence_id, event?.sequence, eventKey, postAttendance]
   )
 
   return {

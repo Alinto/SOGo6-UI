@@ -64,6 +64,15 @@ import type {
 import { DEFAULT_CALENDAR_COLOR } from '../calendars-types'
 import { patchEventInCachedTimeRangeQueries } from './calendars-events-cache'
 
+/** Server error when the event was revised after the client read it (HTTP 409). */
+const EVENT_REVISION_OBSOLETE_CODE = 'S000629'
+
+function isEventRevisionObsolete(rejection: unknown): boolean {
+  const error = (rejection as { error?: { data?: { error_code?: unknown } } })
+    ?.error
+  return error?.data?.error_code === EVENT_REVISION_OBSOLETE_CODE
+}
+
 const calendarUrl = (key: string) => `calendars/${encodeURIComponent(key)}`
 
 export function exportCalendarQuery(calendarKey: string) {
@@ -1020,13 +1029,20 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     }),
     postEventAttendance: builder.mutation<
       CalendarEvent,
-      { eventKey: string; status: AttendanceStatus; recurrence_id?: string }
+      {
+        eventKey: string
+        status: AttendanceStatus
+        /** SEQUENCE of the revision shown to the user (required by the server). */
+        sequence: number
+        recurrence_id?: string
+      }
     >({
-      query: ({ eventKey, status, recurrence_id }) => ({
+      query: ({ eventKey, status, sequence, recurrence_id }) => ({
         url: `${eventUrl(eventKey)}/attendance`,
         method: 'POST',
         body: {
           status,
+          sequence,
           ...(recurrence_id ? { recurrence_id } : {}),
         },
       }),
@@ -1063,7 +1079,25 @@ const injectedEndpoints = apiSlice.injectEndpoints({
               duration: 3000,
             })
           )
-        } catch {
+        } catch (rejection) {
+          if (isEventRevisionObsolete(rejection)) {
+            // The organizer changed the event: reload it so the user answers the new slot.
+            dispatch(
+              apiSlice.util.invalidateTags([
+                { type: CALENDAR_EVENTS_SLICE, id: eventKey },
+                CALENDAR_EVENTS_SLICE,
+              ])
+            )
+            dispatch(
+              addNotification({
+                type: 'info',
+                title: 'calendar_event_attendance.obsolete.title.string',
+                message: 'calendar_event_attendance.obsolete.message.string',
+                duration: 6000,
+              })
+            )
+            return
+          }
           dispatch(
             addNotification({
               type: 'error',
