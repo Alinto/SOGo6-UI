@@ -82,6 +82,10 @@ jest.mock('@/features/mails/components/skeletons/list-skeleton', () => ({
   default: () => <div data-testid="list-skeleton">Loading...</div>,
 }))
 
+jest.mock('@/features/mails/components/virtual-folder-empty-state', () => ({
+  VirtualFolderEmptyState: () => <div data-testid="virtual-folder-empty" />,
+}))
+
 describe('Classic Page', () => {
   const mockUseParams = require('next/navigation').useParams as jest.Mock
   const mockUseSearchParams = require('next/navigation')
@@ -137,6 +141,32 @@ describe('Classic Page', () => {
       render(<Page />)
       expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
     })
+  })
+
+  it('shows ListSkeleton, not an empty list, while no response has arrived', () => {
+    // Query skipped while the folder tree loads: not fetching, data undefined
+    mockUseGetFolderMessagesQuery.mockReturnValue({
+      data: undefined,
+      isFetching: false,
+    })
+    render(<Page />)
+    expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
+    expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
+  })
+
+  it('shows the virtual folder state, not a skeleton, for a virtual folder', () => {
+    const mailsApi = require('@/features/mails/store/mails-api')
+    ;(mailsApi.useGetFoldersQuery as jest.Mock).mockReturnValueOnce({
+      data: [{ name: 'INBOX', path: 'INBOX', selectable: false }],
+      isLoading: false,
+    })
+    mockUseGetFolderMessagesQuery.mockReturnValue({
+      data: undefined,
+      isFetching: false,
+    })
+    render(<Page />)
+    expect(screen.getByTestId('virtual-folder-empty')).toBeInTheDocument()
+    expect(screen.queryByTestId('list-skeleton')).not.toBeInTheDocument()
   })
 
   it('shows ListSkeleton instead of the previous page while a new page loads', () => {

@@ -121,7 +121,12 @@ const Page = () => {
     )
   }
 
-  if (isLoading || isUserFetching) return <ListSkeleton />
+  // Until a response arrives (query pending or skipped while the folder tree
+  // loads), `data` is undefined: show the skeleton, not "No message found".
+  const isAwaitingFirstResponse = data === undefined && !error
+
+  if (isLoading || isUserFetching || isAwaitingFirstResponse)
+    return <ListSkeleton />
 
   if (error) {
     return (

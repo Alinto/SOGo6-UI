@@ -318,10 +318,12 @@ describe('Mail Folder Page', () => {
     expect(screen.getByTestId('items-count')).toHaveTextContent('0')
   })
 
-  it('should handle undefined data gracefully', () => {
+  it('should show the skeleton, not an empty list, while no response has arrived', () => {
+    // Query skipped while the folder tree loads: not loading, data undefined
     ;(useGetFolderMessagesQuery as jest.Mock).mockReturnValue({
       data: undefined,
       isLoading: false,
+      isFetching: false,
       refetch: jest.fn(),
     })
 
@@ -331,9 +333,8 @@ describe('Mail Folder Page', () => {
       </Provider>
     )
 
-    expect(screen.getByTestId('items-count')).toHaveTextContent('0')
-    expect(screen.getByTestId('current-page')).toHaveTextContent('1')
-    expect(screen.getByTestId('total')).toHaveTextContent('0')
+    expect(screen.getByTestId('list-skeleton')).toBeInTheDocument()
+    expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
   })
 
   it('should call useGetFolderMessagesQuery with new folder when folder changes', async () => {

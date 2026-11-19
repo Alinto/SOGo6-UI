@@ -46,6 +46,10 @@ jest.mock('@/features/mails/components/folder-messages-error-fallback', () => ({
   ),
 }))
 
+jest.mock('@/features/mails/components/virtual-folder-empty-state', () => ({
+  VirtualFolderEmptyState: () => <div data-testid="virtual-folder-empty" />,
+}))
+
 jest.mock('@/features/mails/components/list', () => ({
   __esModule: true,
   default: () => <div data-testid="messages-list" />,
@@ -81,6 +85,35 @@ describe('@classic/default', () => {
       render(<ClassicMailFolderDefault />)
       expect(screen.getByTestId('mail-list-skeleton')).toBeInTheDocument()
       expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
+    })
+
+    it('shows skeleton, not an empty list, while no response has arrived', () => {
+      mockUseFolderMessages.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isFetching: false,
+        isUserFetching: false,
+        error: undefined,
+        refetch: jest.fn(),
+      })
+      render(<ClassicMailFolderDefault />)
+      expect(screen.getByTestId('mail-list-skeleton')).toBeInTheDocument()
+      expect(screen.queryByTestId('messages-list')).not.toBeInTheDocument()
+    })
+
+    it('shows the virtual folder state, not a skeleton, for a virtual folder', () => {
+      mockUseFolderMessages.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isFetching: false,
+        error: undefined,
+        isVirtualFolder: true,
+        isSearchActive: false,
+        refetch: jest.fn(),
+      })
+      render(<ClassicMailFolderDefault />)
+      expect(screen.getByTestId('virtual-folder-empty')).toBeInTheDocument()
+      expect(screen.queryByTestId('mail-list-skeleton')).not.toBeInTheDocument()
     })
 
     it('shows error fallback when query errors', () => {

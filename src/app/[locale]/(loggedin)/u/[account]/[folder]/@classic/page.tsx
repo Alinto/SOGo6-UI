@@ -3,6 +3,7 @@
 import { FolderMessagesErrorFallback } from '@/features/mails/components/folder-messages-error-fallback'
 import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-loading-skeleton'
+import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -35,6 +36,7 @@ const Page: React.FC = () => {
     isLoading,
     error,
     refetch,
+    isVirtualFolder,
     isSearchActive,
   } = useFolderMessages({
     folder: folderPath,
@@ -62,6 +64,16 @@ const Page: React.FC = () => {
       ? 'flex'
       : `${mail_id ? 'hidden lg:flex' : 'flex'}`
 
+  if (isVirtualFolder && !isSearchActive) {
+    return (
+      <div
+        className={`${listVisibilityClass} h-full w-full flex-col overflow-hidden`}
+      >
+        <VirtualFolderEmptyState />
+      </div>
+    )
+  }
+
   if (isShowingCache && cachedMails) {
     const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
     return (
@@ -88,7 +100,11 @@ const Page: React.FC = () => {
     )
   }
 
-  if (isLoading || isUserFetching) {
+  // Until a response arrives (query pending or skipped while the folder tree
+  // loads), `data` is undefined: show the skeleton, not "No message found".
+  const isAwaitingFirstResponse = data === undefined && !error
+
+  if (isLoading || isUserFetching || isAwaitingFirstResponse) {
     return (
       <div
         className={`${listVisibilityClass} h-full w-full flex-col overflow-hidden`}
