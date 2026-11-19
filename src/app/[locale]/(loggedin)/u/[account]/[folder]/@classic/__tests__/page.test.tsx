@@ -181,46 +181,56 @@ describe('Classic Page', () => {
   })
 
   describe('integration', () => {
-    // Folder lists are filtered by the server: the page sends the quick
-    // filter with the request and shows the returned mails as they are.
-    it('sends the quick filter to the server for folder lists', async () => {
+    // The folder list route has no quick filter: the page shows the mails of
+    // a search restricted to the folder, as the server returned them.
+    it('shows the folder search results for a quick filter', async () => {
       const searchParams = new URLSearchParams()
       searchParams.set('filter', 'attachments')
       mockUseSearchParams.mockReturnValue(searchParams)
-      mockUseGetFolderMessagesQuery.mockReturnValue({
-        data: {
-          mails: [
-            {
-              id: 1,
-              hasAttachment: true,
-              seen: true,
-              flagged: false,
-              date: '2024-01-01',
-              size: 100,
-            },
-            {
-              id: 2,
-              hasAttachment: true,
-              seen: true,
-              flagged: false,
-              date: '2024-01-02',
-              size: 200,
-            },
-          ],
-          page: 1,
-          total: 2,
-          totalPages: 1,
-          hasNextPage: false,
-          hasPreviousPage: false,
-        },
-        isFetching: false,
-      })
+      const filtered = {
+        mails: [
+          {
+            id: 1,
+            hasAttachment: true,
+            seen: true,
+            flagged: false,
+            date: '2024-01-01',
+            size: 100,
+          },
+          {
+            id: 2,
+            hasAttachment: true,
+            seen: true,
+            flagged: false,
+            date: '2024-01-02',
+            size: 200,
+          },
+        ],
+        page: 1,
+        total: 2,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      }
+      mockUseSearchMailsQuery.mockImplementation(
+        (_args: unknown, options: { skip: boolean }) =>
+          options.skip
+            ? { data: undefined, isLoading: false, isFetching: false }
+            : { data: filtered, isLoading: false, isFetching: false }
+      )
       render(<Page />)
-      expect(mockUseGetFolderMessagesQuery).toHaveBeenCalledWith(
+      expect(mockUseSearchMailsQuery).toHaveBeenCalledWith(
         expect.objectContaining({
-          params: expect.objectContaining({ filter: 'attachments' }),
+          body: expect.objectContaining({
+            has_attachment: true,
+            include_subfolders: false,
+          }),
         }),
-        expect.anything()
+        { skip: false }
+      )
+      expect(mockUseGetFolderMessagesQuery).toHaveBeenCalledWith(
+        expect.anything(),
+        { skip: true }
       )
       await waitFor(() => {
         expect(screen.getByTestId('items-count')).toHaveTextContent('2')

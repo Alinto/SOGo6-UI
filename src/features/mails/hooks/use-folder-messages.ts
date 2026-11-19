@@ -22,6 +22,10 @@ import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { toMailListApiFilter } from '../utils/client-mail-list-filter'
 import { isMailDetailPath } from '../utils/mail-detail-navigation'
 import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '../utils/mail-search-form'
+import {
+  toQuickFilterSearchBody,
+  toQuickFilterSearchParams,
+} from '../utils/quick-filter-search'
 import { useCurrentFolder } from './use-current-folder'
 
 const EXCLUDED_PARAMS = ['filter']
@@ -143,25 +147,32 @@ export function useFolderMessages({
       delete merged.sort
     }
 
-    // Quick filter (read, unread…): applied by the server before pagination.
-    const apiFilter = toMailListApiFilter(searchParams.get('filter'))
-    if (apiFilter) merged.filter = apiFilter
-
     return merged
   }, [searchParams])
 
   const currentPage = Number(searchParams.get('page') ?? '1')
 
+  // Quick filter (read, unread…): the folder list route ignores it, so the
+  // filtered list is fetched from the search route, restricted to this folder.
+  const quickFilter = toMailListApiFilter(searchParams.get('filter'))
+  const quickFilterBody = useMemo(
+    () =>
+      quickFilter && !isSearchActive && !isAdvancedSearchRoute
+        ? toQuickFilterSearchBody(quickFilter, folder)
+        : null,
+    [quickFilter, isSearchActive, isAdvancedSearchRoute, folder]
+  )
+
+  const skipFolderList =
+    isSearchActive ||
+    isAdvancedSearchRoute ||
+    skipFolderFetch ||
+    !isSelectable ||
+    isFolderLoading
+
   const folderQueryResult = useGetFolderMessagesQuery(
     { folder, accountId: resolvedAccountId, params },
-    {
-      skip:
-        isSearchActive ||
-        isAdvancedSearchRoute ||
-        skipFolderFetch ||
-        !isSelectable ||
-        isFolderLoading,
-    }
+    { skip: skipFolderList || quickFilterBody !== null }
   )
 
   const searchQueryResult = useSearchMailsQuery(
@@ -173,7 +184,20 @@ export function useFolderMessages({
     { skip: !isSearchActive }
   )
 
-  const queryResult = isSearchActive ? searchQueryResult : folderQueryResult
+  const quickFilterQueryResult = useSearchMailsQuery(
+    {
+      accountId: resolvedAccountId,
+      body: quickFilterBody ?? {},
+      params: toQuickFilterSearchParams(params, currentPage),
+    },
+    { skip: skipFolderList || quickFilterBody === null }
+  )
+
+  const queryResult = isSearchActive
+    ? searchQueryResult
+    : quickFilterBody
+      ? quickFilterQueryResult
+      : folderQueryResult
   const { data, currentData, isFetching, refetch } = queryResult
   const isManualRefresh = useAppSelector(selectIsManualRefresh)
 
