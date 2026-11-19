@@ -1,9 +1,15 @@
 import '@testing-library/jest-dom'
 
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 
 import FloatingComposeContainer from '@/features/mails/components/compose/floating-compose-container'
 import { selectOpenDraftIds } from '@/features/mails/store'
+import { useLazyGetCurrentDraftsQuery } from '@/features/mails/store/mail-api'
+import {
+  useLazyGetFoldersQuery,
+  useLazyGetMailQuery,
+} from '@/features/mails/store/mails-api'
+import { useProfile } from '@/features/user-profile'
 import { useAppSelector } from '@/lib/redux/hooks'
 
 jest.mock('@/lib/redux/hooks', () => ({
@@ -28,6 +34,7 @@ jest.mock('@/features/mails/store/mail-api', () => ({
 
 jest.mock('@/features/mails/store/mails-api', () => ({
   useLazyGetMailQuery: jest.fn(() => [jest.fn(), { isLoading: false }]),
+  useLazyGetFoldersQuery: jest.fn(() => [jest.fn(), { isLoading: false }]),
 }))
 
 jest.mock('@/features/mails/store/mail-compose-slice', () => ({
@@ -36,10 +43,6 @@ jest.mock('@/features/mails/store/mail-compose-slice', () => ({
 
 jest.mock('@/features/mails/utils/mail-compose-from-api', () => ({
   apiDataToMailComposeDraft: jest.fn(),
-}))
-
-jest.mock('@/features/mails/components/constants', () => ({
-  FOLDERS_NAME: { DRAFT: 'Drafts' },
 }))
 
 const mockFloatingCompose = jest.fn(({ draftId }: { draftId: string }) => (
@@ -251,6 +254,114 @@ describe('FloatingComposeContainer', () => {
         expect(screen.queryByTestId('floating-compose')).not.toBeInTheDocument()
         expect(container.firstChild).toBeNull()
       })
+    })
+  })
+
+  describe('restoring current drafts', () => {
+    const mockGetCurrentDrafts = jest.fn()
+    const mockGetFolders = jest.fn()
+    const mockGetMail = jest.fn()
+
+    const runInit = async () => {
+      renderComponent()
+      await act(async () => {
+        jest.advanceTimersByTime(2000)
+        // Let the chained lazy queries of initDrafts settle.
+        for (let i = 0; i < 10; i += 1) await Promise.resolve()
+      })
+    }
+
+    beforeEach(() => {
+      jest.useFakeTimers()
+      ;(useProfile as jest.Mock).mockReturnValue({ mainAccount: { id: 1 } })
+      ;(useLazyGetCurrentDraftsQuery as jest.Mock).mockReturnValue([
+        mockGetCurrentDrafts,
+        { isLoading: false },
+      ])
+      ;(useLazyGetFoldersQuery as jest.Mock).mockReturnValue([
+        mockGetFolders,
+        { isLoading: false },
+      ])
+      ;(useLazyGetMailQuery as jest.Mock).mockReturnValue([
+        mockGetMail,
+        { isLoading: false },
+      ])
+      mockGetMail.mockResolvedValue({ data: undefined })
+      mockGetFolders.mockResolvedValue({
+        data: [
+          { path: 'INBOX', type: 'INBOX', subfolders: [] },
+          {
+            path: 'INBOX/Brouillons',
+            type: 'DRAFTS',
+            subfolders: [],
+          },
+        ],
+      })
+    })
+
+    afterEach(() => {
+      jest.useRealTimers()
+      ;(useProfile as jest.Mock).mockReturnValue({ mainAccount: null })
+    })
+
+    it('fetches drafts from the folder flagged as drafts', async () => {
+      mockGetCurrentDrafts.mockResolvedValue({
+        data: { data: [{ key: 'k1', mail_server_uid: '42' }] },
+      })
+
+      await runInit()
+
+      expect(mockGetMail).toHaveBeenCalledTimes(1)
+      expect(mockGetMail).toHaveBeenCalledWith({
+        folder: 'INBOX/Brouillons',
+        mailId: '42',
+        accountId: '1',
+      })
+    })
+
+    it('skips drafts that have no server uid', async () => {
+      mockGetCurrentDrafts.mockResolvedValue({
+        data: {
+          data: [
+            { key: 'k1', mail_server_uid: '' },
+            { key: 'k2', mail_server_uid: '7' },
+            { key: 'k3', mail_server_uid: '' },
+          ],
+        },
+      })
+
+      await runInit()
+
+      expect(mockGetMail).toHaveBeenCalledTimes(1)
+      expect(mockGetMail).toHaveBeenCalledWith(
+        expect.objectContaining({ mailId: '7' })
+      )
+    })
+
+    it('does not load folders when no draft has a server uid', async () => {
+      mockGetCurrentDrafts.mockResolvedValue({
+        data: { data: [{ key: 'k1', mail_server_uid: '' }] },
+      })
+
+      await runInit()
+
+      expect(mockGetCurrentDrafts).toHaveBeenCalledWith({ accountId: '1' })
+      expect(mockGetFolders).not.toHaveBeenCalled()
+      expect(mockGetMail).not.toHaveBeenCalled()
+    })
+
+    it('does not fetch drafts when the account has no drafts folder', async () => {
+      mockGetCurrentDrafts.mockResolvedValue({
+        data: { data: [{ key: 'k1', mail_server_uid: '42' }] },
+      })
+      mockGetFolders.mockResolvedValue({
+        data: [{ path: 'INBOX', type: 'INBOX', subfolders: [] }],
+      })
+
+      await runInit()
+
+      expect(mockGetFolders).toHaveBeenCalledWith({ accountId: '1' }, true)
+      expect(mockGetMail).not.toHaveBeenCalled()
     })
   })
 })

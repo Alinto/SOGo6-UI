@@ -1,4 +1,6 @@
+import type { ImapFolder } from '../../mails-types'
 import {
+  findDraftFolderPath,
   getFolderIcon,
   getFolderTranslationKey,
   getListDisplayContact,
@@ -53,5 +55,27 @@ describe('folder-type-helpers', () => {
   it('detects virtual folders', () => {
     expect(isVirtualFolder({ selectable: false })).toBe(true)
     expect(isVirtualFolder({ selectable: true })).toBe(false)
+  })
+
+  describe('findDraftFolderPath', () => {
+    const folder = (
+      path: string,
+      type?: ImapFolder['type'],
+      subfolders: ImapFolder[] = []
+    ) => ({ path, type, subfolders }) as unknown as ImapFolder
+
+    it('returns the path of the folder typed as drafts, whatever its name', () => {
+      expect(
+        findDraftFolderPath([
+          folder('INBOX', 'INBOX', [folder('INBOX/Brouillons', 'DRAFTS')]),
+        ])
+      ).toBe('INBOX/Brouillons')
+    })
+
+    it('returns undefined when no folder is typed as drafts', () => {
+      expect(
+        findDraftFolderPath([folder('INBOX', 'INBOX'), folder('Drafts')])
+      ).toBeUndefined()
+    })
   })
 })
