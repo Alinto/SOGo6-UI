@@ -1227,6 +1227,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
 
 export const {
   useGetFoldersQuery,
+  useLazyGetFoldersQuery,
   useGetFolderMessagesQuery,
   useSearchMailsQuery,
   useGetMailQuery,

@@ -8,9 +8,12 @@ import React from 'react'
 import { selectOpenDraftIds } from '../../store'
 import { useLazyGetCurrentDraftsQuery } from '../../store/mail-api'
 import { createDraft } from '../../store/mail-compose-slice'
-import { useLazyGetMailQuery } from '../../store/mails-api'
+import {
+  useLazyGetFoldersQuery,
+  useLazyGetMailQuery,
+} from '../../store/mails-api'
+import { findDraftFolderPath } from '../../utils/folder-type-helpers'
 import { apiDataToMailComposeDraft } from '../../utils/mail-compose-from-api'
-import { FOLDERS_NAME } from '../constants'
 import FloatingCompose from './floating-compose'
 
 const FloatingComposeContainer = () => {
@@ -21,6 +24,7 @@ const FloatingComposeContainer = () => {
   const isMobile = useIsMobile()
 
   const [triggerGetMail] = useLazyGetMailQuery()
+  const [triggerGetFolders] = useLazyGetFoldersQuery()
   const hasInitialized = React.useRef(false)
 
   React.useEffect(() => {
@@ -31,12 +35,23 @@ const FloatingComposeContainer = () => {
     const initDrafts = async () => {
       if (accountId) {
         const result = await triggerGetCurrentDrafts({ accountId })
-        if (!result.data?.data?.length) return
+        // A draft whose first save failed keeps an empty server uid: there is
+        // nothing to fetch for it.
+        const drafts = (result.data?.data ?? []).filter(
+          (item) => item.mail_server_uid
+        )
+        if (!drafts.length) return
 
-        for (const item of result.data.data) {
+        // The drafts folder is not always named "Drafts": use the one the
+        // server flags as such, and skip restoring when the account has none.
+        const foldersResult = await triggerGetFolders({ accountId }, true)
+        const draftFolder = findDraftFolderPath(foldersResult.data ?? [])
+        if (!draftFolder) return
+
+        for (const item of drafts) {
           const draftId = createClientId()
           const editResult = await triggerGetMail({
-            folder: FOLDERS_NAME.DRAFT,
+            folder: draftFolder,
             mailId: item.mail_server_uid,
             accountId,
           })
@@ -66,6 +81,7 @@ const FloatingComposeContainer = () => {
     isMobile,
     mainAccount?.id,
     triggerGetCurrentDrafts,
+    triggerGetFolders,
     triggerGetMail,
   ])
 
