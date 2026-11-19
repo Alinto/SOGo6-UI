@@ -177,6 +177,36 @@ describe('calendars-api', () => {
     })
   })
 
+  describe('extractReminders', () => {
+    const reminder = {
+      event_key: 'evt-1',
+      title: 'Standup',
+      trigger_at: '2026-11-19T09:45:00Z',
+    }
+
+    it('reads the list from the server envelope', () => {
+      expect(
+        CalendarsApi.extractReminders({
+          data: { reminders: [reminder], total_count: 1 },
+          error_code: '',
+          error_msg: '',
+        } as never)
+      ).toEqual([reminder])
+    })
+
+    it('accepts a bare list', () => {
+      expect(CalendarsApi.extractReminders([reminder])).toEqual([reminder])
+    })
+
+    it.each([
+      ['no data', { data: null }],
+      ['no reminders key', { data: { total_count: 0 } }],
+      ['null response', null],
+    ])('returns an empty list for %s', (_label, response) => {
+      expect(CalendarsApi.extractReminders(response as never)).toEqual([])
+    })
+  })
+
   describe('setCalendarShareQuery', () => {
     const baseUser = {
       uid: 'jnadal@snapshot.alinto.org',
