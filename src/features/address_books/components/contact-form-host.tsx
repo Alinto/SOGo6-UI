@@ -24,7 +24,10 @@ import {
   getContactEmails,
   getRecipientCardChanges,
 } from '../utils/recipient-card-changes'
-import { serializeContactFromForm } from '../utils/serialize-contact'
+import {
+  serializeContactEditFromForm,
+  serializeContactFromForm,
+} from '../utils/serialize-contact'
 import ContactForm, {
   fromFieldArray,
   type ContactFormValues,
@@ -94,7 +97,6 @@ function ContactFormHost() {
 
       setSubmitError(null)
       const payload = buildVCardPayload(values)
-      const serializedBody = serializeContactFromForm(values)
 
       // Keep open compose windows (recipient names and contact cards) in
       // sync, only with what they show.
@@ -124,7 +126,7 @@ function ContactFormHost() {
             id: contactId,
             kind: 'individual',
             ...payload,
-            patchBody: serializedBody,
+            patchBody: serializeContactEditFromForm(values),
           }).unwrap()
           syncCompose(
             contactId,
@@ -136,7 +138,7 @@ function ContactFormHost() {
         const created = await addContact({
           id: bookId,
           vCard: payload as VCard,
-          createBody: serializedBody,
+          createBody: serializeContactFromForm(values),
         }).unwrap()
         // e.g. a recipient added to the contacts from its compose card.
         syncCompose(created?.id ?? '', { nameChanged: true, cardChanged: true })

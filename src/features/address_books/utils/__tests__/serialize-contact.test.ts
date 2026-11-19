@@ -2,6 +2,7 @@ import {
   serializeAddressBookCreate,
   serializeAddressBookPatch,
   serializeContactCreate,
+  serializeContactEditFromForm,
   serializeContactFromForm,
   serializeContactPatch,
 } from '../serialize-contact'
@@ -224,5 +225,109 @@ describe('serializeAddressBook helpers', () => {
       name: 'Personal',
       is_default: true,
     })
+  })
+})
+
+describe('serializeContactEditFromForm', () => {
+  const emptied = {
+    contactKind: 'individual' as const,
+    name: '',
+    firstName: 'Alice',
+    lastName: 'Martin',
+    middleName: '',
+    prefix: '',
+    suffix: '',
+    nickname: '',
+    organization: '  ',
+    department: '',
+    jobTitle: '',
+    title: '',
+    emails: [{ value: '' }],
+    phoneNumbers: [],
+    addresses: [],
+    urls: [{ value: '' }],
+    impp: [],
+    birthday: '',
+    birthdayUnknownYear: false,
+    anniversary: '',
+    categories: [],
+    photoDataUri: undefined,
+    clearPhoto: false,
+    note: '',
+  }
+
+  it('sends emptied multi-valued fields as empty lists', () => {
+    const body = serializeContactEditFromForm(emptied)
+    expect(body).toEqual(
+      expect.objectContaining({
+        emails: [],
+        phones: [],
+        addresses: [],
+        urls: [],
+        impp: [],
+        categories: [],
+      })
+    )
+  })
+
+  it('sends emptied note, organization and job title as null', () => {
+    const body = serializeContactEditFromForm(emptied)
+    expect(body).toEqual(
+      expect.objectContaining({
+        note: null,
+        organization: null,
+        job_title: null,
+      })
+    )
+  })
+
+  it('keeps the cleared keys through JSON encoding', () => {
+    const sent = JSON.parse(
+      JSON.stringify(serializeContactEditFromForm(emptied))
+    )
+    for (const key of [
+      'emails',
+      'phones',
+      'addresses',
+      'urls',
+      'impp',
+      'categories',
+      'note',
+      'organization',
+      'job_title',
+    ]) {
+      expect(sent).toHaveProperty(key)
+    }
+  })
+
+  it('keeps filled values as they are', () => {
+    const body = serializeContactEditFromForm({
+      ...emptied,
+      organization: 'Acme',
+      jobTitle: 'Engineer',
+      note: 'VIP',
+      phoneNumbers: [{ value: '+33123456789' }],
+      categories: ['Work'],
+    })
+    expect(body).toEqual(
+      expect.objectContaining({
+        organization: 'Acme',
+        job_title: 'Engineer',
+        note: 'VIP',
+        phones: [{ number: '+33123456789' }],
+        categories: ['Work'],
+      })
+    )
+  })
+
+  it('does not change the create body', () => {
+    const created = JSON.parse(
+      JSON.stringify(serializeContactFromForm(emptied))
+    )
+    expect(created).not.toHaveProperty('emails')
+    expect(created).not.toHaveProperty('categories')
+    expect(created.note).toBeUndefined()
+    expect(created.organization).toBeUndefined()
+    expect(created.job_title).toBeUndefined()
   })
 })
