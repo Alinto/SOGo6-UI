@@ -109,7 +109,10 @@ export default function MailContent({
       )}
 
       <div className="mail-content">
-        <ShadowEmailContent html={htmlToRender} />
+        <ShadowEmailContent
+          html={htmlToRender}
+          allowRemoteContent={showImages}
+        />
       </div>
     </div>
   )

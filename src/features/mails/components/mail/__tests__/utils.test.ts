@@ -209,3 +209,121 @@ describe('sanitizeEmailHtml', () => {
     expect(dataTable).not.toContain('role="presentation"')
   })
 })
+
+describe('sanitizeEmailHtml security', () => {
+  it.each([
+    ['slash-separated handler', '<img/src=x/onerror=alert(1)>'],
+    ['unquoted handler', '<img src=x onerror=alert(1)>'],
+    ['svg onload', '<svg onload=alert(1)><circle r="1"></circle></svg>'],
+    ['script tag', '<p>x</p><script>alert(1)</script>'],
+    [
+      'javascript link with leading space',
+      '<a href=" javascript:alert(1)">x</a>',
+    ],
+    [
+      'entity-encoded javascript link',
+      '<a href="jav&#x61;script:alert(1)">x</a>',
+    ],
+    [
+      'svg xlink javascript',
+      '<svg><a xlink:href="javascript:alert(1)"><text>x</text></a></svg>',
+    ],
+    ['iframe srcdoc', '<iframe srcdoc="<script>alert(1)</script>"></iframe>'],
+  ])('removes executable code: %s', (_label, input) => {
+    const html = sanitizeEmailHtml(input).toLowerCase()
+    expect(html).not.toMatch(/\son\w+=/)
+    expect(html).not.toContain('<script')
+    expect(html).not.toContain('javascript:')
+    expect(html).not.toContain('<iframe')
+  })
+
+  it('does not run handlers once injected into the page', () => {
+    const spy = jest.fn()
+    ;(window as unknown as { pwned: () => void }).pwned = spy
+    const host = document.createElement('div')
+    host.innerHTML = sanitizeEmailHtml(
+      '<img/src=x/onerror=pwned()><svg onload=pwned()></svg>'
+    )
+    host
+      .querySelectorAll('img')
+      .forEach((img) => img.dispatchEvent(new Event('error')))
+    expect(spy).not.toHaveBeenCalled()
+  })
+
+  it('removes forms and their controls', () => {
+    const html = sanitizeEmailHtml(
+      '<form action="https://evil.test"><input name="password"><button>Go</button></form>'
+    )
+    expect(html).not.toContain('<form')
+    expect(html).not.toContain('<input')
+    expect(html).not.toContain('evil.test')
+  })
+})
+
+describe('sanitizeEmailHtml remote content', () => {
+  const remote = [
+    '<img src=http://track.test/a.gif>',
+    '<img src="//track.test/b.gif">',
+    '<img srcset="https://track.test/c.png 1x, https://track.test/d.png 2x">',
+    '<picture><source srcset="https://track.test/e.webp"><img alt="x"></picture>',
+    '<table background="https://track.test/f.png"><tr><td>x</td></tr></table>',
+    '<table><tr><td style="background-image:url(https://track.test/g.png)">x</td></tr></table>',
+    '<div style="background:url(&quot;https://track.test/h.png&quot;)">x</div>',
+    '<div style="background:u\\72l(https://track.test/i.png)">x</div>',
+    '<div style="background:image-set(\'https://track.test/j.png\' 1x)">x</div>',
+    '<style>@import url(https://track.test/k.css); .a{background:url(https://track.test/l.png)}</style><p class="a">x</p>',
+    '<style>@font-face{font-family:x;src:url("https://track.test/m.woff)")}</style>',
+    '<video poster="https://track.test/n.png" src="https://track.test/o.mp4"></video>',
+    '<svg><image href="https://track.test/p.png"></image></svg>',
+    '<link rel="stylesheet" href="https://track.test/q.css">',
+  ]
+
+  it.each(remote)('blocks every remote fetch by default: %s', (input) => {
+    expect(sanitizeEmailHtml(input)).not.toContain('track.test')
+  })
+
+  it('keeps remote content once the user allows it', () => {
+    const html = sanitizeEmailHtml(
+      '<img src="https://img.test/a.png"><div style="background:url(https://img.test/b.png)">x</div>',
+      { allowRemoteContent: true }
+    )
+    expect(html).toContain('https://img.test/a.png')
+    expect(html).toContain('https://img.test/b.png')
+  })
+
+  it('keeps local inline images while blocking', () => {
+    const html = sanitizeEmailHtml(
+      '<img src="cid:logo@x"><img src="blob:http://localhost/abc"><img src="data:image/png;base64,AAAA">'
+    )
+    expect(html).toContain('src="cid:logo@x"')
+    expect(html).toContain('src="blob:http://localhost/abc"')
+    expect(html).toContain('src="data:image/png;base64,AAAA"')
+  })
+})
+
+describe('sanitizeEmailHtml newsletter layout', () => {
+  const newsletter = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <style>.cta{color:#fff;background:#0a6} td.col{width:50%}</style></head>
+    <body><table width="600" align="center" cellpadding="0"><tr>
+    <td class="col" bgcolor="#eeeeee"><h1 style="font-size:24px;color:#333">News</h1></td>
+    <td class="col"><a class="cta" href="https://shop.test/" target="_blank">Shop</a></td>
+    </tr></table></body></html>`
+
+  it('keeps head styles, layout attributes and inline styles', () => {
+    const html = sanitizeEmailHtml(newsletter)
+    expect(html).toContain(
+      '<style>.cta{color:#fff;background:#0a6} td.col{width:50%}</style>'
+    )
+    expect(html).toContain('width="600"')
+    expect(html).toContain('bgcolor="#eeeeee"')
+    expect(html).toContain('style="font-size:24px;color:#333"')
+    expect(html).toContain('>News</h1>')
+  })
+
+  it('keeps links opening in a new tab without access to the app', () => {
+    const html = sanitizeEmailHtml(newsletter)
+    expect(html).toContain('href="https://shop.test/"')
+    expect(html).toContain('target="_blank"')
+    expect(html).toContain('rel="noopener noreferrer"')
+  })
+})

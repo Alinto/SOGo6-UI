@@ -1,4 +1,5 @@
 import { getCachedEnvVars } from '@/lib/env-service'
+import DOMPurify from 'dompurify'
 import { useTranslations } from 'next-intl'
 import React, { useEffect, useRef } from 'react'
 
@@ -196,19 +197,132 @@ export function blockExternalImages(html: string): string {
   return html
 }
 
-/**
- * Sanitize HTML pour supprimer les vecteurs XSS courants
- * Protection contre : <script>, event handlers, javascript:, iframes, etc.
- *
- * @param html - HTML brut du mail
- * @returns HTML nettoyé et sécurisé
- */
-function nameEmailContent(html: string): string {
-  if (typeof DOMParser === 'undefined') return html
+/** Resource URLs that never leave the browser: inline parts already fetched. */
+const LOCAL_RESOURCE_URL = /^\s*(?:data:image\/|cid:|blob:)/i
 
+/** DOMPurify's default URI allowlist, plus blob: for fetched inline images. */
+const ALLOWED_URI_REGEXP =
+  /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|matrix|blob):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i
+
+/** Attributes that make the browser fetch a resource as soon as the node exists. */
+const RESOURCE_ATTRIBUTES = new Set(['src', 'background', 'poster'])
+
+const FORBIDDEN_TAGS = [
+  'form',
+  'input',
+  'button',
+  'select',
+  'option',
+  'textarea',
+  'base',
+  'link',
+  'meta',
+]
+
+export type SanitizeEmailHtmlOptions = {
+  /** Load remote images, backgrounds and fonts. False keeps every request local. */
+  allowRemoteContent?: boolean
+}
+
+let allowRemoteContentForCurrentRun = false
+let hooksInstalled = false
+
+/** Decode CSS escapes so `u\72l(` cannot hide a url() from the filter. */
+function decodeCssEscapes(css: string): string {
+  return css
+    .replace(/\\([0-9a-f]{1,6})\s?/gi, (_match, hex: string) => {
+      const codePoint = Number.parseInt(hex, 16)
+      return codePoint > 0 && codePoint <= 0x10ffff
+        ? String.fromCodePoint(codePoint)
+        : ''
+    })
+    .replace(/\\(.)/g, '$1')
+}
+
+/** Remove every remote fetch from CSS: url(), image-set() and @import. */
+function stripRemoteCss(css: string): string {
+  return (
+    decodeCssEscapes(css)
+      .replace(/@import[^;]*;?/gi, '')
+      .replace(
+        /url\s*\(\s*(?:"([^"]*)"?|'([^']*)'?|([^)]*?))\s*(?:\)|$)/gi,
+        (match, double?: string, single?: string, bare?: string) =>
+          LOCAL_RESOURCE_URL.test(double ?? single ?? bare ?? '')
+            ? match
+            : 'none'
+      )
+      // image-set() also accepts plain strings as image URLs.
+      .replace(/(?:-webkit-)?image-set\s*\([^)]*(?:\)|$)/gi, 'none')
+  )
+}
+
+function isLocalSrcset(value: string): boolean {
+  return value
+    .split(',')
+    .map((candidate) => candidate.trim())
+    .filter(Boolean)
+    .every((candidate) => LOCAL_RESOURCE_URL.test(candidate))
+}
+
+function installSanitizerHooks(): void {
+  if (hooksInstalled) return
+  hooksInstalled = true
+
+  DOMPurify.addHook('uponSanitizeAttribute', (node, data) => {
+    if (allowRemoteContentForCurrentRun) return
+    const name = data.attrName
+    const value = data.attrValue ?? ''
+    if (RESOURCE_ATTRIBUTES.has(name)) {
+      if (!LOCAL_RESOURCE_URL.test(value)) data.keepAttr = false
+      return
+    }
+    if (name === 'srcset') {
+      if (!isLocalSrcset(value)) data.keepAttr = false
+      return
+    }
+    if (name === 'style') {
+      data.attrValue = stripRemoteCss(value)
+      return
+    }
+    // SVG <image>/<use>/<feImage> fetch their href; links do not.
+    if (
+      (name === 'href' || name === 'xlink:href') &&
+      node.nodeName.toLowerCase() !== 'a' &&
+      !LOCAL_RESOURCE_URL.test(value)
+    ) {
+      data.keepAttr = false
+    }
+  })
+
+  DOMPurify.addHook('afterSanitizeElements', (node) => {
+    if (allowRemoteContentForCurrentRun) return
+    if (node.nodeName === 'STYLE' && node.textContent) {
+      node.textContent = stripRemoteCss(node.textContent)
+    }
+  })
+
+  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.nodeName === 'A' && node.hasAttribute('target')) {
+      node.setAttribute('rel', 'noopener noreferrer')
+    }
+  })
+}
+
+/** Keep <style> blocks of a full HTML document: they live in <head>, which is dropped. */
+function hoistHeadStyles(html: string): string {
+  if (!/<head[\s>]/i.test(html) || typeof DOMParser === 'undefined') {
+    return html
+  }
   const doc = new DOMParser().parseFromString(html, 'text/html')
+  const styles = Array.from(doc.head.querySelectorAll('style'))
+    .map((style) => style.outerHTML)
+    .join('')
+  return styles + doc.body.innerHTML
+}
 
-  doc.querySelectorAll('a').forEach((anchor) => {
+/** Give screen readers a name for icon links and flag layout tables. */
+function nameEmailContent(root: ParentNode): void {
+  root.querySelectorAll('a').forEach((anchor) => {
     const text = (anchor.textContent ?? '').replace(/\s+/g, '').trim()
     if (text) return
     const alt = anchor.querySelector('img')?.getAttribute('alt')?.trim()
@@ -218,54 +332,46 @@ function nameEmailContent(html: string): string {
     anchor.setAttribute('aria-label', href)
   })
 
-  doc.querySelectorAll('table').forEach((table) => {
+  root.querySelectorAll('table').forEach((table) => {
     if (table.querySelector('th, caption') || table.hasAttribute('role')) return
     table.setAttribute('role', 'presentation')
   })
-
-  return doc.body.innerHTML
 }
 
-export function sanitizeEmailHtml(html: string): string {
+/**
+ * Sanitize mail HTML with DOMPurify (allowlist of tags, attributes and URL schemes).
+ * Unless `allowRemoteContent` is set, every remote resource is removed: image and
+ * media sources, srcset, background attributes, CSS url()/image-set()/@import and
+ * SVG hrefs. Only data:image, cid: and blob: sources are kept.
+ */
+export function sanitizeEmailHtml(
+  html: string,
+  options: SanitizeEmailHtmlOptions = {}
+): string {
   if (!html || typeof html !== 'string') return ''
+  if (typeof window === 'undefined' || !DOMPurify.isSupported) return ''
 
   try {
-    const cleaned = html
-      // 1. Supprimer <script> (avec contenu)
-      .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-
-      // 2. Supprimer tous les event handlers (onclick, onerror, onload, etc.)
-      .replace(/\s+on\w+\s*=\s*["'][^"']*["']/gi, '')
-      .replace(/\s+on\w+\s*=\s*[^\s>]*/gi, '')
-
-      // 3. Bloquer javascript: dans les attributs href
-      .replace(/(href\s*=\s*["'])javascript:/gi, '$1about:blank#blocked-')
-
-      // 4. Bloquer data: URI (sauf images)
-      .replace(/(src\s*=\s*["'])data:(?!image)/gi, '$1about:blank#blocked-')
-
-      // 5. Neutraliser <iframe>, <object>, <embed>
-      .replace(
-        /<(iframe|object|embed)(\s[^>]*)?>/gi,
-        '<div data-blocked="$1"$2>'
-      )
-      .replace(/<\/(iframe|object|embed)>/gi, '</div>')
-
-      // 6. Supprimer <base> (peut rediriger tous les liens relatifs)
-      .replace(/<base\b[^>]*>/gi, '')
-
-      // 7. Neutralize <form> (no unauthorized submit)
-      .replace(/<form(\s[^>]*)?>/gi, '<div data-blocked="form"$1>')
-      .replace(/<\/form>/gi, '</div>')
-
-      // 8. Supprimer <meta> refresh (redirection auto)
-      .replace(/<meta\b[^>]*http-equiv\s*=\s*["']?refresh[^>]*>/gi, '')
-    return nameEmailContent(cleaned)
+    installSanitizerHooks()
+    allowRemoteContentForCurrentRun = options.allowRemoteContent === true
+    const fragment = DOMPurify.sanitize(hoistHeadStyles(html), {
+      FORCE_BODY: true,
+      RETURN_DOM_FRAGMENT: true,
+      ADD_ATTR: ['target'],
+      FORBID_TAGS: FORBIDDEN_TAGS,
+      ALLOWED_URI_REGEXP,
+    })
+    nameEmailContent(fragment)
+    const container = document.createElement('div')
+    container.appendChild(fragment)
+    return container.innerHTML
   } catch (error) {
     if (process.env.NODE_ENV === 'development') {
       console.error('❌ [sanitizeEmailHtml] Error:', error)
     }
     return '' // In case of error, return empty for security
+  } finally {
+    allowRemoteContentForCurrentRun = false
   }
 }
 
@@ -283,8 +389,15 @@ export function sanitizeEmailHtml(html: string): string {
  * - Neutral styles (light mode only)
  *
  * @param html - HTML content of the mail (will be automatically sanitized)
+ * @param allowRemoteContent - Load remote images (the user clicked "show images")
  */
-export const ShadowEmailContent = ({ html }: { html: string }) => {
+export const ShadowEmailContent = ({
+  html,
+  allowRemoteContent = false,
+}: {
+  html: string
+  allowRemoteContent?: boolean
+}) => {
   const t = useTranslations('MAILS_COMMONS.mail_display')
   const hostRef = useRef<HTMLDivElement>(null)
   const shadowRootRef = useRef<ShadowRoot | null>(null)
@@ -433,13 +546,13 @@ export const ShadowEmailContent = ({ html }: { html: string }) => {
     if (!contentContainer) return
 
     // Sanitize puis injecter
-    const cleanHtml = sanitizeEmailHtml(html || '')
+    const cleanHtml = sanitizeEmailHtml(html || '', { allowRemoteContent })
     contentContainer.innerHTML = cleanHtml
 
     if (process.env.NODE_ENV === 'development' && html && !cleanHtml) {
       console.warn('⚠️ [ShadowEmailContent] HTML was sanitized to empty string')
     }
-  }, [html])
+  }, [html, allowRemoteContent])
 
   // Disable false positive: ref is only accessed in useEffect, not during render
   // eslint-disable-next-line
