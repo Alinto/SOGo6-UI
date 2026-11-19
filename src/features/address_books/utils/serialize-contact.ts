@@ -166,6 +166,29 @@ export function serializeContactFromForm(
   return body
 }
 
+/**
+ * Edit body built from the form. The server only changes the keys it receives,
+ * so a field the user emptied must be sent explicitly: `[]` for multi-valued
+ * fields (the server rejects null there) and `null` for note, organization and
+ * job title. The form always loads these fields from the contact, so an empty
+ * value here is what the user wants stored.
+ */
+export function serializeContactEditFromForm(
+  values: ContactFormValues
+): ContactPatchBody {
+  const body: ContactPatchBody = serializeContactFromForm(values)
+  body.emails ??= []
+  body.phones ??= []
+  body.addresses ??= []
+  body.urls ??= []
+  body.impp ??= []
+  body.categories ??= []
+  body.note ??= null
+  body.organization ??= null
+  body.job_title ??= null
+  return body
+}
+
 export function serializeContactPatch(patch: Partial<VCard>): ContactPatchBody {
   const body: ContactPatchBody = {}
 

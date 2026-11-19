@@ -36,13 +36,18 @@ describe('serializeListPatch', () => {
   })
 
   it('clears description when note is empty', () => {
-    expect(
-      serializeListPatch({
-        note: '   ',
-      })
-    ).toEqual({
-      description: undefined,
+    const body = serializeListPatch({
+      note: '   ',
     })
+    expect(body).toEqual({
+      description: null,
+    })
+    // The key must survive JSON encoding, or the server keeps the old text.
+    expect(JSON.parse(JSON.stringify(body))).toEqual({ description: null })
+  })
+
+  it('leaves description untouched when the note is not edited', () => {
+    expect(serializeListPatch({ name: 'Team' })).toEqual({ name: 'Team' })
   })
 })
 

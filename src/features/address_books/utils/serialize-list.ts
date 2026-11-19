@@ -18,7 +18,8 @@ export function serializeListPatch(input: {
 }): ListPatchBody {
   const body: ListPatchBody = {}
   if (input.name !== undefined) body.name = input.name.trim()
-  if (input.note !== undefined) body.description = input.note.trim() || undefined
+  // null clears the description: an absent key keeps the stored one.
+  if (input.note !== undefined) body.description = input.note.trim() || null
   if (input.memberContactIds !== undefined) {
     body.members = input.memberContactIds
   }
