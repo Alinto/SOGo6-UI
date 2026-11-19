@@ -165,25 +165,112 @@ describe('useFolderMessages', () => {
       })
     })
 
-    it.each(['read', 'unread', 'flagged', 'attachments'])(
-      'sends the %s quick filter to the backend',
-      (filter) => {
+    // The folder list route ignores `filter`: a quick filter is a search
+    // restricted to the current folder.
+    const quickFilterCall = () => mockSearchMailsQuery.mock.calls[1]
+
+    it.each([
+      ['read', { is_read: true }],
+      ['unread', { is_read: false }],
+      ['flagged', { is_flagged: true }],
+      ['attachments', { has_attachment: true }],
+    ])(
+      'fetches the %s quick filter from the folder search',
+      (filter, criteria) => {
         mockSearchParams.set('filter', filter)
-        renderHook(() => useFolderMessages({ folder: 'INBOX' }))
-        const [args] = mockGetFolderMessagesQuery.mock.calls[0]
-        expect(args.params.filter).toBe(filter)
+        renderHook(() => useFolderMessages({ folder: 'INBOX/Work' }))
+
+        const [args, options] = quickFilterCall()
+        expect(options).toEqual({ skip: false })
+        expect(args.accountId).toBe('0')
+        expect(args.body).toEqual({
+          ...criteria,
+          folders: ['INBOX/Work'],
+          include_subfolders: false,
+        })
+        const [, listOptions] = mockGetFolderMessagesQuery.mock.calls[0]
+        expect(listOptions.skip).toBe(true)
       }
     )
 
+    it('keeps page, page size, light fields and newest first in the filtered search', () => {
+      mockSearchParams.set('filter', 'unread')
+      mockSearchParams.set('page', '3')
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+
+      expect(quickFilterCall()[0].params).toEqual({
+        page: 3,
+        page_size: '20',
+        fields: 'contents',
+        fields_action: 'exclude',
+        sort_by: 'date',
+        sort_order: 'desc',
+      })
+    })
+
+    it('keeps the chosen sort in the filtered search', () => {
+      mockSearchParams.set('filter', 'flagged')
+      mockSearchParams.set('sort', 's_asc')
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+
+      expect(quickFilterCall()[0].params).toMatchObject({
+        sort_by: 'size',
+        sort_order: 'asc',
+      })
+    })
+
+    it('shows the filtered search results as the list', () => {
+      const filtered = { ...mockData, mails: [mockData.mails[0]], total: 1 }
+      mockSearchMailsQuery.mockImplementation(
+        (_args: unknown, options: { skip: boolean }) =>
+          options.skip
+            ? { data: undefined, isLoading: false, isFetching: false }
+            : { data: filtered, isLoading: false, isFetching: false }
+      )
+      mockSearchParams.set('filter', 'unread')
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+
+      expect(result.current.data).toBe(filtered)
+    })
+
     it.each(['all', 'starred', 'unknown'])(
-      'does not send the %s filter to the backend',
+      'keeps the plain folder list for the %s filter',
       (filter) => {
         mockSearchParams.set('filter', filter)
         renderHook(() => useFolderMessages({ folder: 'INBOX' }))
-        const [args] = mockGetFolderMessagesQuery.mock.calls[0]
+        const [args, options] = mockGetFolderMessagesQuery.mock.calls[0]
         expect(args.params).not.toHaveProperty('filter')
+        expect(options.skip).toBe(false)
+        expect(quickFilterCall()[1]).toEqual({ skip: true })
       }
     )
+
+    it('does not change the folder list request without a filter', () => {
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+      const [args, options] = mockGetFolderMessagesQuery.mock.calls[0]
+      expect(args).toEqual({
+        folder: 'INBOX',
+        accountId: '0',
+        params: {
+          fields: 'contents',
+          fields_action: 'exclude',
+          page_size: '20',
+        },
+      })
+      expect(options).toEqual({ skip: false })
+      expect(quickFilterCall()[1]).toEqual({ skip: true })
+    })
+
+    it('does not run the filtered search while a user search is active', () => {
+      mockSearchParams.set('filter', 'unread')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+      expect(quickFilterCall()[1]).toEqual({ skip: true })
+    })
 
     it('does not send the quick filter to the search endpoint', () => {
       mockSearchParams.set('filter', 'unread')
