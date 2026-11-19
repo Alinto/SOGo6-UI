@@ -6,6 +6,7 @@ import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
 import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
+import { waitForLogoutWipe } from '@/features/offline/auth/logout-wipe'
 import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
 import { useEnvVars } from '@/lib/env-service'
@@ -120,6 +121,9 @@ export function LoginAuthForm({
       }
 
       const payload = decodeJwtPayload(result.data.jwt_token)
+
+      // A logout may still be deleting this user's offline database.
+      await waitForLogoutWipe()
 
       // Cache keys do not include the user. The login page has no mailbox
       // subscriptions, so this drops the previous account before the new one.
