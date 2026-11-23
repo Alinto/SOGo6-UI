@@ -41,7 +41,7 @@
         "string": "Scan this QR code with your authenticator app."
       },
       "manual": {
-        "string": "Or enter this key manually:"
+        "string": "Or enter this key in your authenticator app:"
       },
       "confirm": {
         "string": "Confirm",

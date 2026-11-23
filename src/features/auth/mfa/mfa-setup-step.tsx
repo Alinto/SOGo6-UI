@@ -29,7 +29,15 @@ export function MfaSetupStep({ setup, onConfirm, isLoading }: Props) {
       {setup.secret && (
         <div className="text-sm">
           <p>{t('setup.manual.string')}</p>
-          <code className="font-mono break-all select-all">{setup.secret}</code>
+          {/* Groups of 4 for readability. Separated by CSS margin, not spaces,
+              so a copy/paste gives the raw key */}
+          <code className="flex flex-wrap font-mono select-all">
+            {setup.secret.match(/.{1,4}/g)?.map((group, i) => (
+              <span key={i} className="mr-2">
+                {group}
+              </span>
+            ))}
+          </code>
         </div>
       )}
       <MfaCodeForm
