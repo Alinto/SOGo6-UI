@@ -224,6 +224,10 @@
         "all": {
           "string": "All calendars"
         }
+      },
+      "railMore": {
+        "string": "{count, plural, one {# more item} other {# more items}}",
+        "context": "Tooltip of the collapsed sidebar entry standing for the views and calendars that do not fit; clicking it expands the sidebar"
       }
     },
     "fast_access": {

@@ -7,6 +7,8 @@ const mockSetOpenMobile = jest.fn()
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockDispatch,
+  useAppSelector: (selector: (state: unknown) => unknown) =>
+    selector({ addressBooksUi: { rightsByBook: {} } }),
 }))
 
 jest.mock('next/navigation', () => ({

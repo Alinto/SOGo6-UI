@@ -62,6 +62,21 @@ jest.mock('@/components/ui/sidebar', () => ({
       {children}
     </button>
   ),
+  SidebarSeparator: () => <hr data-testid="separator" />,
+  useSidebar: jest.fn(),
+}))
+
+let mockRailHeight: number | null = null
+
+jest.mock('@/hooks/use-element-height', () => ({
+  useElementHeight: () => ({ ref: jest.fn(), height: mockRailHeight }),
+}))
+
+jest.mock('@/components/sidebar/rail-more-button', () => ({
+  __esModule: true,
+  default: ({ label, count }: { label: string; count: number }) => (
+    <li data-testid="rail-more" data-label={label} data-count={count} />
+  ),
 }))
 
 jest.mock('@/components/ui/badge', () => ({
@@ -74,6 +89,12 @@ jest.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
 
+import {
+  RAIL_GAP,
+  RAIL_ROW_HEIGHT,
+  RAIL_SEPARATOR_HEIGHT,
+} from '@/components/sidebar/fit-rail-sections'
+import { useSidebar } from '@/components/ui/sidebar'
 import { useGetCalendarsQuery } from '@/features/calendars'
 import { useTasksSource } from '../../../hooks/use-tasks-source'
 import {
@@ -105,6 +126,10 @@ const sampleTasks = [
 describe('TasksSidebar', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockRailHeight = null
+    jest.mocked(useSidebar).mockReturnValue({
+      state: 'expanded',
+    } as ReturnType<typeof useSidebar>)
     mockTasksUiState.statusFilter = 'all'
     mockTasksUiState.selectedCalendarKey = null
     mockUseTasksSource.mockReturnValue({
@@ -166,6 +191,80 @@ describe('TasksSidebar', () => {
       render(<TasksSidebar />)
       await user.click(screen.getByText('Personal'))
       expect(mockDispatch).toHaveBeenCalledWith(setCalendarFilter(null))
+    })
+  })
+  describe('icon rail (collapsed sidebar)', () => {
+    const calendars = [
+      { key: 'cal-1', id: 'cal-1', name: 'Personal', color: '#111' },
+      { key: 'cal-2', id: 'cal-2', name: 'Work', color: '#222' },
+      { key: 'cal-3', id: 'cal-3', name: 'Family', color: '#333' },
+    ]
+    /** Room for `rows` rows, the line between the two sections included. */
+    const roomFor = (rows: number) =>
+      rows * RAIL_ROW_HEIGHT +
+      (rows - 1) * RAIL_GAP +
+      RAIL_SEPARATOR_HEIGHT +
+      RAIL_GAP
+
+    beforeEach(() => {
+      jest.mocked(useSidebar).mockReturnValue({
+        state: 'collapsed',
+      } as ReturnType<typeof useSidebar>)
+      mockUseGetCalendarsQuery.mockReturnValue({
+        data: calendars,
+        isLoading: false,
+      })
+    })
+
+    it('shows everything, with a line between views and calendars, when it fits', () => {
+      mockRailHeight = 2000
+
+      render(<TasksSidebar />)
+
+      expect(
+        screen.getByText('sidebar.smart_views.all.string')
+      ).toBeInTheDocument()
+      expect(screen.getByText('Family')).toBeInTheDocument()
+      expect(screen.getAllByTestId('separator')).toHaveLength(1)
+      expect(screen.queryByTestId('rail-more')).not.toBeInTheDocument()
+      expect(
+        screen.queryByText('sidebar.smart_views.title.string')
+      ).not.toBeInTheDocument()
+    })
+
+    it('limits the entries to the room above the footer, then shows "+N"', () => {
+      // 5 views + "all calendars" + 1 calendar + the "+N" row.
+      mockRailHeight = roomFor(8)
+
+      render(<TasksSidebar />)
+
+      expect(
+        screen.getByText('sidebar.calendars.all.string')
+      ).toBeInTheDocument()
+      expect(screen.getByText('Personal')).toBeInTheDocument()
+      expect(screen.queryByText('Work')).not.toBeInTheDocument()
+      expect(screen.queryByText('Family')).not.toBeInTheDocument()
+      expect(screen.getByTestId('rail-more')).toHaveAttribute('data-count', '2')
+      expect(screen.getByTestId('rail-more')).toHaveAttribute(
+        'data-label',
+        'sidebar.railMore.string'
+      )
+    })
+
+    it('keeps the full sidebar on mobile', () => {
+      jest.mocked(useSidebar).mockReturnValue({
+        state: 'collapsed',
+        isMobile: true,
+      } as unknown as ReturnType<typeof useSidebar>)
+      mockRailHeight = roomFor(2)
+
+      render(<TasksSidebar />)
+
+      expect(
+        screen.getByText('sidebar.smart_views.title.string')
+      ).toBeInTheDocument()
+      expect(screen.getByText('Family')).toBeInTheDocument()
+      expect(screen.queryByTestId('rail-more')).not.toBeInTheDocument()
     })
   })
 })

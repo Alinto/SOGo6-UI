@@ -1,5 +1,6 @@
 'use client'
 
+import IconRail from '@/components/sidebar/icon-rail'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -9,6 +10,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { ALL_CONTACTS_BOOK_ID } from '@/features/address_books/address-books-constants'
+import { useIsIconRail } from '@/hooks/use-is-icon-rail'
 import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
 import { useRouter } from '@/lib/i18n/navigation'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -47,14 +49,36 @@ function getBookActionProps(
   return { canImport: canCreate, canExport: canView }
 }
 
+function AllContactsItem() {
+  const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
+  const { push } = useRouter()
+  const params = useParams()
+  const activeBookId = routeParam(params?.book_id) ?? null
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
+        isActive={activeBookId === ALL_CONTACTS_BOOK_ID}
+        onClick={() => push(`/address_books/${ALL_CONTACTS_BOOK_ID}`)}
+        tooltip={t('all_contacts.string')}
+      >
+        <Contact2 />
+        <span className="truncate group-data-[collapsible=icon]:hidden">
+          {t('all_contacts.string')}
+        </span>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  )
+}
+
 function Sidebar() {
   const { data, isFetching, isError } = useGetAddressBooksQuery()
   const t = useTranslations('ADDRESS_BOOKS_SIDEBAR')
   const tForm = useTranslations('CONTACT_FORM')
-  const { push } = useRouter()
-  const params = useParams()
-  const activeBookId = routeParam(params?.book_id) ?? null
   const isOtherOwner = useIsOtherOwner()
+  // Icon rail (desktop, collapsed): only "All contacts" and the global books.
+  const isIconRail = useIsIconRail()
   const rightsByBook = useAppSelector(selectRightsByBook)
 
   // Shared = owned by someone else than the connected account
@@ -85,31 +109,49 @@ function Sidebar() {
   }
 
   const { globals = [] } = data || {}
+
+  const createContactGroup = (
+    <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <CreateContactOpener />
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+
+  const globalItems = globals.map((book) => (
+    <SidebarItem
+      key={book.id}
+      icon="globe"
+      name={book.name}
+      id={book.id}
+      onClick={() => {}}
+      disableActions
+    />
+  ))
+
+  if (isIconRail) {
+    return (
+      <>
+        {createContactGroup}
+        <IconRail
+          sections={[[<AllContactsItem key="all-contacts" />, ...globalItems]]}
+          moreLabel={(count) => t('railMore.string', { count })}
+        />
+      </>
+    )
+  }
+
   return (
     <>
-      <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <CreateContactOpener />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroup>
+      {createContactGroup}
       <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('personals.string')}</SidebarGroupLabel>
         <AddAddressBook type={'personals'} />
         <SidebarGroupContent>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                className="h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none"
-                isActive={activeBookId === ALL_CONTACTS_BOOK_ID}
-                onClick={() => push(`/address_books/${ALL_CONTACTS_BOOK_ID}`)}
-                tooltip={t('all_contacts.string')}
-              >
-                <Contact2 />
-                <span className="truncate">{t('all_contacts.string')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            <AllContactsItem />
             {personals.map((book) => (
               <SidebarItem
                 key={book.id}
@@ -164,18 +206,7 @@ function Sidebar() {
       </SidebarGroup>
       <SidebarGroup className="pb-4 group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('globals.string')}</SidebarGroupLabel>
-        <SidebarMenu>
-          {globals.map((book) => (
-            <SidebarItem
-              key={book.id}
-              icon="globe"
-              name={book.name}
-              id={book.id}
-              onClick={() => {}}
-              disableActions
-            />
-          ))}
-        </SidebarMenu>
+        <SidebarMenu>{globalItems}</SidebarMenu>
       </SidebarGroup>
     </>
   )

@@ -1,15 +1,18 @@
 'use client'
 
 import { useSidebar } from '@/components/ui/sidebar'
-import { useAppDispatch } from '@/lib/redux/hooks'
+import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { UserPlus, type LucideIcon } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { useParams } from 'next/navigation'
 import { useCallback, useMemo } from 'react'
 import { ALL_CONTACTS_BOOK_ID } from '../address-books-constants'
 import { useGetAddressBooksQuery } from '../store/address-books-api'
-import { openCreateForm } from '../store/address-books-ui-slice'
-import { getAddressBookPermissions } from '../utils/address-book-permissions'
+import {
+  openCreateForm,
+  selectRightsByBook,
+} from '../store/address-books-ui-slice'
+import { listCreatableAddressBooks } from '../utils/list-creatable-address-books'
 import { resolveDefaultBookId } from '../utils/resolve-default-book'
 import { routeParam } from '../utils/route-param'
 import { useActiveAddressBookWritable } from './use-active-address-book'
@@ -21,26 +24,26 @@ export function useCreateContactAction(options?: {
   const { isMobile, setOpenMobile } = useSidebar()
   const dispatch = useAppDispatch()
   const routeBookId = routeParam(useParams().book_id) ?? null
-  const hasRouteBook = routeBookId !== null
   const isAllContacts = routeBookId === ALL_CONTACTS_BOOK_ID
   const { permissions } = useActiveAddressBookWritable()
+  const rightsByBook = useAppSelector(selectRightsByBook)
   const { data: addressBooks, isLoading: isBooksLoading } =
-    useGetAddressBooksQuery(undefined, { skip: hasRouteBook })
+    useGetAddressBooksQuery()
   const closeMobileSidebar = options?.closeMobileSidebar ?? true
 
-  const defaultBookId = useMemo(
-    () => resolveDefaultBookId(addressBooks?.personals ?? []),
-    [addressBooks?.personals]
+  const creatableBooks = useMemo(
+    () => listCreatableAddressBooks(addressBooks, rightsByBook),
+    [addressBooks, rightsByBook]
   )
-  const defaultBook =
-    addressBooks?.personals.find((book) => book.id === defaultBookId) ?? null
-  const canCreateInDefaultBook =
-    getAddressBookPermissions(defaultBook).canCreate
 
-  const targetBookId = hasRouteBook ? routeBookId : defaultBookId
-  const disabled = hasRouteBook
-    ? isAllContacts || !permissions.canCreate
-    : isBooksLoading || !canCreateInDefaultBook
+  // The form lets the user pick the address book: the route book is only a
+  // preselection, used when a contact can be created in it.
+  const routeBookCreatable =
+    routeBookId !== null && !isAllContacts && permissions.canCreate
+  const targetBookId = routeBookCreatable
+    ? routeBookId
+    : resolveDefaultBookId(creatableBooks)
+  const disabled = !routeBookCreatable && (isBooksLoading || !targetBookId)
 
   const onClick = useCallback(() => {
     if (disabled || !targetBookId) return

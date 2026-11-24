@@ -1,5 +1,6 @@
 'use client'
 
+import IconRail from '@/components/sidebar/icon-rail'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -12,6 +13,7 @@ import {
   isSharedWithMe,
   isSubscriptionCalendar,
 } from '@/features/calendars/utils/calendar-source-type'
+import { useIsIconRail } from '@/hooks/use-is-icon-rail'
 import { useIsOtherOwner } from '@/hooks/use-is-other-owner'
 import { sortByOwnerThenName } from '@/lib/utils/owner'
 import { useTranslations } from 'next-intl'
@@ -24,10 +26,35 @@ import SubscribeSharedCalendar from './forms/subscribe-shared'
 import SidebarItem from './sidebar-item'
 import SidebarSkeleton from './skeleton'
 
+type CalendarSection = 'personals' | 'shared' | 'subscriptions'
+
+const SECTIONS: CalendarSection[] = ['personals', 'shared', 'subscriptions']
+
+function renderCalendar(calendar: Calendar, section: CalendarSection) {
+  return (
+    <SidebarItem
+      key={calendar.key ?? calendar.id}
+      icon="calendar"
+      isDefault={section === 'personals' ? calendar.is_default : undefined}
+      id={calendar.key ?? calendar.id ?? ''}
+      calendarKey={calendar.key ?? calendar.id}
+      sourceType={calendar.source_type}
+      name={calendar.name}
+      color={calendar.color}
+      owner={section === 'shared' ? calendar.owner : undefined}
+      publicUrl={calendar.public_url}
+      isShared={section === 'shared' ? true : undefined}
+      onClick={() => {}}
+    />
+  )
+}
+
 const Sidebar: React.FC = () => {
   const { data, isFetching } = useGetCalendarsQuery()
   const t = useTranslations('CALENDARS')
   const isOtherOwner = useIsOtherOwner()
+  // Icon rail (desktop, collapsed): calendars only, sections split by a line.
+  const isIconRail = useIsIconRail()
 
   const groupedCalendars = useMemo(() => {
     const calendars = data ?? []
@@ -52,35 +79,42 @@ const Sidebar: React.FC = () => {
 
   const { personals, shared, subscriptions } = groupedCalendars
 
+  const createEventGroup = (
+    <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <CreateEventOpener />
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+
+  if (isIconRail) {
+    return (
+      <>
+        {createEventGroup}
+        <IconRail
+          sections={SECTIONS.map((section) =>
+            groupedCalendars[section].map((calendar) =>
+              renderCalendar(calendar, section)
+            )
+          )}
+          moreLabel={(count) => t('sidebar.railMore.string', { count })}
+        />
+      </>
+    )
+  }
+
   return (
     <>
-      <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <CreateEventOpener />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroup>
+      {createEventGroup}
 
       <SidebarGroup className="group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>{t('sidebar.personals.string')}</SidebarGroupLabel>
         <AddCalendar type="personals" />
         <SidebarGroupContent>
           <SidebarMenu>
-            {personals.map((calendar) => (
-              <SidebarItem
-                key={calendar.key ?? calendar.id}
-                icon="calendar"
-                isDefault={calendar.is_default}
-                id={calendar.key ?? calendar.id ?? ''}
-                calendarKey={calendar.key ?? calendar.id}
-                sourceType={calendar.source_type}
-                name={calendar.name}
-                color={calendar.color}
-                publicUrl={calendar.public_url}
-                onClick={() => {}}
-              />
-            ))}
+            {personals.map((calendar) => renderCalendar(calendar, 'personals'))}
           </SidebarMenu>
         </SidebarGroupContent>
       </SidebarGroup>
@@ -89,21 +123,7 @@ const Sidebar: React.FC = () => {
         <SidebarGroupLabel>{t('sidebar.shared.string')}</SidebarGroupLabel>
         <SubscribeSharedCalendar />
         <SidebarMenu>
-          {shared.map((calendar) => (
-            <SidebarItem
-              key={calendar.key ?? calendar.id}
-              icon="calendar"
-              id={calendar.key ?? calendar.id ?? ''}
-              calendarKey={calendar.key ?? calendar.id}
-              sourceType={calendar.source_type}
-              name={calendar.name}
-              color={calendar.color}
-              owner={calendar.owner}
-              publicUrl={calendar.public_url}
-              isShared
-              onClick={() => {}}
-            />
-          ))}
+          {shared.map((calendar) => renderCalendar(calendar, 'shared'))}
         </SidebarMenu>
       </SidebarGroup>
 
@@ -113,19 +133,9 @@ const Sidebar: React.FC = () => {
         </SidebarGroupLabel>
         <AddExternalCalendar />
         <SidebarMenu>
-          {subscriptions.map((calendar) => (
-            <SidebarItem
-              key={calendar.key ?? calendar.id}
-              icon="calendar"
-              id={calendar.key ?? calendar.id ?? ''}
-              calendarKey={calendar.key ?? calendar.id}
-              sourceType={calendar.source_type}
-              name={calendar.name}
-              color={calendar.color}
-              publicUrl={calendar.public_url}
-              onClick={() => {}}
-            />
-          ))}
+          {subscriptions.map((calendar) =>
+            renderCalendar(calendar, 'subscriptions')
+          )}
         </SidebarMenu>
       </SidebarGroup>
     </>

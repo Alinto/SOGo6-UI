@@ -10,6 +10,30 @@ import type { SogoModule } from '@/features/user-profile/profile-types'
 import UserSettingsSidebar from '@/features/user-settings/sidebar/sidebar-content'
 import { usePathname } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
+import type { ReactNode } from 'react'
+
+/**
+ * Navigation of a module whose collapsed sidebar is an icon rail. Collapsed, it
+ * fills the sidebar height, so the rail can measure the room it has above the
+ * footer. It takes the focus when the rail's "+N" entry expands the sidebar.
+ */
+function IconRailNav({
+  label,
+  children,
+}: {
+  label: string
+  children: ReactNode
+}) {
+  return (
+    <nav
+      aria-label={label}
+      tabIndex={-1}
+      className="outline-hidden group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:min-h-0 group-data-[collapsible=icon]:flex-1 group-data-[collapsible=icon]:flex-col"
+    >
+      {children}
+    </nav>
+  )
+}
 
 const SidebarsContent = () => {
   const pathname = usePathname()
@@ -48,30 +72,30 @@ const SidebarsContent = () => {
 
   if (isAddressBooksSidebar && hasModuleAccess('contact')) {
     return (
-      <nav aria-label={t('address_book.string')}>
+      <IconRailNav label={t('address_book.string')}>
         <Sidebar />
-      </nav>
+      </IconRailNav>
     )
   }
   if (isCalendarsSidebar && hasModuleAccess('calendar')) {
     return (
-      <nav aria-label={t('calendar.string')}>
+      <IconRailNav label={t('calendar.string')}>
         <CalendarsSidebar />
-      </nav>
+      </IconRailNav>
     )
   }
   if (isTasksSidebar) {
     return (
-      <nav aria-label={t('tasks.string')}>
+      <IconRailNav label={t('tasks.string')}>
         <TasksSidebar />
-      </nav>
+      </IconRailNav>
     )
   }
   if (isMailSidebar && hasModuleAccess('mail')) {
     return (
-      <nav aria-label={t('mail.string')}>
+      <IconRailNav label={t('mail.string')}>
         <MailSidebar />
-      </nav>
+      </IconRailNav>
     )
   }
 

@@ -474,6 +474,10 @@
       "readOnlyCalendar": {
         "string": "Read-only calendar",
         "context": "Label for ICS/subscription calendars that cannot be edited"
+      },
+      "railMore": {
+        "string": "{count, plural, one {# more calendar} other {# more calendars}}",
+        "context": "Tooltip of the collapsed sidebar entry standing for the calendars that do not fit; clicking it expands the sidebar"
       }
     },
     "actions": {

@@ -594,6 +594,10 @@
             "description": "Label for the 'Subject' field in email search options"
         },
         "folders": {
+            "rail_more": {
+                "string": "{count, plural, one {# more folder} other {# more folders}}",
+                "description": "Tooltip of the collapsed sidebar entry standing for the special folders that do not fit; clicking it expands the sidebar"
+            },
             "actions": {
                 "new_subfolder": {
                     "string": "New Subfolder",

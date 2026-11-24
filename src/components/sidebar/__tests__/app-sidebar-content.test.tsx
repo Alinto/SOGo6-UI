@@ -40,6 +40,10 @@ jest.mock('@/features/calendars/components/sidebar/sidebar', () => ({
   default: () => <div data-testid="calendars-sidebar" />,
 }))
 
+jest.mock('@/features/tasks', () => ({
+  TasksSidebar: () => <div data-testid="tasks-sidebar" />,
+}))
+
 jest.mock('@/features/admin-panel/components/sidebar/sidebar-content', () => ({
   __esModule: true,
   default: () => <div data-testid="admin-panel-sidebar" />,
@@ -61,6 +65,20 @@ describe('SidebarsContent', () => {
       expect(
         screen.getByRole('navigation', { name: label })
       ).toBeInTheDocument()
+    })
+
+    it.each([
+      ['/address_books/123', 'address_book.string'],
+      ['/calendars/view', 'calendar.string'],
+      ['/tasks', 'tasks.string'],
+      ['/u/account/inbox', 'mail.string'],
+    ])('lets the %s nav take the focus from its icon rail', (path, label) => {
+      mockUsePathname.mockReturnValue(path)
+      render(<SidebarsContent />)
+      expect(screen.getByRole('navigation', { name: label })).toHaveAttribute(
+        'tabindex',
+        '-1'
+      )
     })
 
     it('renders null for unknown routes', () => {
