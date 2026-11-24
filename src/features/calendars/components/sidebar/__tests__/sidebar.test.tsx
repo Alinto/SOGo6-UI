@@ -54,6 +54,27 @@ jest.mock('@/components/ui/sidebar', () => ({
   SidebarMenuItem: ({ children }: { children: React.ReactNode }) => (
     <li>{children}</li>
   ),
+  SidebarMenuButton: ({
+    children,
+    onClick,
+    'aria-label': ariaLabel,
+  }: {
+    children: React.ReactNode
+    onClick?: () => void
+    'aria-label'?: string
+  }) => (
+    <button type="button" aria-label={ariaLabel} onClick={onClick}>
+      {children}
+    </button>
+  ),
+  SidebarSeparator: () => <hr data-testid="separator" />,
+  useSidebar: jest.fn(),
+}))
+
+let mockRailHeight: number | null = null
+
+jest.mock('@/hooks/use-element-height', () => ({
+  useElementHeight: () => ({ ref: jest.fn(), height: mockRailHeight }),
 }))
 
 jest.mock('../forms/add', () => ({
@@ -108,11 +129,134 @@ jest.mock('../create-event-opener', () => ({
   },
 }))
 
+import {
+  RAIL_GAP,
+  RAIL_ROW_HEIGHT,
+} from '@/components/sidebar/fit-rail-sections'
+import { useSidebar } from '@/components/ui/sidebar'
+import userEvent from '@testing-library/user-event'
 import Sidebar from '../sidebar'
+
+const mockSetOpen = jest.fn()
 
 describe('Sidebar', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockRailHeight = null
+    jest.mocked(useSidebar).mockReturnValue({
+      state: 'expanded',
+      setOpen: mockSetOpen,
+    } as unknown as ReturnType<typeof useSidebar>)
+  })
+
+  describe('icon rail (collapsed sidebar)', () => {
+    const personal = { key: 'p1', name: 'Personal', source_type: 'personal' }
+    const shared = {
+      key: 'sh1',
+      name: 'Theirs',
+      source_type: 'shared',
+      owner: 'other@tutu.fr',
+    }
+    const subscription = { key: 'sub1', name: 'Holidays', source_type: 'ics' }
+
+    const renderRail = (data: unknown[]) => {
+      mockGetCalendarsQuery.mockReturnValue({ data, isFetching: false })
+      render(<Sidebar />)
+    }
+
+    beforeEach(() => {
+      jest.mocked(useSidebar).mockReturnValue({
+        state: 'collapsed',
+        setOpen: mockSetOpen,
+      } as unknown as ReturnType<typeof useSidebar>)
+    })
+
+    it('shows only the calendars that fit, then a "+N" entry', () => {
+      // Room for 2 rows: 1 calendar and the "+N" entry.
+      mockRailHeight = 2 * RAIL_ROW_HEIGHT + RAIL_GAP
+
+      renderRail([personal, shared, subscription])
+
+      expect(screen.getByTestId('item-Personal')).toBeInTheDocument()
+      expect(screen.queryByTestId('item-Theirs')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('item-Holidays')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('separator')).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'sidebar.railMore.string' })
+      ).toHaveTextContent('sidebar.rail_more_badge.string')
+    })
+
+    it('expands the sidebar from the "+N" entry', async () => {
+      mockRailHeight = 2 * RAIL_ROW_HEIGHT + RAIL_GAP
+      renderRail([personal, shared, subscription])
+
+      await userEvent.click(
+        screen.getByRole('button', { name: 'sidebar.railMore.string' })
+      )
+
+      expect(mockSetOpen).toHaveBeenCalledWith(true)
+    })
+
+    it('has no "+N" entry when every calendar fits', () => {
+      mockRailHeight = 1000
+
+      renderRail([personal, shared, subscription])
+
+      expect(screen.getByTestId('item-Holidays')).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: 'sidebar.railMore.string' })
+      ).not.toBeInTheDocument()
+    })
+
+    it('lists every calendar with a line between the three sections', () => {
+      renderRail([personal, shared, subscription])
+
+      expect(screen.getByTestId('create-event-opener')).toBeInTheDocument()
+      expect(screen.getByTestId('item-Personal')).toBeInTheDocument()
+      expect(screen.getByTestId('item-Theirs')).toHaveAttribute(
+        'data-owner',
+        'other@tutu.fr'
+      )
+      expect(screen.getByTestId('item-Holidays')).toBeInTheDocument()
+      expect(screen.getAllByTestId('separator')).toHaveLength(2)
+    })
+
+    it('hides the section labels and the add buttons', () => {
+      renderRail([personal, shared, subscription])
+
+      expect(screen.queryByTestId('group-label')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('add-calendar')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('add-external-calendar')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('subscribe-shared-calendar')
+      ).not.toBeInTheDocument()
+    })
+
+    it('skips the line of an empty section', () => {
+      renderRail([personal, subscription])
+
+      expect(screen.getAllByTestId('separator')).toHaveLength(1)
+    })
+
+    it('draws no line with a single section', () => {
+      renderRail([personal])
+
+      expect(screen.queryByTestId('separator')).not.toBeInTheDocument()
+    })
+
+    it('keeps the full sidebar on mobile', () => {
+      jest.mocked(useSidebar).mockReturnValue({
+        state: 'collapsed',
+        isMobile: true,
+      } as unknown as ReturnType<typeof useSidebar>)
+
+      renderRail([personal, shared, subscription])
+
+      expect(screen.getByText('sidebar.personals.string')).toBeInTheDocument()
+      expect(screen.queryByTestId('separator')).not.toBeInTheDocument()
+    })
   })
 
   describe('configuration', () => {

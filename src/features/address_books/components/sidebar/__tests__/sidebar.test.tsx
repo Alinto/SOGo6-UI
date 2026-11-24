@@ -60,6 +60,13 @@ jest.mock('@/components/ui/sidebar', () => ({
       {children}
     </button>
   ),
+  useSidebar: jest.fn(),
+}))
+
+let mockRailHeight: number | null = null
+
+jest.mock('@/hooks/use-element-height', () => ({
+  useElementHeight: () => ({ ref: jest.fn(), height: mockRailHeight }),
 }))
 
 jest.mock('@/components/dnd/droppable', () => ({
@@ -123,13 +130,108 @@ jest.mock('../skeleton', () => ({
   default: () => <div data-testid="sidebar-skeleton" />,
 }))
 
+import {
+  RAIL_GAP,
+  RAIL_ROW_HEIGHT,
+} from '@/components/sidebar/fit-rail-sections'
+import { useSidebar } from '@/components/ui/sidebar'
 import { useParams } from 'next/navigation'
 import Sidebar from '../sidebar'
 
 describe('AddressBooks Sidebar', () => {
   beforeEach(() => {
     mockPermissionsByBook = {}
+    mockRailHeight = null
     jest.clearAllMocks()
+    jest.mocked(useSidebar).mockReturnValue({
+      state: 'expanded',
+    } as ReturnType<typeof useSidebar>)
+  })
+
+  describe('icon rail (collapsed sidebar)', () => {
+    beforeEach(() => {
+      jest.mocked(useSidebar).mockReturnValue({
+        state: 'collapsed',
+      } as ReturnType<typeof useSidebar>)
+      mockUseGetAddressBooksQuery.mockReturnValue({
+        data: {
+          personals: [{ id: 'p1', name: 'Personal', default: true }],
+          subscriptions: [
+            { id: 's1', name: 'Subscribed' },
+            { id: 'o1', name: 'Other', owner: 'other@tutu.fr' },
+          ],
+          globals: [
+            { id: 'g1', name: 'Global' },
+            { id: 'g2', name: 'LDAP' },
+          ],
+        },
+        isFetching: false,
+      })
+    })
+
+    it('shows the create button, all contacts and every global book', () => {
+      render(<Sidebar />)
+
+      expect(screen.getByTestId('create-contact-opener')).toBeInTheDocument()
+      expect(screen.getByText('all_contacts.string')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-g1')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-g2')).toBeInTheDocument()
+      expect(
+        screen.queryByText('sidebar.rail_more_badge.string')
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows only the entries that fit, then a "+N" entry', () => {
+      // Room for 2 rows: "All contacts" and the "+N" entry for both globals.
+      mockRailHeight = 2 * RAIL_ROW_HEIGHT + RAIL_GAP
+
+      render(<Sidebar />)
+
+      expect(screen.getByText('all_contacts.string')).toBeInTheDocument()
+      expect(screen.queryByTestId('sidebar-item-g1')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('sidebar-item-g2')).not.toBeInTheDocument()
+      expect(
+        screen.getByText('sidebar.rail_more_badge.string')
+      ).toBeInTheDocument()
+    })
+
+    it('leaves out personal, shared and subscribed books and their actions', () => {
+      render(<Sidebar />)
+
+      expect(screen.queryByTestId('sidebar-item-p1')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('sidebar-item-s1')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('sidebar-item-o1')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('add-address-book-personals')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('subscribe-shared-address-book')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('sidebar-group-label')
+      ).not.toBeInTheDocument()
+    })
+
+    it('hides the all contacts label so its icon stays centred', () => {
+      render(<Sidebar />)
+
+      expect(screen.getByText('all_contacts.string')).toHaveClass(
+        'group-data-[collapsible=icon]:hidden'
+      )
+    })
+
+    it('keeps every section on mobile', () => {
+      jest.mocked(useSidebar).mockReturnValue({
+        state: 'collapsed',
+        isMobile: true,
+      } as unknown as ReturnType<typeof useSidebar>)
+
+      render(<Sidebar />)
+
+      expect(screen.getByTestId('sidebar-item-p1')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-s1')).toBeInTheDocument()
+      expect(screen.getByText('personals.string')).toBeInTheDocument()
+    })
   })
 
   describe('basic rendering', () => {

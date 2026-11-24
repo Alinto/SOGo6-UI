@@ -127,7 +127,6 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
       <SidebarMenuButton
         className={cn(
           'relative h-10 align-middle group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
-          !isDefault && 'group-data-[collapsible=icon]:hidden',
           hasMenu && 'pr-8'
         )}
         tooltip={name}

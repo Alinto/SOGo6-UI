@@ -351,6 +351,14 @@ describe('SidebarItem', () => {
       ).toHaveClass('items-center')
     })
 
+    it('centers the checkbox in the collapsed sidebar despite the actions room', () => {
+      render(<SidebarItem {...defaultProps} />)
+      expect(
+        screen.getByRole('checkbox', { name: 'Test Calendar' }).parentElement
+          ?.parentElement
+      ).toHaveClass('pr-8', 'group-data-[collapsible=icon]:px-0')
+    })
+
     it('should not display the owner when the calendar is not shared', () => {
       render(<SidebarItem {...defaultProps} owner="me@tutu.fr" />)
       expect(screen.queryByText('me@tutu.fr')).not.toBeInTheDocument()

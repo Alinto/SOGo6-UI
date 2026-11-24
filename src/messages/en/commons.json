@@ -18,6 +18,10 @@
     "sidebar": {
       "toggle": {
         "string": "Toggle sidebar"
+      },
+      "rail_more_badge": {
+        "string": "+{count}",
+        "context": "Short label of the collapsed sidebar entry standing for the entries that do not fit"
       }
     },
     "command_palette": {

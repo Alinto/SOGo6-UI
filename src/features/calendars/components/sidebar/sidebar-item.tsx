@@ -208,7 +208,7 @@ const SidebarItem: React.FC<SidebarItemProps> = ({
           <div
             title={collapsed ? undefined : fullLabel}
             className={cn(
-              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex w-full gap-2.5 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none',
+              'hover:bg-sidebar-foreground/10 hover:text-sidebar-accent-foreground flex w-full gap-2.5 rounded-md px-2 align-middle transition-colors group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:rounded-none group-data-[collapsible=icon]:px-0',
               // With an owner line, the row grows and the checkbox stays
               // centered on the whole text block
               sharedOwner

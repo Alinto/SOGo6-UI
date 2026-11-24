@@ -80,6 +80,10 @@
             "string": "All contacts",
             "context": "Sidebar entry for cross-address-book contact listing"
         },
+        "railMore": {
+            "string": "{count, plural, one {# more address book} other {# more address books}}",
+            "context": "Tooltip of the collapsed sidebar entry standing for the address books that do not fit; clicking it expands the sidebar"
+        },
         "sharing": {
             "title": {
                 "string": "Share address book"

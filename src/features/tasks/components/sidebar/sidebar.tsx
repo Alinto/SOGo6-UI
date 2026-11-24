@@ -1,5 +1,6 @@
 'use client'
 
+import IconRail from '@/components/sidebar/icon-rail'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -10,6 +11,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useGetCalendarsQuery } from '@/features/calendars'
 import { DEFAULT_CALENDAR_COLOR } from '@/features/calendars/calendars-types'
+import { useIsIconRail } from '@/hooks/use-is-icon-rail'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import {
   Calendar,
@@ -71,6 +73,8 @@ function TasksSidebar() {
   const { tasks, isLoading: tasksLoading } = useTasksSource()
   const { data: calendars = [], isLoading: calendarsLoading } =
     useGetCalendarsQuery()
+  // Icon rail (desktop, collapsed): views and calendars, split by a line.
+  const isIconRail = useIsIconRail()
 
   const counts = useMemo(() => {
     const all = tasks ?? []
@@ -126,111 +130,128 @@ function TasksSidebar() {
     return <TasksSidebarSkeleton />
   }
 
+  const smartViewItems = smartViews.map((view) => {
+    const Icon = view.icon
+    const count =
+      view.id === 'completed'
+        ? 0
+        : counts[view.id as 'all' | 'today' | 'upcoming' | 'overdue']
+    return (
+      <SidebarMenuItem key={view.id}>
+        <SidebarMenuButton
+          className={tasksSidebarMenuButtonClassName}
+          isActive={statusFilter === view.id}
+          onClick={() => dispatch(setStatusFilter(view.id))}
+          tooltip={view.label}
+          title={view.label}
+        >
+          <Icon className={tasksSidebarMenuIconClassName} />
+          <div className={tasksSidebarMenuLabelRowClassName}>
+            <span className="min-w-0 shrink truncate leading-none">
+              {view.label}
+            </span>
+            {view.showCount && (
+              <ViewCount count={count} destructive={view.destructiveBadge} />
+            )}
+          </div>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    )
+  })
+
+  const calendarItems =
+    calendars.length === 0
+      ? []
+      : [
+          <SidebarMenuItem key="all-calendars">
+            <SidebarMenuButton
+              className={tasksSidebarMenuButtonClassName}
+              isActive={selectedCalendarKey === null}
+              onClick={() => dispatch(setCalendarFilter(null))}
+              tooltip={t('sidebar.calendars.all.string')}
+              title={t('sidebar.calendars.all.string')}
+            >
+              <Calendar className={tasksSidebarMenuIconClassName} />
+              <div className={tasksSidebarMenuLabelRowClassName}>
+                <span className="min-w-0 shrink truncate text-sm leading-none">
+                  {t('sidebar.calendars.all.string')}
+                </span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>,
+          ...calendars.map((calendar) => {
+            const key = calendar.key ?? calendar.id ?? ''
+            const isSelected = selectedCalendarKey === key
+            return (
+              <SidebarMenuItem key={key}>
+                <SidebarMenuButton
+                  className={tasksSidebarMenuButtonClassName}
+                  isActive={isSelected}
+                  onClick={() =>
+                    dispatch(setCalendarFilter(isSelected ? null : key))
+                  }
+                  tooltip={calendar.name}
+                  title={calendar.name}
+                >
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: calendar.color ?? DEFAULT_CALENDAR_COLOR,
+                    }}
+                    aria-hidden
+                  />
+                  <div className={tasksSidebarMenuLabelRowClassName}>
+                    <span className="min-w-0 shrink truncate text-sm leading-none">
+                      {calendar.name}
+                    </span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          }),
+        ]
+
+  const createTaskGroup = (
+    <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <CreateTaskOpener />
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarGroup>
+  )
+
+  if (isIconRail) {
+    return (
+      <>
+        {createTaskGroup}
+        <IconRail
+          sections={[smartViewItems, calendarItems]}
+          moreLabel={(count) => t('sidebar.railMore.string', { count })}
+        />
+      </>
+    )
+  }
+
   return (
     <>
-      <SidebarGroup className="sticky top-0 z-10 ml-0 px-2 pt-2 pb-1 group-data-[collapsible=icon]:p-0">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <CreateTaskOpener />
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroup>
+      {createTaskGroup}
 
       <SidebarGroup className="scrollbar-thin-gray min-h-0 flex-1 overflow-y-auto pb-4 group-data-[collapsible=icon]:p-0">
         <SidebarGroupLabel>
           {t('sidebar.smart_views.title.string')}
         </SidebarGroupLabel>
         <SidebarGroupContent>
-          <SidebarMenu>
-            {smartViews.map((view) => {
-              const Icon = view.icon
-              const count =
-                view.id === 'completed'
-                  ? 0
-                  : counts[view.id as 'all' | 'today' | 'upcoming' | 'overdue']
-              return (
-                <SidebarMenuItem key={view.id}>
-                  <SidebarMenuButton
-                    className={tasksSidebarMenuButtonClassName}
-                    isActive={statusFilter === view.id}
-                    onClick={() => dispatch(setStatusFilter(view.id))}
-                    tooltip={view.label}
-                    title={view.label}
-                  >
-                    <Icon className={tasksSidebarMenuIconClassName} />
-                    <div className={tasksSidebarMenuLabelRowClassName}>
-                      <span className="min-w-0 shrink truncate leading-none">
-                        {view.label}
-                      </span>
-                      {view.showCount && (
-                        <ViewCount
-                          count={count}
-                          destructive={view.destructiveBadge}
-                        />
-                      )}
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              )
-            })}
-          </SidebarMenu>
+          <SidebarMenu>{smartViewItems}</SidebarMenu>
         </SidebarGroupContent>
 
-        {calendars.length > 0 && (
+        {calendarItems.length > 0 && (
           <>
             <SidebarGroupLabel className="mt-2">
               {t('sidebar.calendars.title.string')}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    className={tasksSidebarMenuButtonClassName}
-                    isActive={selectedCalendarKey === null}
-                    onClick={() => dispatch(setCalendarFilter(null))}
-                    tooltip={t('sidebar.calendars.all.string')}
-                    title={t('sidebar.calendars.all.string')}
-                  >
-                    <Calendar className={tasksSidebarMenuIconClassName} />
-                    <div className={tasksSidebarMenuLabelRowClassName}>
-                      <span className="min-w-0 shrink truncate text-sm leading-none">
-                        {t('sidebar.calendars.all.string')}
-                      </span>
-                    </div>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                {calendars.map((calendar) => {
-                  const key = calendar.key ?? calendar.id ?? ''
-                  const isSelected = selectedCalendarKey === key
-                  return (
-                    <SidebarMenuItem key={key}>
-                      <SidebarMenuButton
-                        className={tasksSidebarMenuButtonClassName}
-                        isActive={isSelected}
-                        onClick={() =>
-                          dispatch(setCalendarFilter(isSelected ? null : key))
-                        }
-                        tooltip={calendar.name}
-                        title={calendar.name}
-                      >
-                        <span
-                          className="h-2.5 w-2.5 shrink-0 rounded-full"
-                          style={{
-                            backgroundColor:
-                              calendar.color ?? DEFAULT_CALENDAR_COLOR,
-                          }}
-                          aria-hidden
-                        />
-                        <div className={tasksSidebarMenuLabelRowClassName}>
-                          <span className="min-w-0 shrink truncate text-sm leading-none">
-                            {calendar.name}
-                          </span>
-                        </div>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  )
-                })}
-              </SidebarMenu>
+              <SidebarMenu>{calendarItems}</SidebarMenu>
             </SidebarGroupContent>
           </>
         )}

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ImapFolder } from '../../mails-types'
+import { ImapFolder } from '../../../mails-types'
 import MailSidebar from '../sidebar'
 
 // Mock all UI components
@@ -48,6 +48,18 @@ jest.mock('@/components/ui/sidebar', () => ({
       {children}
     </div>
   ),
+  SidebarMenuButton: ({ children, onClick, 'aria-label': ariaLabel }: any) => (
+    <button type="button" aria-label={ariaLabel} onClick={onClick}>
+      {children}
+    </button>
+  ),
+  useSidebar: jest.fn(),
+}))
+
+let mockRailHeight: number | null = null
+
+jest.mock('@/hooks/use-element-height', () => ({
+  useElementHeight: () => ({ ref: jest.fn(), height: mockRailHeight }),
 }))
 
 const mockOpenFolder = jest.fn()
@@ -156,6 +168,11 @@ jest.mock('../../utils', () => ({
   }),
 }))
 
+import {
+  RAIL_GAP,
+  RAIL_ROW_HEIGHT,
+} from '@/components/sidebar/fit-rail-sections'
+import { useSidebar } from '@/components/ui/sidebar'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { useParams } from 'next/navigation'
 import { useGetFoldersQuery } from '../../../store/mails-api'
@@ -217,6 +234,8 @@ describe('MailSidebar Component', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockRailHeight = null
+    ;(useSidebar as jest.Mock).mockReturnValue({ state: 'expanded' })
     ;(useParams as jest.Mock).mockReturnValue({
       account: 'test@example.com',
     })
@@ -986,44 +1005,129 @@ describe('MailSidebar Component', () => {
       expect(screen.getByTestId('collapsible')).toBeInTheDocument()
       expect(screen.getByTestId('collapsible-content')).toBeInTheDocument()
     })
+  })
 
-    it('should hide collapsible in icon mode', () => {
-      const foldersWithSubfolders: ImapFolder[] = [
-        {
-          name: 'Parent',
-          path: 'Parent',
-          unseen_count: 0,
-          messages: 5,
-          flags: [],
-          delimiter: '/',
-          readOnly: false,
-          selectable: true,
-          default: false,
-          subfolders: [
-            {
-              name: 'Child',
-              path: 'Parent/Child',
-              unseen_count: 0,
-              messages: 2,
-              flags: [],
-              delimiter: '/',
-              readOnly: false,
-              selectable: true,
-              default: false,
-            },
-          ],
-        },
-      ]
+  describe('Icon rail (collapsed sidebar)', () => {
+    const folder = (
+      path: string,
+      type: ImapFolder['type'],
+      subfolders?: ImapFolder[]
+    ): ImapFolder => ({
+      name: path.split('/').pop() ?? path,
+      path,
+      type,
+      unseen_count: 0,
+      messages: 0,
+      flags: [],
+      delimiter: '/',
+      readOnly: false,
+      selectable: true,
+      default: false,
+      subfolders,
+    })
 
+    const nestedFolders: ImapFolder[] = [
+      folder('INBOX', 'INBOX', [
+        folder('INBOX/Sent', 'SENT'),
+        folder('INBOX/Clients', 'NORMAL', [
+          folder('INBOX/Clients/Junk', 'JUNK'),
+        ]),
+      ]),
+      folder('Work', 'NORMAL'),
+      folder('NoType', undefined),
+    ]
+
+    beforeEach(() => {
+      ;(useSidebar as jest.Mock).mockReturnValue({ state: 'collapsed' })
       ;(useGetFoldersQuery as jest.Mock).mockReturnValue({
-        data: foldersWithSubfolders,
+        data: nestedFolders,
         isFetching: false,
       })
+    })
 
-      const { container } = render(<MailSidebar />)
+    it('lists every special folder, nested ones included, on one level', () => {
+      render(<MailSidebar />)
 
-      const collapsible = container.querySelector('[data-testid="collapsible"]')
-      expect(collapsible).toHaveClass('group-data-[collapsible=icon]:hidden')
+      expect(screen.getByTestId('sidebar-item-INBOX')).toBeInTheDocument()
+      expect(screen.getByTestId('sidebar-item-INBOX/Sent')).toBeInTheDocument()
+      expect(
+        screen.getByTestId('sidebar-item-INBOX/Clients/Junk')
+      ).toBeInTheDocument()
+      expect(screen.queryByTestId('collapsible')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('sidebar-menu-sub')).not.toBeInTheDocument()
+    })
+
+    it('leaves out NORMAL and untyped folders', () => {
+      render(<MailSidebar />)
+
+      expect(
+        screen.queryByTestId('sidebar-item-INBOX/Clients')
+      ).not.toBeInTheDocument()
+      expect(screen.queryByTestId('sidebar-item-Work')).not.toBeInTheDocument()
+      expect(
+        screen.queryByTestId('sidebar-item-NoType')
+      ).not.toBeInTheDocument()
+    })
+
+    it('shows only the folders that fit, then a "+N" entry', () => {
+      // Room for 2 rows: Inbox and the "+N" entry standing for Sent and Junk.
+      mockRailHeight = 2 * RAIL_ROW_HEIGHT + RAIL_GAP
+
+      render(<MailSidebar />)
+
+      expect(screen.getByTestId('sidebar-item-INBOX')).toBeInTheDocument()
+      expect(
+        screen.queryByTestId('sidebar-item-INBOX/Sent')
+      ).not.toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /folders\.rail_more\.string/ })
+      ).toHaveTextContent(/sidebar\.rail_more_badge\.string/)
+    })
+
+    it('has no "+N" entry when every special folder fits', () => {
+      mockRailHeight = 1000
+
+      render(<MailSidebar />)
+
+      expect(
+        screen.getByTestId('sidebar-item-INBOX/Clients/Junk')
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole('button', { name: /folders\.rail_more\.string/ })
+      ).not.toBeInTheDocument()
+    })
+
+    it('does not show the Outbox entry', () => {
+      render(<MailSidebar />)
+
+      expect(
+        screen.queryByTestId('outbox-sidebar-item')
+      ).not.toBeInTheDocument()
+    })
+
+    it('opens a nested special folder on click', async () => {
+      render(<MailSidebar />)
+
+      await userEvent.click(screen.getByTestId('sidebar-item-INBOX/Sent'))
+
+      expect(mockOpenFolder).toHaveBeenCalledWith(
+        'test@example.com',
+        'INBOX/Sent',
+        'translated_folders.sent.string'
+      )
+    })
+
+    it('keeps the full tree on mobile', () => {
+      ;(useSidebar as jest.Mock).mockReturnValue({
+        state: 'collapsed',
+        isMobile: true,
+      })
+
+      render(<MailSidebar />)
+
+      expect(screen.getAllByTestId('collapsible').length).toBeGreaterThan(0)
+      expect(screen.getByTestId('sidebar-item-Work')).toBeInTheDocument()
+      expect(screen.getByTestId('outbox-sidebar-item')).toBeInTheDocument()
     })
   })
 
