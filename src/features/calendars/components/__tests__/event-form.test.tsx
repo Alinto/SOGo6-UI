@@ -219,8 +219,7 @@ describe('EventForm', () => {
         ).not.toBeInTheDocument()
       })
 
-      it('keeps the full calendar list, with non-writable ones disabled, when editing', async () => {
-        const user = userEvent.setup()
+      it('locks the calendar select when editing (PATCH cannot move an event)', () => {
         render(
           <EventForm
             calendarKey="cal-1"
@@ -229,20 +228,11 @@ describe('EventForm', () => {
             onCancel={onCancel}
           />
         )
-        await openCalendarSelect(user)
-        const listbox = within(screen.getByRole('listbox'))
-
-        const optionFor = (label: string) =>
-          listbox.getByText(label).closest('[role="option"]')
-
-        expect(optionFor('Subscribed')).toHaveAttribute('aria-disabled', 'true')
-        expect(optionFor('Shared (view only)')).toHaveAttribute(
-          'aria-disabled',
-          'true'
-        )
-        expect(optionFor('Shared (can create)')).not.toHaveAttribute(
-          'aria-disabled'
-        )
+        expect(
+          screen.getByRole('combobox', {
+            name: 'eventForm.calendar.label.string',
+          })
+        ).toBeDisabled()
       })
     })
 
@@ -415,6 +405,116 @@ describe('EventForm', () => {
             eventKey: 'event-1',
             body: expect.objectContaining({
               title: 'Updated Event',
+            }),
+          })
+        )
+      })
+    })
+
+    it('sends null for cleared text fields so the PATCH clears them', async () => {
+      const user = userEvent.setup()
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          calendars={mockCalendars}
+          event={mockEvent}
+          onCancel={onCancel}
+        />
+      )
+
+      await user.clear(
+        screen.getByRole('textbox', {
+          name: 'eventForm.description.label.string',
+        })
+      )
+      await user.clear(
+        screen.getByPlaceholderText('eventForm.location.placeholder.string')
+      )
+      await user.click(
+        screen.getByRole('button', { name: 'eventForm.update.string' })
+      )
+
+      await waitFor(() => {
+        expect(mockUpdate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            body: expect.objectContaining({
+              description: null,
+              location: null,
+            }),
+          })
+        )
+      })
+    })
+
+    it('keeps dates and does not resend an untouched recurrence rule', async () => {
+      const user = userEvent.setup()
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          calendars={mockCalendars}
+          event={{
+            ...mockEvent,
+            recurrence_rule: {
+              frequency: 'yearly',
+              interval: 1,
+              by_month: [5],
+              by_day: ['2SU'],
+            },
+          }}
+          onCancel={onCancel}
+        />
+      )
+
+      await user.click(
+        screen.getByRole('button', { name: 'eventForm.update.string' })
+      )
+      await user.click(
+        await screen.findByRole('button', {
+          name: 'recurrenceScope.ALL.string',
+        })
+      )
+
+      await waitFor(() => {
+        expect(mockUpdate).toHaveBeenCalled()
+      })
+      const { body } = (
+        mockUpdate.mock.calls[0] as unknown as [
+          { body: Record<string, unknown> },
+        ]
+      )[0]
+      expect(body).not.toHaveProperty('recurrence_rule')
+      expect(body.date_start).toBe('2024-07-15T10:00:00.000Z')
+      expect(body.date_end).toBe('2024-07-15T11:00:00.000Z')
+    })
+
+    it('keeps an all-day event on its day whatever the browser timezone', async () => {
+      const user = userEvent.setup()
+      render(
+        <EventForm
+          calendarKey="cal-1"
+          calendars={mockCalendars}
+          event={{
+            ...mockEvent,
+            all_day: true,
+            date_start: '2024-07-15T00:00:00.000Z',
+            date_end: '2024-07-16T00:00:00.000Z',
+          }}
+          onCancel={onCancel}
+        />
+      )
+
+      expect(screen.getByDisplayValue('2024-07-15')).toBeInTheDocument()
+
+      await user.click(
+        screen.getByRole('button', { name: 'eventForm.update.string' })
+      )
+
+      await waitFor(() => {
+        expect(mockUpdate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            body: expect.objectContaining({
+              date_start: '2024-07-15T00:00:00.000Z',
+              date_end: '2024-07-16T00:00:00.000Z',
             }),
           })
         )

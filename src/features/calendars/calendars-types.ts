@@ -138,7 +138,14 @@ export type CalendarEventCreateBody = {
   } | null
 }
 
-export type CalendarEventUpdateBody = Partial<CalendarEventCreateBody> & {
+export type CalendarEventUpdateBody = Omit<
+  Partial<CalendarEventCreateBody>,
+  'description' | 'location' | 'url'
+> & {
+  /** null clears the field (PATCH keeps absent keys). */
+  description?: string | null
+  location?: string | null
+  url?: string | null
   recurrence_id?: string
   recurrence_range?: 'ONE' | 'THISANDFUTURE' | 'ALL'
 }

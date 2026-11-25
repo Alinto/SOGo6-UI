@@ -17,8 +17,13 @@ import {
   getEventPermissions,
 } from '@/features/calendars/utils/event-permissions'
 import { singleOccurrenceMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
+import {
+  allDayToLocalDate,
+  fromWallClock,
+  localDateToAllDayIso,
+  toWallClock,
+} from '@/features/calendars/utils/timezone-wall-clock'
 import { endOfDay, startOfDay } from 'date-fns'
-import { useLocale } from 'next-intl'
 import { useEffect, useMemo, useState } from 'react'
 import type { SlotInfo } from 'react-big-calendar'
 import { View, Views } from 'react-big-calendar'
@@ -28,46 +33,6 @@ type RBCEvent = CalendarEvent & {
   start: Date
   end: Date
   allDay: boolean
-}
-
-/**
- * Convert a date string to a Date object adjusted for the specified timezone
- * This ensures events display at the correct local time in the selected timezone
- */
-function convertDateToTimezone(
-  dateString: string,
-  timezone: string,
-  locale: string
-): Date {
-  const date = new Date(dateString)
-
-  // Get the offset for the specified timezone using the provided locale
-  const formatter = new Intl.DateTimeFormat(locale, {
-    timeZone: timezone,
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: false,
-  })
-
-  const parts = formatter.formatToParts(date)
-  const timezoneDate = new Date(
-    parseInt(parts.find((p) => p.type === 'year')?.value || '2000'),
-    parseInt(parts.find((p) => p.type === 'month')?.value || '1') - 1,
-    parseInt(parts.find((p) => p.type === 'day')?.value || '1'),
-    parseInt(parts.find((p) => p.type === 'hour')?.value || '0'),
-    parseInt(parts.find((p) => p.type === 'minute')?.value || '0'),
-    parseInt(parts.find((p) => p.type === 'second')?.value || '0')
-  )
-
-  // Calculate offset
-  const offset = date.getTime() - timezoneDate.getTime()
-
-  // Apply the offset to display the time correctly in the new timezone
-  return new Date(date.getTime() - offset)
 }
 
 interface UseCalendarStateReturn {
@@ -108,7 +73,6 @@ interface UseCalendarStateReturn {
 }
 
 export function useCalendarState(): UseCalendarStateReturn {
-  const locale = useLocale()
   const [view, setView] = useState<View>(Views.WEEK)
   const [date, setDate] = useState(new Date())
   const [events, setEvents] = useState<RBCEvent[]>([])
@@ -207,15 +171,19 @@ export function useCalendarState(): UseCalendarStateReturn {
             calendar_id: event.calendar_id ?? event.calendar_key ?? '',
             date_start: startDate,
             date_end: endDate,
-            start: convertDateToTimezone(startDate, timezone, locale),
-            end: convertDateToTimezone(endDate, timezone, locale),
+            start: event.all_day
+              ? allDayToLocalDate(startDate)
+              : toWallClock(startDate, timezone),
+            end: event.all_day
+              ? allDayToLocalDate(endDate)
+              : toWallClock(endDate, timezone),
             allDay: event.all_day ?? false,
           },
         ]
       })
       setEvents(transformedEvents)
     }
-  }, [currentData, timezone, locale])
+  }, [currentData, timezone])
 
   const defaultCalendar =
     calendarsData?.find((cal: Calendar) => cal.is_default) ?? calendarsData?.[0]
@@ -330,8 +298,14 @@ export function useCalendarState(): UseCalendarStateReturn {
     const nextStart = new Date(start)
     const nextEnd = new Date(end)
     const previousEvents = events
-    const nextStartIso = nextStart.toISOString()
-    const nextEndIso = nextEnd.toISOString()
+    // The grid works in wall-clock time of the display timezone (all-day
+    // events in local calendar days): convert back to real instants.
+    const nextStartIso = allDay
+      ? localDateToAllDayIso(nextStart)
+      : fromWallClock(nextStart, timezone).toISOString()
+    const nextEndIso = allDay
+      ? localDateToAllDayIso(nextEnd)
+      : fromWallClock(nextEnd, timezone).toISOString()
 
     setEvents((currentEvents) =>
       currentEvents.map((existingEvent) =>
@@ -363,9 +337,11 @@ export function useCalendarState(): UseCalendarStateReturn {
         ...singleOccurrenceMutationFields(event.recurrence_id),
       },
       silentSuccess: !isRecurringOccurrence,
-    }).catch(() => {
-      setEvents(previousEvents)
     })
+      .unwrap()
+      .catch(() => {
+        setEvents(previousEvents)
+      })
   }
 
   const handleEventDrop = (args: EventInteractionArgs<RBCEvent>) => {
