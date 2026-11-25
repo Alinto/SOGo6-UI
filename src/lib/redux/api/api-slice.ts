@@ -118,6 +118,9 @@ const ENV_RESOLVE_MS = 6000
 /** Release semaphore slots when the back never responds (dev mono-worker / IMAP hang). */
 export const API_FETCH_TIMEOUT_MS = 20_000
 
+/** Send and upload carry whole messages/files: 20 s would report a false failure. */
+export const API_LONG_FETCH_TIMEOUT_MS = 120_000
+
 /** RTK endpoint names that must not send Authorization (pre-login / public). */
 const PUBLIC_AUTH_ENDPOINTS = new Set(['getSystem', 'getAuthMode', 'login'])
 

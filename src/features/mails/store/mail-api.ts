@@ -1,10 +1,11 @@
+import { MAIL_PRIORITY_NORMAL } from '@/features/mails/store/mail-compose-slice'
 import { createApiNotificationHandler } from '@/features/notifications/api-notification-handler'
 import {
+  API_LONG_FETCH_TIMEOUT_MS,
   apiSlice,
   FOLDER_MESSAGES_SLICE,
   MAILS_FOLDERS_SLICE,
 } from '@/lib/redux/api/api-slice'
-import { MAIL_PRIORITY_NORMAL } from '@/features/mails/store/mail-compose-slice'
 import { BaseQueryFn, EndpointBuilder } from '@reduxjs/toolkit/query'
 import type {
   BackendResponse,
@@ -26,6 +27,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
             ? `mailboxes/${accountId}/mail/${mailKey}/send`
             : `mailboxes/${accountId}/mail/send`,
         method: 'POST',
+        timeout: API_LONG_FETCH_TIMEOUT_MS,
         body: {
           ...mail,
           cc: mail.cc ?? [],
@@ -44,10 +46,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
           errorMessage: 'mail_send.error.message.string',
         })(undefined, { queryFulfilled })
       },
-      invalidatesTags: () => [
-        FOLDER_MESSAGES_SLICE,
-        MAILS_FOLDERS_SLICE,
-      ],
+      invalidatesTags: () => [FOLDER_MESSAGES_SLICE, MAILS_FOLDERS_SLICE],
     }),
 
     // POST mail/save — create new draft (no key yet)
@@ -118,6 +117,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
               ? `mailboxes/${accountId}/mail/${mailKey}/attachments`
               : `mailboxes/${accountId}/mail/attachments`,
           method: 'POST',
+          timeout: API_LONG_FETCH_TIMEOUT_MS,
           body: formData,
         }
       },
