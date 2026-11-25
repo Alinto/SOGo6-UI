@@ -126,7 +126,7 @@ function ContactFormHost() {
             id: contactId,
             kind: 'individual',
             ...payload,
-            patchBody: serializeContactEditFromForm(values),
+            patchBody: serializeContactEditFromForm(values, editingContact),
           }).unwrap()
           syncCompose(
             contactId,

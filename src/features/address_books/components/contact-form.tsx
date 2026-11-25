@@ -59,6 +59,12 @@ import {
 } from 'react'
 import { useFieldArray, useForm, useWatch } from 'react-hook-form'
 import * as z from 'zod'
+import {
+  CONTACT_EMAIL_TYPES,
+  CONTACT_PHONE_TYPES,
+  isValidContactUrl,
+  toFormFieldType,
+} from '../utils/serialize-contact'
 
 /** undefined = unchanged, null = removed, string = new or replaced inline photo */
 type PhotoPayload = string | null | undefined
@@ -78,7 +84,11 @@ function readFileAsDataURL(file: File): Promise<string> {
   })
 }
 
+/** Index of the stored entry a row was loaded from (to keep what the form hides). */
+const sourceIndexSchema = z.number().optional()
+
 const addressRowSchema = z.object({
+  sourceIndex: sourceIndexSchema,
   street: z.string().max(500).optional(),
   city: z.string().max(200).optional(),
   postalCode: z.string().max(50).optional(),
@@ -88,14 +98,8 @@ const addressRowSchema = z.object({
   country: z.string().max(100).optional(),
 })
 
-const contactFieldTypeSchema = z.enum(['_none', 'work', 'home', 'other'])
-const phoneFieldTypeSchema = z.enum([
-  '_none',
-  'work',
-  'home',
-  'mobile',
-  'other',
-])
+const contactFieldTypeSchema = z.enum(['_none', ...CONTACT_EMAIL_TYPES])
+const phoneFieldTypeSchema = z.enum(['_none', ...CONTACT_PHONE_TYPES])
 
 const contactFormSchema = z
   .object({
@@ -114,6 +118,7 @@ const contactFormSchema = z
     title: z.string().max(200).optional(),
     emails: z.array(
       z.object({
+        sourceIndex: sourceIndexSchema,
         value: z.string().email().or(z.literal('')),
         type: contactFieldTypeSchema.optional(),
         pref: z.boolean().optional(),
@@ -121,14 +126,23 @@ const contactFormSchema = z
     ),
     phoneNumbers: z.array(
       z.object({
+        sourceIndex: sourceIndexSchema,
         value: z.string().max(50),
         type: phoneFieldTypeSchema.optional(),
         pref: z.boolean().optional(),
       })
     ),
     addresses: z.array(addressRowSchema),
-    urls: z.array(z.object({ value: z.string().url().or(z.literal('')) })),
-    impp: z.array(z.object({ value: z.string().max(500) })),
+    // "www.x.fr" is accepted: https:// is added when saving.
+    urls: z.array(
+      z.object({
+        sourceIndex: sourceIndexSchema,
+        value: z.string().max(2048).refine(isValidContactUrl),
+      })
+    ),
+    impp: z.array(
+      z.object({ sourceIndex: sourceIndexSchema, value: z.string().max(500) })
+    ),
     birthday: z.string().max(20).optional(),
     birthdayUnknownYear: z.boolean().optional(),
     anniversary: z.string().max(20).optional(),
@@ -172,7 +186,7 @@ type ContactFormProps = {
 
 function toFieldArray(values?: string[]) {
   if (!values?.length) return []
-  return values.map((value) => ({ value }))
+  return values.map((value, sourceIndex) => ({ value, sourceIndex }))
 }
 
 function contactNameValue(contact?: Partial<VCard> | null) {
@@ -215,11 +229,10 @@ const EMPTY_ADDRESS = {
 
 function toEmailFieldArray(contact?: VCard | null) {
   if (contact?.structuredEmails?.length) {
-    return contact.structuredEmails.map((entry) => ({
+    return contact.structuredEmails.map((entry, sourceIndex) => ({
+      sourceIndex,
       value: entry.value,
-      type: (entry.types?.[0] ?? '_none') as z.infer<
-        typeof contactFieldTypeSchema
-      >,
+      type: toFormFieldType(entry.types, CONTACT_EMAIL_TYPES),
       pref: entry.pref === 1,
     }))
   }
@@ -235,11 +248,10 @@ function toEmailFieldArray(contact?: VCard | null) {
 
 function toPhoneFieldArray(contact?: VCard | null) {
   if (contact?.structuredPhones?.length) {
-    return contact.structuredPhones.map((entry) => ({
+    return contact.structuredPhones.map((entry, sourceIndex) => ({
+      sourceIndex,
       value: entry.number,
-      type: (entry.types?.[0] ?? '_none') as z.infer<
-        typeof phoneFieldTypeSchema
-      >,
+      type: toFormFieldType(entry.types, CONTACT_PHONE_TYPES),
       pref: entry.pref === 1,
     }))
   }
@@ -260,7 +272,8 @@ function fromFieldArray(fields: { value: string }[]): string[] {
 function toAddressFieldArray(contact?: VCard | null) {
   const structured = contact?.structuredAddresses
   if (structured?.length) {
-    return structured.map((address) => ({
+    return structured.map((address, sourceIndex) => ({
+      sourceIndex,
       street: address.street ?? '',
       city: address.locality ?? '',
       postalCode: address.postal_code ?? '',
@@ -1223,7 +1236,8 @@ function ContactForm({
                                 <FormControl>
                                   <Input
                                     {...urlField}
-                                    type="url"
+                                    type="text"
+                                    inputMode="url"
                                     placeholder="https://"
                                   />
                                 </FormControl>

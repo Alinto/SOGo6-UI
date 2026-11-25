@@ -1,5 +1,7 @@
 import type {
   ApiContactAddress,
+  ApiContactEmail,
+  ApiContactPhone,
   ContactCreateBody,
   ContactPatchBody,
 } from '../address-books-api-types'
@@ -7,6 +9,38 @@ import type { VCard } from '../address-books-types'
 import type { ContactFormValues } from '../components/contact-form'
 
 export const CONTACT_PHOTO_MAX_BYTES = 2048 * 1024
+
+/** Types the email select offers (besides '_none'). */
+export const CONTACT_EMAIL_TYPES = ['work', 'home', 'other'] as const
+/** Types the phone select offers (besides '_none'). */
+export const CONTACT_PHONE_TYPES = ['work', 'home', 'mobile', 'other'] as const
+
+/** Select value for stored vCard types: '_none' when the form has no match. */
+export function toFormFieldType<T extends string>(
+  types: string[] | undefined,
+  allowed: readonly T[]
+): T | '_none' {
+  const first = types?.[0]?.trim().toLowerCase()
+  return first && (allowed as readonly string[]).includes(first)
+    ? (first as T)
+    : '_none'
+}
+
+/** "www.x.fr" → "https://www.x.fr"; values with a scheme are kept. */
+export function normalizeContactUrl(value: string): string {
+  const trimmed = value.trim()
+  if (!trimmed) return ''
+  return /^[a-z][a-z0-9+.-]*:/i.test(trimmed) ? trimmed : `https://${trimmed}`
+}
+
+export function isValidContactUrl(value: string): boolean {
+  if (!value.trim()) return true
+  try {
+    return Boolean(new URL(normalizeContactUrl(value)).hostname)
+  } catch {
+    return false
+  }
+}
 
 type TypedEmailEntry = { value: string; type?: string; pref?: boolean }
 type TypedPhoneEntry = { value: string; type?: string; pref?: boolean }
@@ -57,32 +91,36 @@ function toPhoneObjects(
   return phones.length ? phones : undefined
 }
 
+type AddressRow = ContactFormValues['addresses'][number]
+
+function toAddressFields(row: AddressRow): ApiContactAddress {
+  return {
+    street: row.street?.trim() || null,
+    locality: row.city?.trim() || null,
+    region: row.region?.trim() || null,
+    po_box: row.poBox?.trim() || null,
+    extended: row.extended?.trim() || null,
+    postal_code: row.postalCode?.trim() || null,
+    country: row.country?.trim() || null,
+  }
+}
+
+const hasAddressContent = (address: ApiContactAddress) =>
+  Boolean(
+    address.street ||
+    address.locality ||
+    address.region ||
+    address.po_box ||
+    address.extended ||
+    address.postal_code ||
+    address.country
+  )
+
 function toAddressObjects(
   rows: ContactFormValues['addresses']
 ): ApiContactAddress[] | undefined {
   if (!rows?.length) return undefined
-
-  const addresses = rows
-    .map((row) => ({
-      street: row.street?.trim() || null,
-      locality: row.city?.trim() || null,
-      region: row.region?.trim() || null,
-      po_box: row.poBox?.trim() || null,
-      extended: row.extended?.trim() || null,
-      postal_code: row.postalCode?.trim() || null,
-      country: row.country?.trim() || null,
-    }))
-    .filter(
-      (row) =>
-        row.street ||
-        row.locality ||
-        row.region ||
-        row.po_box ||
-        row.extended ||
-        row.postal_code ||
-        row.country
-    )
-
+  const addresses = rows.map(toAddressFields).filter(hasAddressContent)
   return addresses.length ? addresses : undefined
 }
 
@@ -125,7 +163,7 @@ export function serializeContactFromForm(
     phones: toPhoneObjects(values.phoneNumbers),
     addresses: toAddressObjects(values.addresses),
     urls: values.urls
-      ?.map((entry) => entry.value.trim())
+      ?.map((entry) => normalizeContactUrl(entry.value))
       .filter(Boolean)
       .map((value) => ({ value })),
     categories:
@@ -166,26 +204,139 @@ export function serializeContactFromForm(
   return body
 }
 
+type SourceRow = { sourceIndex?: number }
+
+const sourceOf = <T>(list: T[] | undefined, row: SourceRow) =>
+  row.sourceIndex !== undefined ? list?.[row.sourceIndex] : undefined
+
 /**
- * Edit body built from the form. The server only changes the keys it receives,
- * so a field the user emptied must be sent explicitly: `[]` for multi-valued
- * fields (the server rejects null there) and `null` for note, organization and
- * job title. The form always loads these fields from the contact, so an empty
- * value here is what the user wants stored.
+ * Types and preference of an email/phone row: the stored ones are kept while
+ * the select still shows them (the form only edits the first type and a
+ * "preferred" flag), so an untouched row is sent back unchanged.
+ */
+function mergeTypedEntry<T extends string>(
+  row: { type?: string; pref?: boolean },
+  source: { types?: string[]; pref?: number | null } | undefined,
+  allowed: readonly T[]
+): { types?: string[]; pref?: number } {
+  const type = row.type && row.type !== '_none' ? row.type : undefined
+  const typeUnchanged =
+    source !== undefined &&
+    (row.type ?? '_none') === toFormFieldType(source.types, allowed)
+  const types = typeUnchanged ? source.types : type ? [type] : undefined
+  const storedPref = source?.pref ?? undefined
+  // The checkbox means "most preferred" (PREF=1); a lower stored rank
+  // (PREF=2...) is kept while the box stays unchecked.
+  const pref = row.pref
+    ? 1
+    : storedPref !== undefined && storedPref > 1
+      ? storedPref
+      : undefined
+  return {
+    ...(types?.length ? { types } : {}),
+    ...(pref !== undefined ? { pref } : {}),
+  }
+}
+
+function mergeEmails(
+  rows: ContactFormValues['emails'],
+  stored: ApiContactEmail[] | undefined
+): ApiContactEmail[] {
+  return rows
+    .filter((row) => row.value.trim())
+    .map((row) => ({
+      value: row.value.trim(),
+      ...mergeTypedEntry(row, sourceOf(stored, row), CONTACT_EMAIL_TYPES),
+    }))
+}
+
+function mergePhones(
+  rows: ContactFormValues['phoneNumbers'],
+  stored: ApiContactPhone[] | undefined
+): ApiContactPhone[] {
+  return rows
+    .filter((row) => row.value.trim())
+    .map((row) => ({
+      number: row.value.trim(),
+      ...mergeTypedEntry(row, sourceOf(stored, row), CONTACT_PHONE_TYPES),
+    }))
+}
+
+function mergeAddresses(
+  rows: ContactFormValues['addresses'],
+  stored: ApiContactAddress[] | undefined
+): ApiContactAddress[] {
+  return (rows ?? []).flatMap((row) => {
+    const address = toAddressFields(row)
+    return hasAddressContent(address)
+      ? [{ ...sourceOf(stored, row), ...address }]
+      : []
+  })
+}
+
+function sameName(values: ContactFormValues, original: VCard): boolean {
+  const isOrg = values.contactKind === 'org'
+  return (
+    isOrg === (original.kind === 'org') &&
+    values.firstName.trim() === (original.firstName ?? '').trim() &&
+    values.lastName.trim() === (original.lastName ?? '').trim() &&
+    (values.organization ?? '').trim() === (original.organization ?? '').trim()
+  )
+}
+
+/**
+ * Edit body built from the form. The server replaces each list it receives
+ * and keeps every key it does not receive, so:
+ * - a field the user emptied is sent explicitly (`[]` for lists, `null` for
+ *   text fields): the form always loads them from the contact;
+ * - list entries keep what the form does not show (address types and
+ *   preference, every email/phone type, URL and IMPP types), taken from the
+ *   stored contact;
+ * - the display name (FN) is only recomputed when the name was edited, so an
+ *   imported FN survives an unrelated change.
  */
 export function serializeContactEditFromForm(
-  values: ContactFormValues
+  values: ContactFormValues,
+  original?: VCard | null
 ): ContactPatchBody {
   const body: ContactPatchBody = serializeContactFromForm(values)
-  body.emails ??= []
-  body.phones ??= []
-  body.addresses ??= []
-  body.urls ??= []
-  body.impp ??= []
+  body.emails = mergeEmails(values.emails, original?.structuredEmails)
+  body.phones = mergePhones(values.phoneNumbers, original?.structuredPhones)
+  body.addresses = mergeAddresses(
+    values.addresses,
+    original?.structuredAddresses
+  )
+  body.urls = (values.urls ?? [])
+    .filter((row) => row.value.trim())
+    .map((row) => {
+      const type = sourceOf(original?.structuredUrls, row)?.type
+      return {
+        value: normalizeContactUrl(row.value),
+        ...(type ? { type } : {}),
+      }
+    })
+  body.impp = (values.impp ?? [])
+    .filter((row) => row.value.trim())
+    .map((row) => {
+      const type = sourceOf(original?.structuredImpp, row)?.type
+      return { uri: row.value.trim(), ...(type ? { type } : {}) }
+    })
   body.categories ??= []
   body.note ??= null
   body.organization ??= null
   body.job_title ??= null
+  body.middle_name ??= null
+  body.prefix ??= null
+  body.suffix ??= null
+  body.nickname ??= null
+  body.department ??= null
+  body.role ??= null
+  body.birthday ??= null
+  body.anniversary ??= null
+  // Not sent: the server keeps the stored FN (it may come from an import).
+  if (original && sameName(values, original)) {
+    delete body.display_name
+  }
   return body
 }
 

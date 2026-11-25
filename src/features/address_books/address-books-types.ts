@@ -1,7 +1,9 @@
 import type {
   ApiContactAddress,
   ApiContactEmail,
+  ApiContactImpp,
   ApiContactPhone,
+  ApiContactUrl,
 } from '../address-books-api-types'
 
 export type AddressBookType = 'global' | 'personal' | 'shared'
@@ -138,6 +140,8 @@ export interface VCard {
   note?: string
   categories?: string[]
   urls?: string[]
+  /** URLs as sent by the server (with their type), for lossless edits. */
+  structuredUrls?: ApiContactUrl[]
   photos?: string[]
   emails?: string[]
   structuredEmails?: ApiContactEmail[]
@@ -146,6 +150,7 @@ export interface VCard {
   addresses?: string[]
   structuredAddresses?: ApiContactAddress[]
   impp?: string[]
+  structuredImpp?: ApiContactImpp[]
   geo?: string
   birthday?: string
   anniversary?: string

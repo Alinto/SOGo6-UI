@@ -1,10 +1,14 @@
+import type { VCard } from '../../address-books-types'
 import {
+  CONTACT_PHONE_TYPES,
+  isValidContactUrl,
   serializeAddressBookCreate,
   serializeAddressBookPatch,
   serializeContactCreate,
   serializeContactEditFromForm,
   serializeContactFromForm,
   serializeContactPatch,
+  toFormFieldType,
 } from '../serialize-contact'
 
 describe('serializeContactFromForm', () => {
@@ -329,5 +333,137 @@ describe('serializeContactEditFromForm', () => {
     expect(created.note).toBeUndefined()
     expect(created.organization).toBeUndefined()
     expect(created.job_title).toBeUndefined()
+  })
+  describe('round trip with the stored contact', () => {
+    const stored: VCard = {
+      id: 'c1',
+      version: '4.0',
+      firstName: 'Alice',
+      lastName: 'Martin',
+      nickname: 'Ali',
+      structuredEmails: [
+        { value: 'alice@work.example', types: ['work', 'internet'], pref: 2 },
+      ],
+      structuredPhones: [{ number: '+331', types: ['cell'], pref: 1 }],
+      structuredAddresses: [
+        {
+          street: '1 Main St',
+          locality: 'Paris',
+          region: null,
+          po_box: null,
+          extended: null,
+          postal_code: '75001',
+          country: 'France',
+          types: ['home'],
+          pref: 1,
+        },
+      ],
+      structuredUrls: [{ value: 'https://alice.example', type: 'home' }],
+      structuredImpp: [{ uri: 'xmpp:alice@chat.example', type: 'work' }],
+    }
+
+    // What the form holds once loaded from `stored`.
+    const loaded = {
+      ...emptied,
+      nickname: 'Ali',
+      emails: [
+        {
+          sourceIndex: 0,
+          value: 'alice@work.example',
+          type: 'work' as const,
+          pref: false,
+        },
+      ],
+      phoneNumbers: [
+        { sourceIndex: 0, value: '+331', type: '_none' as const, pref: true },
+      ],
+      addresses: [
+        {
+          sourceIndex: 0,
+          street: '1 Main St',
+          city: 'Paris',
+          postalCode: '75001',
+          region: '',
+          poBox: '',
+          extended: '',
+          country: 'France',
+        },
+      ],
+      urls: [{ sourceIndex: 0, value: 'https://alice.example' }],
+      impp: [{ sourceIndex: 0, value: 'xmpp:alice@chat.example' }],
+    }
+
+    it('sends the stored sub-objects back unchanged', () => {
+      const body = serializeContactEditFromForm(loaded, stored)
+      expect(body.emails).toEqual(stored.structuredEmails)
+      expect(body.phones).toEqual(stored.structuredPhones)
+      expect(body.addresses).toEqual(stored.structuredAddresses)
+      expect(body.urls).toEqual(stored.structuredUrls)
+      expect(body.impp).toEqual(stored.structuredImpp)
+    })
+
+    it('does not resend the display name when the name is untouched', () => {
+      const body = serializeContactEditFromForm(loaded, stored)
+      expect(body).not.toHaveProperty('display_name')
+      expect(
+        serializeContactEditFromForm({ ...loaded, lastName: 'Durand' }, stored)
+          .display_name
+      ).toBe('Alice Durand')
+    })
+
+    it('replaces the type the user changed and keeps the row data', () => {
+      const body = serializeContactEditFromForm(
+        {
+          ...loaded,
+          emails: [{ ...loaded.emails[0], type: 'home' as const, pref: true }],
+        },
+        stored
+      )
+      expect(body.emails).toEqual([
+        { value: 'alice@work.example', types: ['home'], pref: 1 },
+      ])
+    })
+
+    it('clears emptied text fields', () => {
+      const body = serializeContactEditFromForm(
+        { ...loaded, nickname: '' },
+        stored
+      )
+      expect(body).toEqual(
+        expect.objectContaining({
+          nickname: null,
+          middle_name: null,
+          prefix: null,
+          suffix: null,
+          department: null,
+          role: null,
+          birthday: null,
+          anniversary: null,
+        })
+      )
+    })
+  })
+
+  it('adds https:// to a URL typed without scheme', () => {
+    const body = serializeContactEditFromForm({
+      ...emptied,
+      urls: [{ value: 'www.example.fr' }],
+    })
+    expect(body.urls).toEqual([{ value: 'https://www.example.fr' }])
+  })
+})
+
+describe('contact form helpers', () => {
+  it('accepts URLs without scheme and rejects garbage', () => {
+    expect(isValidContactUrl('www.example.fr')).toBe(true)
+    expect(isValidContactUrl('https://example.fr/a?b=1')).toBe(true)
+    expect(isValidContactUrl('')).toBe(true)
+    expect(isValidContactUrl('not a url')).toBe(false)
+  })
+
+  it('maps stored types to the select, case-insensitively', () => {
+    expect(toFormFieldType(['WORK', 'voice'], CONTACT_PHONE_TYPES)).toBe('work')
+    expect(toFormFieldType(['cell'], CONTACT_PHONE_TYPES)).toBe('_none')
+    expect(toFormFieldType(undefined, CONTACT_PHONE_TYPES)).toBe('_none')
   })
 })
