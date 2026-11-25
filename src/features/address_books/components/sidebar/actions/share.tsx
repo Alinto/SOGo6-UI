@@ -27,6 +27,7 @@ import {
   ANY_AUTHENTICATED_UID,
   applyAddressBookPermissionToggle,
   defaultAddressBookShareRights,
+  hasAnyAddressBookRight,
   isAddressBookViewForced,
 } from '@/features/address_books/utils/address-book-permission-mapping'
 import { useProfile } from '@/features/user-profile'
@@ -172,8 +173,14 @@ const ShareAddressBookAction: React.FC<ShareAddressBookActionProps> = ({
   }
 
   const handleSave = async (): Promise<void> => {
+    // The PUT replaces every grant, so an entry with no right left is a
+    // revocation: sending it would still list the book for that user (or,
+    // for the any-authenticated row, for the whole domain).
+    const grantedUsers = localUsers.filter((u) =>
+      hasAnyAddressBookRight(u.rights)
+    )
     try {
-      await setAddressBookShare({ bookId: id, users: localUsers }).unwrap()
+      await setAddressBookShare({ bookId: id, users: grantedUsers }).unwrap()
       onClose?.()
     } catch {
       // Error handled by createContactApiNotificationHandler
