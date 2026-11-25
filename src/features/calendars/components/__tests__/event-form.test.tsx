@@ -487,6 +487,59 @@ describe('EventForm', () => {
       expect(body.date_end).toBe('2024-07-15T11:00:00.000Z')
     })
 
+    describe('expanded occurrence of a series', () => {
+      const occurrence: CalendarEvent = {
+        ...mockEvent,
+        recurrence_rule: { frequency: 'weekly', interval: 1 },
+        recurrence_id: '2024-07-22T10:00:00.000Z',
+        date_start: '2024-07-22T10:00:00.000Z',
+        date_end: '2024-07-22T11:00:00.000Z',
+        series_date_start: '2024-07-15T10:00:00.000Z',
+        series_date_end: '2024-07-15T11:00:00.000Z',
+      }
+
+      const submitWithScope = async (scope: string) => {
+        const user = userEvent.setup()
+        render(
+          <EventForm
+            calendarKey="cal-1"
+            calendars={mockCalendars}
+            event={occurrence}
+            onCancel={onCancel}
+          />
+        )
+        await user.click(
+          screen.getByRole('button', { name: 'eventForm.update.string' })
+        )
+        await user.click(
+          await screen.findByRole('button', {
+            name: `recurrenceScope.${scope}.string`,
+          })
+        )
+        await waitFor(() => {
+          expect(mockUpdate).toHaveBeenCalled()
+        })
+        return (
+          mockUpdate.mock.calls[0] as unknown as [
+            { body: Record<string, unknown> },
+          ]
+        )[0].body
+      }
+
+      it('targets only the clicked occurrence for ONE', async () => {
+        const body = await submitWithScope('ONE')
+        expect(body.recurrence_id).toBe('2024-07-22T10:00:00.000Z')
+        expect(body.date_start).toBe('2024-07-22T10:00:00.000Z')
+      })
+
+      it('does not move the series start to the occurrence for ALL', async () => {
+        const body = await submitWithScope('ALL')
+        expect(body).not.toHaveProperty('recurrence_id')
+        expect(body.date_start).toBeUndefined()
+        expect(body.date_end).toBeUndefined()
+      })
+    })
+
     it('keeps an all-day event on its day whatever the browser timezone', async () => {
       const user = userEvent.setup()
       render(

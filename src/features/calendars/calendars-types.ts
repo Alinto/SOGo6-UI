@@ -53,6 +53,14 @@ export interface CalendarEvent {
   recurrence_rule?: EventRecurrence | null
   recurrence_id?: string | null
   recurrence_range?: 'ONE' | 'THISANDFUTURE' | 'ALL' | null
+  /** Master EXDATE list (ISO datetimes). */
+  recurrence_exceptions?: string[]
+  /**
+   * UI only: bounds of the series master when this event is an expanded
+   * occurrence (date_start/date_end then hold the occurrence bounds).
+   */
+  series_date_start?: string | null
+  series_date_end?: string | null
 
   // Reminders
   reminders?: EventReminder[]
@@ -148,6 +156,7 @@ export type CalendarEventUpdateBody = Omit<
   url?: string | null
   recurrence_id?: string
   recurrence_range?: 'ONE' | 'THISANDFUTURE' | 'ALL'
+  recurrence_exceptions?: string[]
 }
 
 export interface ApiCalendarEventResponse {
