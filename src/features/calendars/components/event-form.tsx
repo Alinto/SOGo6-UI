@@ -529,7 +529,8 @@ export function EventForm({
    */
   const buildEventUpdateBody = (
     body: CalendarEventCreateBody,
-    values: EventFormValues
+    values: EventFormValues,
+    recurrenceScope?: RecurrenceScope
   ): CalendarEventUpdateBody => {
     const { recurrence_rule, ...rest } = body
     const updateBody: CalendarEventUpdateBody = {
@@ -544,7 +545,37 @@ export function EventForm({
     if (!sameRecurrence(values.recurrence_rule, initialRecurrence)) {
       updateBody.recurrence_rule = recurrence_rule ?? null
     }
+    if (recurrenceScope === 'ALL' && event?.recurrence_id) {
+      Object.assign(updateBody, seriesBoundsUpdate(body))
+    }
     return updateBody
+  }
+
+  /**
+   * The form shows the clicked occurrence, but an "all events" PATCH targets
+   * the master: never write the occurrence dates on it, apply the shift.
+   */
+  const seriesBoundsUpdate = (
+    body: CalendarEventCreateBody
+  ): Pick<CalendarEventUpdateBody, 'date_start' | 'date_end'> => {
+    const occurrenceStart = event?.date_start
+    const seriesStart = event?.series_date_start
+    const seriesEnd = event?.series_date_end
+    const shift = (from?: string | null, to?: string) =>
+      from && to ? new Date(to).getTime() - new Date(from).getTime() : 0
+    const startShift = shift(occurrenceStart, body.date_start)
+    const endShift = shift(event?.date_end, body.date_end)
+    if (!seriesStart || !seriesEnd || (startShift === 0 && endShift === 0)) {
+      return { date_start: undefined, date_end: undefined }
+    }
+    return {
+      date_start: new Date(
+        new Date(seriesStart).getTime() + startShift
+      ).toISOString(),
+      date_end: new Date(
+        new Date(seriesEnd).getTime() + endShift
+      ).toISOString(),
+    }
   }
 
   const performSubmit = async (
@@ -558,7 +589,7 @@ export function EventForm({
 
     try {
       if (eventKey) {
-        const updateBody = buildEventUpdateBody(body, values)
+        const updateBody = buildEventUpdateBody(body, values, recurrenceScope)
         if (recurrenceScope && eventNeedsRecurrenceScope(event)) {
           Object.assign(
             updateBody,

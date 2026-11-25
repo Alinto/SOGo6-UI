@@ -22,6 +22,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import {
   useDeleteCalendarEventMutation,
   useGetCalendarEventByIdQuery,
+  useUpdateCalendarEventMutation,
   type CalendarEvent,
 } from '@/features/calendars'
 import { registerCalendarEventSelection } from '@/features/calendars/calendar-event-selection-bridge'
@@ -42,7 +43,11 @@ import {
   getEventPermissions,
 } from '@/features/calendars/utils/event-permissions'
 import { isCalendarWritable } from '@/features/calendars/utils/is-calendar-writable'
-import { recurrenceScopeToMutationFields } from '@/features/calendars/utils/recurrence-scope-mutation'
+import {
+  mergeEventDetailWithListSelection,
+  pickNonEmptyCalendarRef,
+} from '@/features/calendars/utils/merge-event-detail'
+import { planRecurringDelete } from '@/features/calendars/utils/recurring-event-delete'
 import { cn } from '@/lib/utils'
 import {
   formDialogContentClassName,
@@ -55,39 +60,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import type { SlotInfo } from 'react-big-calendar'
 
-/** Prefer first non-empty string; avoids losing list calendar when GET detail omits it. */
-function pickNonEmptyCalendarRef(
-  ...values: (string | null | undefined)[]
-): string {
-  for (const v of values) {
-    if (typeof v === 'string' && v.trim().length > 0) {
-      return v.trim()
-    }
-  }
-  return ''
-}
-
-/** Merge API detail onto grid event so calendar_id from the list is kept when detail has null/empty. */
-function mergeEventDetailWithListSelection(
-  listEvent: CalendarEvent,
-  detail: CalendarEvent | undefined
-): CalendarEvent {
-  if (!detail) return listEvent
-  const calendarRef = pickNonEmptyCalendarRef(
-    listEvent.calendar_id,
-    listEvent.calendar_key,
-    detail.calendar_id,
-    detail.calendar_key
-  )
-  return {
-    ...listEvent,
-    ...detail,
-    calendar_id:
-      calendarRef || (listEvent.calendar_id ?? detail.calendar_id ?? null),
-    calendar_key: calendarRef || listEvent.calendar_key || detail.calendar_key,
-  }
-}
-
 const CalendarPage = () => {
   const t = useTranslations('CALENDARS')
   const router = useRouter()
@@ -99,6 +71,7 @@ const CalendarPage = () => {
   const [dialogMode, setDialogMode] = useState<'view' | 'edit'>('view')
   const [deleteScopeDialogOpen, setDeleteScopeDialogOpen] = useState(false)
   const [deleteCalendarEvent] = useDeleteCalendarEventMutation()
+  const [updateCalendarEvent] = useUpdateCalendarEventMutation()
 
   const rawEventKey = selectedEvent?.key ?? selectedEvent?.id ?? null
   const eventKeyForQuery =
@@ -210,20 +183,17 @@ const CalendarPage = () => {
     if (!eventKey) return
 
     try {
-      if (scope && eventNeedsRecurrenceScope(selectedEvent)) {
-        const scopeFields =
-          scope === 'ALL'
-            ? {}
-            : {
-                ...recurrenceScopeToMutationFields(
-                  scope,
-                  selectedEvent.recurrence_id
-                ),
-              }
-        await deleteCalendarEvent({
-          eventKey,
-          ...scopeFields,
-        }).unwrap()
+      if (scope && displayEvent && eventNeedsRecurrenceScope(displayEvent)) {
+        const plan = planRecurringDelete(displayEvent, scope)
+        if (!plan) return
+        if (plan.kind === 'patch') {
+          await updateCalendarEvent({
+            eventKey: plan.eventKey,
+            body: plan.body,
+          }).unwrap()
+        } else {
+          await deleteCalendarEvent(plan.eventKey).unwrap()
+        }
       } else {
         await calendarState.handleDeleteEvent(selectedEvent)
       }

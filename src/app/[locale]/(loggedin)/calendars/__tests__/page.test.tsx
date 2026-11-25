@@ -94,6 +94,10 @@ jest.mock('@/features/calendars', () => {
       mockDeleteCalendarEvent,
       { isLoading: false },
     ],
+    useUpdateCalendarEventMutation: () => [
+      jest.fn(() => ({ unwrap: () => Promise.resolve(undefined) })),
+      { isLoading: false },
+    ],
   }
 })
 
