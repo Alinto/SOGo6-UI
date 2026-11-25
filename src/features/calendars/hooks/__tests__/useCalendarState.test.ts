@@ -2,7 +2,9 @@ import '@testing-library/jest-dom'
 import { act, renderHook, waitFor } from '@testing-library/react'
 import { Views } from 'react-big-calendar'
 
-const mockUpdateCalendarEvent = jest.fn(() => Promise.resolve({ data: {} }))
+const mockUpdateCalendarEvent = jest.fn(() => ({
+  unwrap: () => Promise.resolve({ data: {} }),
+}))
 
 jest.mock('@/features/calendars', () => ({
   useGetCalendarsQuery: jest.fn(),
@@ -151,6 +153,134 @@ describe('useCalendarState', () => {
         }),
         silentSuccess: true,
       })
+    })
+
+    it('rolls the event back when the server refuses the move', async () => {
+      mockUpdateCalendarEvent.mockImplementationOnce(() => ({
+        unwrap: () => Promise.reject(new Error('refused')),
+      }))
+      mockUseGetEventsQuery.mockReturnValue({
+        currentData: [
+          {
+            id: 'e1',
+            key: 'e1',
+            calendar_id: 'k1',
+            title: 'E',
+            all_day: false,
+            date_start: '2020-01-10T10:00:00.000Z',
+            date_end: '2020-01-10T11:00:00.000Z',
+          },
+        ],
+        isLoading: false,
+      })
+
+      const { result } = renderHook(() => useCalendarState())
+      await waitFor(() => {
+        expect(result.current.events).toHaveLength(1)
+      })
+
+      act(() => {
+        result.current.handleEventDrop({
+          event: result.current.events[0],
+          start: new Date('2020-01-11T10:00:00.000Z'),
+          end: new Date('2020-01-11T11:00:00.000Z'),
+          isAllDay: false,
+        } as Parameters<typeof result.current.handleEventDrop>[0])
+      })
+
+      await waitFor(() => {
+        expect(result.current.events[0].date_start).toBe(
+          '2020-01-10T10:00:00.000Z'
+        )
+      })
+    })
+
+    it('converts the dropped wall-clock time from the display timezone', async () => {
+      mockUseGetEventsQuery.mockReturnValue({
+        currentData: [
+          {
+            id: 'e1',
+            key: 'e1',
+            calendar_id: 'k1',
+            title: 'E',
+            all_day: false,
+            date_start: '2020-01-10T01:00:00.000Z',
+            date_end: '2020-01-10T02:00:00.000Z',
+          },
+        ],
+        isLoading: false,
+      })
+
+      const { result } = renderHook(() => useCalendarState())
+      act(() => {
+        result.current.setTimezone('Asia/Tokyo')
+      })
+      await waitFor(() => {
+        expect(result.current.events).toHaveLength(1)
+      })
+      // 01:00Z is shown at 10:00 in Tokyo, whatever the browser timezone.
+      expect(result.current.events[0].start.getHours()).toBe(10)
+
+      act(() => {
+        result.current.handleEventDrop({
+          event: result.current.events[0],
+          start: new Date(2020, 0, 11, 10, 0),
+          end: new Date(2020, 0, 11, 11, 0),
+          isAllDay: false,
+        } as Parameters<typeof result.current.handleEventDrop>[0])
+      })
+
+      expect(mockUpdateCalendarEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            date_start: '2020-01-11T01:00:00.000Z',
+            date_end: '2020-01-11T02:00:00.000Z',
+          }),
+        })
+      )
+    })
+
+    it('shows and moves all-day events on their UTC calendar day', async () => {
+      mockUseGetEventsQuery.mockReturnValue({
+        currentData: [
+          {
+            id: 'e1',
+            key: 'e1',
+            calendar_id: 'k1',
+            title: 'Day off',
+            all_day: true,
+            date_start: '2020-01-10T00:00:00.000Z',
+            date_end: '2020-01-11T00:00:00.000Z',
+          },
+        ],
+        isLoading: false,
+      })
+
+      const { result } = renderHook(() => useCalendarState())
+      await waitFor(() => {
+        expect(result.current.events).toHaveLength(1)
+      })
+      expect(result.current.events[0].start.getDate()).toBe(10)
+      expect(result.current.events[0].start.getHours()).toBe(0)
+
+      act(() => {
+        result.current.handleEventDrop({
+          event: result.current.events[0],
+          start: new Date(2020, 0, 12),
+          end: new Date(2020, 0, 13),
+          isAllDay: true,
+        } as Parameters<typeof result.current.handleEventDrop>[0])
+      })
+
+      expect(mockUpdateCalendarEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({
+            date_start: '2020-01-12T00:00:00.000Z',
+            date_end: '2020-01-13T00:00:00.000Z',
+            all_day: true,
+          }),
+        })
+      )
     })
   })
 })

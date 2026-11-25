@@ -6,6 +6,10 @@
 import type { Config } from 'jest'
 import nextJest from 'next/jest.js'
 
+// Date tests must not depend on the machine timezone. Workers inherit it;
+// `npm run test:tz` reruns the calendar date tests west of UTC.
+process.env.TZ = process.env.TZ || 'Europe/Paris'
+
 const createJestConfig = nextJest({
   dir: './',
 })

@@ -61,6 +61,11 @@ import {
 import { useGetFreeBusyQuery } from '../store/calendars-api'
 import { isCalendarWritable } from '../utils/is-calendar-writable'
 import { recurrenceScopeToMutationFields } from '../utils/recurrence-scope-mutation'
+import {
+  allDayToLocalDate,
+  fromWallClock,
+  toWallClock,
+} from '../utils/timezone-wall-clock'
 import AttendeeInput from './event-form/attendee-input'
 import {
   eventNeedsRecurrenceScope,
@@ -181,8 +186,31 @@ function formatInputDate(date: Date, allDay: boolean): string {
 const normalizeInputValue = (value: string, allDay: boolean) =>
   allDay ? value.slice(0, 10) : value.length === 10 ? `${value}T00:00` : value
 
-const toIsoDate = (value: string, allDay: boolean) =>
-  new Date(allDay ? `${value}T00:00:00Z` : value).toISOString()
+/**
+ * All-day bounds are UTC midnights; timed values are wall-clock times read
+ * in the timezone chosen in the form.
+ */
+const toIsoDate = (value: string, allDay: boolean, timeZone: string) =>
+  allDay
+    ? `${value.slice(0, 10)}T00:00:00.000Z`
+    : fromWallClock(new Date(value), timeZone).toISOString()
+
+/** Form input value for a stored bound, in the form timezone. */
+function formatEventBound(
+  iso: string,
+  allDay: boolean,
+  timeZone: string
+): string {
+  return formatInputDate(
+    allDay ? allDayToLocalDate(iso) : toWallClock(iso, timeZone),
+    allDay
+  )
+}
+
+const sameRecurrence = (
+  a: EventFormValues['recurrence_rule'],
+  b: EventFormValues['recurrence_rule']
+) => JSON.stringify(a ?? null) === JSON.stringify(b ?? null)
 
 const normalizeReminderMethod = (method: string): EventReminder['method'] =>
   method === 'notification' ? 'popup' : (method as EventReminder['method'])
@@ -288,16 +316,27 @@ export function EventForm({
     return isEditing ? ordered : ordered?.filter(isCalendarWritable)
   }, [calendarsForSelect, calendars, isEditing])
 
+  const initialTimezone =
+    event?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+  const initialRecurrence = useMemo(
+    () =>
+      recurrenceToFormRule(event?.recurrence ?? event?.recurrence_rule ?? null),
+    [event]
+  )
+
   const form = useForm<EventFormValues>({
     resolver: zodResolver(schema) as Resolver<EventFormValues>,
     defaultValues: {
       calendar_key: resolvedCalendarKey,
       title: event?.title ?? '',
-      start: formatInputDate(startDate, isAllDay),
-      end: formatInputDate(endDate, isAllDay),
+      start: event?.date_start
+        ? formatEventBound(event.date_start, isAllDay, initialTimezone)
+        : formatInputDate(startDate, isAllDay),
+      end: event?.date_end
+        ? formatEventBound(event.date_end, isAllDay, initialTimezone)
+        : formatInputDate(endDate, isAllDay),
       all_day: isAllDay,
-      timezone:
-        event?.timezone ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
+      timezone: initialTimezone,
       description: event?.description ?? '',
       location: event?.location ?? '',
       visibility: event?.visibility ?? 'public',
@@ -318,9 +357,7 @@ export function EventForm({
           role: attendee.role,
           rsvp: attendee.rsvp,
         })) ?? [],
-      recurrence_rule: recurrenceToFormRule(
-        event?.recurrence ?? event?.recurrence_rule ?? null
-      ),
+      recurrence_rule: initialRecurrence,
     },
   })
 
@@ -451,8 +488,8 @@ export function EventForm({
     values: EventFormValues
   ): CalendarEventCreateBody => ({
     title: values.title,
-    date_start: toIsoDate(values.start, values.all_day),
-    date_end: toIsoDate(values.end, values.all_day),
+    date_start: toIsoDate(values.start, values.all_day, values.timezone),
+    date_end: toIsoDate(values.end, values.all_day, values.timezone),
     all_day: values.all_day,
     timezone: values.timezone,
     description: values.description || undefined,
@@ -485,6 +522,31 @@ export function EventForm({
     recurrence_rule: values.recurrence_rule ?? undefined,
   })
 
+  /**
+   * PATCH keeps every key it does not receive: a cleared field must be sent
+   * as null / [] to be cleared, and the recurrence rule only when edited
+   * (the form does not hold every RRULE part, resending it would drop them).
+   */
+  const buildEventUpdateBody = (
+    body: CalendarEventCreateBody,
+    values: EventFormValues
+  ): CalendarEventUpdateBody => {
+    const { recurrence_rule, ...rest } = body
+    const updateBody: CalendarEventUpdateBody = {
+      ...rest,
+      description: values.description || null,
+      location: values.location || null,
+      url: values.url || null,
+      categories: rest.categories ?? [],
+      reminders: rest.reminders ?? [],
+      attendees: rest.attendees ?? [],
+    }
+    if (!sameRecurrence(values.recurrence_rule, initialRecurrence)) {
+      updateBody.recurrence_rule = recurrence_rule ?? null
+    }
+    return updateBody
+  }
+
   const performSubmit = async (
     values: EventFormValues,
     recurrenceScope?: RecurrenceScope
@@ -496,7 +558,7 @@ export function EventForm({
 
     try {
       if (eventKey) {
-        const updateBody: CalendarEventUpdateBody = { ...body }
+        const updateBody = buildEventUpdateBody(body, values)
         if (recurrenceScope && eventNeedsRecurrenceScope(event)) {
           Object.assign(
             updateBody,
@@ -558,7 +620,12 @@ export function EventForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t('eventForm.calendar.label.string')}</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    // PATCH cannot move an event to another calendar.
+                    disabled={isEditing}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue

@@ -21,6 +21,7 @@
     "test:ui": "jest src/components/ui --coverage=false",
     "test:changed": "jest --onlyChanged --coverage=false",
     "test:related": "jest --findRelatedTests --coverage=false",
+    "test:tz": "TZ=America/New_York jest --coverage=false src/features/calendars/utils src/features/calendars/hooks/__tests__/useCalendarState.test.ts src/features/calendars/components/__tests__/event-form.test.tsx",
     "check:translations": "node scripts/check-translation-keys.js",
     "check:translations:missing": "node scripts/check-translation-keys.js --only-missing",
     "check:translations:quiet": "node scripts/check-translation-keys.js --quiet",
