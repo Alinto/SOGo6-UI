@@ -175,6 +175,47 @@ describe('useComposeAttachmentUpload', () => {
       )
     })
 
+    it('uploads every file of a batch to the key returned by the first one', async () => {
+      mockUploadAttachment.mockResolvedValue({
+        data: { data: { filename: 'f', key: 'srv-key' } },
+      })
+      const { result } = renderHook(() =>
+        useComposeAttachmentUpload(baseOptions)
+      )
+      const files = ['a', 'b', 'c'].map(
+        (name) => new File([name], `${name}.txt`, { type: 'text/plain' })
+      )
+
+      await act(async () => {
+        await result.current.handleFileChange(changeEvent(files))
+      })
+
+      expect(
+        mockUploadAttachment.mock.calls.map(([arg]) => arg.mailKey)
+      ).toEqual([null, 'srv-key', 'srv-key'])
+    })
+
+    it('chains a second batch on the key of the first one', async () => {
+      mockUploadAttachment.mockResolvedValue({
+        data: { data: { filename: 'f', key: 'srv-key' } },
+      })
+      const { result } = renderHook(() =>
+        useComposeAttachmentUpload(baseOptions)
+      )
+      const file = (name: string) => new File([name], name)
+
+      await act(async () => {
+        await Promise.all([
+          result.current.handleFileChange(changeEvent([file('a')])),
+          result.current.handleFileChange(changeEvent([file('b')])),
+        ])
+      })
+
+      expect(
+        mockUploadAttachment.mock.calls.map(([arg]) => arg.mailKey)
+      ).toEqual([null, 'srv-key'])
+    })
+
     it('keeps the File after upload when the outbox is enabled', async () => {
       mockOutboxEnabled = true
       mockUploadAttachment.mockResolvedValue({

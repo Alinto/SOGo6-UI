@@ -337,7 +337,7 @@ describe('mail-api.ts', () => {
 
       it('should use correct URL with accountId, mailKey and filename', () => {
         expect(fileContent).toContain(
-          '`mailboxes/${accountId}/mail/${mailKey}/attachments/${filename}`'
+          '`mailboxes/${accountId}/mail/${mailKey}/attachments/${encodeURIComponent(filename)}`'
         )
       })
 
@@ -364,7 +364,7 @@ describe('mail-api.ts', () => {
 
       it('should use correct URL with accountId, mailKey and filename', () => {
         expect(fileContent).toContain(
-          '`mailboxes/${accountId}/mail/${mailKey}/attachments/${filename}`'
+          '`mailboxes/${accountId}/mail/${mailKey}/attachments/${encodeURIComponent(filename)}`'
         )
       })
 

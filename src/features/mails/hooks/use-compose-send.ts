@@ -150,8 +150,11 @@ export function useComposeSend({
 
     // Real SOGo send rejects JSON `attachments`. Local Files must be uploaded
     // as multipart first (same as the online picker) so we get a tmp draft key.
+    // Attachments already uploaded keep their File in PWA mode (for the
+    // outbox): sending them again would attach them twice.
     const localFiles = attachments.filter(
-      (a): a is MailComposeAttachment & { file: File } => a.file instanceof File
+      (a): a is MailComposeAttachment & { file: File } =>
+        a.file instanceof File && a.uploadStatus !== 'completed'
     )
     let key = draftKey
     for (const attachment of localFiles) {

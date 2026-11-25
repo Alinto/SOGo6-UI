@@ -133,7 +133,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     // DELETE mail/:key/attachments/:filename
     deleteAttachment: builder.mutation<void, DeleteAttachmentArg>({
       query: ({ accountId, mailKey, filename }) => ({
-        url: `mailboxes/${accountId}/mail/${mailKey}/attachments/${filename}`,
+        url: `mailboxes/${accountId}/mail/${mailKey}/attachments/${encodeURIComponent(filename)}`,
         method: 'DELETE',
       }),
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
@@ -159,7 +159,7 @@ const injectedEndpoints = apiSlice.injectEndpoints({
     // GET mail/:key/attachments/:filename
     downloadAttachment: builder.query<Blob, DownloadAttachmentArg>({
       query: ({ accountId, mailKey, filename }) => ({
-        url: `mailboxes/${accountId}/mail/${mailKey}/attachments/${filename}`,
+        url: `mailboxes/${accountId}/mail/${mailKey}/attachments/${encodeURIComponent(filename)}`,
         method: 'GET',
         responseHandler: async (response) => {
           return response.blob()
