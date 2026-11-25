@@ -16,6 +16,7 @@ import {
   buildComposeMailPayload,
   type ComposeMailFields,
 } from '../utils/build-compose-mail-payload'
+import { trackDraftSave } from '../utils/draft-save-tracker'
 
 interface UseComposeDraftPersistenceOptions extends ComposeMailFields {
   draftId: string
@@ -98,6 +99,22 @@ export function useComposeDraftPersistence({
       return
     }
 
+    await trackDraftSave(
+      draftId,
+      saveToServer(
+        displayNotificationOnSuccess,
+        displayNotificationOnError,
+        closeOnSave
+      )
+    )
+  }
+
+  /** Resolves with the server mail key once saved, or null. */
+  const saveToServer = async (
+    displayNotificationOnSuccess: boolean,
+    displayNotificationOnError: boolean,
+    closeOnSave: boolean
+  ): Promise<string | null> => {
     await persistLocal()
 
     const online = !isPwaOutboxEnabled() || (await probeNetwork())
@@ -106,7 +123,7 @@ export function useComposeDraftPersistence({
       if (closeOnSave) {
         dispatch(closeDraft({ draftId }))
       }
-      return
+      return null
     }
 
     const result = await saveDraft({
@@ -128,11 +145,12 @@ export function useComposeDraftPersistence({
         if (userId) void deleteLocalDraft(userId, draftId)
       }
 
-      if ('data' in result && result?.data?.data?.key) {
+      const savedKey = result.data?.data?.key ?? null
+      if (savedKey) {
         dispatch(
           updateMailKey({
             draftId,
-            mailKey: result.data.data.key,
+            mailKey: savedKey,
           })
         )
       }
@@ -140,7 +158,9 @@ export function useComposeDraftPersistence({
       if (closeOnSave) {
         dispatch(closeDraft({ draftId }))
       }
+      return savedKey
     }
+    return null
   }
 
   useInterval(

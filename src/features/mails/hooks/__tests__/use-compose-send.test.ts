@@ -53,6 +53,10 @@ jest.mock('@/features/offline/outbox/outbox-coordinator', () => ({
   enqueueOutbox: (...args: unknown[]) => mockEnqueueOutbox(...args),
 }))
 
+jest.mock('@/features/offline/db/drafts-store', () => ({
+  deleteLocalDraft: jest.fn(async () => undefined),
+}))
+
 jest.mock('@/features/offline/db/outbox-store', () => ({
   deleteOutboxItem: jest.fn(),
 }))
@@ -66,6 +70,7 @@ jest.mock('@/features/offline/outbox/outbox-edit-hold', () => ({
 }))
 
 import { toast } from 'sonner'
+import { trackDraftSave } from '../../utils/draft-save-tracker'
 import { useComposeSend } from '../use-compose-send'
 
 const baseFields = {
@@ -274,5 +279,60 @@ describe('useComposeSend', () => {
     expect(mockDispatch).not.toHaveBeenCalledWith(
       closeDraft({ draftId: 'draft-1' })
     )
+  })
+  it('sends only once when send is triggered twice during the network probe', async () => {
+    mockOutboxEnabled = true
+    let releaseProbe: (online: boolean) => void = () => {}
+    const probe = new Promise<boolean>((resolve) => {
+      releaseProbe = resolve
+    })
+    mockProbeNetwork.mockImplementation(() => probe)
+
+    const { result } = renderHook(() => useComposeSend(baseFields))
+
+    let first: Promise<void> = Promise.resolve()
+    let second: Promise<void> = Promise.resolve()
+    act(() => {
+      first = result.current.handleSend()
+      second = result.current.handleSend()
+    })
+    expect(result.current.isSending).toBe(true)
+
+    await act(async () => {
+      releaseProbe(true)
+      await Promise.all([first, second])
+    })
+
+    expect(mockSendMail).toHaveBeenCalledTimes(1)
+    expect(result.current.isSending).toBe(false)
+  })
+
+  it('waits for an in-flight draft save and sends with its key', async () => {
+    let finishSave: (key: string | null) => void = () => {}
+    trackDraftSave(
+      'draft-1',
+      new Promise<string | null>((resolve) => {
+        finishSave = resolve
+      })
+    )
+
+    const { result } = renderHook(() => useComposeSend(baseFields))
+
+    let sending: Promise<void> = Promise.resolve()
+    act(() => {
+      sending = result.current.handleSend()
+    })
+    expect(mockSendMail).not.toHaveBeenCalled()
+
+    await act(async () => {
+      finishSave('saved-key')
+      await sending
+    })
+
+    expect(mockSendMail).toHaveBeenCalledWith({
+      accountId: 'acc-1',
+      mailKey: 'saved-key',
+      mail: { mocked: 'payload' },
+    })
   })
 })

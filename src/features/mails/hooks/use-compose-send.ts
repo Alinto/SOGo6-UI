@@ -27,6 +27,7 @@ import {
   buildComposeMailPayload,
   type ComposeMailFields,
 } from '../utils/build-compose-mail-payload'
+import { waitForPendingDraftSave } from '../utils/draft-save-tracker'
 
 export type EmptyContentAlert = 'subject' | 'body' | 'both'
 
@@ -61,8 +62,30 @@ export function useComposeSend({
   const [emptyContentAlert, setEmptyContentAlert] =
     React.useState<EmptyContentAlert | null>(null)
 
+  // Synchronous guard: isSending only flips once the mutation starts, after
+  // the network probe and the uploads, so a second click/Ctrl+Enter in that
+  // window would send the message twice.
+  const sendLockRef = React.useRef(false)
+  const [isPreparingSend, setIsPreparingSend] = React.useState(false)
+
   const performSend = async () => {
     if (!mailFields.selectedIdentity?.mail) return
+    if (sendLockRef.current) return
+    sendLockRef.current = true
+    setIsPreparingSend(true)
+    try {
+      await sendNow(mailFields.selectedIdentity.mail)
+    } finally {
+      sendLockRef.current = false
+      setIsPreparingSend(false)
+    }
+  }
+
+  const sendNow = async (identityMail: string) => {
+    // An autosave started before the click may still be creating the draft:
+    // wait for it and reuse its key, or the send would leave it orphaned.
+    const savedKey = await waitForPendingDraftSave(draftId)
+    const draftKey = savedKey ?? mailKey
 
     const online = !isPwaOutboxEnabled() || (await probeNetwork())
 
@@ -88,8 +111,8 @@ export function useComposeSend({
         await enqueueOutbox({
           userId,
           accountId,
-          mailKey,
-          identityMail: mailFields.selectedIdentity.mail,
+          mailKey: draftKey,
+          identityMail,
           replyTo: mailFields.selectedIdentity.replyTo || null,
           signatureKey: selectedSignatureKey,
           to: toRecipients,
@@ -130,7 +153,7 @@ export function useComposeSend({
     const localFiles = attachments.filter(
       (a): a is MailComposeAttachment & { file: File } => a.file instanceof File
     )
-    let key = mailKey
+    let key = draftKey
     for (const attachment of localFiles) {
       const uploaded = await uploadAttachment({
         accountId,
@@ -202,7 +225,7 @@ export function useComposeSend({
   }
 
   return {
-    isSending: isSending || isUploading,
+    isSending: isPreparingSend || isSending || isUploading,
     handleSend,
     handleConfirmSendAnyway,
     showNoRecipientAlert,
