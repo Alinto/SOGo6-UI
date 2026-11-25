@@ -18,6 +18,7 @@ import {
   updateAttachmentProgress,
   updateMailKey,
 } from '../store/mail-compose-slice'
+import { waitForPendingDraftSave } from '../utils/draft-save-tracker'
 
 interface UseComposeAttachmentUploadOptions {
   draftId: string
@@ -34,6 +35,15 @@ export function useComposeAttachmentUpload({
   const t = useTranslations('PWA')
   const [uploadAttachment, { isLoading: isUploading }] =
     useUploadAttachmentMutation()
+
+  // Every upload must target the draft key obtained by the first one: an
+  // upload without key creates a new server draft, and only the attachments
+  // of the key finally sent go out with the message.
+  const mailKeyRef = React.useRef(mailKey)
+  React.useEffect(() => {
+    if (mailKey) mailKeyRef.current = mailKey
+  }, [mailKey])
+  const uploadQueueRef = React.useRef<Promise<void>>(Promise.resolve())
 
   const [isDragOver, setIsDragOver] = React.useState(false)
   const dragCounterRef = React.useRef(0)
@@ -54,14 +64,24 @@ export function useComposeAttachmentUpload({
     }
   }, [])
 
-  const processFiles = async (files: FileList | File[]) => {
+  /** Uploads run one batch after the other, so later ones reuse the key. */
+  const processFiles = (files: FileList | File[]) => {
     const incoming = Array.from(files)
+    const run = uploadQueueRef.current.then(() => uploadFiles(incoming))
+    uploadQueueRef.current = run.catch(() => undefined)
+    return run
+  }
+
+  const uploadFiles = async (incoming: File[]) => {
     if (incoming.length > ATTACHMENT_MAX_COUNT) {
       toast.error(t('attachment_too_many.string'))
       return
     }
 
     const online = !isPwaOutboxEnabled() || (await probeNetwork())
+    // An autosave in flight may be creating the draft: use its key.
+    const savedKey = await waitForPendingDraftSave(draftId)
+    if (savedKey) mailKeyRef.current = savedKey
 
     for (const file of incoming) {
       if (file.size > ATTACHMENT_MAX_BYTES) {
@@ -91,7 +111,7 @@ export function useComposeAttachmentUpload({
       try {
         const result = await uploadAttachment({
           accountId,
-          mailKey,
+          mailKey: mailKeyRef.current,
           file,
         })
         if (!('error' in result) && result.data?.data) {
@@ -118,6 +138,7 @@ export function useComposeAttachmentUpload({
             )
           }
           if (serverMailKey) {
+            mailKeyRef.current = serverMailKey
             dispatch(updateMailKey({ draftId, mailKey: serverMailKey }))
           }
         } else {
