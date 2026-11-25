@@ -501,10 +501,16 @@ describe('ShareCalendarAction', () => {
       })
     })
 
-    it('should send user_class "any-authenticated-user" when saving', async () => {
+    it('should send user_class "any-authenticated-user" when saving a granted entry', async () => {
       const user = userEvent.setup()
       ;(useGetCalendarShareQuery as jest.Mock).mockReturnValue(
-        mockCalendarShareData({})
+        mockCalendarShareData({
+          anyauthenticated: {
+            uid: 'anyauthenticated',
+            userClass: 'any-authenticated-user',
+            rights: { ...NONE_RIGHTS, public: 'view-all' },
+          },
+        })
       )
       render(<ShareCalendarAction {...defaultProps} />)
 
@@ -547,6 +553,43 @@ describe('ShareCalendarAction', () => {
       expect(onClose).toHaveBeenCalled()
     })
 
+    it('should not send entries without any right (any-authenticated placeholder included)', async () => {
+      const user = userEvent.setup()
+      ;(useGetCalendarShareQuery as jest.Mock).mockReturnValue(
+        mockCalendarShareData({
+          'reader@example.com': {
+            uid: 'reader@example.com',
+            c_email: 'reader@example.com',
+            userClass: 'normal-user',
+            rights: { ...NONE_RIGHTS, public: 'view-all' },
+          },
+          'nobody@example.com': {
+            uid: 'nobody@example.com',
+            c_email: 'nobody@example.com',
+            userClass: 'normal-user',
+            rights: NONE_RIGHTS,
+          },
+        })
+      )
+      render(<ShareCalendarAction {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('reader@example.com')).toBeInTheDocument()
+      })
+
+      await user.click(
+        screen.getByRole('button', { name: 'sidebar.sharing.save.string' })
+      )
+
+      await waitFor(() => {
+        expect(mockSetCalendarShare).toHaveBeenCalledTimes(1)
+      })
+      const { users } = mockSetCalendarShare.mock.calls[0][0]
+      expect(users.map((u: { uid: string }) => u.uid)).toEqual([
+        'reader@example.com',
+      ])
+    })
+
     it('should call setCalendarShare and onClose when Save is clicked', async () => {
       const user = userEvent.setup()
       const onClose = jest.fn()
@@ -556,7 +599,7 @@ describe('ShareCalendarAction', () => {
             uid: 'user@example.com',
             c_email: 'user@example.com',
             userClass: 'normal-user',
-            rights: NONE_RIGHTS,
+            rights: { ...NONE_RIGHTS, public: 'view-all' },
           },
         })
       )

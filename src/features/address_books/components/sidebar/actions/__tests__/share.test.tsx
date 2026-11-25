@@ -601,6 +601,43 @@ describe('ShareAddressBookAction', () => {
       expect(onClose).toHaveBeenCalled()
     })
 
+    it('should not send entries without any right (any-authenticated placeholder included)', async () => {
+      const user = userEvent.setup()
+      ;(useGetAddressBookShareQuery as jest.Mock).mockReturnValue(
+        mockShareData({
+          'reader@example.com': {
+            uid: 'reader@example.com',
+            c_email: 'reader@example.com',
+            userClass: 'normal-user',
+            rights: { ...NONE_RIGHTS, can_view: true },
+          },
+          'nobody@example.com': {
+            uid: 'nobody@example.com',
+            c_email: 'nobody@example.com',
+            userClass: 'normal-user',
+            rights: NONE_RIGHTS,
+          },
+        })
+      )
+      render(<ShareAddressBookAction {...defaultProps} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('reader@example.com')).toBeInTheDocument()
+      })
+
+      await user.click(
+        screen.getByRole('button', { name: 'sharing.save.string' })
+      )
+
+      await waitFor(() => {
+        expect(mockSetAddressBookShare).toHaveBeenCalledTimes(1)
+      })
+      const { users } = mockSetAddressBookShare.mock.calls[0][0]
+      expect(users.map((u: { uid: string }) => u.uid)).toEqual([
+        'reader@example.com',
+      ])
+    })
+
     it('should call setAddressBookShare and onClose when Save is clicked', async () => {
       const user = userEvent.setup()
       const onClose = jest.fn()
@@ -610,7 +647,7 @@ describe('ShareAddressBookAction', () => {
             uid: 'user@example.com',
             c_email: 'user@example.com',
             userClass: 'normal-user',
-            rights: NONE_RIGHTS,
+            rights: { ...NONE_RIGHTS, can_view: true },
           },
         })
       )

@@ -31,6 +31,7 @@ import {
   CALENDAR_CLASSIFICATIONS,
   CALENDAR_SHARE_LEVELS,
   defaultCalendarShareRights,
+  hasAnyCalendarRight,
 } from '@/features/calendars/utils/calendar-permission-mapping'
 import { useProfile } from '@/features/user-profile'
 import { Calendar, ChevronDown, Loader2, Trash2, Users } from 'lucide-react'
@@ -141,8 +142,10 @@ const ShareCalendarAction: React.FC<ShareCalendarActionProps> = ({
   }
 
   const handleSave = async (): Promise<void> => {
+    // The PUT replaces every grant: an entry with no right left is a revocation.
+    const grantedUsers = localUsers.filter((u) => hasAnyCalendarRight(u.rights))
     try {
-      await setCalendarShare({ calendarKey, users: localUsers }).unwrap()
+      await setCalendarShare({ calendarKey, users: grantedUsers }).unwrap()
       onClose?.()
     } catch {
       // Error handled by createApiNotificationHandler
