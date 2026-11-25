@@ -286,6 +286,10 @@
                         "description": "Write a new message to the contact"
                     }
                 }
+            },
+            "compose_load_error": {
+                "string": "Impossible de préparer le message. Veuillez réessayer.",
+                "description": "Shown when the server fails to prepare a reply or forward"
             }
         },
         "error": {

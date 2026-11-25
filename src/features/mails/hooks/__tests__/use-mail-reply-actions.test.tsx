@@ -25,12 +25,36 @@ jest.mock('@/features/mails/store', () => ({
   useLazyGetReplyMessageQuery: jest.fn(() => [mockTriggerGetReplyMessage]),
 }))
 
-jest.mock('@/features/mails/utils/mail-compose-from-api', () => ({
-  apiDataToMailComposeDraft: (...args: unknown[]) =>
-    mockApiDataToMailComposeDraft(...args),
-  buildForwardedBody: (...args: unknown[]) => mockBuildForwardedBody(...args),
-  buildQuotedReplyBody: (...args: unknown[]) =>
-    mockBuildQuotedReplyBody(...args),
+jest.mock('@/features/mails/utils/mail-compose-from-api', () => {
+  const actual = jest.requireActual(
+    '@/features/mails/utils/mail-compose-from-api'
+  )
+  return {
+    apiDataToMailComposeDraft: (...args: unknown[]) =>
+      mockApiDataToMailComposeDraft(...args),
+    buildForwardedBody: (...args: unknown[]) => mockBuildForwardedBody(...args),
+    buildQuotedReplyBody: (...args: unknown[]) =>
+      mockBuildQuotedReplyBody(...args),
+    buildReplyRecipients: actual.buildReplyRecipients,
+    replySubject: actual.replySubject,
+  }
+})
+
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => ({
+    allMailboxes: [
+      {
+        id: '0',
+        identities: [{ mail: 'bob@example.com', isDefault: true }],
+      },
+    ],
+    user: { email: 'bob@example.com' },
+  }),
+}))
+
+const mockToastError = jest.fn()
+jest.mock('sonner', () => ({
+  toast: { error: (...args: unknown[]) => mockToastError(...args) },
 }))
 
 jest.mock('next-intl', () => ({
@@ -77,9 +101,11 @@ describe('useMailReplyActions', () => {
     it('returns reply, reply-all and forward actions in order', () => {
       const { result } = renderHook(() => useMailReplyActions({}))
 
-      expect(result.current.rightActions.map((action) => action.id)).toEqual(
-        [ActionId.REPLY, ActionId.REPLY_ALL, ActionId.FORWARD]
-      )
+      expect(result.current.rightActions.map((action) => action.id)).toEqual([
+        ActionId.REPLY,
+        ActionId.REPLY_ALL,
+        ActionId.FORWARD,
+      ])
     })
   })
 
@@ -196,6 +222,9 @@ describe('useMailReplyActions', () => {
         expect.objectContaining({
           inReplyTo: '1',
           initialData: expect.objectContaining({
+            // The sender, not the original recipients echoed by /reply.
+            to: [{ email: 'alice@example.com', name: 'Alice' }],
+            subject: 'Re: Hello',
             cc: [],
             bcc: [],
             body: '<div>quoted</div>',
@@ -206,10 +235,20 @@ describe('useMailReplyActions', () => {
   })
 
   describe('reply-all action', () => {
-    it('keeps the cc recipients from the draft data', async () => {
+    it('replies to the sender and every other recipient, without the user', async () => {
       const { result } = renderHook(() =>
         useMailReplyActions({
-          mail: mockMail,
+          mail: {
+            ...mockMail,
+            to: [
+              { name: 'Bob', email: 'bob@example.com' },
+              { name: 'Carol', email: 'carol@example.com' },
+            ],
+            cc: [
+              { name: 'Dave', email: 'dave@example.com' },
+              { name: 'Bob', email: 'BOB@example.com' },
+            ],
+          },
           mailId: '1',
           folder: 'INBOX',
           accountId: '0',
@@ -227,11 +266,44 @@ describe('useMailReplyActions', () => {
         expect.objectContaining({
           inReplyTo: '1',
           initialData: expect.objectContaining({
-            cc: [{ email: 'cc@example.com' }],
+            to: [
+              { email: 'alice@example.com', name: 'Alice' },
+              { email: 'carol@example.com', name: 'Carol' },
+            ],
+            cc: [{ email: 'dave@example.com', name: 'Dave' }],
             bcc: [],
           }),
         })
       )
     })
+  })
+
+  describe('server failure', () => {
+    it.each([
+      [ActionId.REPLY, mockTriggerGetReplyMessage],
+      [ActionId.FORWARD, mockTriggerGetEditMessage],
+    ])(
+      'shows an error and opens no draft when %s cannot be prepared',
+      async (actionId, trigger) => {
+        trigger.mockResolvedValueOnce({ error: { status: 500 } })
+        const { result } = renderHook(() =>
+          useMailReplyActions({
+            mail: mockMail,
+            mailId: '1',
+            folder: 'INBOX',
+            accountId: '0',
+          })
+        )
+
+        result.current.handleMailAction(0, { id: actionId, icon: null })
+
+        await waitFor(() =>
+          expect(mockToastError).toHaveBeenCalledWith(
+            'mail_display.compose_load_error.string'
+          )
+        )
+        expect(mockDispatch).not.toHaveBeenCalled()
+      }
+    )
   })
 })
