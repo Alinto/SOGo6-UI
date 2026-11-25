@@ -9,6 +9,8 @@ import {
   apiDataToMailComposeDraft,
   buildForwardedBody,
   buildQuotedReplyBody,
+  buildReplyRecipients,
+  replySubject,
   type ApiMailData,
 } from '@/features/mails/utils/mail-compose-from-api'
 
@@ -428,5 +430,67 @@ describe('buildQuotedReplyBody', () => {
     expect(result).toContain(
       '&lt;script&gt;alert(1)&lt;/script&gt; &lt;evil@example.com&gt;'
     )
+  })
+})
+
+describe('replySubject', () => {
+  it('prefixes once', () => {
+    expect(replySubject('Hello')).toBe('Re: Hello')
+    expect(replySubject('RE: Hello')).toBe('RE: Hello')
+    expect(replySubject('re : Hello')).toBe('re : Hello')
+    expect(replySubject(undefined)).toBe('Re: ')
+  })
+})
+
+describe('buildReplyRecipients', () => {
+  const alice = { name: 'Alice', email: 'alice@example.com' }
+  const me = { name: 'Me', email: 'me@example.com' }
+  const carol = { name: 'Carol', email: 'carol@example.com' }
+  const list = { name: 'List', email: 'list@example.com' }
+  const ownEmails = ['me@example.com']
+
+  it('replies to the sender only', () => {
+    expect(
+      buildReplyRecipients(
+        { from: alice, to: [me, carol], cc: [list] },
+        { replyAll: false, ownEmails }
+      )
+    ).toEqual({ to: [alice], cc: [] })
+  })
+
+  it('prefers Reply-To over From', () => {
+    expect(
+      buildReplyRecipients(
+        { from: alice, reply_to: [list], to: [me], cc: [] },
+        { replyAll: false, ownEmails }
+      ).to
+    ).toEqual([list])
+  })
+
+  it('replies to all without the user and without duplicates', () => {
+    expect(
+      buildReplyRecipients(
+        { from: alice, to: [me, carol, alice], cc: [list, me, carol] },
+        { replyAll: true, ownEmails }
+      )
+    ).toEqual({ to: [alice, carol], cc: [list] })
+  })
+
+  it('goes back to the original recipients when replying to a sent message', () => {
+    expect(
+      buildReplyRecipients(
+        { from: me, to: [carol], cc: [] },
+        { replyAll: false, ownEmails }
+      ).to
+    ).toEqual([carol])
+  })
+
+  it('keeps the user when the message was only sent to themselves', () => {
+    expect(
+      buildReplyRecipients(
+        { from: me, to: [me], cc: [] },
+        { replyAll: false, ownEmails }
+      ).to
+    ).toEqual([me])
   })
 })

@@ -308,6 +308,10 @@
                     "string": "Back to folder",
                     "description": "Button to return to the folder's mail list from the mail-not-found/error state"
                 }
+            },
+            "compose_load_error": {
+                "string": "The message could not be prepared. Please try again.",
+                "description": "Shown when the server fails to prepare a reply or forward"
             }
         },
         "error": {

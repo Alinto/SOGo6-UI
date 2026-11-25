@@ -88,6 +88,18 @@ jest.mock('../utils', () => ({
 const mockTriggerGetEditMessage = jest.fn()
 const mockTriggerGetReplyMessage = jest.fn()
 
+jest.mock('@/features/user-profile', () => ({
+  useProfile: () => ({
+    allMailboxes: [
+      {
+        id: '0',
+        identities: [{ mail: 'jane@example.com', isDefault: true }],
+      },
+    ],
+    user: { email: 'jane@example.com' },
+  }),
+}))
+
 jest.mock('@/features/mails/store/mails-api', () => ({
   ...jest.requireActual('@/features/mails/store/mails-api'),
   useLazyGetEditMessageQuery: () => [mockTriggerGetEditMessage],
@@ -338,10 +350,10 @@ describe('MailHeader', () => {
 
     expect(draft).toMatchObject({
       inReplyTo: 'mail-1',
-      to: expected.to,
+      to: [{ name: 'John Doe', email: 'john@example.com' }],
       cc: [],
       bcc: [],
-      subject: expected.subject,
+      subject: 'Re: Original subject',
       body: buildQuotedReplyBody(mockMail, expected.body),
     })
   })
@@ -364,13 +376,13 @@ describe('MailHeader', () => {
     const draft = Object.values(selectAllDrafts(store.getState()))[0]!
     const expected = apiDataToMailComposeDraft(draft.draftId, mockMail)
 
-    expect(expected.cc.length).toBeGreaterThan(0)
+    // The user (jane@) is left out; the sender and the original Cc stay.
     expect(draft).toMatchObject({
       inReplyTo: 'mail-1',
-      to: expected.to,
-      cc: expected.cc,
+      to: [{ name: 'John Doe', email: 'john@example.com' }],
+      cc: [{ name: 'Cc Person', email: 'cc-person@example.com' }],
       bcc: [],
-      subject: expected.subject,
+      subject: 'Re: Original subject',
       body: buildQuotedReplyBody(mockMail, expected.body),
     })
   })

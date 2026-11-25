@@ -45,6 +45,69 @@ function filterRecipients(
     .map((r) => ({ email: r.email, ...(r.name ? { name: r.name } : {}) }))
 }
 
+type ReplyContact = { name?: string; email: string }
+
+const normalizeEmail = (email: string) => email.trim().toLowerCase()
+
+function dedupeRecipients(
+  recipients: ReplyContact[],
+  exclude: Set<string> = new Set()
+): ReplyContact[] {
+  const seen = new Set(exclude)
+  return recipients.filter((r) => {
+    const key = normalizeEmail(r.email)
+    if (!key || seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+}
+
+/** "Re: subject", without stacking prefixes. */
+export function replySubject(subject: string | undefined): string {
+  const trimmed = (subject ?? '').trim()
+  return /^re\s*:/i.test(trimmed) ? trimmed : `Re: ${trimmed}`
+}
+
+/**
+ * Recipients of a reply, computed from the original message: the server
+ * /reply payload echoes the original To/Cc, not the reply recipients.
+ * - Reply: Reply-To when present, else From.
+ * - Reply all: the same plus the original To, and the original Cc in Cc.
+ * The user's own addresses are dropped (except when that would leave the
+ * reply with no recipient, e.g. a note to self). Replying to a message the
+ * user sent goes back to its original recipients.
+ */
+export function buildReplyRecipients(
+  mail: Pick<ApiMailData, 'from' | 'to' | 'cc' | 'reply_to'>,
+  { replyAll, ownEmails }: { replyAll: boolean; ownEmails: string[] }
+): { to: MailComposeRecipient[]; cc: MailComposeRecipient[] } {
+  const own = new Set(ownEmails.filter(Boolean).map(normalizeEmail))
+  const isOwn = (r: ReplyContact) => own.has(normalizeEmail(r.email))
+  const originalTo = mail.to ?? []
+  const originalCc = mail.cc ?? []
+
+  const replyTo = (mail.reply_to ?? []).filter((r) => r.email?.trim())
+  let primary: ReplyContact[] =
+    replyTo.length > 0 ? replyTo : mail.from?.email ? [mail.from] : []
+  if (primary.length > 0 && primary.every(isOwn) && originalTo.length > 0) {
+    primary = originalTo
+  }
+
+  const othersOnly = primary.filter((r) => !isOwn(r))
+  let to = dedupeRecipients(othersOnly.length > 0 ? othersOnly : primary)
+  let cc: ReplyContact[] = []
+
+  if (replyAll) {
+    to = dedupeRecipients([...to, ...originalTo.filter((r) => !isOwn(r))])
+    cc = dedupeRecipients(
+      originalCc.filter((r) => !isOwn(r)),
+      new Set(to.map((r) => normalizeEmail(r.email)))
+    )
+  }
+
+  return { to: filterRecipients(to), cc: filterRecipients(cc) }
+}
+
 function mapAttachments(
   draftId: string,
   attachments: ImapMessages['attachments'] | undefined

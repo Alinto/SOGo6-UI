@@ -5,25 +5,29 @@ import type {
   RightActionsType,
 } from '@/features/mails/components/mail/types'
 import { ActionId } from '@/features/mails/components/mail/types'
-import type { ImapMessages, ImapFolderType } from '@/features/mails/mails-types'
-import {
-  isDraftFolderType,
-  isTemplateFolderType,
-} from '@/features/mails/utils/folder-type-helpers'
+import type { ImapMessages } from '@/features/mails/mails-types'
 import {
   createDraft,
   useLazyGetEditMessageQuery,
   useLazyGetReplyMessageQuery,
 } from '@/features/mails/store'
 import {
+  isDraftFolderType,
+  isTemplateFolderType,
+} from '@/features/mails/utils/folder-type-helpers'
+import {
   apiDataToMailComposeDraft,
   buildForwardedBody,
   buildQuotedReplyBody,
+  buildReplyRecipients,
+  replySubject,
 } from '@/features/mails/utils/mail-compose-from-api'
+import { useProfile } from '@/features/user-profile'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
 import { Forward, Reply, ReplyAll } from 'lucide-react'
 import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
 interface UseMailReplyActionsOptions {
   mail?: ImapMessages
@@ -44,6 +48,19 @@ export function useMailReplyActions({
   const dispatch = useAppDispatch()
   const [triggerGetEditMessage] = useLazyGetEditMessageQuery()
   const [triggerGetReplyMessage] = useLazyGetReplyMessageQuery()
+  const { allMailboxes, user } = useProfile()
+
+  /** Every address the user sends as, so "reply all" leaves them out. */
+  const ownEmails = [
+    ...allMailboxes.flatMap((mailbox) =>
+      mailbox.identities.map((identity) => identity.mail)
+    ),
+    user?.email ?? '',
+  ]
+
+  const notifyComposeLoadError = () => {
+    toast.error(t('mail_display.compose_load_error.string'))
+  }
 
   const rightActions: RightActionsType = [
     {
@@ -75,6 +92,10 @@ export function useMailReplyActions({
           mailId,
           accountId,
         })
+        if (result.error || !result.data) {
+          notifyComposeLoadError()
+          return
+        }
         const mailData = { ...mail, ...result.data }
         const draftData = apiDataToMailComposeDraft(draftId, mailData)
         dispatch(
@@ -101,16 +122,30 @@ export function useMailReplyActions({
           mailId,
           accountId,
         })
+        // Without the server draft (key) the reply cannot be saved or sent.
+        if (result.error || !result.data) {
+          notifyComposeLoadError()
+          return
+        }
         const mailData = { ...mail, ...result.data }
         const draftData = apiDataToMailComposeDraft(draftId, mailData)
+        // Recipients come from the original message: /reply echoes its To/Cc.
+        // reply_to is left out on purpose: the server currently fills it
+        // from the In-Reply-To header (a Message-ID), not from Reply-To.
+        const { to, cc } = buildReplyRecipients(
+          { from: mail.from, to: mail.to, cc: mail.cc },
+          { replyAll: action.id === ActionId.REPLY_ALL, ownEmails }
+        )
         dispatch(
           createDraft({
             draftId,
             inReplyTo: mailId,
             initialData: {
               ...draftData,
-              cc: action.id === ActionId.REPLY_ALL ? draftData.cc : [],
+              to,
+              cc,
               bcc: [],
+              subject: replySubject(mail.subject),
               body: buildQuotedReplyBody(mailData, draftData.body),
             },
           })
