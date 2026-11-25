@@ -1,4 +1,7 @@
-import type { ApiContact, ApiContactsListData } from '../address-books-api-types'
+import type {
+  ApiContact,
+  ApiContactsListData,
+} from '../address-books-api-types'
 import type { ContactKind, VCard } from '../address-books-types'
 import { unwrapApiData } from './unwrap-api-data'
 
@@ -35,9 +38,7 @@ export function normalizeContact(raw: ApiContact | Partial<VCard>): VCard {
     .filter(Boolean)
   const urls = (api.urls ?? []).map((entry) => entry.value).filter(Boolean)
   const impp = (api.impp ?? []).map((entry) => entry.uri).filter(Boolean)
-  const addresses = (api.addresses ?? [])
-    .map(formatAddressLine)
-    .filter(Boolean)
+  const addresses = (api.addresses ?? []).map(formatAddressLine).filter(Boolean)
 
   return {
     id,
@@ -59,17 +60,20 @@ export function normalizeContact(raw: ApiContact | Partial<VCard>): VCard {
     note: api.note ?? undefined,
     categories: api.categories ?? undefined,
     urls: urls.length ? urls : undefined,
+    structuredUrls: api.urls && api.urls.length > 0 ? api.urls : undefined,
     photos: api.photos ?? undefined,
     photo: api.photos?.[0],
     emails: emails.length ? emails : undefined,
     structuredEmails:
       api.emails && api.emails.length > 0 ? api.emails : undefined,
     phoneNumbers: phoneNumbers.length ? phoneNumbers : undefined,
-    structuredPhones: api.phones && api.phones.length > 0 ? api.phones : undefined,
+    structuredPhones:
+      api.phones && api.phones.length > 0 ? api.phones : undefined,
     addresses: addresses.length ? addresses : undefined,
     structuredAddresses:
       api.addresses && api.addresses.length > 0 ? api.addresses : undefined,
     impp: impp.length ? impp : undefined,
+    structuredImpp: api.impp && api.impp.length > 0 ? api.impp : undefined,
     geo: api.geo ?? undefined,
     birthday: api.birthday ?? undefined,
     anniversary: api.anniversary ?? undefined,
@@ -88,7 +92,9 @@ export function normalizeContactsList(
 ): VCard[] {
   if (Array.isArray(response)) {
     return response.map((item) =>
-      'firstName' in item ? (item as VCard) : normalizeContact(item as ApiContact)
+      'firstName' in item
+        ? (item as VCard)
+        : normalizeContact(item as ApiContact)
     )
   }
 
