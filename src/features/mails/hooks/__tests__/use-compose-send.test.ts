@@ -84,7 +84,7 @@ const baseFields = {
   subject: 'Subject',
   body: 'Body',
   requestReadReceipt: false,
-  selectedPriority: MAIL_PRIORITY_NORMAL as 0 | 1 | 2 | 3 | 4,
+  selectedPriority: MAIL_PRIORITY_NORMAL as 1 | 2 | 3 | 4 | 5,
   isPlainText: false,
 }
 

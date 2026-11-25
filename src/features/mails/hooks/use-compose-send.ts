@@ -74,14 +74,15 @@ export function useComposeSend({
     sendLockRef.current = true
     setIsPreparingSend(true)
     try {
-      await sendNow(mailFields.selectedIdentity.mail)
+      await sendNow(mailFields.selectedIdentity)
     } finally {
       sendLockRef.current = false
       setIsPreparingSend(false)
     }
   }
 
-  const sendNow = async (identityMail: string) => {
+  const sendNow = async (identity: { mail: string; replyTo?: string }) => {
+    const identityMail = identity.mail
     // An autosave started before the click may still be creating the draft:
     // wait for it and reuse its key, or the send would leave it orphaned.
     const savedKey = await waitForPendingDraftSave(draftId)
@@ -113,7 +114,7 @@ export function useComposeSend({
           accountId,
           mailKey: draftKey,
           identityMail,
-          replyTo: mailFields.selectedIdentity.replyTo || null,
+          replyTo: identity.replyTo || null,
           signatureKey: selectedSignatureKey,
           to: toRecipients,
           cc: mailFields.ccRecipients,

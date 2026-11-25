@@ -632,7 +632,9 @@ describe('ShareAddressBookAction', () => {
       await waitFor(() => {
         expect(mockSetAddressBookShare).toHaveBeenCalledTimes(1)
       })
-      const { users } = mockSetAddressBookShare.mock.calls[0][0]
+      const [{ users }] = mockSetAddressBookShare.mock.calls[0] as unknown as [
+        { users: { uid: string }[] },
+      ]
       expect(users.map((u: { uid: string }) => u.uid)).toEqual([
         'reader@example.com',
       ])

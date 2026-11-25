@@ -584,7 +584,9 @@ describe('ShareCalendarAction', () => {
       await waitFor(() => {
         expect(mockSetCalendarShare).toHaveBeenCalledTimes(1)
       })
-      const { users } = mockSetCalendarShare.mock.calls[0][0]
+      const [{ users }] = mockSetCalendarShare.mock.calls[0] as unknown as [
+        { users: { uid: string }[] },
+      ]
       expect(users.map((u: { uid: string }) => u.uid)).toEqual([
         'reader@example.com',
       ])
