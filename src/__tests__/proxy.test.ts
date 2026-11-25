@@ -33,24 +33,36 @@ jest.mock('next/server', () => {
     }
   }
 
-  return {
-    NextRequest: MockNextRequest,
-    NextResponse: {
-      redirect: (url: URL | string, status = 307) => {
-        const location = typeof url === 'string' ? url : url.toString()
-        return {
-          status,
-          headers: {
-            get: (name: string) =>
-              name.toLowerCase() === 'location' ? location : null,
-          },
-        }
-      },
-      next: () => ({
+  class MockNextResponse {
+    status: number
+    headers = { get: (_name: string): string | null => null }
+
+    constructor(_body?: unknown, init?: { status?: number }) {
+      this.status = init?.status ?? 200
+    }
+
+    static redirect(url: URL | string, status = 307) {
+      const location = typeof url === 'string' ? url : url.toString()
+      return {
+        status,
+        headers: {
+          get: (name: string) =>
+            name.toLowerCase() === 'location' ? location : null,
+        },
+      }
+    }
+
+    static next() {
+      return {
         status: 200,
         headers: { get: () => null },
-      }),
-    },
+      }
+    }
+  }
+
+  return {
+    NextRequest: MockNextRequest,
+    NextResponse: MockNextResponse,
   }
 })
 
@@ -61,6 +73,8 @@ import proxy, {
   isAdminDomain,
   isAdminPanelPath,
   isAuthPath,
+  isFakeApiEnabled,
+  isFakeApiPath,
   isLocaleRootPath,
   isPwaAssetPath,
   normalizeHostname,
@@ -148,6 +162,27 @@ describe('proxy helpers', () => {
       expect(isPwaAssetPath('/~offline')).toBe(true)
       expect(isPwaAssetPath('/en/u/0/INBOX')).toBe(false)
     })
+  })
+})
+
+describe('mock API guard', () => {
+  it('matches only /fakeApi paths', () => {
+    expect(isFakeApiPath('/fakeApi')).toBe(true)
+    expect(isFakeApiPath('/fakeApi/auth/email')).toBe(true)
+    expect(isFakeApiPath('/fakeApiX')).toBe(false)
+    expect(isFakeApiPath('/en/fakeApi')).toBe(false)
+  })
+
+  it('is disabled in production unless FAKE_API_ENABLED is set', () => {
+    expect(isFakeApiEnabled({ NODE_ENV: 'production' })).toBe(false)
+    expect(
+      isFakeApiEnabled({ NODE_ENV: 'production', FAKE_API_ENABLED: 'true' })
+    ).toBe(true)
+    expect(
+      isFakeApiEnabled({ NODE_ENV: 'production', FAKE_API_ENABLED: '1' })
+    ).toBe(true)
+    expect(isFakeApiEnabled({ NODE_ENV: 'development' })).toBe(true)
+    expect(isFakeApiEnabled({ NODE_ENV: 'test' })).toBe(true)
   })
 })
 
@@ -256,6 +291,32 @@ describe('proxy handler', () => {
 
     expect(mockIntlMiddleware).toHaveBeenCalledTimes(1)
     expect(response).toBe(intlResponse)
+  })
+
+  it('returns 404 for mock API routes in production', async () => {
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'production',
+      FAKE_API_ENABLED: undefined,
+    })
+
+    const response = await proxy(createRequest('/fakeApi/auth/email'))
+
+    expect(response.status).toBe(404)
+    expect(mockIntlMiddleware).not.toHaveBeenCalled()
+  })
+
+  it('serves mock API routes in development without locale prefix', async () => {
+    jest.replaceProperty(process, 'env', {
+      ...process.env,
+      NODE_ENV: 'development',
+    })
+
+    const response = await proxy(createRequest('/fakeApi/auth/email'))
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get('location')).toBeNull()
+    expect(mockIntlMiddleware).not.toHaveBeenCalled()
   })
 
   it('delegates regular user routes to next-intl middleware', async () => {

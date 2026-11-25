@@ -6,7 +6,23 @@ export const config = {
   matcher: [
     // Exclude api, fakeApi, env, PWA assets (manifest / serwist / offline fallback), and static files
     '/((?!_next|api|fakeApi|env|serwist|~offline|manifest\\.webmanifest|.*\\.(?:js|css|png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot|webmanifest)$).*)',
+    // Mock API: only reached to be blocked in production (see isFakeApiEnabled)
+    '/fakeApi/:path*',
   ],
+}
+
+export function isFakeApiPath(pathname: string): boolean {
+  return pathname === '/fakeApi' || pathname.startsWith('/fakeApi/')
+}
+
+/** Mock routes are served outside production, or when FAKE_API_ENABLED=true. */
+export function isFakeApiEnabled(
+  env: Record<string, string | undefined> = process.env
+): boolean {
+  if (env.FAKE_API_ENABLED === 'true' || env.FAKE_API_ENABLED === '1') {
+    return true
+  }
+  return env.NODE_ENV !== 'production'
 }
 
 // Function to generate a dynamic regex to test if pathname begins with one of the locales
@@ -84,6 +100,12 @@ export default async function proxy(req: NextRequest) {
   const locales = getLocales()
   const defaultLocale = getDefaultLocale()
   const localeRegex = generateLocaleRegex(locales)
+
+  if (isFakeApiPath(pathname)) {
+    return isFakeApiEnabled()
+      ? NextResponse.next()
+      : new NextResponse(null, { status: 404 })
+  }
 
   const isAdmin = isAdminDomain(hostname)
   const isAdminPanelRoute = isAdminPanelPath(pathname)
