@@ -1,5 +1,5 @@
 import type { ImapFolder, ImapMessagesList } from '@/features/mails/mails-types'
-import { getFolderHeadersCachedAt } from '../db/mail-cache-store'
+import { getKv, setKv } from '../db/kv-store'
 import {
   MAIL_CACHE_HEADERS_PER_FOLDER,
   MAIL_CACHE_PREFETCH_BODIES,
@@ -22,7 +22,8 @@ export interface InboxPrefetchCache {
       seen: boolean
       hasAttachment: boolean
       payloadJson: string
-    }[]
+    }[],
+    options?: { complete?: boolean }
   ) => Promise<void>
   cacheBody: (
     accountId: string,
@@ -71,12 +72,38 @@ async function cacheFolderMails(
     await cache.cacheHeaders(
       accountId,
       folderPath,
-      toHeaderRows(accountId, folderPath, mails)
+      toHeaderRows(accountId, folderPath, mails),
+      { complete: mails.length < pageSize }
     )
   }
   return mails
 }
 
+/**
+ * Last completed prefetch, per account. Kept apart from the headers'
+ * `updatedAt`: the folder list writes Inbox through on every visit, which
+ * would otherwise make the prefetch (Sent, top bodies) look always fresh.
+ */
+export function prefetchKvKey(accountId: string): string {
+  return `inboxPrefetchedAt:${accountId}`
+}
+
+async function readPrefetchedAt(
+  userId: string,
+  accountId: string
+): Promise<number | null> {
+  try {
+    const value = Number(await getKv(userId, prefetchKvKey(accountId)))
+    return Number.isFinite(value) && value > 0 ? value : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Warm the offline cache for an account: folder tree, Inbox and Sent
+ * headers, top Inbox bodies. Best-effort: never rejects.
+ */
 export async function prefetchInboxCache(
   userId: string,
   accountId: string,
@@ -84,14 +111,24 @@ export async function prefetchInboxCache(
   cache: InboxPrefetchCache,
   now = Date.now()
 ): Promise<void> {
-  const defaultInboxCachedAt = await getFolderHeadersCachedAt(
-    userId,
-    accountId,
-    'INBOX'
-  )
+  try {
+    await runPrefetch(userId, accountId, api, cache, now)
+  } catch (error) {
+    console.warn('[offline] inbox prefetch failed', error)
+  }
+}
+
+async function runPrefetch(
+  userId: string,
+  accountId: string,
+  api: InboxPrefetchApi,
+  cache: InboxPrefetchCache,
+  now: number
+): Promise<void> {
+  const prefetchedAt = await readPrefetchedAt(userId, accountId)
   if (
-    defaultInboxCachedAt != null &&
-    now - defaultInboxCachedAt < MAIL_CACHE_PREFETCH_FRESH_MS
+    prefetchedAt != null &&
+    now - prefetchedAt < MAIL_CACHE_PREFETCH_FRESH_MS
   ) {
     return
   }
@@ -102,17 +139,6 @@ export async function prefetchInboxCache(
   }
 
   const inboxPath = findFolderByType(folders, 'INBOX')?.path || 'INBOX'
-  if (inboxPath !== 'INBOX') {
-    const cachedAt = await getFolderHeadersCachedAt(
-      userId,
-      accountId,
-      inboxPath
-    )
-    if (cachedAt != null && now - cachedAt < MAIL_CACHE_PREFETCH_FRESH_MS) {
-      return
-    }
-  }
-
   const inboxMails = await cacheFolderMails(
     accountId,
     inboxPath,
@@ -123,13 +149,17 @@ export async function prefetchInboxCache(
 
   const sent = findFolderByType(folders, 'SENT')
   if (sent?.path && sent.path !== inboxPath) {
-    await cacheFolderMails(
-      accountId,
-      sent.path,
-      MAIL_CACHE_HEADERS_PER_FOLDER,
-      api,
-      cache
-    )
+    try {
+      await cacheFolderMails(
+        accountId,
+        sent.path,
+        MAIL_CACHE_HEADERS_PER_FOLDER,
+        api,
+        cache
+      )
+    } catch {
+      // Best-effort: Inbox stays usable without Sent.
+    }
   }
 
   const toPrefetch = inboxMails.slice(0, MAIL_CACHE_PREFETCH_BODIES)
@@ -143,4 +173,6 @@ export async function prefetchInboxCache(
       // Best-effort: a missing body still leaves the header list usable.
     }
   }
+
+  await setKv(userId, prefetchKvKey(accountId), now)
 }

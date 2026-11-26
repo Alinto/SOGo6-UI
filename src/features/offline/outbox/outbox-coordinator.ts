@@ -35,10 +35,28 @@ export interface EnqueueOutboxInput {
     size: number
     type: string
     blob: Blob
+    /** Already attached to the server draft `mailKey` (do not re-upload). */
+    uploaded?: boolean
   }[]
   localDraftId?: string
   /** Update this Outbox row in place instead of creating a second queued message. */
   replaceOutboxId?: string
+}
+
+/**
+ * The Outbox item being edited no longer exists (sent or deleted meanwhile,
+ * possibly from another tab). Re-creating it silently could send the
+ * message twice, so the caller must ask the user first.
+ */
+export class OutboxItemGoneError extends Error {
+  constructor() {
+    super('Outbox item no longer exists')
+    this.name = 'OutboxItemGoneError'
+  }
+}
+
+export function isOutboxItemGoneError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'OutboxItemGoneError'
 }
 
 function newId(): string {
@@ -56,6 +74,7 @@ export async function enqueueOutbox(
   const existing = input.replaceOutboxId
     ? await getOutboxItem(input.userId, input.replaceOutboxId)
     : undefined
+  if (input.replaceOutboxId && !existing) throw new OutboxItemGoneError()
   const id = input.replaceOutboxId ?? newId()
   const attachmentRecords: OutboxAttachmentRecord[] = (
     input.attachments ?? []
@@ -66,6 +85,8 @@ export async function enqueueOutbox(
     size: att.size,
     type: att.type,
     blob: att.blob,
+    // Only meaningful relative to a server draft.
+    uploaded: att.uploaded === true && input.mailKey != null,
   }))
   const attachmentIds = attachmentRecords.map((a) => a.id)
 

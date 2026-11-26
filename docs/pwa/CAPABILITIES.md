@@ -24,7 +24,7 @@ Periodic Background Sync is **not** implemented: the service worker must not hol
 - Quota checked before outbox enqueue; usage shown on the cached-mail indicator
 - Survives app close; wiped on logout (Dexie + `sogo-share-pending` + runtime Cache Storage `pages`/`others`/`env`/`manifest`)
 - Not a full mailbox mirror
-- Folder header snapshots are replaced on each write (deleted server mail disappears from the cache)
+- Folder headers are written from the unfiltered first page only and merged (deleted server mail within that page's date range disappears from the cache)
 
 ## Outbox
 

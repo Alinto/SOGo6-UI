@@ -136,7 +136,7 @@ describe('ComposeAttachmentList', () => {
       )
     })
 
-    it('removes a local File from the store without calling the server', async () => {
+    it('deletes a completed upload on the server even when it keeps its File (PWA mode)', async () => {
       const user = userEvent.setup()
       const file = new File(['x'], 'local.txt', { type: 'text/plain' })
       render(
@@ -154,7 +154,9 @@ describe('ComposeAttachmentList', () => {
       const buttons = screen.getAllByRole('button')
       await user.click(buttons[buttons.length - 1])
 
-      expect(mockDeleteAttachment).not.toHaveBeenCalled()
+      expect(mockDeleteAttachment).toHaveBeenCalledWith(
+        expect.objectContaining({ filename: 'file.txt' })
+      )
       expect(mockDispatch).toHaveBeenCalledWith(
         removeAttachment({ draftId: 'draft-1', attachmentId: 'att-1' })
       )

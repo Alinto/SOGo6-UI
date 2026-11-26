@@ -36,6 +36,7 @@ describe('useOutboxFlushTriggers', () => {
     mockFlushOutbox.mockResolvedValue({
       sent: 0,
       failed: 0,
+      interrupted: 0,
       pausedAuth: false,
       errors: [],
     })

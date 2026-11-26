@@ -6,6 +6,11 @@ export interface LocalDraftAttachmentMeta {
   size: number
   type: string
   blob?: Blob
+  /**
+   * Already on the server draft (`mailKey`): restored as completed so it is
+   * not uploaded a second time (the server appends every upload).
+   */
+  uploaded?: boolean
 }
 
 export interface LocalDraftRecord {
@@ -35,6 +40,13 @@ export interface OutboxAttachmentRecord {
   size: number
   type: string
   blob: Blob
+  /**
+   * True once this file is attached to the server draft `OutboxRecord.mailKey`
+   * (uploaded online before queueing, or by a previous flush attempt). The
+   * blob is kept for display / editing, but must not be uploaded again: the
+   * server appends every upload, so a re-upload duplicates the attachment.
+   */
+  uploaded?: boolean
 }
 
 export interface OutboxRecord {
@@ -57,6 +69,12 @@ export interface OutboxRecord {
   status: OutboxStatus
   retryCount: number
   lastError: string | null
+  /**
+   * Set while a compose window (in any tab) edits this item; flush skips it.
+   * Liveness is checked with a Web Lock (see outbox-edit-hold.ts), with
+   * OUTBOX_EDIT_HOLD_TTL_MS as fallback, so a crashed tab cannot block it.
+   */
+  editHeldAt?: number | null
   createdAt: number
   updatedAt: number
 }
@@ -132,6 +150,7 @@ export interface PendingShareRecord {
   createdAt: number
 }
 
+/** Background Sync tag — single source; `src/app/sw.ts` should import it. */
 export const OUTBOX_FLUSH_SYNC_TAG = 'outbox-flush'
 
 export const MAIL_CACHE_HEADERS_PER_FOLDER = 75
@@ -148,6 +167,12 @@ export const ATTACHMENT_MAX_BYTES = 25 * 1024 * 1024
 
 export const OUTBOX_FLUSH_MAX_RETRIES = 5
 export const OUTBOX_INTERRUPTED_ERROR = 'interrupted'
+/** Fallback hold lifetime when the Web Locks API is unavailable. */
+export const OUTBOX_EDIT_HOLD_TTL_MS = 12 * 60 * 60 * 1000
+export const OUTBOX_SEND_TIMEOUT_MS = 60_000
+export const OUTBOX_UPLOAD_TIMEOUT_BASE_MS = 60_000
+/** Worst-case upstream throughput assumed to size upload timeouts. */
+export const OUTBOX_UPLOAD_MIN_BYTES_PER_SEC = 32 * 1024
 
 export const PERSIST_RETRY_MS = 7 * 24 * 60 * 60 * 1000
 

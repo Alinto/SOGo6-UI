@@ -25,3 +25,23 @@ export async function deleteLocalDraft(
 ): Promise<void> {
   await getOfflineDb(userId).drafts.delete(id)
 }
+
+/**
+ * Delete the local mirror only if it is not newer than `savedAt` (the time of
+ * the snapshot the server just stored). A save that finished late must not
+ * drop a newer local copy written meanwhile. Resolves true when deleted.
+ */
+export async function deleteLocalDraftIfNotNewer(
+  userId: string,
+  id: string,
+  savedAt: number
+): Promise<boolean> {
+  const db = getOfflineDb(userId)
+  return db.transaction('rw', db.drafts, async () => {
+    const existing = await db.drafts.get(id)
+    if (!existing) return false
+    if (existing.updatedAt > savedAt) return false
+    await db.drafts.delete(id)
+    return true
+  })
+}

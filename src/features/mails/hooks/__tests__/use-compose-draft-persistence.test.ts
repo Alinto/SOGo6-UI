@@ -35,16 +35,27 @@ jest.mock('../../utils/build-compose-mail-payload', () => ({
     mockBuildComposeMailPayload(...args),
 }))
 
+let mockOutboxEnabled = false
+let mockOnline = true
+const mockPersistLocalDraft = jest.fn()
+const mockDeleteLocalDraftIfNotNewer = jest.fn()
+
 jest.mock('@/features/offline/flags', () => ({
-  isPwaOutboxEnabled: () => false,
+  isPwaOutboxEnabled: () => mockOutboxEnabled,
 }))
 
 jest.mock('@/features/offline/network/probe', () => ({
-  probeNetwork: jest.fn(async () => true),
+  probeNetwork: jest.fn(async () => mockOnline),
 }))
 
 jest.mock('@/features/offline/hooks/use-offline-draft-sync', () => ({
-  persistLocalDraft: jest.fn(),
+  persistLocalDraft: (...args: unknown[]) => mockPersistLocalDraft(...args),
+}))
+
+jest.mock('@/features/offline/db/drafts-store', () => ({
+  deleteLocalDraft: jest.fn(async () => undefined),
+  deleteLocalDraftIfNotNewer: (...args: unknown[]) =>
+    mockDeleteLocalDraftIfNotNewer(...args),
 }))
 
 jest.mock('@/features/offline/auth/get-auth-token', () => ({
@@ -335,5 +346,75 @@ describe('useComposeDraftPersistence', () => {
     const { result } = renderHook(() => useComposeDraftPersistence(baseOptions))
 
     expect(result.current.isSavingDraft).toBe(true)
+  })
+
+  describe('offline local mirror', () => {
+    beforeEach(() => {
+      mockOutboxEnabled = true
+      mockOnline = true
+      mockPersistLocalDraft.mockReset()
+      mockDeleteLocalDraftIfNotNewer.mockReset()
+      mockDeleteLocalDraftIfNotNewer.mockResolvedValue(true)
+      mockDispatch.mockClear()
+      mockSaveDraft.mockClear()
+    })
+
+    afterEach(() => {
+      mockOutboxEnabled = false
+    })
+
+    it('still saves to the server when the local copy fails', async () => {
+      mockPersistLocalDraft.mockRejectedValue(new Error('QuotaExceeded'))
+      const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+      const { result } = renderHook(() =>
+        useComposeDraftPersistence({ ...baseOptions, draftId: 'draft-fail' })
+      )
+
+      await act(async () => {
+        await result.current.handleSaveDraft(false, false, false)
+        await result.current.handleSaveDraft(false, false, false)
+      })
+
+      expect(mockSaveDraft).toHaveBeenCalledTimes(2)
+      expect(mockDispatch).toHaveBeenCalledWith(
+        markDraftSaved({ draftId: 'draft-fail' })
+      )
+      expect(warn).toHaveBeenCalledTimes(1)
+      warn.mockRestore()
+    })
+
+    it('keeps the draft dirty when only the local copy was saved', async () => {
+      mockOnline = false
+      mockPersistLocalDraft.mockResolvedValue(1_000)
+      const { result } = renderHook(() =>
+        useComposeDraftPersistence(baseOptions)
+      )
+
+      await act(async () => {
+        await result.current.handleSaveDraft(false, false, false)
+      })
+
+      expect(mockSaveDraft).not.toHaveBeenCalled()
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        markDraftSaved({ draftId: 'draft-1' })
+      )
+    })
+
+    it('drops the local copy only up to the saved snapshot', async () => {
+      mockPersistLocalDraft.mockResolvedValue(1_234)
+      const { result } = renderHook(() =>
+        useComposeDraftPersistence(baseOptions)
+      )
+
+      await act(async () => {
+        await result.current.handleSaveDraft(false, false, false)
+      })
+
+      expect(mockDeleteLocalDraftIfNotNewer).toHaveBeenCalledWith(
+        'user@example.org',
+        'draft-1',
+        1_234
+      )
+    })
   })
 })

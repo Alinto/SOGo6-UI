@@ -21,6 +21,9 @@
     "update_reload": {
       "string": "Reload"
     },
+    "share_failed": {
+      "string": "The shared content could not be imported."
+    },
     "outbox_folder": {
       "string": "Outbox"
     },
@@ -74,6 +77,18 @@
     },
     "outbox_auth_required": {
       "string": "Sign in again to send messages waiting in your Outbox."
+    },
+    "outbox_flush_unknown_outcome": {
+      "string": "The connection dropped while a message was being sent. Check your Sent folder before using Send all."
+    },
+    "outbox_edit_unavailable": {
+      "string": "This message is being sent or is no longer in the Outbox."
+    },
+    "outbox_item_gone": {
+      "string": "This message is no longer in the Outbox: it was probably already sent."
+    },
+    "outbox_send_anyway": {
+      "string": "Send anyway"
     },
     "cached_data_indicator": {
       "string": "Showing cached data, may be out of date"

@@ -118,6 +118,24 @@ jest.mock('@/features/mails/components/skeletons/skeleton', () =>
   jest.fn(() => <div data-testid="mail-skeleton">Loading...</div>)
 )
 
+const mockUseOfflineMailBody = jest.fn()
+const mockForgetMail = jest.fn(async () => undefined)
+
+jest.mock('@/features/offline/hooks/use-offline-mail-body', () => ({
+  useOfflineMailBody: (args: unknown) => mockUseOfflineMailBody(args),
+}))
+
+jest.mock('@/features/offline/hooks/use-mail-cache', () => ({
+  useMailCache: () => ({
+    cacheBody: jest.fn(async () => undefined),
+    forgetMail: mockForgetMail,
+  }),
+}))
+
+jest.mock('@/features/offline/components/cached-data-indicator', () =>
+  jest.fn(() => <div data-testid="cached-indicator" />)
+)
+
 jest.mock('@/features/mails/components/mail/mail-detail-error', () => ({
   MailDetailError: jest.fn(() => (
     <div data-testid="mail-detail-error">Error</div>
@@ -141,6 +159,69 @@ describe('MailPage', () => {
 
   beforeEach(() => {
     jest.clearAllMocks()
+    mockUseOfflineMailBody.mockImplementation(({ active }) =>
+      active
+        ? { data: cachedMail, isLoading: false, cachedAt: 1_000 }
+        : { data: null, isLoading: false, cachedAt: null }
+    )
+  })
+
+  const cachedMail = {
+    id: '123',
+    from: 'sender@example.com',
+    to: ['recipient@example.com'],
+    cc: [],
+    subject: 'Cached Subject',
+    body: '<p>Cached</p>',
+    date: new Date().toISOString(),
+    isMailingList: false,
+    attachments: [],
+    seen: true,
+    flags: [],
+  }
+
+  it.each([404, 403])(
+    'does not show the cached copy when the server answers %s',
+    (status) => {
+      const { useGetMailQuery } = require('@/features/mails/store/mails-api')
+      useGetMailQuery.mockReturnValue({
+        data: undefined,
+        isLoading: false,
+        isError: true,
+        error: { status },
+      })
+
+      render(
+        <Provider store={createTestStore()}>
+          <MailPage />
+        </Provider>
+      )
+      expect(screen.getByTestId('mail-detail-error')).toBeInTheDocument()
+      expect(screen.queryByTestId('cached-indicator')).not.toBeInTheDocument()
+      if (status === 404) {
+        expect(mockForgetMail).toHaveBeenCalled()
+      } else {
+        expect(mockForgetMail).not.toHaveBeenCalled()
+      }
+    }
+  )
+
+  it('shows the cached copy with its indicator on a network error', () => {
+    const { useGetMailQuery } = require('@/features/mails/store/mails-api')
+    useGetMailQuery.mockReturnValue({
+      data: undefined,
+      isLoading: false,
+      isError: true,
+      error: { status: 'FETCH_ERROR' },
+    })
+
+    render(
+      <Provider store={createTestStore()}>
+        <MailPage />
+      </Provider>
+    )
+    expect(screen.getByTestId('cached-indicator')).toBeInTheDocument()
+    expect(screen.queryByTestId('mail-detail-error')).not.toBeInTheDocument()
   })
 
   it('should render skeleton when loading', () => {

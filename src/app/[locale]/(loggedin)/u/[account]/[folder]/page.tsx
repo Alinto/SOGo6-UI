@@ -9,7 +9,10 @@ import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
-import { useOfflineMailList } from '@/features/offline/hooks/use-offline-mail-list'
+import {
+  isCacheableListView,
+  useOfflineMailList,
+} from '@/features/offline/hooks/use-offline-mail-list'
 import { useOfflineNav } from '@/features/offline/offline-nav-context'
 import { folderLabelFromPath } from '@/features/offline/utils/cache-clock'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
@@ -31,6 +34,7 @@ const Page = () => {
   const activeFilter = searchParams.get('filter') ?? 'all'
   const {
     data,
+    currentData,
     isLoading,
     isFetching,
     isUserFetching,
@@ -51,7 +55,21 @@ const Page = () => {
     accountId: accountString,
     folderPath,
     mails: data?.mails,
-    hasError: !!error,
+    error,
+    // Only the plain first page of a real folder may feed its snapshot,
+    // and only once it answers the current arguments (`data` keeps the
+    // previous sort/page while the new one loads).
+    writeThrough:
+      currentData !== undefined &&
+      currentData === data &&
+      isCacheableListView({
+        page: data?.page ?? currentPage,
+        isSearchActive,
+        isVirtualFolder,
+        filter: searchParams.get('filter'),
+        sort: searchParams.get('sort'),
+      }),
+    isComplete: data?.hasNextPage === false,
   })
 
   useEffect(() => {
@@ -106,6 +124,7 @@ const Page = () => {
           className="px-4 py-2"
           asOf={cachedAt}
           folder={folderLabelFromPath(folderPath)}
+          showOnline
         />
         <MessagesList
           items={offlineFiltered}

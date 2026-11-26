@@ -17,9 +17,14 @@ export async function saveCachedFolders(
 
 export async function getCachedFolders(
   userId: string,
-  accountId: string
+  accountId: string,
+  now = Date.now()
 ): Promise<CachedFolderRecord | undefined> {
-  return getOfflineDb(userId).cachedFolders.get(`${userId}:${accountId}`)
+  const row = await getOfflineDb(userId).cachedFolders.get(
+    `${userId}:${accountId}`
+  )
+  if (!row || row.updatedAt < now - MAIL_CACHE_TTL_MS) return undefined
+  return row
 }
 
 function mailDateMs(date: string): number {
@@ -33,9 +38,26 @@ function sortHeadersByMailDateDesc(
   return [...rows].sort((a, b) => mailDateMs(b.date) - mailDateMs(a.date))
 }
 
+export interface SaveMailHeadersOptions {
+  /**
+   * The incoming rows are the whole folder (last page reached): every cached
+   * row missing from them is gone from the server.
+   */
+  complete?: boolean
+}
+
+/**
+ * Merge the newest page of a folder into its cached snapshot.
+ * Rows dated within the range covered by `headers` (from their oldest date
+ * up) that are not in `headers` were deleted or moved on the server: they
+ * are dropped, with their cached body. Older rows are kept, then the folder
+ * is capped to its MAIL_CACHE_HEADERS_PER_FOLDER most recent mails.
+ * `headers` must be the first page of the folder sorted newest first.
+ */
 export async function saveMailHeaders(
   userId: string,
-  headers: CachedMailHeaderRecord[]
+  headers: CachedMailHeaderRecord[],
+  options: SaveMailHeadersOptions = {}
 ): Promise<void> {
   const db = getOfflineDb(userId)
   const folders = new Map<string, CachedMailHeaderRecord[]>()
@@ -46,35 +68,76 @@ export async function saveMailHeaders(
     folders.set(key, rows)
   }
 
-  await db.transaction('rw', db.cachedMailHeaders, async () => {
-    for (const [, folderHeaders] of folders) {
-      const accountId = folderHeaders[0]!.accountId
-      const folderPath = folderHeaders[0]!.folderPath
-      const incoming = sortHeadersByMailDateDesc(folderHeaders).slice(
-        0,
-        MAIL_CACHE_HEADERS_PER_FOLDER
-      )
-      await db.cachedMailHeaders
-        .where('[userId+accountId+folderPath]')
-        .equals([userId, accountId, folderPath])
-        .delete()
-      if (incoming.length) {
-        await db.cachedMailHeaders.bulkPut(incoming)
+  await db.transaction(
+    'rw',
+    db.cachedMailHeaders,
+    db.cachedMailBodies,
+    async () => {
+      for (const [, folderHeaders] of folders) {
+        const accountId = folderHeaders[0]!.accountId
+        const folderPath = folderHeaders[0]!.folderPath
+        const incomingIds = new Set(folderHeaders.map((h) => h.id))
+        const oldestIncoming = Math.min(
+          ...folderHeaders.map((h) => mailDateMs(h.date))
+        )
+        const existing = await db.cachedMailHeaders
+          .where('[userId+accountId+folderPath]')
+          .equals([userId, accountId, folderPath])
+          .toArray()
+
+        const goneIds: string[] = []
+        const kept: CachedMailHeaderRecord[] = []
+        for (const row of existing) {
+          if (incomingIds.has(row.id)) continue
+          if (options.complete || mailDateMs(row.date) >= oldestIncoming) {
+            goneIds.push(row.id)
+          } else {
+            kept.push(row)
+          }
+        }
+
+        const merged = sortHeadersByMailDateDesc([...folderHeaders, ...kept])
+        const retained = merged.slice(0, MAIL_CACHE_HEADERS_PER_FOLDER)
+        const evictedIds = merged
+          .slice(MAIL_CACHE_HEADERS_PER_FOLDER)
+          .filter((row) => !incomingIds.has(row.id))
+          .map((row) => row.id)
+        const retainedIncoming = retained.filter((row) =>
+          incomingIds.has(row.id)
+        )
+
+        if (goneIds.length || evictedIds.length) {
+          await db.cachedMailHeaders.bulkDelete([...goneIds, ...evictedIds])
+        }
+        // Header and body share the same id: a mail gone from the server
+        // must not stay readable from the cache.
+        if (goneIds.length) {
+          await db.cachedMailBodies.bulkDelete(goneIds)
+        }
+        if (retainedIncoming.length) {
+          await db.cachedMailHeaders.bulkPut(retainedIncoming)
+        }
       }
     }
-  })
+  )
+}
+
+function ttlCutoff(now = Date.now()): number {
+  return now - MAIL_CACHE_TTL_MS
 }
 
 export async function listCachedMailHeaders(
   userId: string,
   accountId: string,
-  folderPath: string
+  folderPath: string,
+  now = Date.now()
 ): Promise<CachedMailHeaderRecord[]> {
+  const cutoff = ttlCutoff(now)
   const rows = await getOfflineDb(userId)
     .cachedMailHeaders.where('[userId+accountId+folderPath]')
     .equals([userId, accountId, folderPath])
     .toArray()
-  return sortHeadersByMailDateDesc(rows)
+  return sortHeadersByMailDateDesc(rows.filter((r) => r.updatedAt >= cutoff))
 }
 
 export async function getFolderHeadersCachedAt(
@@ -103,31 +166,50 @@ export async function saveMailBody(
   const db = getOfflineDb(record.userId)
   await db.cachedMailBodies.put(record)
 
-  const all = await db.cachedMailBodies
-    .where('userId')
-    .equals(record.userId)
-    .toArray()
-  all.sort((a, b) => b.lastAccessedAt - a.lastAccessedAt)
-  const excess = all.slice(MAIL_CACHE_BODIES_MAX)
-  if (excess.length) {
-    await db.cachedMailBodies.bulkDelete(excess.map((b) => b.id))
+  // One database per user: the whole table is this user's bodies.
+  const count = await db.cachedMailBodies.count()
+  const excess = count - MAIL_CACHE_BODIES_MAX
+  if (excess > 0) {
+    const leastRecent = await db.cachedMailBodies
+      .orderBy('lastAccessedAt')
+      .limit(excess)
+      .primaryKeys()
+    await db.cachedMailBodies.bulkDelete(leastRecent)
   }
 }
 
 export async function getMailBody(
   userId: string,
-  id: string
+  id: string,
+  now = Date.now()
 ): Promise<CachedMailBodyRecord | undefined> {
   const db = getOfflineDb(userId)
   const body = await db.cachedMailBodies.get(id)
   if (!body) return undefined
-  const now = Date.now()
-  if (now - body.updatedAt > MAIL_CACHE_TTL_MS) {
+  if (body.updatedAt < ttlCutoff(now)) {
     await db.cachedMailBodies.delete(id)
     return undefined
   }
-  await db.cachedMailBodies.put({ ...body, lastAccessedAt: now })
+  // Touch only the LRU key, not the whole (possibly large) payload.
+  await db.cachedMailBodies.update(id, { lastAccessedAt: now })
   return { ...body, lastAccessedAt: now }
+}
+
+/** Forget one mail (header + body), e.g. the server says it is gone. */
+export async function deleteCachedMail(
+  userId: string,
+  id: string
+): Promise<void> {
+  const db = getOfflineDb(userId)
+  await db.transaction(
+    'rw',
+    db.cachedMailHeaders,
+    db.cachedMailBodies,
+    async () => {
+      await db.cachedMailHeaders.delete(id)
+      await db.cachedMailBodies.delete(id)
+    }
+  )
 }
 
 export async function saveMetaIdentities(
@@ -137,28 +219,40 @@ export async function saveMetaIdentities(
 }
 
 export async function getMetaIdentities(
-  userId: string
+  userId: string,
+  now = Date.now()
 ): Promise<MetaIdentityRecord | undefined> {
-  return getOfflineDb(userId).metaIdentities.get(userId)
+  const row = await getOfflineDb(userId).metaIdentities.get(userId)
+  if (!row || row.updatedAt < now - MAIL_CACHE_TTL_MS) return undefined
+  return row
 }
 
-export async function purgeExpiredCache(userId: string): Promise<void> {
+/**
+ * Drop every cached read-only record older than the TTL: bodies, headers,
+ * folder trees, identities and the calendar snapshot. Local drafts (unsaved
+ * user content) and the kv flags are left alone.
+ */
+export async function purgeExpiredCache(
+  userId: string,
+  now = Date.now()
+): Promise<void> {
   const db = getOfflineDb(userId)
-  const cutoff = Date.now() - MAIL_CACHE_TTL_MS
-  const bodies = await db.cachedMailBodies
-    .where('userId')
-    .equals(userId)
-    .filter((b) => b.updatedAt < cutoff)
-    .toArray()
-  if (bodies.length) {
-    await db.cachedMailBodies.bulkDelete(bodies.map((b) => b.id))
-  }
-  const headers = await db.cachedMailHeaders
-    .where('userId')
-    .equals(userId)
-    .filter((h) => h.updatedAt < cutoff)
-    .toArray()
-  if (headers.length) {
-    await db.cachedMailHeaders.bulkDelete(headers.map((h) => h.id))
-  }
+  const cutoff = ttlCutoff(now)
+  await db.transaction(
+    'rw',
+    [
+      db.cachedMailBodies,
+      db.cachedMailHeaders,
+      db.cachedFolders,
+      db.metaIdentities,
+      db.cachedCalendarEvents,
+    ],
+    async () => {
+      await db.cachedMailBodies.where('updatedAt').below(cutoff).delete()
+      await db.cachedMailHeaders.where('updatedAt').below(cutoff).delete()
+      await db.cachedFolders.where('updatedAt').below(cutoff).delete()
+      await db.metaIdentities.where('updatedAt').below(cutoff).delete()
+      await db.cachedCalendarEvents.where('updatedAt').below(cutoff).delete()
+    }
+  )
 }

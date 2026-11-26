@@ -8,7 +8,9 @@ if (typeof globalThis.structuredClone !== 'function') {
     JSON.parse(JSON.stringify(value)) as T
 }
 
+import { MAIL_CACHE_TTL_MS } from '../../types'
 import {
+  getCachedCalendarEvents,
   listCachedCalendarEvents,
   saveCalendarEvents,
 } from '../calendar-cache-store'
@@ -42,5 +44,13 @@ describe('calendar-cache-store', () => {
     const rows = await listCachedCalendarEvents(userId)
     expect(rows).toHaveLength(1)
     expect(rows[0]?.title).toBe('Standup')
+  })
+
+  it('hides a snapshot older than the cache TTL', async () => {
+    await saveCalendarEvents(userId, 'a', 'b', [])
+    const later = Date.now() + MAIL_CACHE_TTL_MS + 1
+    expect(await getCachedCalendarEvents(userId, later)).toBeUndefined()
+    expect(await listCachedCalendarEvents(userId, later)).toEqual([])
+    expect(await getCachedCalendarEvents(userId)).toBeDefined()
   })
 })

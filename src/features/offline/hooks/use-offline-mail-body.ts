@@ -14,41 +14,58 @@ interface UseOfflineMailBodyArgs {
 
 /**
  * Read a previously opened mail body from the offline cache.
- * Returns null data when the mail was never cached ("unavailable offline").
+ * Returns null data when the mail was never cached ("unavailable offline");
+ * `cachedAt` is when the cached copy was stored.
  */
 export function useOfflineMailBody<T>({
   accountId,
   folderPath,
   mailId,
   active,
-}: UseOfflineMailBodyArgs): { data: T | null; isLoading: boolean } {
+}: UseOfflineMailBodyArgs): {
+  data: T | null
+  isLoading: boolean
+  cachedAt: number | null
+} {
   const cacheKey = `${accountId}:${folderPath}:${mailId}`
   const [result, setResult] = useState<{
     key: string
     payload: unknown
+    cachedAt: number | null
   } | null>(null)
-  const { readBody } = useMailCache()
+  const { readBodyEntry } = useMailCache()
 
   const enabled = active && isPwaMailCacheEnabled()
 
   useEffect(() => {
     if (!enabled) return
     let cancelled = false
-    void readBody(accountId, folderPath, mailId).then((payload) => {
-      if (cancelled) return
-      setResult({
-        key: `${accountId}:${folderPath}:${mailId}`,
-        payload: payload ?? null,
+    const key = `${accountId}:${folderPath}:${mailId}`
+    readBodyEntry(accountId, folderPath, mailId)
+      .catch((error: unknown) => {
+        console.warn('[offline] could not read cached mail', error)
+        return null
       })
-    })
+      .then((entry) => {
+        if (cancelled) return
+        setResult({
+          key,
+          payload: entry?.payload ?? null,
+          cachedAt: entry?.cachedAt ?? null,
+        })
+      })
     return () => {
       cancelled = true
     }
-  }, [enabled, accountId, folderPath, mailId, readBody])
+  }, [enabled, accountId, folderPath, mailId, readBodyEntry])
 
-  if (!enabled) return { data: null, isLoading: false }
+  if (!enabled) return { data: null, isLoading: false, cachedAt: null }
   if (!result || result.key !== cacheKey) {
-    return { data: null, isLoading: true }
+    return { data: null, isLoading: true, cachedAt: null }
   }
-  return { data: (result.payload as T) ?? null, isLoading: false }
+  return {
+    data: (result.payload as T) ?? null,
+    isLoading: false,
+    cachedAt: result.payload ? result.cachedAt : null,
+  }
 }

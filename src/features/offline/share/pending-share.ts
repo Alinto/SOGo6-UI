@@ -9,6 +9,23 @@ export const SHARE_SESSION_KEY = 'sogo_pending_share'
 const STORE = 'share'
 const RECORD_ID = 'latest'
 
+/**
+ * A share is stored before login (no user yet): one left unconsumed must not
+ * surface in a later session, possibly another user's.
+ */
+export const PENDING_SHARE_TTL_MS = 10 * 60 * 1000
+
+export function isPendingShareFresh(
+  createdAt: unknown,
+  now: number = Date.now()
+): boolean {
+  if (typeof createdAt !== 'number' || !Number.isFinite(createdAt)) {
+    return false
+  }
+  const age = now - createdAt
+  return age >= 0 && age <= PENDING_SHARE_TTL_MS
+}
+
 export function capShareFiles<T extends { size: number }>(files: T[]): T[] {
   const kept: T[] = []
   let bytes = 0
@@ -69,6 +86,7 @@ export function consumeShareSession(): PendingShareRecord | null {
     if (!raw) return null
     sessionStorage.removeItem(SHARE_SESSION_KEY)
     const parsed = JSON.parse(raw) as Partial<PendingShareRecord>
+    if (!isPendingShareFresh(parsed.createdAt)) return null
     return {
       id: RECORD_ID,
       to: String(parsed.to ?? ''),
@@ -76,7 +94,7 @@ export function consumeShareSession(): PendingShareRecord | null {
       body: String(parsed.body ?? ''),
       url: String(parsed.url ?? ''),
       files: [],
-      createdAt: Date.now(),
+      createdAt: parsed.createdAt as number,
     }
   } catch {
     return null
@@ -101,7 +119,7 @@ export async function consumePendingShare(): Promise<PendingShareRecord | null> 
           getReq.onerror = () => reject(getReq.error)
         }
       )
-      if (record) return record
+      if (record && isPendingShareFresh(record.createdAt)) return record
     } finally {
       db.close()
     }

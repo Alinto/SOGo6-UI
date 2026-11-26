@@ -15,12 +15,16 @@ import {
   upsertLocalDraft,
 } from '../drafts-store'
 import {
+  claimOutboxForSend,
+  clearOutboxEditHold,
   countPendingOutbox,
   deleteOutboxItem,
   getOutboxAttachments,
+  getOutboxItem,
   listOutbox,
+  markOutboxAttachmentUploaded,
   putOutboxWithAttachments,
-  upsertOutboxItem,
+  setOutboxEditHold,
 } from '../outbox-store'
 import { wipeOfflineUserData } from '../wipe'
 
@@ -92,7 +96,7 @@ describe('offline-db stores', () => {
   })
 
   it('CRUD outbox and pending count', async () => {
-    await upsertOutboxItem(outbox())
+    await putOutboxWithAttachments(outbox(), [])
     expect(await countPendingOutbox(userId)).toBe(1)
     const items = await listOutbox(userId)
     expect(items[0]?.status).toBe('pending')
@@ -102,7 +106,7 @@ describe('offline-db stores', () => {
 
   it('wipe removes all user data', async () => {
     await upsertLocalDraft(draft())
-    await upsertOutboxItem(outbox())
+    await putOutboxWithAttachments(outbox(), [])
     await wipeOfflineUserData(userId)
     expect(await listLocalDrafts(userId)).toHaveLength(0)
     expect(await listOutbox(userId)).toHaveLength(0)
@@ -157,5 +161,60 @@ describe('offline-db stores', () => {
     expect(items[0]?.subject).toBe('Updated')
     const attachments = await getOutboxAttachments(userId, 'out-1')
     expect(attachments.map((attachment) => attachment.id)).toEqual(['new'])
+  })
+
+  it('deletes an outbox row and its blobs together', async () => {
+    await putOutboxWithAttachments(outbox({ attachmentIds: ['a1'] }), [
+      {
+        id: 'a1',
+        outboxId: 'out-1',
+        name: 'a.txt',
+        size: 1,
+        type: 'text/plain',
+        blob: new Blob(['a']),
+      },
+    ])
+    await deleteOutboxItem(userId, 'out-1')
+    expect(await listOutbox(userId)).toHaveLength(0)
+    expect(await getOutboxAttachments(userId, 'out-1')).toHaveLength(0)
+  })
+
+  it('refuses an edit hold while the item is sending', async () => {
+    await putOutboxWithAttachments(outbox({ status: 'sending' }), [])
+    expect(await setOutboxEditHold(userId, 'out-1')).toBeNull()
+    expect(await setOutboxEditHold(userId, 'missing')).toBeNull()
+  })
+
+  it('does not claim an item held for edit after the snapshot', async () => {
+    await putOutboxWithAttachments(outbox(), [])
+    const snapshot = (await getOutboxItem(userId, 'out-1'))!
+    const held = await setOutboxEditHold(userId, 'out-1')
+    expect(held?.editHeldAt).toEqual(expect.any(Number))
+
+    expect(await claimOutboxForSend(userId, snapshot, () => true)).toBeNull()
+    expect((await getOutboxItem(userId, 'out-1'))?.status).toBe('pending')
+
+    await clearOutboxEditHold(userId, 'out-1')
+    const fresh = (await getOutboxItem(userId, 'out-1'))!
+    const claimed = await claimOutboxForSend(userId, fresh, () => true)
+    expect(claimed?.status).toBe('sending')
+  })
+
+  it('persists upload progress and the server draft key', async () => {
+    await putOutboxWithAttachments(outbox({ attachmentIds: ['a1'] }), [
+      {
+        id: 'a1',
+        outboxId: 'out-1',
+        name: 'a.txt',
+        size: 1,
+        type: 'text/plain',
+        blob: new Blob(['a']),
+      },
+    ])
+    await markOutboxAttachmentUploaded(userId, 'out-1', 'a1', 'key-1')
+    expect((await getOutboxItem(userId, 'out-1'))?.mailKey).toBe('key-1')
+    expect((await getOutboxAttachments(userId, 'out-1'))[0]?.uploaded).toBe(
+      true
+    )
   })
 })

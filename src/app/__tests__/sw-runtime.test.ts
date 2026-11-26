@@ -7,6 +7,7 @@ import {
   offlineFallbackPath,
   offlineLoginPath,
   shareLocaleFromPathname,
+  stripEnvSecrets,
 } from '../sw-runtime'
 
 describe('isNavigationRequest', () => {
@@ -128,5 +129,26 @@ describe('shareLocaleFromPathname', () => {
     expect(shareLocaleFromPathname('/fr/share')).toBe('en')
     expect(shareLocaleFromPathname('/share')).toBe('en')
     expect(shareLocaleFromPathname('/xx/share')).toBe('en')
+  })
+})
+
+describe('stripEnvSecrets', () => {
+  it('drops the login prefill password and keeps boot config', () => {
+    expect(
+      stripEnvSecrets({
+        REACT_APP_API_BASE_URL: '/api',
+        LOGIN_PREFILL_EMAIL: 'qa@example.org',
+        LOGIN_PREFILL_PASSWORD: 'secret',
+      })
+    ).toEqual({
+      REACT_APP_API_BASE_URL: '/api',
+      LOGIN_PREFILL_EMAIL: 'qa@example.org',
+    })
+  })
+
+  it('rejects non-object payloads', () => {
+    expect(stripEnvSecrets(null)).toBeNull()
+    expect(stripEnvSecrets([])).toBeNull()
+    expect(stripEnvSecrets('x')).toBeNull()
   })
 })

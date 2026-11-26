@@ -29,7 +29,13 @@ describe('PWA smoke assets', () => {
 })
 
 describe('PWA manifest start_url', () => {
+  const previousFlag = process.env.NEXT_PUBLIC_PWA_ENABLED
+  afterEach(() => {
+    process.env.NEXT_PUBLIC_PWA_ENABLED = previousFlag
+  })
+
   it('prefixes start_url and shortcuts with the default locale', async () => {
+    process.env.NEXT_PUBLIC_PWA_ENABLED = 'true'
     const { default: manifest } = await import('@/app/manifest')
     const { pwaStartUrl } = await import('../pwa-start-url')
 
@@ -50,5 +56,14 @@ describe('PWA manifest start_url', () => {
       (m as { protocol_handlers?: { protocol: string }[] })
         .protocol_handlers?.[0]?.protocol
     ).toBe('mailto')
+  })
+
+  it('does not advertise share target or mailto handler when the PWA is off', async () => {
+    process.env.NEXT_PUBLIC_PWA_ENABLED = 'false'
+    const { default: manifest } = await import('@/app/manifest')
+    const m = manifest() as Record<string, unknown>
+    expect(m.share_target).toBeUndefined()
+    expect(m.protocol_handlers).toBeUndefined()
+    expect(m.start_url).toBe('/en/u/0/INBOX')
   })
 })

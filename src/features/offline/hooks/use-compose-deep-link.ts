@@ -5,10 +5,13 @@ import { createDraft } from '@/features/mails/store/mail-compose-slice'
 import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { createClientId } from '@/lib/utils/create-client-id'
+import { useTranslations } from 'next-intl'
 import { useSearchParams } from 'next/navigation'
 import { useEffect } from 'react'
+import { toast } from 'sonner'
 import { parseMailto } from '../share/parse-mailto'
 import { consumePendingShare } from '../share/pending-share'
+import { plainTextToHtml } from '../share/plain-text-to-html'
 
 function filesToAttachments(
   draftId: string,
@@ -33,11 +36,13 @@ export function useComposeDeepLink() {
   const searchParams = useSearchParams()
   const pathname = usePathname()
   const { replace } = useRouter()
+  const t = useTranslations('PWA')
 
   useEffect(() => {
     const compose = searchParams.get('compose') === '1'
     const share = searchParams.get('share') === '1'
     const mailtoRaw = searchParams.get('mailto')
+    const shareError = searchParams.get('share_error') === '1'
     if (!compose && !share && !mailtoRaw) return
 
     let cancelled = false
@@ -80,13 +85,16 @@ export function useComposeDeepLink() {
 
       if (cancelled) return
 
+      if (shareError) toast.error(t('share_failed.string'))
+
       dispatch(
         createDraft({
           draftId,
           initialData: {
             to,
             subject,
-            body,
+            // Deep-link / share text is plain text; the editor expects HTML.
+            body: plainTextToHtml(body),
             attachments,
           },
         })
@@ -96,6 +104,7 @@ export function useComposeDeepLink() {
       params.delete('compose')
       params.delete('share')
       params.delete('mailto')
+      params.delete('share_error')
       params.delete('to')
       params.delete('subject')
       params.delete('body')
@@ -106,5 +115,5 @@ export function useComposeDeepLink() {
     return () => {
       cancelled = true
     }
-  }, [dispatch, pathname, replace, searchParams])
+  }, [dispatch, pathname, replace, searchParams, t])
 }

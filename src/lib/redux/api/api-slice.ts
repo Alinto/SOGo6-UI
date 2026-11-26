@@ -125,6 +125,8 @@ export const API_LONG_FETCH_TIMEOUT_MS = 120_000
 const PUBLIC_AUTH_ENDPOINTS = new Set(['getSystem', 'getAuthMode', 'login'])
 
 let sessionRedirectStarted = false
+/** Token whose 401 started the redirect; a new token means a new session. */
+let sessionEndedToken: string | null = null
 
 function navigateToLogin(href: string) {
   if (typeof window === 'undefined') return
@@ -133,6 +135,18 @@ function navigateToLogin(href: string) {
 }
 
 const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
+  const requestToken =
+    (api?.getState?.() as RootState | undefined)?.auth?.token ?? null
+  // Logged in again in the same page: later 401s must end this session too.
+  if (
+    sessionRedirectStarted &&
+    requestToken &&
+    requestToken !== sessionEndedToken
+  ) {
+    sessionRedirectStarted = false
+    sessionEndedToken = null
+  }
+
   if (!cachedBaseUrl) {
     try {
       const envVars = await Promise.race([
@@ -192,8 +206,17 @@ const dynamicBaseQuery: BaseQueryFn = async (args, api, extraOptions) => {
       ? (result.error as { status?: unknown } | undefined)?.status
       : undefined
 
-  if (!sessionRedirectStarted && shouldEndSession(api.endpoint, status)) {
+  // A late 401 for a request sent with a previous session's token must not
+  // end the session opened since.
+  const currentToken =
+    (api?.getState?.() as RootState | undefined)?.auth?.token ?? null
+  if (
+    !sessionRedirectStarted &&
+    requestToken === currentToken &&
+    shouldEndSession(api.endpoint, status)
+  ) {
     sessionRedirectStarted = true
+    sessionEndedToken = requestToken
     api.dispatch(logout())
     // Full-page navigation: let the logout listener finish wiping offline data first.
     void waitForLogoutWipe().finally(() =>

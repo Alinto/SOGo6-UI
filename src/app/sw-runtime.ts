@@ -85,3 +85,29 @@ export function filterPrecacheEntries<T extends string | { url: string }>(
     return !isBrokenPrecacheUrl(url)
   })
 }
+
+/** Runtime caches created by `sw.ts` (precache lives under `serwist-precache-*`). */
+export const SW_RUNTIME_CACHES = {
+  ckeditor: 'ckeditor-assets',
+  nextStatic: 'next-static',
+  images: 'static-images',
+  manifest: 'manifest',
+  env: 'env',
+} as const
+
+/** Removed runtime cache (login HTML was CacheFirst for 7 days, unversioned). */
+export const LEGACY_PAGES_CACHE = 'pages'
+
+/** `/env` fields that must never be written to Cache Storage. */
+const ENV_SECRET_KEYS = ['LOGIN_PREFILL_PASSWORD'] as const
+
+/**
+ * Copy of the `/env` payload safe to persist for offline cold boot:
+ * the staging login prefill password stays network-only.
+ */
+export function stripEnvSecrets(data: unknown): Record<string, unknown> | null {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null
+  const copy: Record<string, unknown> = { ...(data as Record<string, unknown>) }
+  for (const key of ENV_SECRET_KEYS) delete copy[key]
+  return copy
+}
