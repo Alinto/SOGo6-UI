@@ -235,7 +235,7 @@
           "string": "MFA Methods Available"
         },
         "description": {
-          "string": "Choose password recovery method available for users"
+          "string": "Choose the MFA methods available for users"
         },
         "developer_comment": ""
       },
@@ -245,6 +245,69 @@
         },
         "description": {
           "string": "Force users to set up MFA"
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_TOTP_ISSUER": {
+        "name": {
+          "string": "MFA TOTP Issuer"
+        },
+        "description": {
+          "string": "Name shown in the authenticator app of the users (e.g. the name of your organization)."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_VERIFY_TTL": {
+        "name": {
+          "string": "MFA Code Delay"
+        },
+        "description": {
+          "string": "Seconds a user has to type the code after the password (60 to 900)."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_ENROLL_TTL": {
+        "name": {
+          "string": "MFA Setup Delay"
+        },
+        "description": {
+          "string": "Seconds a user has to set up a method: scan the QR code and confirm with a code (300 to 1800)."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_MAX_ATTEMPTS": {
+        "name": {
+          "string": "MFA Attempts Per Login"
+        },
+        "description": {
+          "string": "Wrong codes allowed per login before the user must type the password again (1 to 10)."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_RL_USER_MAX": {
+        "name": {
+          "string": "MFA Wrong Codes Per User"
+        },
+        "description": {
+          "string": "Wrong codes allowed per user during the window below, then the user is blocked until it ends (3 to 50)."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_RL_USER_WINDOW": {
+        "name": {
+          "string": "MFA Wrong Codes Window"
+        },
+        "description": {
+          "string": "Window of the per user limit, in seconds (60 to 3600)."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_LOGIN_MFA_RL_USER_DAILY_MAX": {
+        "name": {
+          "string": "MFA Wrong Codes Per Day"
+        },
+        "description": {
+          "string": "Wrong codes allowed per user in 24 hours, then the user is blocked until the counter expires or an admin resets the MFA of the user (10 to 200)."
         },
         "developer_comment": ""
       },
@@ -876,7 +939,7 @@
         "description": {
           "string": "Set the kind of mail server"
         },
-        "developer_comment": "" 
+        "developer_comment": ""
       },
       "SOGO_D_IMAP_SERVER": {
         "name": {
@@ -1164,7 +1227,7 @@
         "description": {
           "string": "Set the kind of outgoing mail server"
         },
-        "developer_comment": "" 
+        "developer_comment": ""
       },
       "SOGO_D_SMTP_SERVER": {
         "name": {
@@ -1283,8 +1346,6 @@
         },
         "developer_comment": ""
       }
-
-      
     }
   }
 }

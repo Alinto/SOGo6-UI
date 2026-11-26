@@ -6,6 +6,12 @@
         "context": "Label of the field for a code from the authenticator app"
       }
     },
+    "password": {
+      "label": {
+        "string": "Password",
+        "context": "Label of the field for the account password, asked before setting up the first MFA method"
+      }
+    },
     "back_to_login": {
       "string": "Back to login",
       "context": "Button to leave the second login step"
@@ -77,6 +83,9 @@
       "replace": {
         "string": "Replace with {method}"
       },
+      "password": {
+        "string": "Enter your password to set up two-factor authentication."
+      },
       "disable": {
         "string": "Disable",
         "context": "Button to remove the MFA method"
@@ -98,6 +107,10 @@
       },
       "disabled_ok": {
         "string": "Two-factor authentication is disabled."
+      },
+      "sessions_revoked": {
+        "string": "Your other sessions have been logged out.",
+        "context": "Shown after enabling, replacing or disabling MFA: the backend revokes every other session of the user"
       }
     },
     "error": {
@@ -121,6 +134,15 @@
       },
       "code_required": {
         "string": "A code from your current method is required."
+      },
+      "password_required": {
+        "string": "Your password is required to set up two-factor authentication."
+      },
+      "password_invalid": {
+        "string": "Invalid password."
+      },
+      "secret_unreadable": {
+        "string": "Your two-factor authentication method can no longer be read. Please contact your administrator."
       }
     }
   }

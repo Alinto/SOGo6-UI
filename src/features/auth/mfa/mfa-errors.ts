@@ -13,6 +13,8 @@ export const MFA_ERROR = {
   NOT_SET: 'S000217',
   CODE_REQUIRED: 'S000218',
   SECRET_UNREADABLE: 'S000219',
+  PASSWORD_REQUIRED: 'S000220',
+  PASSWORD_INVALID: 'S000221',
 } as const
 
 const ERROR_KEYS: Record<string, string> = {
@@ -22,6 +24,9 @@ const ERROR_KEYS: Record<string, string> = {
   [MFA_ERROR.ENFORCED]: 'error.enforced.string',
   [MFA_ERROR.NO_PENDING_ENROLLMENT]: 'error.no_pending_enrollment.string',
   [MFA_ERROR.CODE_REQUIRED]: 'error.code_required.string',
+  [MFA_ERROR.SECRET_UNREADABLE]: 'error.secret_unreadable.string',
+  [MFA_ERROR.PASSWORD_REQUIRED]: 'error.password_required.string',
+  [MFA_ERROR.PASSWORD_INVALID]: 'error.password_invalid.string',
 }
 
 /** Translation key (namespace MFA) for an error of an MFA endpoint */

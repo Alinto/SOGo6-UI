@@ -48,7 +48,10 @@ export interface MfaEnrollBeginData {
 
 export interface MfaEnrollBeginRequest {
   provider?: string
+  /** Code of the current method, required to replace it */
   code?: string
+  /** Password of the user, required for the first method from a user session (not in the forced enrollment) */
+  password?: string
 }
 
 export interface MfaEnrollBeginResponse {

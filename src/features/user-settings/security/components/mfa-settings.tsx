@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button'
 import LabelsFormSkeleton from '@/components/ui/skeletons/inputs'
 import type { MfaEnrollBeginData } from '@/features/auth/components/store/auth.api'
 import MfaCodeForm from '@/features/auth/mfa/mfa-code-form'
-import { mfaErrorKey } from '@/features/auth/mfa/mfa-errors'
+import { MFA_ERROR, mfaErrorKey } from '@/features/auth/mfa/mfa-errors'
+import MfaPasswordForm from '@/features/auth/mfa/mfa-password-form'
 import MfaSetupStep from '@/features/auth/mfa/mfa-setup-step'
+import { getErrorCode } from '@/lib/redux/api/error-handlers'
 import { useTranslations } from 'next-intl'
 import React from 'react'
 import {
@@ -17,12 +19,14 @@ import {
 
 /**
  * - idle: show the state and the actions
+ * - password: first method, ask the password first (required by the backend)
  * - current_code: the user replaces a method, ask the code of the current one first
  * - setup: QR code + secret, ask one code to confirm
  * - disable: ask the current code to remove the method
  */
 type Step =
   | { kind: 'idle' }
+  | { kind: 'password'; provider: string }
   | { kind: 'current_code'; provider: string }
   | { kind: 'setup'; setup: MfaEnrollBeginData }
   | { kind: 'disable' }
@@ -47,26 +51,37 @@ export function MfaSettings() {
     setError(null)
   }
 
-  const start = async (provider: string, currentCode?: string) => {
+  // Proof required by the backend: the code of the current method to replace it,
+  // the password to set up the first one
+  const start = async (
+    provider: string,
+    proof: { code?: string; password?: string }
+  ) => {
     setError(null)
     setInfo(null)
     try {
-      const result = await beginSetup({ provider, code: currentCode }).unwrap()
+      const result = await beginSetup({ provider, ...proof }).unwrap()
       setStep({ kind: 'setup', setup: result.data })
     } catch (err: unknown) {
+      const code = getErrorCode(err)
+      if (code === MFA_ERROR.PASSWORD_REQUIRED) {
+        setStep({ kind: 'password', provider })
+      } else if (code === MFA_ERROR.CODE_REQUIRED) {
+        // A method was set up meanwhile (e.g. from another session)
+        setStep({ kind: 'current_code', provider })
+      }
       setError(t(mfaErrorKey(err)))
     }
   }
 
   const onChooseMethod = (provider: string) => {
-    // Replacing a method requires a code of the current one
-    if (status?.method) {
-      setError(null)
-      setInfo(null)
-      setStep({ kind: 'current_code', provider })
-    } else {
-      start(provider)
-    }
+    setError(null)
+    setInfo(null)
+    setStep(
+      status?.method
+        ? { kind: 'current_code', provider }
+        : { kind: 'password', provider }
+    )
   }
 
   const onConfirm = async (code: string) => {
@@ -74,7 +89,10 @@ export function MfaSettings() {
     try {
       await confirmSetup({ code }).unwrap()
       setStep({ kind: 'idle' })
-      setInfo(t('settings.enabled_ok.string'))
+      // The backend revokes the other sessions of the user
+      setInfo(
+        `${t('settings.enabled_ok.string')} ${t('settings.sessions_revoked.string')}`
+      )
     } catch (err: unknown) {
       setError(t(mfaErrorKey(err)))
     }
@@ -85,7 +103,9 @@ export function MfaSettings() {
     try {
       await disableMfa({ code }).unwrap()
       setStep({ kind: 'idle' })
-      setInfo(t('settings.disabled_ok.string'))
+      setInfo(
+        `${t('settings.disabled_ok.string')} ${t('settings.sessions_revoked.string')}`
+      )
     } catch (err: unknown) {
       setError(t(mfaErrorKey(err)))
     }
@@ -111,13 +131,25 @@ export function MfaSettings() {
         isLoading={isConfirming}
       />
     )
+  } else if (step.kind === 'password') {
+    body = (
+      <div className="grid gap-2">
+        <p className="text-sm">{t('settings.password.string')}</p>
+        <MfaPasswordForm
+          id="mfa-password"
+          onSubmit={(password) => start(step.provider, { password })}
+          isLoading={isStarting}
+          submitLabel={t('settings.continue.string')}
+        />
+      </div>
+    )
   } else if (step.kind === 'current_code') {
     body = (
       <div className="grid gap-2">
         <p className="text-sm">{t('settings.current_code.string')}</p>
         <MfaCodeForm
           id="mfa-current-code"
-          onSubmit={(code) => start(step.provider, code)}
+          onSubmit={(code) => start(step.provider, { code })}
           isLoading={isStarting}
           submitLabel={t('settings.continue.string')}
         />
