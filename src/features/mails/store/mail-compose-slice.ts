@@ -84,6 +84,8 @@ const mailComposeSlice = createSlice({
         draftId: string
         inReplyTo?: string
         forwardOf?: string
+        /** Content not yet on the server (e.g. restored local mirror). */
+        markDirty?: boolean
         initialData?: Partial<
           Omit<
             MailComposeDraft,
@@ -94,7 +96,8 @@ const mailComposeSlice = createSlice({
     ) => {
       if (state.openDraftIds.length >= MAX_OPEN_DRAFTS) return
 
-      const { draftId, inReplyTo, forwardOf, initialData } = action.payload
+      const { draftId, inReplyTo, forwardOf, markDirty, initialData } =
+        action.payload
       const now = Date.now()
       state.drafts[draftId] = {
         draftId,
@@ -110,7 +113,7 @@ const mailComposeSlice = createSlice({
         priority: initialData?.priority ?? MAIL_PRIORITY_NORMAL,
         requestReadReceipt: initialData?.requestReadReceipt ?? false,
         isPlainText: initialData?.isPlainText ?? false,
-        isDirty: false,
+        isDirty: markDirty ?? false,
         createdAt: now,
         updatedAt: now,
         selectedIdentity: initialData?.selectedIdentity,

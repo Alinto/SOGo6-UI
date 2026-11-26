@@ -58,6 +58,10 @@ export function useOfflineDraftHydration() {
         dispatch(
           createDraft({
             draftId: d.id,
+            // A local mirror exists only while the server lacks this
+            // version: closing it must save (and drop the mirror), not
+            // just hide it until the next boot.
+            markDirty: true,
             initialData: {
               mailKey: d.mailKey,
               to: d.to,

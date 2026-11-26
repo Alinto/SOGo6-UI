@@ -93,4 +93,19 @@ describe('mailComposeSlice', () => {
       expect(state.drafts.d1).toBe(before.drafts.d1)
     })
   })
+
+  describe('createDraft markDirty', () => {
+    it('creates a clean draft by default', () => {
+      const state = reducer(undefined, createDraft({ draftId: 'd1' }))
+      expect(state.drafts.d1?.isDirty).toBe(false)
+    })
+
+    it('flags a restored local draft as dirty so closing it saves it', () => {
+      const state = reducer(
+        undefined,
+        createDraft({ draftId: 'd1', markDirty: true })
+      )
+      expect(state.drafts.d1?.isDirty).toBe(true)
+    })
+  })
 })
