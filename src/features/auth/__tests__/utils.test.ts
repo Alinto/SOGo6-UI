@@ -1,5 +1,7 @@
 import { getSsoErrorMessage } from '../sso-error-message'
 import {
+  buildSsoRedirectUrl,
+  consumeSsoNonce,
   decodeJwtPayload,
   hasSsoCallbackResult,
   isAbsoluteHttpUrl,
@@ -94,5 +96,48 @@ describe('getSsoErrorMessage', () => {
   it('uses the generic message when there is no code', () => {
     expect(getSsoErrorMessage(t, '')).toBe('error.generic.string')
     expect(getSsoErrorMessage(t, null)).toBe('error.generic.string')
+  })
+})
+
+describe('SSO nonce', () => {
+  afterEach(() => {
+    sessionStorage.clear()
+  })
+
+  it('builds the landing page url with a nonce stored in this tab', () => {
+    const url = new URL(buildSsoRedirectUrl('https://mail.example.com', 'fr'))
+
+    expect(url.origin).toBe('https://mail.example.com')
+    expect(url.pathname).toBe('/fr/auth/login/sso')
+    expect(url.searchParams.get('nonce')).toMatch(/^[0-9a-f]{32}$/)
+  })
+
+  it('creates a new nonce for each login', () => {
+    const first = new URL(buildSsoRedirectUrl('https://a.test', 'en'))
+    const second = new URL(buildSsoRedirectUrl('https://a.test', 'en'))
+
+    expect(first.searchParams.get('nonce')).not.toBe(
+      second.searchParams.get('nonce')
+    )
+  })
+
+  it('accepts the stored nonce only once', () => {
+    const url = new URL(buildSsoRedirectUrl('https://a.test', 'en'))
+
+    expect(consumeSsoNonce(url.search)).toBe(true)
+    expect(consumeSsoNonce(url.search)).toBe(false)
+  })
+
+  it('rejects a missing or different nonce', () => {
+    buildSsoRedirectUrl('https://a.test', 'en')
+    expect(consumeSsoNonce('?nonce=other')).toBe(false)
+
+    buildSsoRedirectUrl('https://a.test', 'en')
+    expect(consumeSsoNonce('')).toBe(false)
+  })
+
+  it('rejects any nonce when no login was started in this tab', () => {
+    expect(consumeSsoNonce('?nonce=')).toBe(false)
+    expect(consumeSsoNonce('?nonce=abc')).toBe(false)
   })
 })
