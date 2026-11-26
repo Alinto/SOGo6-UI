@@ -140,6 +140,24 @@
         },
         "developer_comment": ""
       },
+      "SOGO_D_OPENID_ALLOW_REDIRECT": {
+        "name": {
+          "string": "Allowed Redirect URLs"
+        },
+        "description": {
+          "string": "URLs of this web interface where users are sent back after signing in with OpenID, with their session token. A URL is allowed if it has the same origin and starts with the path of one of these entries, for example https://mail.example.com/en/auth/login/sso for that page only, or https://mail.example.com/ for the whole site. List only URLs serving this web interface."
+        },
+        "developer_comment": ""
+      },
+      "SOGO_D_OPENID_REQUIRE_EMAIL_VERIFIED": {
+        "name": {
+          "string": "Require Verified Email"
+        },
+        "description": {
+          "string": "Users are matched on their email claim. When enabled, the OpenID server must mark that email as verified. Only disable it if users cannot change their email on the OpenID server, otherwise someone could sign in as another user."
+        },
+        "developer_comment": ""
+      },
       "SOGO_D_SAML2_URL": {
         "name": {
           "string": "SAML2 IS NOT DONE YET!!!!"
@@ -876,7 +894,7 @@
         "description": {
           "string": "Set the kind of mail server"
         },
-        "developer_comment": "" 
+        "developer_comment": ""
       },
       "SOGO_D_IMAP_SERVER": {
         "name": {
@@ -1164,7 +1182,7 @@
         "description": {
           "string": "Set the kind of outgoing mail server"
         },
-        "developer_comment": "" 
+        "developer_comment": ""
       },
       "SOGO_D_SMTP_SERVER": {
         "name": {
@@ -1283,8 +1301,6 @@
         },
         "developer_comment": ""
       }
-
-      
     }
   }
 }
