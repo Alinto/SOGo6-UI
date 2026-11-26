@@ -279,7 +279,12 @@ describe('useFolderMessages', () => {
       mockMailSearchState.params = { text: 'invoice' } as any
       renderHook(() => useFolderMessages({ folder: 'INBOX' }))
       const [searchArgs] = mockSearchMailsQuery.mock.calls[0]
-      expect(searchArgs.params).toEqual({ page: 1, page_size: '20' })
+      expect(searchArgs.params).toEqual({
+        page: 1,
+        page_size: '20',
+        sort_by: 'date',
+        sort_order: 'desc',
+      })
     })
 
     it('includes page param when set in URL', () => {
@@ -485,12 +490,36 @@ describe('useFolderMessages', () => {
       expect(searchArgs).toEqual({
         accountId: '0',
         body: { text: 'invoice' },
-        params: { page: 1, page_size: '20' },
+        params: {
+          page: 1,
+          page_size: '20',
+          sort_by: 'date',
+          sort_order: 'desc',
+        },
       })
       expect(searchOptions.skip).toBe(false)
       expect(result.current.data).toBe(mockData)
       expect(result.current.isSearchActive).toBe(true)
       expect(result.current.isVirtualFolder).toBe(false)
+    })
+
+    it.each([
+      ['t_desc', 'date', 'asc'],
+      ['s_asc', 'size', 'asc'],
+      ['s_desc', 'size', 'desc'],
+    ])('sends the chosen sort %s to the search', (sort, sortBy, sortOrder) => {
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      mockSearchParams.set('sort', sort)
+
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+
+      const [searchArgs] = mockSearchMailsQuery.mock.calls[0]
+      expect(searchArgs.params).toMatchObject({
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      })
     })
 
     it('ignores an active search from a different account', () => {

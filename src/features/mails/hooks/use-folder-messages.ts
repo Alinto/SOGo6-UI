@@ -10,6 +10,7 @@ import {
 } from '@/features/mails/store/mail-navigation-slice'
 import { clearMailSearch } from '@/features/mails/store/mail-search-slice'
 import {
+  type MailListQueryParams,
   useGetFolderMessagesQuery,
   useSearchMailsQuery,
 } from '@/features/mails/store/mails-api'
@@ -38,13 +39,21 @@ const MAIL_LIST_DEFAULTS: Record<string, string> = {
   page_size: '20',
 }
 
-const SORT_PARAM_MAP: Record<string, { sort_by: string; sort_order: string }> =
-  {
-    t_asc: { sort_by: 'date', sort_order: 'desc' },
-    t_desc: { sort_by: 'date', sort_order: 'asc' },
-    s_asc: { sort_by: 'size', sort_order: 'asc' },
-    s_desc: { sort_by: 'size', sort_order: 'desc' },
-  }
+type MailListSort = Required<
+  Pick<MailListQueryParams, 'sort_by' | 'sort_order'>
+>
+
+const SORT_PARAM_MAP: Record<string, MailListSort> = {
+  t_asc: { sort_by: 'date', sort_order: 'desc' },
+  t_desc: { sort_by: 'date', sort_order: 'asc' },
+  s_asc: { sort_by: 'size', sort_order: 'asc' },
+  s_desc: { sort_by: 'size', sort_order: 'desc' },
+}
+
+const DEFAULT_SEARCH_SORT: MailListSort = {
+  sort_by: 'date',
+  sort_order: 'desc',
+}
 
 interface UseFolderMessagesOptions {
   folder: string
@@ -151,6 +160,8 @@ export function useFolderMessages({
   }, [searchParams])
 
   const currentPage = Number(searchParams.get('page') ?? '1')
+  const searchSort =
+    SORT_PARAM_MAP[searchParams.get('sort') ?? ''] ?? DEFAULT_SEARCH_SORT
 
   // Quick filter (read, unread…): the folder list route ignores it, so the
   // filtered list is fetched from the search route, restricted to this folder.
@@ -179,7 +190,13 @@ export function useFolderMessages({
     {
       accountId: resolvedAccountId,
       body: mailSearch.params ?? {},
-      params: { page: currentPage, page_size: params.page_size },
+      // The search sorts every match before paging, so the chosen sort must
+      // be sent; without one, keep the folder list's newest-first order.
+      params: {
+        page: currentPage,
+        page_size: params.page_size,
+        ...searchSort,
+      },
     },
     { skip: !isSearchActive }
   )
