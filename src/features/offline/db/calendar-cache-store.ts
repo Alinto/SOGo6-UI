@@ -1,5 +1,5 @@
 import type { CalendarEvent } from '@/features/calendars/calendars-types'
-import type { CachedCalendarEventRecord } from '../types'
+import { MAIL_CACHE_TTL_MS, type CachedCalendarEventRecord } from '../types'
 import { getOfflineDb } from './offline-db'
 
 function recordId(userId: string): string {
@@ -23,16 +23,23 @@ export async function saveCalendarEvents(
   await getOfflineDb(userId).cachedCalendarEvents.put(record)
 }
 
+/** The week snapshot, or undefined once older than the offline cache TTL. */
 export async function getCachedCalendarEvents(
-  userId: string
+  userId: string,
+  now = Date.now()
 ): Promise<CachedCalendarEventRecord | undefined> {
-  return getOfflineDb(userId).cachedCalendarEvents.get(recordId(userId))
+  const row = await getOfflineDb(userId).cachedCalendarEvents.get(
+    recordId(userId)
+  )
+  if (!row || row.updatedAt < now - MAIL_CACHE_TTL_MS) return undefined
+  return row
 }
 
 export async function listCachedCalendarEvents(
-  userId: string
+  userId: string,
+  now = Date.now()
 ): Promise<CalendarEvent[]> {
-  const row = await getCachedCalendarEvents(userId)
+  const row = await getCachedCalendarEvents(userId, now)
   if (!row) return []
   try {
     const parsed = JSON.parse(row.payloadJson) as CalendarEvent[]

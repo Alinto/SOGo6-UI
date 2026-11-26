@@ -1,4 +1,6 @@
+import { isPwaEnabled } from '@/features/offline/flags'
 import { pwaStartUrl } from '@/features/offline/pwa-start-url'
+import { SHARE_TARGET_ACCEPT } from '@/features/offline/share/share-target-policy'
 import { getDefaultLocale } from '@/lib/i18n/config'
 import type { MetadataRoute } from 'next'
 
@@ -53,38 +55,27 @@ export default function manifest(): MetadataRoute.Manifest {
         icons: [{ src: '/icons/icon-192.png', sizes: '192x192' }],
       },
     ],
-    share_target: {
-      action: `/${locale}/share`,
-      method: 'POST',
-      enctype: 'multipart/form-data',
-      params: {
-        title: 'title',
-        text: 'text',
-        url: 'url',
-        files: [
-          {
-            name: 'files',
-            accept: [
-              'image/*',
-              'text/plain',
-              'text/html',
-              'application/pdf',
-              'application/msword',
-              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-              'application/vnd.ms-excel',
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              'application/vnd.ms-powerpoint',
-              'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-            ],
+    // OS share sheet / mailto: handler only while the PWA is enabled.
+    ...(isPwaEnabled()
+      ? {
+          share_target: {
+            action: `/${locale}/share`,
+            method: 'POST',
+            enctype: 'multipart/form-data',
+            params: {
+              title: 'title',
+              text: 'text',
+              url: 'url',
+              files: [{ name: 'files', accept: SHARE_TARGET_ACCEPT }],
+            },
           },
-        ],
-      },
-    },
-    protocol_handlers: [
-      {
-        protocol: 'mailto',
-        url: `${startUrl}?compose=1&mailto=%s`,
-      },
-    ],
+          protocol_handlers: [
+            {
+              protocol: 'mailto',
+              url: `${startUrl}?compose=1&mailto=%s`,
+            },
+          ],
+        }
+      : {}),
   } as MetadataRoute.Manifest
 }

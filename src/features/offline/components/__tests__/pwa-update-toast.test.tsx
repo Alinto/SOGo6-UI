@@ -2,7 +2,9 @@
  * @jest-environment jsdom
  */
 import { act, render, waitFor } from '@testing-library/react'
-import PwaUpdateToast from '../pwa-update-toast'
+import PwaUpdateToast, {
+  PWA_UPDATE_CHECK_MIN_GAP_MS,
+} from '../pwa-update-toast'
 
 const mockToast = jest.fn()
 const mockReload = jest.fn()
@@ -39,6 +41,8 @@ function installServiceWorkerMock({
     waiting,
     installing: null,
     addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    update: jest.fn().mockResolvedValue(undefined),
   }
 
   const serviceWorker = {
@@ -139,5 +143,65 @@ describe('PwaUpdateToast', () => {
     })
 
     expect(mockToast).not.toHaveBeenCalled()
+  })
+
+  it('reloads a tab that was controlled when another tab applied the update', async () => {
+    const { serviceWorker } = installServiceWorkerMock({
+      waiting: null,
+      controller: {},
+    })
+
+    render(<PwaUpdateToast />)
+    await act(async () => {
+      await serviceWorker.ready
+    })
+
+    act(() => {
+      serviceWorker.dispatch('controllerchange')
+      serviceWorker.dispatch('controllerchange')
+    })
+
+    expect(mockReload).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not reload on the first claim of an uncontrolled tab', async () => {
+    const { serviceWorker } = installServiceWorkerMock({
+      waiting: null,
+      controller: null,
+    })
+
+    render(<PwaUpdateToast />)
+    await act(async () => {
+      await serviceWorker.ready
+    })
+    act(() => {
+      serviceWorker.dispatch('controllerchange')
+    })
+
+    expect(mockReload).not.toHaveBeenCalled()
+  })
+
+  it('checks for a new worker when the tab becomes visible, throttled', async () => {
+    const nowSpy = jest.spyOn(Date, 'now').mockReturnValue(1_000_000)
+    const { serviceWorker, registration } = installServiceWorkerMock({
+      waiting: null,
+      controller: {},
+    })
+
+    render(<PwaUpdateToast />)
+    await act(async () => {
+      await serviceWorker.ready
+    })
+
+    document.dispatchEvent(new Event('visibilitychange'))
+    await act(async () => {})
+    expect(registration.update).not.toHaveBeenCalled()
+
+    nowSpy.mockReturnValue(1_000_000 + PWA_UPDATE_CHECK_MIN_GAP_MS + 1)
+    document.dispatchEvent(new Event('visibilitychange'))
+    await act(async () => {})
+    expect(registration.update).toHaveBeenCalledTimes(1)
+
+    nowSpy.mockRestore()
   })
 })

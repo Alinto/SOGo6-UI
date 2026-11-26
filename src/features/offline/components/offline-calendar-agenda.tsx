@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from 'next-intl'
 import { memo, useEffect, useState } from 'react'
 import { isPwaCalendarCacheEnabled } from '../flags'
 import { useCalendarCache } from '../hooks/use-calendar-cache'
+import { formatCacheClock } from '../utils/cache-clock'
 import OfflineUnavailable from './offline-unavailable'
 
 function eventTimeLabel(
@@ -39,17 +40,27 @@ function OfflineCalendarAgenda() {
   const [state, setState] = useState<{
     events: CalendarEvent[]
     hasCache: boolean
+    cachedAt: number | null
   } | null>(null)
 
   useEffect(() => {
     let cancelled = false
-    void Promise.all([readEvents(), readMeta()]).then(([rows, meta]) => {
-      if (cancelled) return
-      const sorted = [...rows].sort((a, b) =>
-        (a.date_start ?? '').localeCompare(b.date_start ?? '')
-      )
-      setState({ events: sorted, hasCache: !!meta })
-    })
+    Promise.all([readEvents(), readMeta()])
+      .catch((error: unknown) => {
+        console.warn('[offline] could not read cached calendar', error)
+        return [[], null] as const
+      })
+      .then(([rows, meta]) => {
+        if (cancelled) return
+        const sorted = [...rows].sort((a, b) =>
+          (a.date_start ?? '').localeCompare(b.date_start ?? '')
+        )
+        setState({
+          events: sorted,
+          hasCache: !!meta,
+          cachedAt: meta?.updatedAt ?? null,
+        })
+      })
     return () => {
       cancelled = true
     }
@@ -72,6 +83,14 @@ function OfflineCalendarAgenda() {
     return <OfflineUnavailable force target="calendar" />
   }
 
+  const snapshotLabel = state.cachedAt ? (
+    <p className="text-muted-foreground text-xs" role="status">
+      {t('cached_data_as_of_no_folder.string', {
+        time: formatCacheClock(state.cachedAt, locale),
+      })}
+    </p>
+  ) : null
+
   if (!state.events.length) {
     return (
       <div
@@ -80,6 +99,7 @@ function OfflineCalendarAgenda() {
       >
         <CalendarDays className="size-8 shrink-0" aria-hidden />
         <p className="text-sm">{t('offline_calendar_empty.string')}</p>
+        {snapshotLabel}
       </div>
     )
   }
@@ -89,6 +109,7 @@ function OfflineCalendarAgenda() {
       data-testid="offline-calendar-agenda"
       className="flex h-full min-h-0 w-full flex-1 flex-col overflow-y-auto p-4"
     >
+      <div className="mx-auto mb-2 w-full max-w-lg">{snapshotLabel}</div>
       <ul className="mx-auto flex w-full max-w-lg flex-col gap-2">
         {state.events.map((event) => (
           <li

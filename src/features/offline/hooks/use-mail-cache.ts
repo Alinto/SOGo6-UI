@@ -4,6 +4,7 @@ import { useCallback } from 'react'
 import { getAuthUserId } from '../auth/get-auth-token'
 import { syncAppBadge } from '../badge/app-badge'
 import {
+  deleteCachedMail,
   getCachedFolders,
   getMailBody,
   listCachedMailHeaders,
@@ -11,6 +12,7 @@ import {
   saveCachedFolders,
   saveMailBody,
   saveMailHeaders,
+  type SaveMailHeadersOptions,
 } from '../db/mail-cache-store'
 import { isPwaMailCacheEnabled } from '../flags'
 import type { CachedMailBodyRecord, CachedMailHeaderRecord } from '../types'
@@ -49,7 +51,8 @@ export function useMailCache() {
     async (
       accountId: string,
       folderPath: string,
-      headers: Omit<CachedMailHeaderRecord, 'id' | 'userId' | 'updatedAt'>[]
+      headers: Omit<CachedMailHeaderRecord, 'id' | 'userId' | 'updatedAt'>[],
+      options?: SaveMailHeadersOptions
     ) => {
       if (!isPwaMailCacheEnabled()) return
       const userId = getAuthUserId()
@@ -62,9 +65,10 @@ export function useMailCache() {
           id: `${userId}:${accountId}:${folderPath}:${h.mailId}`,
           userId,
           updatedAt: now,
-        }))
+        })),
+        options
       )
-      void syncAppBadge(userId)
+      void syncAppBadge(userId).catch(() => undefined)
     },
     []
   )
@@ -105,8 +109,13 @@ export function useMailCache() {
     []
   )
 
-  const readBody = useCallback(
-    async (accountId: string, folderPath: string, mailId: string) => {
+  /** Cached body with the time it was stored, or null. */
+  const readBodyEntry = useCallback(
+    async (
+      accountId: string,
+      folderPath: string,
+      mailId: string
+    ): Promise<{ payload: unknown; cachedAt: number } | null> => {
       if (!isPwaMailCacheEnabled()) return null
       const userId = getAuthUserId()
       if (!userId) return null
@@ -116,10 +125,29 @@ export function useMailCache() {
       )
       if (!row) return null
       try {
-        return JSON.parse(row.payloadJson)
+        return { payload: JSON.parse(row.payloadJson), cachedAt: row.updatedAt }
       } catch {
         return null
       }
+    },
+    []
+  )
+
+  const readBody = useCallback(
+    async (accountId: string, folderPath: string, mailId: string) =>
+      (await readBodyEntry(accountId, folderPath, mailId))?.payload ?? null,
+    [readBodyEntry]
+  )
+
+  /** Forget a mail the server no longer serves (header + body). */
+  const forgetMail = useCallback(
+    async (accountId: string, folderPath: string, mailId: string) => {
+      const userId = getAuthUserId()
+      if (!userId) return
+      await deleteCachedMail(
+        userId,
+        `${userId}:${accountId}:${folderPath}:${mailId}`
+      )
     },
     []
   )
@@ -137,6 +165,8 @@ export function useMailCache() {
     readHeaders,
     cacheBody,
     readBody,
+    readBodyEntry,
+    forgetMail,
     purge,
   }
 }

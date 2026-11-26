@@ -1,7 +1,10 @@
 'use client'
 
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
-import { deleteLocalDraft } from '@/features/offline/db/drafts-store'
+import {
+  deleteLocalDraft,
+  deleteLocalDraftIfNotNewer,
+} from '@/features/offline/db/drafts-store'
 import { isPwaOutboxEnabled } from '@/features/offline/flags'
 import { persistLocalDraft } from '@/features/offline/hooks/use-offline-draft-sync'
 import { probeNetwork } from '@/features/offline/network/probe'
@@ -17,6 +20,9 @@ import {
   type ComposeMailFields,
 } from '../utils/build-compose-mail-payload'
 import { trackDraftSave } from '../utils/draft-save-tracker'
+
+/** Drafts whose local mirror failed already (warn once per draft). */
+const warnedLocalMirrorFailures = new Set<string>()
 
 interface UseComposeDraftPersistenceOptions extends ComposeMailFields {
   draftId: string
@@ -54,12 +60,13 @@ export function useComposeDraftPersistence({
   const [saveDraft, { isLoading: isSavingDraft }] = useSaveDraftMutation()
   const [deleteMail] = useDeleteMailMutation()
 
-  const persistLocal = async () => {
-    if (sourceOutboxId) return
-    if (!isPwaOutboxEnabled()) return
+  /** Local mirror write; resolves with its `updatedAt`, or null. */
+  const persistLocal = async (): Promise<number | null> => {
+    if (sourceOutboxId) return null
+    if (!isPwaOutboxEnabled()) return null
     const userId = getAuthUserId()
-    if (!userId) return
-    await persistLocalDraft({
+    if (!userId) return null
+    return persistLocalDraft({
       id: draftId,
       userId,
       accountId,
@@ -82,6 +89,7 @@ export function useComposeDraftPersistence({
           size: attachment.size,
           type: attachment.type,
           blob: attachment.file,
+          uploaded: mailKey != null && attachment.uploadStatus === 'completed',
         })),
     })
   }
@@ -109,17 +117,35 @@ export function useComposeDraftPersistence({
     )
   }
 
+  /** Best-effort: a failing local mirror must never block the server save. */
+  const persistLocalSafely = async (): Promise<number | null> => {
+    try {
+      return await persistLocal()
+    } catch (error) {
+      if (!warnedLocalMirrorFailures.has(draftId)) {
+        warnedLocalMirrorFailures.add(draftId)
+        console.warn('[offline] local draft copy not saved', error)
+      }
+      return null
+    }
+  }
+
   /** Resolves with the server mail key once saved, or null. */
   const saveToServer = async (
     displayNotificationOnSuccess: boolean,
     displayNotificationOnError: boolean,
     closeOnSave: boolean
   ): Promise<string | null> => {
-    await persistLocal()
+    const localSavedAt = await persistLocalSafely()
+    // Anything written locally after this point is newer than what the
+    // server is about to store.
+    const snapshotAt = localSavedAt ?? Date.now()
 
     const online = !isPwaOutboxEnabled() || (await probeNetwork())
     if (!online) {
-      dispatch(markDraftSaved({ draftId }))
+      // Only the local copy exists: keep the draft dirty so the autosave
+      // pushes it to the server once the network is back (and closing it
+      // keeps the local copy, rehydrated dirty on next boot).
       if (closeOnSave) {
         dispatch(closeDraft({ draftId }))
       }
@@ -139,10 +165,15 @@ export function useComposeDraftPersistence({
       dispatch(markDraftSaved({ draftId }))
 
       // Server now holds the draft — drop the local mirror so it is not
-      // rehydrated as a duplicate compose window on next boot.
+      // rehydrated as a duplicate compose window on next boot, unless a
+      // newer local copy was written while this save was in flight.
       if (isPwaOutboxEnabled()) {
         const userId = getAuthUserId()
-        if (userId) void deleteLocalDraft(userId, draftId)
+        if (userId) {
+          await deleteLocalDraftIfNotNewer(userId, draftId, snapshotAt).catch(
+            () => false
+          )
+        }
       }
 
       const savedKey = result.data?.data?.key ?? null

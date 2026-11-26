@@ -2,10 +2,16 @@
 
 import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import { deleteLocalDraft } from '@/features/offline/db/drafts-store'
-import { deleteOutboxItem } from '@/features/offline/db/outbox-store'
+import {
+  deleteOutboxItem,
+  getOutboxItem,
+} from '@/features/offline/db/outbox-store'
 import { isPwaOutboxEnabled } from '@/features/offline/flags'
 import { probeNetwork } from '@/features/offline/network/probe'
-import { enqueueOutbox } from '@/features/offline/outbox/outbox-coordinator'
+import {
+  enqueueOutbox,
+  isOutboxItemGoneError,
+} from '@/features/offline/outbox/outbox-coordinator'
 import { releaseOutboxForEdit } from '@/features/offline/outbox/outbox-edit-hold'
 import { notifyOutboxChanged } from '@/features/offline/outbox/outbox-events'
 import { isQuotaExceededError } from '@/features/offline/storage/quota'
@@ -68,20 +74,53 @@ export function useComposeSend({
   const sendLockRef = React.useRef(false)
   const [isPreparingSend, setIsPreparingSend] = React.useState(false)
 
-  const performSend = async () => {
+  /**
+   * `detachFromOutbox`: the edited Outbox item vanished (sent or deleted,
+   * maybe from another tab) and the user confirmed sending this copy as a
+   * new message.
+   */
+  const performSend = async (options?: { detachFromOutbox?: boolean }) => {
     if (!mailFields.selectedIdentity?.mail) return
     if (sendLockRef.current) return
     sendLockRef.current = true
     setIsPreparingSend(true)
     try {
-      await sendNow(mailFields.selectedIdentity)
+      await sendNow(
+        mailFields.selectedIdentity,
+        options?.detachFromOutbox ? null : sourceOutboxId
+      )
     } finally {
       sendLockRef.current = false
       setIsPreparingSend(false)
     }
   }
 
-  const sendNow = async (identity: { mail: string; replyTo?: string }) => {
+  // The "send anyway" toast action must use the latest field values.
+  const performSendRef = React.useRef(performSend)
+  React.useEffect(() => {
+    performSendRef.current = performSend
+  })
+
+  /**
+   * Never re-create a vanished Outbox item silently: it was most likely
+   * already sent, so a resend would duplicate it. Ask via a toast action.
+   */
+  const warnOutboxItemGone = () => {
+    toast.warning(t('outbox_item_gone.string'), {
+      action: {
+        label: t('outbox_send_anyway.string'),
+        onClick: () => {
+          if (sourceOutboxId) releaseOutboxForEdit(sourceOutboxId)
+          void performSendRef.current({ detachFromOutbox: true })
+        },
+      },
+    })
+  }
+
+  const sendNow = async (
+    identity: { mail: string; replyTo?: string },
+    outboxId: string | null
+  ) => {
     const identityMail = identity.mail
     // An autosave started before the click may still be creating the draft:
     // wait for it and reuse its key, or the send would leave it orphaned.
@@ -130,11 +169,18 @@ export function useComposeSend({
             size: a.size,
             type: a.type,
             blob: a.file as Blob,
+            // PWA keeps the File of uploaded attachments: flag them so the
+            // flush does not upload them to the server draft a second time.
+            uploaded: a.uploadStatus === 'completed' && draftKey != null,
           })),
           localDraftId: draftId,
-          replaceOutboxId: sourceOutboxId ?? undefined,
+          replaceOutboxId: outboxId ?? undefined,
         })
       } catch (error) {
+        if (isOutboxItemGoneError(error)) {
+          warnOutboxItemGone()
+          return
+        }
         toast.error(
           isQuotaExceededError(error)
             ? t('storage_quota_exceeded.string')
@@ -143,16 +189,28 @@ export function useComposeSend({
         return
       }
 
-      if (sourceOutboxId) releaseOutboxForEdit(sourceOutboxId)
+      if (outboxId) releaseOutboxForEdit(outboxId, userId)
       toast.success(t('outbox_queued.string'))
       dispatch(closeDraft({ draftId }))
       return
     }
 
+    if (outboxId && isPwaOutboxEnabled()) {
+      const userId = getAuthUserId()
+      const stillQueued = userId
+        ? await getOutboxItem(userId, outboxId).catch(() => undefined)
+        : undefined
+      if (!stillQueued) {
+        warnOutboxItemGone()
+        return
+      }
+    }
+
     // Real SOGo send rejects JSON `attachments`. Local Files must be uploaded
     // as multipart first (same as the online picker) so we get a tmp draft key.
     // Attachments already uploaded keep their File in PWA mode (for the
-    // outbox): sending them again would attach them twice.
+    // outbox): sending them again would attach them twice. Outbox items
+    // restored for editing mark only server-side files as 'completed'.
     const localFiles = attachments.filter(
       (a): a is MailComposeAttachment & { file: File } =>
         a.file instanceof File && a.uploadStatus !== 'completed'
@@ -186,9 +244,13 @@ export function useComposeSend({
         // The message reached the server — drop the local mirror so it is
         // not rehydrated as a ghost draft on next boot.
         if (userId) void deleteLocalDraft(userId, draftId)
-        if (userId && sourceOutboxId) {
-          await deleteOutboxItem(userId, sourceOutboxId)
-          releaseOutboxForEdit(sourceOutboxId)
+        if (userId && outboxId) {
+          try {
+            await deleteOutboxItem(userId, outboxId)
+          } catch {
+            // Sent anyway: never keep the window open for a resend.
+          }
+          releaseOutboxForEdit(outboxId, userId)
           notifyOutboxChanged()
         }
       }

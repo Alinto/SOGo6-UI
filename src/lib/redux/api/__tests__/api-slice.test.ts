@@ -295,4 +295,66 @@ describe('API Slice', () => {
       })
     })
   })
+
+  describe('session expiry', () => {
+    const mockWaitForLogoutWipe = jest.fn(() => Promise.resolve())
+
+    beforeEach(() => {
+      jest.doMock('@/features/offline/auth/logout-wipe', () => ({
+        waitForLogoutWipe: mockWaitForLogoutWipe,
+      }))
+      jest.doMock('@/features/offline/auth/redirect-after-logout', () => ({
+        redirectAfterLogout: jest.fn(),
+        SESSION_EXPIRED_REASON: 'session',
+      }))
+    })
+
+    async function setup() {
+      const rawQuery = jest.fn(async () => ({ error: { status: 401 } }))
+      mockFetchBaseQuery.mockReturnValue(rawQuery)
+      await import('../api-slice')
+      const baseQuery = (mockCreateApi.mock.calls as any)[0][0].baseQuery
+      const state = { auth: { token: 'tok-1' as string | null } }
+      const dispatch = jest.fn((action: { type: string }) => {
+        if (action.type === 'auth/logout') state.auth.token = null
+      })
+      const api = { getState: () => state, dispatch, endpoint: 'getFolders' }
+      return { baseQuery, state, dispatch, api }
+    }
+
+    const logoutCalls = (dispatch: jest.Mock) =>
+      dispatch.mock.calls.filter(([a]) => a.type === 'auth/logout').length
+
+    it('ends the session once, then again after a new login', async () => {
+      const { baseQuery, state, dispatch, api } = await setup()
+
+      await baseQuery({}, api, {})
+      expect(logoutCalls(dispatch)).toBe(1)
+      await baseQuery({}, api, {})
+      expect(logoutCalls(dispatch)).toBe(1)
+
+      state.auth.token = 'tok-2'
+      await baseQuery({}, api, {})
+      expect(logoutCalls(dispatch)).toBe(2)
+    })
+
+    it('ignores a late 401 sent with the previous session token', async () => {
+      const { baseQuery, state, dispatch, api } = await setup()
+      let release: () => void = () => undefined
+      const rawQuery = jest.fn(
+        () =>
+          new Promise((resolve) => {
+            release = () => resolve({ error: { status: 401 } })
+          })
+      )
+      mockFetchBaseQuery.mockReturnValue(rawQuery)
+
+      const pending = baseQuery({}, api, {})
+      await new Promise((resolve) => setTimeout(resolve, 0))
+      state.auth.token = 'tok-2'
+      release()
+      await pending
+      expect(logoutCalls(dispatch)).toBe(0)
+    })
+  })
 })

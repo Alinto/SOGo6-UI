@@ -9,10 +9,11 @@ if (typeof globalThis.structuredClone !== 'function') {
 }
 
 import type { ImapFolder, ImapMessagesList } from '@/features/mails/mails-types'
+import { setKv } from '../../db/kv-store'
 import { saveMailHeaders } from '../../db/mail-cache-store'
 import { wipeOfflineUserData } from '../../db/wipe'
 import { MAIL_CACHE_PREFETCH_FRESH_MS } from '../../types'
-import { prefetchInboxCache } from '../inbox-prefetch'
+import { prefetchInboxCache, prefetchKvKey } from '../inbox-prefetch'
 
 const userId = 'user@example.org'
 
@@ -129,7 +130,29 @@ describe('prefetchInboxCache', () => {
     )
   })
 
-  it('skips network when inbox headers are fresh', async () => {
+  it('skips network when the last prefetch is fresh', async () => {
+    const now = Date.now()
+    await setKv(userId, prefetchKvKey('0'), now)
+    const fetchFolders = jest.fn(async () => [])
+    await prefetchInboxCache(
+      userId,
+      '0',
+      {
+        fetchFolders,
+        fetchFolderMails: async () => [],
+        fetchMail: async () => null,
+      },
+      {
+        cacheFolders: async () => undefined,
+        cacheHeaders: async () => undefined,
+        cacheBody: async () => undefined,
+      },
+      now + MAIL_CACHE_PREFETCH_FRESH_MS / 2
+    )
+    expect(fetchFolders).not.toHaveBeenCalled()
+  })
+
+  it('still prefetches when only the list wrote Inbox through', async () => {
     await saveMailHeaders(userId, [
       {
         id: `${userId}:0:INBOX:m1`,
@@ -159,9 +182,57 @@ describe('prefetchInboxCache', () => {
         cacheFolders: async () => undefined,
         cacheHeaders: async () => undefined,
         cacheBody: async () => undefined,
-      },
-      Date.now() + MAIL_CACHE_PREFETCH_FRESH_MS / 2
+      }
     )
-    expect(fetchFolders).not.toHaveBeenCalled()
+    expect(fetchFolders).toHaveBeenCalled()
+  })
+
+  it('never rejects when the folder fetch fails', async () => {
+    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    await expect(
+      prefetchInboxCache(
+        userId,
+        '0',
+        {
+          fetchFolders: async () => {
+            throw new Error('offline')
+          },
+          fetchFolderMails: async () => [],
+          fetchMail: async () => null,
+        },
+        {
+          cacheFolders: async () => undefined,
+          cacheHeaders: async () => undefined,
+          cacheBody: async () => undefined,
+        }
+      )
+    ).resolves.toBeUndefined()
+    warn.mockRestore()
+  })
+
+  it('keeps prefetching Inbox bodies when Sent fails', async () => {
+    const folders = [
+      { name: 'Inbox', path: 'INBOX', type: 'INBOX' },
+      { name: 'Sent', path: 'Sent', type: 'SENT' },
+    ] as ImapFolder[]
+    const cacheBody = jest.fn(async () => undefined)
+    await prefetchInboxCache(
+      userId,
+      '0',
+      {
+        fetchFolders: async () => folders,
+        fetchFolderMails: async (folder) => {
+          if (folder === 'Sent') throw new Error('boom')
+          return [mail('i1')]
+        },
+        fetchMail: async () => ({ id: 'i1' }),
+      },
+      {
+        cacheFolders: async () => undefined,
+        cacheHeaders: async () => undefined,
+        cacheBody,
+      }
+    )
+    expect(cacheBody).toHaveBeenCalled()
   })
 })

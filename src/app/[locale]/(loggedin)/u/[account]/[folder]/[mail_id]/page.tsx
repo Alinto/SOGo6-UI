@@ -26,6 +26,7 @@ import CachedDataIndicator from '@/features/offline/components/cached-data-indic
 import OfflineUnavailable from '@/features/offline/components/offline-unavailable'
 import { useMailCache } from '@/features/offline/hooks/use-mail-cache'
 import { useOfflineMailBody } from '@/features/offline/hooks/use-offline-mail-body'
+import { isNetworkError } from '@/features/offline/utils/is-network-error'
 import { useDocumentTitle } from '@/hooks/use-document-title'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { useAppSelector } from '@/lib/redux/hooks'
@@ -52,7 +53,7 @@ export function MailDetailPage({
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const isOfflineOverlay = typeof onBack === 'function'
   const isMobile = useIsMobile()
-  const { cacheBody } = useMailCache()
+  const { cacheBody, forgetMail } = useMailCache()
   const { canGoPrev, canGoNext, goPrev, goNext, returnToListUrl } =
     useMailDetailNavigation()
 
@@ -71,21 +72,36 @@ export function MailDetailPage({
     { skip: isOfflineOverlay }
   )
 
-  // Offline fallback: serve the cached body of a previously opened mail
-  const { data: cachedMail, isLoading: isCacheLoading } =
-    useOfflineMailBody<ImapMessages>({
-      accountId: account,
-      folderPath: folder,
-      mailId: mail_id,
-      active: isOfflineOverlay || isError,
-    })
+  // Offline fallback: serve the cached body of a previously opened mail.
+  // Only when the server could not be reached: a 404/403 means the mail is
+  // gone or no longer ours, and its cached copy must not pass for current.
+  const cacheFallbackActive =
+    isOfflineOverlay || (isError && isNetworkError(error))
+  const {
+    data: cachedMail,
+    isLoading: isCacheLoading,
+    cachedAt,
+  } = useOfflineMailBody<ImapMessages>({
+    accountId: account,
+    folderPath: folder,
+    mailId: mail_id,
+    active: cacheFallbackActive,
+  })
   const data = fetchedMail ?? cachedMail ?? undefined
+  const isShowingCachedMail = !fetchedMail && !!cachedMail
   useDocumentTitle(data?.subject, 1)
 
   useEffect(() => {
     if (!fetchedMail) return
-    void cacheBody(account, folder, mail_id, fetchedMail)
+    void cacheBody(account, folder, mail_id, fetchedMail).catch(() => undefined)
   }, [account, cacheBody, fetchedMail, folder, mail_id])
+
+  // The server no longer serves this mail (deleted, moved): drop its copy.
+  const errorStatus = (error as { status?: unknown } | undefined)?.status
+  useEffect(() => {
+    if (errorStatus !== 404) return
+    void forgetMail(account, folder, mail_id).catch(() => undefined)
+  }, [account, errorStatus, folder, forgetMail, mail_id])
   const currentUserEmail = useAppSelector((state) => state.auth.user?.email)
   const invitation = useMailInvitation(data, currentUserEmail)
 
@@ -105,7 +121,7 @@ export function MailDetailPage({
 
   if (
     (!isOfflineOverlay && isLoading) ||
-    ((isOfflineOverlay || isError) && isCacheLoading)
+    (cacheFallbackActive && isCacheLoading)
   ) {
     return <MailDetailSkeleton />
   }
@@ -215,7 +231,13 @@ export function MailDetailPage({
           />
         }
       />
-      <CachedDataIndicator className="shrink-0 px-1 pb-2" />
+      {isShowingCachedMail ? (
+        <CachedDataIndicator
+          className="shrink-0 px-1 pb-2"
+          asOf={cachedAt}
+          showOnline
+        />
+      ) : null}
       <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden rounded-lg border shadow">
         <div className="shrink-0 p-4 pb-0">
           {isMobile ? (

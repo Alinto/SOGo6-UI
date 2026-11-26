@@ -36,9 +36,17 @@ async function refresh() {
   const gen = generation
   emit({ ...snapshot, isProbing: true })
   const ok = await probeNetwork()
-  probeInFlight = false
+  // A newer generation owns probeInFlight and the snapshot now.
   if (gen !== generation) return
+  probeInFlight = false
   emit({ isOnline: ok, isProbing: false })
+}
+
+/** Drop any probe in flight: its late result must not flip us back online. */
+function goOffline() {
+  generation += 1
+  probeInFlight = false
+  emit({ isOnline: false, isProbing: false })
 }
 
 function onOnline() {
@@ -48,8 +56,7 @@ function onOnline() {
 
 function onOffline() {
   lastNavigatorOnLine = false
-  probeInFlight = false
-  emit({ isOnline: false, isProbing: false })
+  goOffline()
 }
 
 function syncNavigatorFlag() {
@@ -58,8 +65,7 @@ function syncNavigatorFlag() {
   if (now !== lastNavigatorOnLine) {
     lastNavigatorOnLine = now
     if (!now) {
-      probeInFlight = false
-      emit({ isOnline: false, isProbing: false })
+      goOffline()
       return
     }
     void refresh()

@@ -35,7 +35,7 @@ jest.mock('sonner', () => ({
 
 const mockEnqueueOutbox = jest.fn()
 let mockOutboxEnabled = false
-const mockProbeNetwork = jest.fn(async () => true)
+const mockProbeNetwork = jest.fn(async (..._args: unknown[]) => true)
 
 jest.mock('@/features/offline/flags', () => ({
   isPwaOutboxEnabled: () => mockOutboxEnabled,
@@ -51,22 +51,33 @@ jest.mock('@/features/offline/auth/get-auth-token', () => ({
 
 jest.mock('@/features/offline/outbox/outbox-coordinator', () => ({
   enqueueOutbox: (...args: unknown[]) => mockEnqueueOutbox(...args),
+  isOutboxItemGoneError: (error: unknown) =>
+    error instanceof Error && error.name === 'OutboxItemGoneError',
 }))
 
 jest.mock('@/features/offline/db/drafts-store', () => ({
   deleteLocalDraft: jest.fn(async () => undefined),
 }))
 
+const mockDeleteOutboxItem = jest.fn(async (..._args: unknown[]) => undefined)
+const mockGetOutboxItem = jest.fn(
+  async (..._args: unknown[]): Promise<unknown> => ({ id: 'o1' })
+)
+
 jest.mock('@/features/offline/db/outbox-store', () => ({
-  deleteOutboxItem: jest.fn(),
+  deleteOutboxItem: (...args: unknown[]) => mockDeleteOutboxItem(...args),
+  getOutboxItem: (...args: unknown[]) => mockGetOutboxItem(...args),
 }))
 
 jest.mock('@/features/offline/outbox/outbox-events', () => ({
   notifyOutboxChanged: jest.fn(),
 }))
 
+const mockReleaseOutboxForEdit = jest.fn()
+
 jest.mock('@/features/offline/outbox/outbox-edit-hold', () => ({
-  releaseOutboxForEdit: jest.fn(),
+  releaseOutboxForEdit: (...args: unknown[]) =>
+    mockReleaseOutboxForEdit(...args),
 }))
 
 import { toast } from 'sonner'
@@ -103,6 +114,13 @@ describe('useComposeSend', () => {
       data: { data: { key: 'tmp-key', filename: 'a.txt' } },
     })
     mockBuildComposeMailPayload.mockReturnValue({ mocked: 'payload' })
+    mockUploadAttachment.mockClear()
+    mockSendMail.mockClear()
+    mockDeleteOutboxItem.mockClear()
+    mockGetOutboxItem.mockReset()
+    mockGetOutboxItem.mockResolvedValue({ id: 'o1' })
+    mockReleaseOutboxForEdit.mockClear()
+    jest.mocked(toast.warning).mockClear()
   })
 
   it('shows the no-recipient alert and does not send when there are no recipients', async () => {
@@ -333,6 +351,167 @@ describe('useComposeSend', () => {
       accountId: 'acc-1',
       mailKey: 'saved-key',
       mail: { mocked: 'payload' },
+    })
+  })
+
+  describe('Outbox-sourced drafts', () => {
+    const file = new File(['x'], 'a.txt', { type: 'text/plain' })
+    const onServer = new File(['y'], 'b.txt', { type: 'text/plain' })
+    const restored = [
+      {
+        draftId: 'att-1',
+        name: 'a.txt',
+        size: 1,
+        type: 'text/plain',
+        file,
+        uploadStatus: 'pending' as const,
+      },
+      {
+        draftId: 'att-2',
+        name: 'b.txt',
+        size: 1,
+        type: 'text/plain',
+        file: onServer,
+        uploadStatus: 'completed' as const,
+      },
+    ]
+
+    it('uploads restored local attachments when sending online, then drops the queued copy', async () => {
+      mockOutboxEnabled = true
+      const { result } = renderHook(() =>
+        useComposeSend({
+          ...baseFields,
+          mailKey: 'draft-1',
+          attachments: restored,
+          sourceOutboxId: 'o1',
+        })
+      )
+
+      await act(async () => {
+        await result.current.handleSend()
+      })
+
+      expect(mockUploadAttachment).toHaveBeenCalledTimes(1)
+      expect(mockUploadAttachment).toHaveBeenCalledWith({
+        accountId: 'acc-1',
+        mailKey: 'draft-1',
+        file,
+      })
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({ mailKey: 'tmp-key' })
+      )
+      expect(mockDeleteOutboxItem).toHaveBeenCalledWith(
+        'user@example.org',
+        'o1'
+      )
+      expect(mockReleaseOutboxForEdit).toHaveBeenCalledWith(
+        'o1',
+        'user@example.org'
+      )
+    })
+
+    it('keeps the queued copy when an attachment upload fails', async () => {
+      mockOutboxEnabled = true
+      mockUploadAttachment.mockResolvedValue({ error: { status: 500 } })
+      const { result } = renderHook(() =>
+        useComposeSend({
+          ...baseFields,
+          attachments: restored,
+          sourceOutboxId: 'o1',
+        })
+      )
+
+      await act(async () => {
+        await result.current.handleSend()
+      })
+
+      expect(mockSendMail).not.toHaveBeenCalled()
+      expect(mockDeleteOutboxItem).not.toHaveBeenCalled()
+    })
+
+    it('does not silently resend an item that left the Outbox meanwhile', async () => {
+      mockOutboxEnabled = true
+      mockGetOutboxItem.mockResolvedValue(undefined)
+      const { result } = renderHook(() =>
+        useComposeSend({ ...baseFields, sourceOutboxId: 'o1' })
+      )
+
+      await act(async () => {
+        await result.current.handleSend()
+      })
+
+      expect(mockSendMail).not.toHaveBeenCalled()
+      expect(toast.warning).toHaveBeenCalledWith(
+        'outbox_item_gone.string',
+        expect.objectContaining({
+          action: expect.objectContaining({
+            label: 'outbox_send_anyway.string',
+          }),
+        })
+      )
+
+      // "Send anyway" sends it as a new message.
+      const [, options] = jest.mocked(toast.warning).mock
+        .calls[0] as unknown as [string, { action: { onClick: () => void } }]
+      await act(async () => {
+        options.action.onClick()
+        await new Promise((resolve) => setTimeout(resolve, 0))
+      })
+      expect(mockSendMail).toHaveBeenCalledTimes(1)
+      expect(mockDeleteOutboxItem).not.toHaveBeenCalled()
+    })
+
+    it('queues offline with the uploaded marker for server-side attachments', async () => {
+      mockOutboxEnabled = true
+      mockProbeNetwork.mockResolvedValue(false)
+      mockEnqueueOutbox.mockResolvedValue({})
+      const { result } = renderHook(() =>
+        useComposeSend({
+          ...baseFields,
+          mailKey: 'draft-1',
+          attachments: restored,
+          sourceOutboxId: 'o1',
+        })
+      )
+
+      await act(async () => {
+        await result.current.handleSend()
+      })
+
+      const queued = mockEnqueueOutbox.mock.calls[0]![0] as {
+        replaceOutboxId?: string
+        attachments: { name: string; uploaded: boolean }[]
+      }
+      expect(queued.replaceOutboxId).toBe('o1')
+      expect(
+        queued.attachments.map(({ name, uploaded }) => ({ name, uploaded }))
+      ).toEqual([
+        { name: 'a.txt', uploaded: false },
+        { name: 'b.txt', uploaded: true },
+      ])
+    })
+
+    it('warns instead of re-creating a vanished item when queueing offline', async () => {
+      mockOutboxEnabled = true
+      mockProbeNetwork.mockResolvedValue(false)
+      mockEnqueueOutbox.mockRejectedValue(
+        Object.assign(new Error('gone'), { name: 'OutboxItemGoneError' })
+      )
+      const { result } = renderHook(() =>
+        useComposeSend({ ...baseFields, sourceOutboxId: 'o1' })
+      )
+
+      await act(async () => {
+        await result.current.handleSend()
+      })
+
+      expect(toast.warning).toHaveBeenCalledWith(
+        'outbox_item_gone.string',
+        expect.anything()
+      )
+      expect(mockDispatch).not.toHaveBeenCalledWith(
+        closeDraft({ draftId: 'draft-1' })
+      )
     })
   })
 })

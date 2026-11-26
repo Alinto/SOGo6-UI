@@ -67,4 +67,28 @@ describe('useNetworkStatus', () => {
     unmount()
     jest.useRealTimers()
   })
+
+  it('ignores a probe that resolves online after the browser went offline', async () => {
+    let finishProbe: (online: boolean) => void = () => {}
+    mockProbe.mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          finishProbe = resolve
+        })
+    )
+    const { result, unmount } = renderHook(() => useNetworkStatus())
+    expect(result.current.isProbing).toBe(true)
+
+    act(() => {
+      window.dispatchEvent(new Event('offline'))
+    })
+    expect(result.current.isOnline).toBe(false)
+
+    await act(async () => {
+      finishProbe(true)
+      await Promise.resolve()
+    })
+    expect(result.current.isOnline).toBe(false)
+    unmount()
+  })
 })

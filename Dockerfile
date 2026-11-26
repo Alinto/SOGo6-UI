@@ -21,6 +21,12 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+# Commit SHA (e.g. --build-arg SOURCE_VERSION=$(git rev-parse HEAD)): revision
+# of the service worker's precached HTML. .git is not in the build context;
+# without it each build gets a unique fallback revision.
+ARG SOURCE_VERSION=""
+ENV SOURCE_VERSION=${SOURCE_VERSION}
+
 RUN npm run build
 
 # Prune node_modules to keep only production dependencies

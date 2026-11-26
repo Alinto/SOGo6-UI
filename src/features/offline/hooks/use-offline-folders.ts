@@ -24,10 +24,14 @@ export function useOfflineFolders(
   useEffect(() => {
     if (!active) return
     let cancelled = false
-    void readFolders(accountId).then((folders) => {
-      if (cancelled || !Array.isArray(folders)) return
-      setCached({ key: accountId, folders: folders as ImapFolder[] })
-    })
+    readFolders(accountId)
+      .then((folders) => {
+        if (cancelled || !Array.isArray(folders)) return
+        setCached({ key: accountId, folders: folders as ImapFolder[] })
+      })
+      .catch((error: unknown) => {
+        console.warn('[offline] could not read cached folders', error)
+      })
     return () => {
       cancelled = true
     }

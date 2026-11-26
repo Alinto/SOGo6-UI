@@ -14,7 +14,10 @@ import {
   selectAllDrafts,
   selectOpenDraftIds,
 } from '@/features/mails/store/mail-compose-selectors'
-import type { MailComposeAttachment } from '@/features/mails/store/mail-compose-slice'
+import type {
+  MailComposeAttachment,
+  MailComposeDraft,
+} from '@/features/mails/store/mail-compose-slice'
 import {
   createDraft,
   MAX_OPEN_DRAFTS,
@@ -25,7 +28,10 @@ import { getAuthUserId } from '@/features/offline/auth/get-auth-token'
 import OutboxList from '@/features/offline/components/outbox-list'
 import OutboxMailView from '@/features/offline/components/outbox-mail-view'
 import { getOutboxAttachments } from '@/features/offline/db/outbox-store'
-import { holdOutboxForEdit } from '@/features/offline/outbox/outbox-edit-hold'
+import {
+  holdOutboxForEdit,
+  releaseOutboxForEdit,
+} from '@/features/offline/outbox/outbox-edit-hold'
 import type {
   OutboxAttachmentRecord,
   OutboxRecord,
@@ -59,9 +65,7 @@ function OutboxPanel() {
   )
 
   const handleEdit = useCallback(
-    async (item: OutboxRecord, attachments: OutboxAttachmentRecord[]) => {
-      if (item.status === 'sending') return
-
+    async (item: OutboxRecord) => {
       const existingDraftId = openDraftIds.find(
         (draftId) => allDrafts[draftId]?.sourceOutboxId === item.id
       )
@@ -75,37 +79,62 @@ function OutboxPanel() {
         return
       }
 
+      const userId = getAuthUserId()
+      if (!userId) return
+
+      // Re-check in IndexedDB (the list may be stale, another tab may be
+      // flushing) and hold atomically: refused while the item is sending.
+      const fresh = await holdOutboxForEdit(userId, item.id).catch(() => null)
+      if (!fresh) {
+        toast.error(t('outbox_edit_unavailable.string'))
+        return
+      }
+
+      let attachments: OutboxAttachmentRecord[]
+      try {
+        attachments = await getOutboxAttachments(userId, fresh.id)
+      } catch {
+        releaseOutboxForEdit(fresh.id, userId)
+        toast.error(t('outbox_edit_unavailable.string'))
+        return
+      }
+
       const restoredAttachments: MailComposeAttachment[] = attachments.map(
         (attachment) => ({
-          draftId: `outbox-${item.id}`,
+          draftId: `outbox-${fresh.id}-${attachment.id}`,
           name: attachment.name,
           size: attachment.size,
           type: attachment.type,
           file: new File([attachment.blob], attachment.name, {
             type: attachment.type,
           }),
-          uploadStatus: 'completed',
+          // Only files already on the server draft are 'completed'; the
+          // others must be uploaded by an online send.
+          uploadStatus:
+            attachment.uploaded && fresh.mailKey != null
+              ? 'completed'
+              : 'pending',
+          uploadProgress: 100,
         })
       )
 
-      holdOutboxForEdit(item.id)
       dispatch(
         createDraft({
-          draftId: `outbox-${item.id}`,
+          draftId: `outbox-${fresh.id}`,
           initialData: {
-            mailKey: item.mailKey,
-            to: item.to,
-            cc: item.cc,
-            bcc: item.bcc,
-            subject: item.subject,
-            body: item.body,
-            isPlainText: item.isPlainText,
-            priority: item.priority as 0 | 1 | 2 | 3 | 4,
-            requestReadReceipt: item.requestReadReceipt,
-            selectedSignatureKey: item.signatureKey,
-            selectedIdentity: identityStubFromOutbox(item),
+            mailKey: fresh.mailKey,
+            to: fresh.to,
+            cc: fresh.cc,
+            bcc: fresh.bcc,
+            subject: fresh.subject,
+            body: fresh.body,
+            isPlainText: fresh.isPlainText,
+            priority: fresh.priority as MailComposeDraft['priority'],
+            requestReadReceipt: fresh.requestReadReceipt,
+            selectedSignatureKey: fresh.signatureKey,
+            selectedIdentity: identityStubFromOutbox(fresh),
             attachments: restoredAttachments,
-            sourceOutboxId: item.id,
+            sourceOutboxId: fresh.id,
           },
         })
       )
@@ -156,13 +185,7 @@ function OutboxPanel() {
           item={openItem}
           onBack={() => setOpenId(null)}
           onEdit={() => {
-            const userId = getAuthUserId()
-            if (!userId) return
-            void getOutboxAttachments(userId, openItem.id).then(
-              (attachments) => {
-                void handleEdit(openItem, attachments)
-              }
-            )
+            void handleEdit(openItem)
           }}
           onDelete={() => setPendingDeleteIds([openItem.id])}
         />

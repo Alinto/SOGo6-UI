@@ -5,9 +5,7 @@ import { getAuthUserId } from '../auth/get-auth-token'
 import {
   countPendingOutbox,
   deleteOutboxItem,
-  getOutboxItem,
   listOutbox,
-  upsertOutboxItem,
 } from '../db/outbox-store'
 import { isPwaOutboxEnabled } from '../flags'
 import {
@@ -80,28 +78,11 @@ export function useOutboxList() {
     [refresh]
   )
 
-  const save = useCallback(
-    async (item: OutboxRecord) => {
-      await upsertOutboxItem({ ...item, updatedAt: Date.now() })
-      notifyOutboxChanged()
-      await refresh()
-    },
-    [refresh]
-  )
-
-  const getOne = useCallback(async (id: string) => {
-    const userId = getAuthUserId()
-    if (!userId) return undefined
-    return getOutboxItem(userId, id)
-  }, [])
-
   return {
     items: state.items,
     pendingCount: state.pendingCount,
     loading: state.loading,
     refresh,
     remove,
-    save,
-    getOne,
   }
 }

@@ -18,9 +18,13 @@ export function useOfflineIdentities(skip: boolean): Identity[] | null {
     const userId = getAuthUserId()
     if (!userId) return
     let cancelled = false
-    void loadCachedIdentities(userId).then((cached) => {
-      if (!cancelled && cached?.length) setIdentities(cached)
-    })
+    loadCachedIdentities(userId)
+      .then((cached) => {
+        if (!cancelled && cached?.length) setIdentities(cached)
+      })
+      .catch((error: unknown) => {
+        console.warn('[offline] could not read cached identities', error)
+      })
     return () => {
       cancelled = true
     }

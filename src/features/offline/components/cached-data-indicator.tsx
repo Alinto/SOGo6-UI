@@ -12,12 +12,18 @@ interface CachedDataIndicatorProps {
   className?: string
   asOf?: number | null
   folder?: string
+  /**
+   * Cached data is on screen although the app is online (the request failed
+   * with a network-type error): show the indicator anyway.
+   */
+  showOnline?: boolean
 }
 
 function CachedDataIndicator({
   className,
   asOf,
   folder,
+  showOnline = false,
 }: CachedDataIndicatorProps) {
   const t = useTranslations('PWA')
   const locale = useLocale()
@@ -41,7 +47,7 @@ function CachedDataIndicator({
     }
   }, [t])
 
-  if (!isPwaMailCacheEnabled() || isOnline) return null
+  if (!isPwaMailCacheEnabled() || (isOnline && !showOnline)) return null
 
   const time = asOf ? formatCacheClock(asOf, locale) : null
   const label =

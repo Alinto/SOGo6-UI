@@ -34,12 +34,10 @@ export function ComposeAttachmentList({
   if (attachments.length === 0) return null
 
   const handleDeleteAttachment = async (attachment: MailComposeAttachment) => {
-    // Local-only blobs never hit the server attachment API.
-    if (
-      attachment.file instanceof File ||
-      attachment.uploadStatus !== 'completed' ||
-      mailKey == null
-    ) {
+    // Not on the server draft yet: local removal is enough. A completed
+    // upload may still keep its File (PWA outbox mode) but it is on the
+    // server draft, so it must be deleted there or it would still be sent.
+    if (attachment.uploadStatus !== 'completed' || mailKey == null) {
       dispatch(removeAttachment({ draftId, attachmentId: attachment.draftId }))
       return
     }

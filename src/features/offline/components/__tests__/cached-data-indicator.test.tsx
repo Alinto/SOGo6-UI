@@ -69,4 +69,12 @@ describe('CachedDataIndicator', () => {
     )
     expect(container).toBeEmptyDOMElement()
   })
+
+  it('renders while online when cached data is on screen', () => {
+    mockIsOnline = true
+    render(
+      <CachedDataIndicator asOf={1_700_000_000_000} folder="INBOX" showOnline />
+    )
+    expect(screen.getByRole('status')).toHaveTextContent('INBOX as of 14:32')
+  })
 })

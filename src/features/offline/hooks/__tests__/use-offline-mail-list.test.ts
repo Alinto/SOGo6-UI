@@ -27,7 +27,10 @@ jest.mock('../../network/use-network-status', () => ({
   useNetworkStatus: () => ({ isOnline: mockIsOnline, isProbing: false }),
 }))
 
-import { useOfflineMailList } from '../use-offline-mail-list'
+import {
+  isCacheableListView,
+  useOfflineMailList,
+} from '../use-offline-mail-list'
 
 const userId = 'user@example.org'
 
@@ -68,9 +71,9 @@ describe('useOfflineMailList', () => {
 
     interface HookProps {
       mails: ImapMessagesList[] | undefined
-      hasError: boolean
+      error: unknown
     }
-    const initialProps: HookProps = { mails, hasError: false }
+    const initialProps: HookProps = { mails, error: undefined }
 
     // Online pass: write-through
     const { rerender, result } = renderHook(
@@ -79,7 +82,8 @@ describe('useOfflineMailList', () => {
           accountId: '0',
           folderPath: 'INBOX',
           mails: props.mails,
-          hasError: props.hasError,
+          error: props.error,
+          writeThrough: true,
         }),
       { initialProps }
     )
@@ -91,7 +95,7 @@ describe('useOfflineMailList', () => {
     })
 
     mockIsOnline = false
-    rerender({ mails: undefined, hasError: true })
+    rerender({ mails: undefined, error: { status: 'FETCH_ERROR' } })
 
     await waitFor(() => {
       expect(result.current.cachedMails).toHaveLength(2)
@@ -108,7 +112,7 @@ describe('useOfflineMailList', () => {
         accountId: '0',
         folderPath: 'INBOX',
         mails: undefined,
-        hasError: false,
+        error: undefined,
       })
     )
     expect(result.current.isShowingCache).toBe(false)
@@ -123,24 +127,121 @@ describe('useOfflineMailList', () => {
 
     mockIsOnline = true
     const { rerender, result } = renderHook(
-      (props: { mails: ImapMessagesList[] | undefined; hasError: boolean }) =>
+      (props: { mails: ImapMessagesList[] | undefined; error: unknown }) =>
         useOfflineMailList({
           accountId: '0',
           folderPath: 'INBOX',
           mails: props.mails,
-          hasError: props.hasError,
+          error: props.error,
+          writeThrough: true,
         }),
-      { initialProps: { mails, hasError: false } }
+      {
+        initialProps: {
+          mails: mails as ImapMessagesList[] | undefined,
+          error: undefined as unknown,
+        },
+      }
     )
 
     await waitFor(async () => {
       expect(await listCachedMailHeaders(userId, '0', 'INBOX')).toHaveLength(2)
     })
 
-    rerender({ mails: undefined, hasError: true })
+    rerender({ mails: undefined, error: { status: 503 } })
 
     await waitFor(() => {
       expect(result.current.cachedMails).toHaveLength(2)
     })
+  })
+
+  it('does not serve the cache online when the server answers 404/403', async () => {
+    await renderAndCache([makeMail('m1', '2026-08-01T10:00:00Z')])
+    for (const status of [404, 403]) {
+      const { result } = renderHook(() =>
+        useOfflineMailList({
+          accountId: '0',
+          folderPath: 'INBOX',
+          mails: undefined,
+          error: { status },
+        })
+      )
+      await new Promise((resolve) => setTimeout(resolve, 20))
+      expect(result.current.isShowingCache).toBe(false)
+    }
+  })
+
+  it('does not write lists that are not the plain first page', async () => {
+    renderHook(() =>
+      useOfflineMailList({
+        accountId: '0',
+        folderPath: 'INBOX',
+        mails: [makeMail('s1', '2026-08-01T10:00:00Z')],
+        error: undefined,
+        writeThrough: false,
+      })
+    )
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(await listCachedMailHeaders(userId, '0', 'INBOX')).toHaveLength(0)
+  })
+
+  it('merges a new first page with older cached rows', async () => {
+    await renderAndCache([
+      makeMail('new', '2026-08-03T10:00:00Z'),
+      makeMail('deleted', '2026-08-03T12:00:00Z'),
+      makeMail('old', '2026-07-01T10:00:00Z'),
+    ])
+    await renderAndCache([
+      makeMail('newest', '2026-08-04T10:00:00Z'),
+      makeMail('new', '2026-08-03T10:00:00Z'),
+    ])
+    await waitFor(async () => {
+      const rows = await listCachedMailHeaders(userId, '0', 'INBOX')
+      expect(rows.map((row) => row.mailId)).toEqual(['newest', 'new', 'old'])
+    })
+  })
+})
+
+async function renderAndCache(mails: ImapMessagesList[]) {
+  const ids = mails.map((m) => m.id)
+  renderHook(() =>
+    useOfflineMailList({
+      accountId: '0',
+      folderPath: 'INBOX',
+      mails,
+      error: undefined,
+      writeThrough: true,
+    })
+  )
+  await waitFor(async () => {
+    const rows = await listCachedMailHeaders(userId, '0', 'INBOX')
+    const cached = new Set(rows.map((row) => row.mailId))
+    expect(ids.every((id) => cached.has(id))).toBe(true)
+  })
+}
+
+describe('isCacheableListView', () => {
+  const base = {
+    page: 1,
+    isSearchActive: false,
+    isVirtualFolder: false,
+    filter: null,
+    sort: null,
+  }
+
+  it('accepts the plain first page', () => {
+    expect(isCacheableListView(base)).toBe(true)
+    expect(isCacheableListView({ ...base, filter: 'all' })).toBe(true)
+    expect(isCacheableListView({ ...base, sort: 't_asc' })).toBe(true)
+  })
+
+  it.each([
+    ['page 2', { page: 2 }],
+    ['search', { isSearchActive: true }],
+    ['virtual folder', { isVirtualFolder: true }],
+    ['quick filter', { filter: 'unread' }],
+    ['size sort', { sort: 's_desc' }],
+    ['oldest first', { sort: 't_desc' }],
+  ])('rejects %s', (_label, overrides) => {
+    expect(isCacheableListView({ ...base, ...overrides })).toBe(false)
   })
 })
