@@ -22,7 +22,7 @@ Periodic Background Sync is **not** implemented: the service worker must not hol
 - TTL: ~10 days; eviction by mail date (headers) / last access (bodies)
 - Persistent storage requested after login (`navigator.storage.persist()`)
 - Quota checked before outbox enqueue; usage shown on the cached-mail indicator
-- Survives app close; wiped on logout (Dexie + `sogo-share-pending` + runtime Cache Storage `pages`/`others`/`env`/`manifest`)
+- Survives app close; wiped on logout (`wipeOfflineUserData` in `src/features/offline/db/wipe.ts`): the user's Dexie database `sogo-offline-<userId>`, the `sogo-share-pending` IndexedDB and `sogo_pending_share` sessionStorage key, the `sogo.reminder.notified` sessionStorage key, and the runtime Cache Storage caches `pages` (legacy), `env` and `manifest`. Static asset caches (`ckeditor-assets`, `next-static`, `static-images`) and the precache are kept
 - Not a full mailbox mirror
 - Folder headers are written from the unfiltered first page only and merged (deleted server mail within that page's date range disappears from the cache)
 

@@ -1,5 +1,7 @@
 # PWA spike notes (Epic 0)
 
+> **Historical working notes** from the Epic 0 spike, kept for context. They are **not normative** and may lag the code. For current behaviour and limits, see [CAPABILITIES.md](./CAPABILITIES.md).
+
 ## Stack
 
 - **Serwist** via `@serwist/turbopack` (Next 16 + Turbopack)
@@ -13,7 +15,7 @@
 - Dev: confirm SW registration after production-like build if Turbopack quirks appear.
 - `output: 'standalone'` remains compatible with Serwist wrapper.
 - CKEditor assets use CacheFirst after first online visit.
-- Document navigation uses NetworkFirst + `/~offline` fallback.
+- Document navigation uses NetworkOnly (documents are never runtime-cached); offline, it falls back to the precached login / `/{locale}/~offline` / `/~offline` pages (`fallbacks` in `src/app/sw.ts`).
 
 ## Background Sync
 
@@ -25,5 +27,5 @@
 
 - Library: **Dexie**
 - DB name: `sogo-offline-{userId}`
-- Stores: drafts, outbox, outboxAttachments, cachedFolders, cachedMailHeaders, cachedMailBodies, metaIdentities
+- Stores: drafts, outbox, outboxAttachments, cachedFolders, cachedMailHeaders, cachedMailBodies, metaIdentities, kv, cachedCalendarEvents
 - Wipe on logout

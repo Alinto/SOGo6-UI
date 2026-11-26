@@ -1,5 +1,7 @@
 # AO technical annex — PWA / offline mail
 
+> **Tender-response copy** (AO = *appel d'offres*), kept for reference. This is **not technical documentation**; for actual behaviour and limits see [CAPABILITIES.md](./CAPABILITIES.md).
+
 Offline features are available on Android and iOS.
 
 Users can install the app, compose messages offline, and store them in a local Outbox they can review and edit (including attachments within configured limits).

@@ -24,7 +24,7 @@ For **coding conventions**, the `src/` layout, and detailed commands, see **[`AG
 
 ## Prerequisites
 
-- **Node.js** ≥ 22 (24 recommended; matches the production Docker image)
+- **Node.js** 24.22.1 (pinned in `package.json` `engines`; same as the production Docker image)
 - **VS Code** + [Dev Containers](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension _(optional, matches team setup)_
 - **[SOGo 6 server](https://github.com/Alinto/SOGo6-server)** on your machine, _optional_ if you work only against the mock API
 
@@ -59,10 +59,9 @@ git clone git@github.com:Alinto/SOGo6-UI.git
 
 ### 2. Environment variables
 
-Copy **`.env.example`** to **`.env.development`** or **`.env.local`** and adjust values.
+**`.env.development`** is versioned and holds the shared dev defaults. Put your own overrides in **`.env.local`** (gitignored), using **`.env.example`** as the list of available variables.
 
 - In local dev, **`GET /env`** serves defaults when vars are unset: API → `http://127.0.0.1:5000/api/user/v1`, SSE off in development unless `SSE_ENABLED=true`.
-- Add **`.env.local`** (gitignored) to override without changing shared files.
 
 After any change to `.env*`, **restart** `npm run dev`.
 
@@ -89,6 +88,8 @@ Open [http://localhost:3000](http://localhost:3000).
 | `LOGIN_PREFILL_ENABLED` | Set to `true` to expose login prefill via `GET /env` in **production** images (staging/QA). Off by default when `NODE_ENV=production`. |
 | `LOGIN_PREFILL_EMAIL` | Prefills the email field on **`/auth/login`** (optional). Read at **runtime** by `GET /env`. |
 | `LOGIN_PREFILL_PASSWORD` | Prefills the password on **`/auth/login/pwd`** (same as above). |
+| `FAKE_API_ENABLED` | `/fakeApi` answers 404 in production builds unless set to `true` (demos only). Always served in development. |
+| `NEXT_PUBLIC_PWA_ENABLED`, `NEXT_PUBLIC_PWA_*` | Offline / PWA feature flags, off by default. Inlined at **build time**. See [`docs/pwa/`](./docs/pwa/README.md). |
 
 `GET /env` also falls back to legacy `NEXT_PUBLIC_LOGIN_PREFILL_EMAIL` / `NEXT_PUBLIC_LOGIN_PREFILL_PASSWORD` on the **server** if the `LOGIN_*` vars are unset (local `.env` compatibility).
 
@@ -117,9 +118,11 @@ Implementation: `src/app/env/route.ts`, `src/features/auth/components/login-form
 
 | Type | Behavior |
 | ---- | -------- |
-| **User domain** (e.g. `localhost`) | Full app; `/admin_panel` is not available. |
-| **Admin domain** (e.g. `admin.localhost`) | Experience centered on `/admin_panel`. |
+| **User domain** (e.g. `localhost`) | Full app; `/admin_panel` is not available (allowed in development). |
+| **Admin domain** (e.g. `admin.localhost`) | Only `/admin_panel` (and login). |
 | **Login** `/auth/login` | Available on both domain types. |
+
+Full rules, decision table and troubleshooting: [`docs/MULTI_DOMAIN.md`](./docs/MULTI_DOMAIN.md).
 
 ### Local example
 
@@ -160,7 +163,7 @@ Optional: `docker build --build-arg NODE_VERSION=24.22.1 -t sogo-ui .`
 | Variable | Production example | Notes |
 | -------- | ------------------ | ----- |
 | `REACT_APP_API_BASE_URL` | `/api/user/v1` | **Required.** URL the **browser** uses (relative behind a reverse proxy, or absolute). |
-| `NEXT_PUBLIC_ADMIN_DOMAINS` | `admin.example.com` | Recommended; defaults to `admin.localhost` if unset. |
+| `NEXT_PUBLIC_ADMIN_DOMAINS` | `admin.example.com` | Recommended. Read by the proxy at request time, so it works as a runtime variable **as long as it is not set during `docker build`** (a `NEXT_PUBLIC_*` value present at build time is frozen into the bundle). If unset, no host is treated as admin (`/env` reports `admin.localhost`, but routing doesn't use it). |
 
 Optional: `SSE_ENABLED`, `LOGIN_PREFILL_*` (dev/QA only).
 
@@ -223,30 +226,34 @@ Reverse proxy (Nginx, Traefik, ingress, etc.) is configured by your platform tea
 
 | Command | Purpose |
 | ------- | ------- |
-| `npm run dev` | Dev server (Turbopack, port 3000) |
+| `npm run dev` | Dev server (Webpack, port 3000) |
 | `npm run build` | Production build via Turbopack (`output: 'standalone'`) |
-| `npm run build:webpack` | Production build via Webpack (legacy fallback) |
+| `npm run build:webpack` | Production build via Webpack (fallback) |
 | `npm run start` | Next.js server after build |
-| `npm run lint` | ESLint on `src` |
+| `npm run lint` | ESLint on `src` (tests excluded) |
 | `npm run type-check` | `tsc` (no emit) |
 | `npm test` | Jest suite |
-| `npm run test:fast` | Jest, fast path without coverage |
+| `npm run test:fast` | Jest, fast path without coverage (run on git pre-push) |
 | `npm run test:watch` | Jest watch mode |
 | `npm run test:coverage` | Jest with coverage |
-| `npm run test:changed` | Tests related to changed files |
-| `npm run check:translations` | Translation key checks |
+| `npm run test:changed` | Tests for files changed since the last commit |
+| `npm run test:related -- <files>` | Tests related to the given files |
+| `npm run test:tz` | Calendar tests in another time zone (`America/New_York`) |
+| `npm run test:e2e:pwa` | Playwright e2e tests (`e2e/`, PWA flags on) |
+| `npm run check:translations` | Translation key checks (`:missing`, `:quiet`, `:file <path>`) |
+| `npm run dpdm` | Circular dependency analysis |
 
-> **Build:** `next.config.mjs` allows production builds to succeed despite TypeScript and ESLint issues (`ignoreBuildErrors` / `ignoreDuringBuilds`). Before a PR, run **`npm run type-check`** and **`npm run lint`** manually.
+> **Build:** `next.config.mjs` sets `typescript.ignoreBuildErrors`, and `next build` no longer runs ESLint, so a production build succeeds despite type or lint errors. Before a PR, run **`npm run type-check`** and **`npm run lint`** manually.
 
 ## Testing
 
 ```bash
 npm test
 npm run test:fast
-npm run test -- --watch
+npm run test:watch
 ```
 
-Covers Redux slices, RTK Query endpoints, components, hooks, and snapshots.
+Jest covers Redux slices, RTK Query endpoints, components, hooks, and snapshots. Playwright e2e tests live in `e2e/`.
 
 ## Contributing
 

@@ -7,14 +7,14 @@ Thank you for your interest in contributing. This project is the **web frontend*
 ## Before you start
 
 1. Read **[`AGENTS.md`](./AGENTS.md)** — project layout, i18n rules, Redux/RTK patterns, testing, file naming.
-2. Set up the app per **[`README.md`](./README.md)** (Node ≥ 22, `.env.development`, optional SOGo6-server).
+2. Set up the app per **[`README.md`](./README.md)** (Node 24.22.1, overrides in `.env.local`, optional SOGo6-server).
 3. For API work, understand the `/env` → backend URL flow documented in the README.
 
 ## Development workflow
 
 ```bash
 npm install
-cp .env.example .env.development 
+cp .env.example .env.local   # optional: only the variables you want to override
 npm run dev
 ```
 
@@ -27,23 +27,20 @@ npm test
 npm run check:translations
 ```
 
-`npm run build` may succeed with type/lint issues because of `next.config.mjs` overrides — CI and reviewers still expect `type-check` and `lint` to pass for changed code.
-
-Production builds use Turbopack by default (`npm run build`). Use `npm run build:webpack` if you need the legacy Webpack bundler.
+`npm run build` succeeds despite type or lint issues (`typescript.ignoreBuildErrors` in `next.config.mjs`, and `next build` no longer runs ESLint). Reviewers still expect no new type or lint error in changed code. Git hooks run lint-staged on commit and `npm run test:fast` on push.
 
 ## Pull requests
 
 - Keep changes focused; one logical change per PR when possible.
 - Add or update tests for behavior you change.
-- Do not hardcode user-facing strings — use `next-intl` (`useTranslations`).
-- Use `@/` imports from `src/`.
+- Follow the conventions in [`AGENTS.md`](./AGENTS.md) (i18n, imports, file naming, feature structure).
 - Update README or docs when you change deployment or configuration behavior.
 
 ## Internationalization
 
-- Translation files live under `src/messages/`.
-- ESLint enforces static translation keys and no JSX literals.
-- Run `npm run check:translations` after adding keys.
+- Translation files live under `src/messages/` (`en/` is the reference locale).
+- ESLint warns on JSX literals (`react/jsx-no-literals`); keys must be static strings.
+- Run `npm run check:translations` (or `:missing`) after adding keys.
 
 ## Questions
 

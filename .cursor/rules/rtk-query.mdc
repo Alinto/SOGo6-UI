@@ -1,6 +1,6 @@
 ---
 description: RTK Query conventions for SOGo. Apply when creating or modifying API endpoints, RTK Query slices, or data fetching logic.
-globs: src/features/**/*.api.ts, src/lib/redux/**/*.ts
+globs: src/features/**/*-api.ts, src/lib/redux/**/*.ts
 alwaysApply: false
 ---
 

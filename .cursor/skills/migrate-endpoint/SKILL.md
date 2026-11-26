@@ -13,7 +13,7 @@ description: Use when migrating an API endpoint from fakeApi to the real SOGo ba
 
 ## Migration steps
 1. Identify the fake API route in `src/app/fakeApi/` and its response shape
-2. Find the matching RTK Query endpoint in `src/features/*/store/*.api.ts`
+2. Find the matching RTK Query endpoint in `src/features/*/store/*-api.ts`
 3. Update the URL to the real backend format (see existing `/api/user/v1/` endpoints)
 4. Add or update `transformResponse` to handle the real backend's `BackendResponse<T>` wrapper
 5. Verify `providesTags` / `invalidatesTags` cover all affected cache tags

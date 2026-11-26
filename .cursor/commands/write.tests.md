@@ -1,8 +1,8 @@
 Write focused Jest tests for @selection following SOGo6-UI conventions.
 
-Goal: **meaningful coverage** (behavior users and maintainers care about), not exhaustive boilerplate. Pre-commit requires a test file for every `src/` source file except exclusions below.
+Goal: **meaningful coverage** (behavior users and maintainers care about), not exhaustive boilerplate. Team convention: every `src/` source file gets a test file, except the exclusions below (not enforced by a hook: pre-commit only runs `jest --findRelatedTests` on staged files, pre-push runs `npm run test:fast`).
 
-## Pre-commit & file location
+## File location
 
 **Required path** (same extension as source):
 
@@ -11,7 +11,7 @@ src/[path]/[name].tsx  →  src/[path]/__tests__/[name].test.tsx
 src/[path]/[name].ts   →  src/[path]/__tests__/[name].test.ts
 ```
 
-**No test required** (lint-staged skips): `types.ts`, `__tests__/`, `__mocks__/`, `src/app/fakeApi/`, `src/app/env/`, `config/`, `public/`.
+**No test required**: `types.ts`, `__tests__/`, `__mocks__/`, `src/app/fakeApi/`, `src/app/env/`, `config/`, `public/`.
 
 Examples:
 - `src/features/address_books/hooks/use-address-book-contact-picker.ts` → `.../__tests__/use-address-book-contact-picker.test.ts`
