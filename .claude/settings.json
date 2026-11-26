@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run type-check*)",
+      "Bash(npm run test*)",
+      "Bash(npm run check:translations*)",
+      "Bash(npx tsc --noEmit*)",
+      "Bash(npx jest*)",
+      "Bash(npx eslint*)",
+      "Bash(npx prettier --check*)",
+      "Bash(npx playwright test*)"
+    ],
+    "deny": [
+      "Edit(.env*)",
+      "Edit(.mcp.json)",
+      "Bash(git push --force*)",
+      "Bash(git push -f*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/lint-file.sh",
+            "timeout": 60,
+            "statusMessage": "ESLint + Prettier"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/verify-changes.sh",
+            "timeout": 300,
+            "statusMessage": "Type-check, related tests, translations"
+          }
+        ]
+      }
+    ]
+  }
+}

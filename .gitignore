@@ -50,3 +50,6 @@ next-env.d.ts
 #local history
 .history
 .claude/*
+!.claude/settings.json
+!.claude/hooks/
+!.claude/skills/
