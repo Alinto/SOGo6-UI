@@ -108,6 +108,22 @@
             "required": false
           },
           {
+            "constraints": null,
+            "data_type": "list[str]",
+            "default": null,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_ALLOW_REDIRECT",
+            "required": true
+          },
+          {
+            "constraints": null,
+            "data_type": "bool",
+            "default": true,
+            "depends": "SOGO_D_AUTH_TYPE%%%equal%%%openid",
+            "name": "SOGO_D_OPENID_REQUIRE_EMAIL_VERIFIED",
+            "required": false
+          },
+          {
             "constraints": {
               "prefixes": ["http://", "https://"]
             },
