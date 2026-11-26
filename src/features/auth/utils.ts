@@ -51,3 +51,43 @@ export function hasSsoCallbackResult(hash: string): boolean {
   const params = new URLSearchParams(raw)
   return params.has('token') || params.has('error')
 }
+
+const SSO_NONCE_STORAGE_KEY = 'sogo.sso_nonce'
+const SSO_NONCE_PARAM = 'nonce'
+
+function createNonce(): string {
+  const bytes = new Uint8Array(16)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join(
+    ''
+  )
+}
+
+/**
+ * Url of the SSO landing page given to `auth/mode` as `redirect`.
+ * It carries a nonce kept in this tab: the API does not bind the login to the
+ * browser, so the landing page checks it to refuse a login started elsewhere (login CSRF).
+ */
+export function buildSsoRedirectUrl(origin: string, locale: string): string {
+  const nonce = createNonce()
+  sessionStorage.setItem(SSO_NONCE_STORAGE_KEY, nonce)
+  const url = new URL(`/${locale}/auth/login/sso`, origin)
+  url.searchParams.set(SSO_NONCE_PARAM, nonce)
+  return url.toString()
+}
+
+/**
+ * True if the nonce of the landing page query is the one stored when this tab
+ * started the SSO login. The stored nonce is removed: it can only be used once.
+ */
+export function consumeSsoNonce(search: string): boolean {
+  const received = new URLSearchParams(search).get(SSO_NONCE_PARAM)
+  let expected: string | null = null
+  try {
+    expected = sessionStorage.getItem(SSO_NONCE_STORAGE_KEY)
+    sessionStorage.removeItem(SSO_NONCE_STORAGE_KEY)
+  } catch {
+    return false
+  }
+  return Boolean(received) && received === expected
+}

@@ -168,6 +168,24 @@ describe('LoginForm auth mode', () => {
     expect(mockPush).not.toHaveBeenCalled()
   })
 
+  it('asks the API to come back to the SSO page with a nonce', async () => {
+    mockGetAuthMode.mockReturnValue({
+      unwrap: () =>
+        Promise.resolve({
+          data: { kind: 'openid', location: 'https://idp.example/auth' },
+        }),
+    })
+
+    await submit()
+
+    const { redirect } = mockGetAuthMode.mock.calls[0][0]
+    const url = new URL(redirect)
+    expect(url.pathname).toMatch(/\/auth\/login\/sso$/)
+    expect(url.searchParams.get('nonce')).toBe(
+      sessionStorage.getItem('sogo.sso_nonce')
+    )
+  })
+
   it('stays on the form when the openid location is missing or relative', async () => {
     mockGetAuthMode.mockReturnValue({
       unwrap: () =>

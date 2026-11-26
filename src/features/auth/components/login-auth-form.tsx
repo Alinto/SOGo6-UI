@@ -6,13 +6,21 @@ import { PasswordInput } from '@/components/ui/inputs/input-password'
 import { Label } from '@/components/ui/label'
 import { useLoginMutation } from '@/features/auth/components/store/auth.api'
 import { setCredentials } from '@/features/auth/components/store/auth.slice'
-import { waitForLogoutWipe } from '@/features/offline/auth/logout-wipe'
+import {
+  isSsoErrorCode,
+  useSsoErrorMessage,
+} from '@/features/auth/sso-error-message'
 import { decodeJwtPayload } from '@/features/auth/utils'
+import { waitForLogoutWipe } from '@/features/offline/auth/logout-wipe'
 import LoginOfflineBanner from '@/features/offline/components/login-offline-banner'
 import { useLazyGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
 import { useEnvVars } from '@/lib/env-service'
 import { useRouter } from '@/lib/i18n/navigation'
-import { getErrorMessage, getErrorStatus } from '@/lib/redux/api/error-handlers'
+import {
+  getErrorCode,
+  getErrorMessage,
+  getErrorStatus,
+} from '@/lib/redux/api/error-handlers'
 import { useAppDispatch } from '@/lib/redux/hooks'
 import { clearAuthenticatedApiCache } from '@/lib/redux/listeners/reset-cache-on-logout'
 import { cn } from '@/lib/utils'
@@ -44,6 +52,7 @@ export function LoginAuthForm({
   ...props
 }: React.ComponentPropsWithoutRef<'form'>) {
   const t = useTranslations('AUTH')
+  const ssoErrorMessage = useSsoErrorMessage()
   const { push } = useRouter()
   const searchParams = useSearchParams()
   const email = searchParams.get('email')
@@ -131,8 +140,12 @@ export function LoginAuthForm({
       push('/u/0/INBOX')
     } catch (error: unknown) {
       const status = getErrorStatus(error)
+      const code = getErrorCode(error)
 
-      if (status === 401) {
+      if (isSsoErrorCode(code)) {
+        // The domain uses a SSO now (S000216): the password step does not apply anymore
+        setServerError(ssoErrorMessage(code))
+      } else if (status === 401) {
         setServerError(t('error.invalid_credentials.string'))
       } else if (status === 404) {
         setServerError(t('error.route_not_found.string'))
