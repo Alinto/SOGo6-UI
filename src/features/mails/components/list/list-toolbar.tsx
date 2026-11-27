@@ -8,6 +8,7 @@ import {
 import ListBreadcrumb from '@/features/mails/components/list/list-breadcrumb'
 import ListFilter from '@/features/mails/components/list/list-filter'
 import ListFilterDropdown from '@/features/mails/components/list/list-filter-dropdown'
+import ListLabelFilter from '@/features/mails/components/list/list-label-filter'
 import ListPagination from '@/features/mails/components/list/list-pagination'
 import ListRefresh from '@/features/mails/components/list/list-refresh'
 import ListSort from '@/features/mails/components/list/list-sort'
@@ -41,7 +42,7 @@ import type { RootState } from '@/lib/redux/store'
 import { cn } from '@/lib/utils'
 import { Inbox, Mail, MailOpen, ShieldX, Tag, Trash2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import React, { useCallback, useMemo, useState } from 'react'
 
 /** Toolbar content width from which everything fits on one line: a 1600px
@@ -65,14 +66,18 @@ const ListToolbar: React.FC = () => {
     folder as string | string[] | undefined
   )
   const accountString = Array.isArray(account) ? account[0] : (account ?? '0')
-  const searchParams = useSearchParams()
-  const activeFilter = searchParams.get('filter') ?? 'all'
 
-  const { data, currentPage, isSearchActive, refresh, isRefreshing } =
-    useFolderMessages({
-      folder: folderPath,
-      accountId: accountString,
-    })
+  const {
+    data,
+    currentPage,
+    isSearchActive,
+    clientLabels,
+    refresh,
+    isRefreshing,
+  } = useFolderMessages({
+    folder: folderPath,
+    accountId: accountString,
+  })
 
   // Search results can span multiple folders; map each result's id back to
   // its actual folder so bulk actions target the right one (see
@@ -86,13 +91,14 @@ const ListToolbar: React.FC = () => {
     return map
   }, [isSearchActive, data])
 
-  // The server filters folder lists; only search results are filtered here.
-  const clientFilter = isSearchActive ? activeFilter : 'all'
-  const clientFilterActive = clientFilter !== 'all'
+  // The server filters folder lists and, during a search, the search itself
+  // carries the quick filters (see useFolderMessages): only the labels it
+  // cannot express are filtered here.
+  const clientFilterActive = clientLabels.length > 0
 
   const filteredMails = useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
-    [data, clientFilter]
+    () => getClientFilteredMails(data?.mails ?? [], 'all', clientLabels),
+    [data, clientLabels]
   )
 
   const displayedCount = clientFilterActive
@@ -489,6 +495,7 @@ const ListToolbar: React.FC = () => {
         >
           {/* Compact filters (dropdown) on two lines, toggle buttons on one. */}
           {!isWide && <ListFilterDropdown />}
+          {!isWide && <ListLabelFilter compact />}
           {!isMobile && (
             <ListFilter
               showFilters={isWide}

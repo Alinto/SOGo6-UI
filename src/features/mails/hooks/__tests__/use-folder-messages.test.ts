@@ -193,6 +193,36 @@ describe('useFolderMessages', () => {
       }
     )
 
+    it('fetches the label quick filter as every label', () => {
+      mockSearchParams.append('label', 'Work')
+      mockSearchParams.append('label', 'toto')
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+
+      const [args, options] = quickFilterCall()
+      expect(options).toEqual({ skip: false })
+      expect(args.body).toEqual({
+        labels: ['Work', 'toto'],
+        folders: ['INBOX'],
+        include_subfolders: false,
+      })
+      const [listArgs, listOptions] = mockGetFolderMessagesQuery.mock.calls[0]
+      expect(listArgs.params).not.toHaveProperty('label')
+      expect(listOptions.skip).toBe(true)
+    })
+
+    it('combines the label quick filter with the status filter', () => {
+      mockSearchParams.set('filter', 'unread')
+      mockSearchParams.append('label', 'Work')
+      renderHook(() => useFolderMessages({ folder: 'INBOX' }))
+
+      expect(quickFilterCall()[0].body).toEqual({
+        is_read: false,
+        labels: ['Work'],
+        folders: ['INBOX'],
+        include_subfolders: false,
+      })
+    })
+
     it('keeps page, page size, light fields and newest first in the filtered search', () => {
       mockSearchParams.set('filter', 'unread')
       mockSearchParams.set('page', '3')
@@ -272,7 +302,7 @@ describe('useFolderMessages', () => {
       expect(quickFilterCall()[1]).toEqual({ skip: true })
     })
 
-    it('does not send the quick filter to the search endpoint', () => {
+    it('keeps the query params of the user search with a quick filter', () => {
       mockSearchParams.set('filter', 'unread')
       mockMailSearchState.isActive = true
       mockMailSearchState.accountId = '0'
@@ -285,6 +315,54 @@ describe('useFolderMessages', () => {
         sort_by: 'date',
         sort_order: 'desc',
       })
+    })
+
+    it('narrows the user search with the quick filters', () => {
+      mockSearchParams.set('filter', 'unread')
+      mockSearchParams.append('label', 'Work')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = { text: 'invoice' } as any
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      const [searchArgs] = mockSearchMailsQuery.mock.calls[0]
+      expect(searchArgs.body).toEqual({
+        text: 'invoice',
+        is_read: false,
+        labels: ['Work'],
+      })
+      expect(result.current.clientLabels).toEqual([])
+    })
+
+    it('turns an OR search into a match:all one with the labels', () => {
+      mockSearchParams.append('label', 'Work')
+      mockMailSearchState.isActive = true
+      mockMailSearchState.accountId = '0'
+      mockMailSearchState.params = {
+        subject: 'tutu',
+        from: ['tutu'],
+        operator: 'OR',
+      } as any
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      const [searchArgs] = mockSearchMailsQuery.mock.calls[0]
+      expect(searchArgs.body).toEqual({
+        subject: 'tutu',
+        from: ['tutu'],
+        labels: ['Work'],
+        operator: 'AND',
+      })
+      expect(result.current.clientLabels).toEqual([])
+    })
+
+    it('filters no label on the client without a search', () => {
+      mockSearchParams.append('label', 'Work')
+      const { result } = renderHook(() =>
+        useFolderMessages({ folder: 'INBOX' })
+      )
+      expect(result.current.clientLabels).toEqual([])
     })
 
     it('includes page param when set in URL', () => {

@@ -5,6 +5,7 @@ import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-loading-skeleton'
 import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { useMailListLabels } from '@/features/mails/hooks/use-mail-list-labels'
 import { setSkipFolderFetch } from '@/features/mails/store/mail-navigation-slice'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
@@ -32,6 +33,7 @@ const Page = () => {
   const pathname = usePathname()
   const { replace } = useRouter()
   const activeFilter = searchParams.get('filter') ?? 'all'
+  const activeLabels = useMailListLabels()
   const {
     data,
     currentData,
@@ -44,6 +46,7 @@ const Page = () => {
     currentPage,
     isVirtualFolder,
     isSearchActive,
+    clientLabels,
   } = useFolderMessages({
     folder: folderPath,
     accountId: accountString,
@@ -77,8 +80,9 @@ const Page = () => {
   }, [folderPath, dispatch])
 
   // The server filters folder lists; only search results are filtered here.
-  const clientFilter = isSearchActive ? activeFilter : 'all'
-  const clientFilterActive = clientFilter !== 'all'
+  // During a search the quick filters narrow the search itself (see
+  // useFolderMessages): only the labels it cannot express are left here.
+  const clientFilterActive = clientLabels.length > 0
 
   // Keep the URL page in range: if the current page no longer exists (e.g. the
   // last mail of the last page was deleted/moved), fall back to the last valid page.
@@ -108,8 +112,8 @@ const Page = () => {
   ])
 
   const filteredMails = React.useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
-    [data, clientFilter]
+    () => getClientFilteredMails(data?.mails ?? [], 'all', clientLabels),
+    [data, clientLabels]
   )
 
   if (isVirtualFolder && !isSearchActive) {
@@ -117,7 +121,11 @@ const Page = () => {
   }
 
   if (isShowingCache && cachedMails) {
-    const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
+    const offlineFiltered = getClientFilteredMails(
+      cachedMails,
+      activeFilter,
+      activeLabels
+    )
     return (
       <div className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col">
         <CachedDataIndicator

@@ -15,9 +15,28 @@ jest.mock('next-intl', () => ({
     params?.email ? `${key}:${params.email}` : key,
 }))
 
+const mockAllCategories = jest.fn(
+  (): { name: string; color: string; is_default: boolean }[] => []
+)
 jest.mock('../../hooks/use-mail-category-picker', () => ({
-  useMailCategoryPicker: () => ({ allCategories: [] }),
+  useMailCategoryPicker: () => ({ allCategories: mockAllCategories() }),
 }))
+
+type MockOption = { value: string; label: string; color?: string }
+const mockMultiSelect = jest.fn()
+jest.mock('@/components/ui/combomultiple', () => ({
+  MultiSelect: (props: { options: MockOption[]; placeholder?: string }) => {
+    mockMultiSelect(props)
+    return <div data-testid={props.placeholder} />
+  },
+}))
+
+const labelOptions = (): MockOption[] => {
+  const calls = mockMultiSelect.mock.calls.filter(
+    ([props]) => props.placeholder === 'search.labels.placeholder.string'
+  )
+  return calls[calls.length - 1][0].options
+}
 
 const mockUseGetMailboxTagsQuery = jest.fn(
   (_args: unknown, _options?: unknown) => ({ data: undefined })
@@ -252,5 +271,63 @@ describe('SearchMoreOptions — mailbox tags', () => {
       { accountId: '' },
       { skip: true }
     )
+  })
+})
+
+describe('SearchMoreOptions — label options', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+    mockAllCategories.mockReturnValue([])
+    mockUseRecipientSuggestions.mockReturnValue({
+      suggestions: [],
+      isFetching: false,
+    })
+  })
+
+  it('shows the tag colors, with the theme color as fallback', () => {
+    mockUseGetMailboxTagsQuery.mockReturnValue({
+      data: [
+        { name: 'toto', color: '#22c55e', is_default: false },
+        { name: 'Facture', color: '', is_default: false },
+        { name: 'tutu', is_default: false },
+      ],
+    } as never)
+    render(<TestHost accountId="0" />)
+    expect(labelOptions()).toEqual([
+      { value: 'toto', label: 'toto', color: '#22c55e' },
+      { value: 'Facture', label: 'Facture', color: 'hsl(var(--primary))' },
+      { value: 'tutu', label: 'tutu', color: 'hsl(var(--primary))' },
+    ])
+  })
+
+  it('translates default tags and keeps their raw name as value', () => {
+    mockUseGetMailboxTagsQuery.mockReturnValue({
+      data: [
+        { name: 'Work', color: '#8b5cf6', is_default: true },
+        { name: '56', color: '#ef4444', is_default: false },
+      ],
+    } as never)
+    render(<TestHost accountId="0" />)
+    expect(labelOptions()).toEqual([
+      { value: 'Work', label: 'labels.Work', color: '#8b5cf6' },
+      { value: '56', label: '56', color: '#ef4444' },
+    ])
+  })
+
+  it('lists the user categories before the mailbox tags', () => {
+    mockAllCategories.mockReturnValue([
+      { name: 'Family', color: '#eab308', is_default: true },
+    ])
+    mockUseGetMailboxTagsQuery.mockReturnValue({
+      data: [
+        { name: 'family', color: '#000000', is_default: false },
+        { name: 'toto', color: '#22c55e', is_default: false },
+      ],
+    } as never)
+    render(<TestHost accountId="0" />)
+    expect(labelOptions()).toEqual([
+      { value: 'Family', label: 'labels.Family', color: '#eab308' },
+      { value: 'toto', label: 'toto', color: '#22c55e' },
+    ])
   })
 })

@@ -63,6 +63,7 @@ describe('@classic/default', () => {
   describe('basic rendering', () => {
     it('shows skeleton while loading', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: undefined,
         isLoading: true,
         isFetching: false,
@@ -75,6 +76,7 @@ describe('@classic/default', () => {
 
     it('shows skeleton instead of the previous page while a new page loads', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: { mails: [{ id: '1' }], page: 1, total: 1, totalPages: 2 },
         isLoading: false,
         isFetching: true,
@@ -89,6 +91,7 @@ describe('@classic/default', () => {
 
     it('shows skeleton, not an empty list, while no response has arrived', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: undefined,
         isLoading: false,
         isFetching: false,
@@ -103,6 +106,7 @@ describe('@classic/default', () => {
 
     it('shows the virtual folder state, not a skeleton, for a virtual folder', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: undefined,
         isLoading: false,
         isFetching: false,
@@ -118,6 +122,7 @@ describe('@classic/default', () => {
 
     it('shows error fallback when query errors', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: undefined,
         isLoading: false,
         isFetching: false,
@@ -130,6 +135,7 @@ describe('@classic/default', () => {
 
     it('shows messages list when loaded', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: {
           mails: [{ id: '1' }],
           page: 1,
@@ -151,6 +157,7 @@ describe('@classic/default', () => {
   describe('configuration', () => {
     it('passes folder and account to useFolderMessages', () => {
       mockUseFolderMessages.mockReturnValue({
+        clientLabels: [],
         data: {
           mails: [],
           page: 1,

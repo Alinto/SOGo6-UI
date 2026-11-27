@@ -19,12 +19,16 @@ jest.mock('@/lib/i18n/navigation', () => ({
 
 jest.mock('next/navigation', () => ({
   useSearchParams: () => mockUseSearchParams(),
+  useParams: () => ({ account: '0', folder: 'INBOX' }),
 }))
 
 jest.mock('@/lib/redux/hooks', () => ({
   useAppDispatch: () => mockUseAppDispatch(),
-  useAppSelector: (fn: (s: any) => string) =>
-    fn({ mailLayout: { mode: 'full' } }),
+  useAppSelector: (fn: (s: any) => unknown) =>
+    fn({
+      mailLayout: { mode: 'full' },
+      mailSearch: { isActive: false, accountId: null, params: null },
+    }),
 }))
 
 jest.mock('@/hooks/use-mobile', () => ({
@@ -48,6 +52,11 @@ jest.mock('@/components/ui/toggle-group', () => ({
       {children}
     </button>
   ),
+}))
+
+jest.mock('@/features/mails/components/list/list-label-filter', () => ({
+  __esModule: true,
+  default: () => <div data-testid="list-label-filter" />,
 }))
 
 jest.mock('@/components/ui/tooltip', () => ({
@@ -91,9 +100,15 @@ describe('ListFilter', () => {
       expect(fullToggle || splitToggle).toBeTruthy()
     })
 
+    it('renders the label filter next to the filter buttons', () => {
+      render(<ListFilter />)
+      expect(screen.getByTestId('list-label-filter')).toBeInTheDocument()
+    })
+
     it('renders only the layout toggle without the filter buttons', () => {
       mockUseIsMobile.mockReturnValue(false)
       render(<ListFilter showFilters={false} />)
+      expect(screen.queryByTestId('list-label-filter')).not.toBeInTheDocument()
       expect(screen.queryByTestId('toggle-read')).not.toBeInTheDocument()
       expect(screen.queryByTestId('toggle-all')).not.toBeInTheDocument()
       expect(screen.getByTestId('toggle-full')).toBeInTheDocument()

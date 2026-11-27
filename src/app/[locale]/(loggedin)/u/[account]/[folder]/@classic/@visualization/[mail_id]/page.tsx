@@ -191,6 +191,7 @@ const VisualizationPage: React.FC = () => {
               folder={folder}
               mailId={mail_id}
               flags={data.flags}
+              listVisible
             />
           }
         />

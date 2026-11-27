@@ -5,7 +5,16 @@ import MailSubjectLabels from '../mail-subject-labels'
 const mockUseGetUserPreferencesQuery = jest.fn()
 const mockMailAction = jest.fn()
 const mockPush = jest.fn()
+let mockPathname = '/u/0/INBOX/42'
+let mockSearchParams = new URLSearchParams()
 const mockDispatch = jest.fn()
+const inactiveSearch = {
+  isActive: false,
+  accountId: null,
+  params: null,
+  folder: null,
+}
+let mockMailSearch: Record<string, unknown> = inactiveSearch
 
 jest.mock('@/features/user-settings/store/user-preferences-api', () => ({
   useGetUserPreferencesQuery: (...args: unknown[]) =>
@@ -16,18 +25,22 @@ jest.mock('@/features/mails/store/mails-api', () => ({
   useMailActionMutation: () => [mockMailAction, { isLoading: false }],
 }))
 
-jest.mock('@/features/mails/store/mail-search-slice', () => ({
-  clearMailSearch: jest.fn(() => ({ type: 'mailSearch/clearMailSearch' })),
-}))
-
 jest.mock('@/lib/i18n/navigation', () => ({
   useRouter: jest.fn(() => ({
     push: mockPush,
   })),
+  usePathname: () => mockPathname,
+}))
+
+jest.mock('next/navigation', () => ({
+  useSearchParams: () => mockSearchParams,
+  useParams: () => ({ account: '0', folder: 'INBOX' }),
 }))
 
 jest.mock('@/lib/redux/hooks', () => ({
-  useAppDispatch: jest.fn(() => mockDispatch),
+  useAppDispatch: () => mockDispatch,
+  useAppSelector: (fn: (s: any) => unknown) =>
+    fn({ mailSearch: mockMailSearch }),
 }))
 
 jest.mock('next-intl', () => ({
@@ -61,6 +74,9 @@ const defaultProps = {
 describe('MailSubjectLabels', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockPathname = '/u/0/INBOX/42'
+    mockSearchParams = new URLSearchParams()
+    mockMailSearch = inactiveSearch
     mockUseGetUserPreferencesQuery.mockReturnValue(
       buildPreferences(mockCategories)
     )
@@ -119,22 +135,84 @@ describe('MailSubjectLabels', () => {
     })
   })
 
-  it('clears the active search and navigates to an advanced search on the clicked label', () => {
-    const { clearMailSearch } = jest.requireMock(
-      '@/features/mails/store/mail-search-slice'
-    )
-    render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'label_dialog.search_by_tag.string:Important',
-      })
-    )
-    expect(clearMailSearch).toHaveBeenCalled()
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'mailSearch/clearMailSearch',
+  describe('label click', () => {
+    const clickLabel = (name = 'Important') =>
+      fireEvent.click(
+        screen.getByRole('button', {
+          name: `label_dialog.search_by_tag.string:${name}`,
+        })
+      )
+
+    it('goes back to the list with the label selected in the quick filter', () => {
+      render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+      clickLabel()
+      expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX?label=Important')
     })
-    expect(mockPush).toHaveBeenCalledWith(
-      '/u/0/advanced-search?labels=Important'
-    )
+
+    it('keeps the mail open when the list is shown next to it', () => {
+      render(
+        <MailSubjectLabels
+          {...defaultProps}
+          flags={['Important']}
+          listVisible
+        />
+      )
+      clickLabel()
+      expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX/42?label=Important')
+    })
+
+    it('adds the label to the chosen quick filters, back to page 1', () => {
+      mockSearchParams = new URLSearchParams(
+        'filter=unread&label=Work&page=3&sort=t_asc'
+      )
+      render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+      clickLabel()
+      expect(mockPush).toHaveBeenCalledWith(
+        '/u/0/INBOX?filter=unread&sort=t_asc&label=Work&label=Important'
+      )
+    })
+
+    it('does not add a label already selected, whatever its case', () => {
+      mockSearchParams = new URLSearchParams('label=important')
+      render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+      clickLabel()
+      expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX?label=important')
+    })
+
+    it('goes back to the advanced search the mail was opened from', () => {
+      mockPathname = '/u/0/advanced-search/42'
+      mockSearchParams = new URLSearchParams('subject=invoice')
+      render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+      clickLabel()
+      expect(mockPush).toHaveBeenCalledWith(
+        '/u/0/advanced-search?subject=invoice&label=Important'
+      )
+    })
+
+    it('turns a match:any search into a match:all one keeping its labels', () => {
+      mockMailSearch = {
+        isActive: true,
+        accountId: '0',
+        params: { subject: 'x', labels: ['Work'], operator: 'OR' },
+        folder: 'INBOX',
+      }
+      render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+      clickLabel()
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            params: { subject: 'x', labels: ['Work'] },
+          }),
+        })
+      )
+      expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX?label=Important')
+    })
+
+    it('stays on a page that is not the mail route', () => {
+      mockPathname = '/u/0/INBOX'
+      render(<MailSubjectLabels {...defaultProps} flags={['Important']} />)
+      clickLabel()
+      expect(mockPush).toHaveBeenCalledWith('/u/0/INBOX?label=Important')
+    })
   })
 })

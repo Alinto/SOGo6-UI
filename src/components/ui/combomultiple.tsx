@@ -22,6 +22,19 @@ import { cn } from '@/lib/utils'
 export type Option = {
   value: string
   label: string
+  /** Shows a colored dot before the label. */
+  color?: string
+}
+
+function ColorDot({ color }: { color: string }) {
+  return (
+    <span
+      data-testid="multi-select-color-dot"
+      className="h-3 w-3 shrink-0 rounded-full border"
+      style={{ backgroundColor: color }}
+      aria-hidden="true"
+    />
+  )
 }
 
 interface MultiSelectProps {
@@ -53,14 +66,14 @@ export function MultiSelect({
     [selected, onChange]
   )
 
-  const selectedLabels = React.useMemo(
+  const selectedOptions = React.useMemo(
     () =>
       selected
-        .map((value) => options.find((option) => option.value === value)?.label)
-        .filter(Boolean)
-        .join(', '),
+        .map((value) => options.find((option) => option.value === value))
+        .filter((option): option is Option => Boolean(option)),
     [selected, options]
   )
+  const hasColors = selectedOptions.some((option) => option.color)
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,9 +84,25 @@ export function MultiSelect({
           aria-expanded={open}
           className={cn('w-full justify-between', className)}
         >
-          <span className="truncate">
-            {selected.length > 0 ? selectedLabels : placeholder}
-          </span>
+          {selected.length === 0 ? (
+            <span className="truncate">{placeholder}</span>
+          ) : hasColors ? (
+            <span className="flex min-w-0 items-center gap-2 overflow-hidden">
+              {selectedOptions.map((option) => (
+                <span
+                  key={option.value}
+                  className="flex shrink-0 items-center gap-1"
+                >
+                  {option.color && <ColorDot color={option.color} />}
+                  {option.label}
+                </span>
+              ))}
+            </span>
+          ) : (
+            <span className="truncate">
+              {selectedOptions.map((option) => option.label).join(', ')}
+            </span>
+          )}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -92,8 +121,10 @@ export function MultiSelect({
                 <CommandItem
                   key={option.value}
                   value={option.value}
+                  keywords={[option.label]}
                   onSelect={() => handleSelect(option.value)}
                 >
+                  {option.color && <ColorDot color={option.color} />}
                   {option.label}
                   <Check
                     className={cn(

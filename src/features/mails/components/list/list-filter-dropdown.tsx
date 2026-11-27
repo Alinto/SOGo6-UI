@@ -6,31 +6,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
+import { useMailListStatusFilter } from '@/features/mails/hooks/use-mail-list-status-filter'
 import { useTranslations } from 'next-intl'
-import { useSearchParams } from 'next/navigation'
 import React from 'react'
 
 const ListFilterDropdown: React.FC = () => {
   const t = useTranslations('MAILS_LIST')
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
-  const { push } = useRouter()
-  const filter = searchParams.get('filter') || 'all'
-
-  // Same URL handling as ListFilter: keep the other parameters (sort…) and
-  // go back to the first page.
-  const handleFilterChange = (value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (!value || value === 'all') {
-      params.delete('filter')
-    } else {
-      params.set('filter', value)
-    }
-    params.delete('page')
-    const query = params.toString()
-    push(query ? `${pathname}?${query}` : pathname)
-  }
+  // Same state as the ListFilter buttons.
+  const { value: filter, setValue: handleFilterChange } =
+    useMailListStatusFilter()
 
   return (
     <Select value={filter} onValueChange={handleFilterChange}>

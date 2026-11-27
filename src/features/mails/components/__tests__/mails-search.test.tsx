@@ -32,6 +32,8 @@ const mockMailSearchState: {
     to?: string[]
     bcc?: string[]
     folders?: string[]
+    labels?: string[]
+    is_read?: boolean
     operator?: 'AND' | 'OR'
   } | null
 } = { isActive: false, accountId: null, params: null }
@@ -537,6 +539,214 @@ describe('MailsSearch', () => {
       expect(mockPush).not.toHaveBeenCalledWith(
         expect.stringContaining('advanced-search')
       )
+    })
+  })
+
+  describe('quick filters', () => {
+    const advancedInput = () =>
+      screen.getByPlaceholderText('search.advanced_placeholder.string')
+
+    it.each([
+      ['read', 'is:read'],
+      ['unread', 'is:unread'],
+      ['flagged', 'is:flagged'],
+      ['attachments', 'has:attachment'],
+    ])('shows the %s filter as "%s" in the bar', (filter, text) => {
+      mockUseSearchParams.mockReturnValue(
+        new URLSearchParams(`filter=${filter}`)
+      )
+      render(<MailsSearch />)
+      expect(advancedInput()).toHaveValue(text)
+      expect(
+        screen.getByRole('button', { name: 'search.clear.string' })
+      ).toBeInTheDocument()
+    })
+
+    it('shows the chosen labels next to the status filter', () => {
+      mockUseSearchParams.mockReturnValue(
+        new URLSearchParams('filter=unread&label=Work&label=To do')
+      )
+      render(<MailsSearch />)
+      expect(advancedInput()).toHaveValue('is:unread label:Work label:"To do"')
+    })
+
+    it('follows the quick filter buttons', () => {
+      mockUseSearchParams.mockReturnValue(new URLSearchParams('filter=read'))
+      const { rerender } = render(<MailsSearch />)
+      expect(advancedInput()).toHaveValue('is:read')
+
+      mockUseSearchParams.mockReturnValue(new URLSearchParams())
+      rerender(<MailsSearch />)
+      expect(
+        screen.getByPlaceholderText('search.placeholder.string')
+      ).toHaveValue('')
+      expect(screen.getByTestId('field-scope-multiselect')).toBeInTheDocument()
+    })
+
+    describe('during an active search', () => {
+      const activateSearch = (
+        params: NonNullable<typeof mockMailSearchState.params>
+      ) => {
+        mockMailSearchState.isActive = true
+        mockMailSearchState.accountId = '0'
+        mockMailSearchState.params = params
+      }
+
+      it('adds the quick filters to the search shown in the bar', () => {
+        mockUseSearchParams.mockReturnValue(
+          new URLSearchParams('filter=read&label=Work')
+        )
+        activateSearch({ subject: 'invoice', bcc: ['jane'] })
+        render(<MailsSearch />)
+        expect(advancedInput()).toHaveValue(
+          'subject:invoice bcc:jane is:read label:Work'
+        )
+      })
+
+      it('follows the quick filter buttons', () => {
+        activateSearch({ subject: 'invoice', bcc: ['jane'] })
+        const { rerender } = render(<MailsSearch />)
+        expect(advancedInput()).toHaveValue('subject:invoice bcc:jane')
+
+        mockUseSearchParams.mockReturnValue(new URLSearchParams('label=Work'))
+        rerender(<MailsSearch />)
+        expect(advancedInput()).toHaveValue(
+          'subject:invoice bcc:jane label:Work'
+        )
+
+        mockUseSearchParams.mockReturnValue(new URLSearchParams())
+        rerender(<MailsSearch />)
+        expect(advancedInput()).toHaveValue('subject:invoice bcc:jane')
+      })
+
+      it('switches an OR simple-bar search to a match:all advanced one for a status filter', () => {
+        activateSearch({ subject: 'tutu', from: ['tutu'], operator: 'OR' })
+        mockUseSearchParams.mockReturnValue(
+          new URLSearchParams('filter=unread')
+        )
+        render(<MailsSearch />)
+        expect(advancedInput()).toHaveValue('subject:tutu from:tutu is:unread')
+      })
+
+      it('switches an OR simple-bar search to a match:all advanced one for a label', () => {
+        activateSearch({ subject: 'tutu', from: ['tutu'], operator: 'OR' })
+        mockUseSearchParams.mockReturnValue(new URLSearchParams('label=Work'))
+        render(<MailsSearch />)
+        expect(advancedInput()).toHaveValue('subject:tutu from:tutu label:Work')
+      })
+
+      it('submits the shown search and removes the quick filters from the URL', async () => {
+        mockUseSearchParams.mockReturnValue(
+          new URLSearchParams('filter=read&label=Work&sort=t_asc')
+        )
+        activateSearch({ subject: 'invoice', bcc: ['jane'] })
+        const user = userEvent.setup()
+        render(<MailsSearch />)
+
+        await user.type(advancedInput(), '{Enter}')
+
+        expect(mockDispatch).toHaveBeenCalledWith(
+          expect.objectContaining({
+            payload: expect.objectContaining({
+              params: expect.objectContaining({
+                subject: 'invoice',
+                is_read: true,
+                labels: ['Work'],
+              }),
+            }),
+          })
+        )
+        expect(mockPush).toHaveBeenCalledWith('/en/u/0/INBOX?sort=t_asc')
+      })
+
+      it('pushes the new search URL, without the quick filters, on the advanced-search route', async () => {
+        mockUseParams.mockReturnValue({
+          account: '0',
+          folder: 'advanced-search',
+        })
+        mockUseSearchParams.mockReturnValue(
+          new URLSearchParams('subject=invoice&folder=INBOX&label=Work')
+        )
+        activateSearch({ subject: 'invoice', folders: ['INBOX'] })
+        const user = userEvent.setup()
+        render(<MailsSearch />)
+
+        expect(advancedInput()).toHaveValue(
+          'subject:invoice in:INBOX label:Work'
+        )
+        await user.type(advancedInput(), '{Enter}')
+
+        expect(mockPush).toHaveBeenCalledWith(
+          '/u/0/advanced-search?subject=invoice&folder=INBOX&labels=Work'
+        )
+      })
+
+      it('removes the quick filters shown in the bar with the clear button', async () => {
+        mockUseSearchParams.mockReturnValue(
+          new URLSearchParams('filter=read&sort=t_asc')
+        )
+        activateSearch({ subject: 'invoice', bcc: ['jane'] })
+        const user = userEvent.setup()
+        render(<MailsSearch />)
+
+        await user.click(
+          screen.getByRole('button', { name: 'search.clear.string' })
+        )
+
+        expect(mockDispatch).toHaveBeenCalledWith(clearMailSearch())
+        expect(mockPush).toHaveBeenCalledWith('/en/u/0/INBOX?sort=t_asc')
+      })
+    })
+
+    it('removes the quick filters from the URL with the clear button', async () => {
+      mockUseSearchParams.mockReturnValue(
+        new URLSearchParams('filter=read&label=Work&sort=t_asc&page=2')
+      )
+      const user = userEvent.setup()
+      render(<MailsSearch />)
+
+      await user.click(
+        screen.getByRole('button', { name: 'search.clear.string' })
+      )
+
+      expect(mockPush).toHaveBeenCalledWith('/en/u/0/INBOX?sort=t_asc')
+    })
+
+    it('updates the quick filters when the edited query only holds quick filters', async () => {
+      mockUseSearchParams.mockReturnValue(new URLSearchParams('filter=read'))
+      const user = userEvent.setup()
+      render(<MailsSearch />)
+
+      await user.clear(advancedInput())
+      await user.type(advancedInput(), 'is:unread label:Work{Enter}')
+
+      expect(mockPush).toHaveBeenCalledWith(
+        '/en/u/0/INBOX?filter=unread&label=Work'
+      )
+      expect(mockDispatch).not.toHaveBeenCalled()
+    })
+
+    it('turns the query into a search, without the quick filters, once other criteria are added', async () => {
+      mockUseSearchParams.mockReturnValue(
+        new URLSearchParams('filter=read&sort=t_asc')
+      )
+      const user = userEvent.setup()
+      render(<MailsSearch />)
+
+      await user.type(advancedInput(), ' from:jane{Enter}')
+
+      expect(mockDispatch).toHaveBeenCalledWith(
+        expect.objectContaining({
+          payload: expect.objectContaining({
+            params: expect.objectContaining({
+              is_read: true,
+              from: ['jane'],
+              folders: ['INBOX'],
+            }),
+          }),
+        })
+      )
+      expect(mockPush).toHaveBeenCalledWith('/en/u/0/INBOX?sort=t_asc')
     })
   })
 })

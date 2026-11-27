@@ -1,15 +1,15 @@
 'use client'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { TooltipWrapper } from '@/components/ui/tooltip'
+import ListLabelFilter from '@/features/mails/components/list/list-label-filter'
+import { useMailListStatusFilter } from '@/features/mails/hooks/use-mail-list-status-filter'
 import type { MailLayoutMode } from '@/features/mails/store/mail-layout-slice'
 import { setMailLayout } from '@/features/mails/store/mail-layout-slice'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { usePathname, useRouter } from '@/lib/i18n/navigation'
 import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import type { RootState } from '@/lib/redux/store'
 import { Maximize2, PanelRight } from 'lucide-react'
 import { useTranslations } from 'next-intl'
-import { useSearchParams } from 'next/navigation'
 import React from 'react'
 
 interface ListFilterProps {
@@ -25,10 +25,7 @@ const ListFilter: React.FC<ListFilterProps> = ({
   layoutToggleClassName,
 }) => {
   const t = useTranslations('MAILS_LIST')
-  const searchParams = useSearchParams()
-  const pathname = usePathname()
-  const { push } = useRouter()
-  const filter = searchParams.get('filter') || 'all'
+  const { value: filter, setValue: setFilter } = useMailListStatusFilter()
   const isMobile = useIsMobile()
   const dispatch = useAppDispatch()
   const mailLayoutMode = useAppSelector(
@@ -45,17 +42,7 @@ const ListFilter: React.FC<ListFilterProps> = ({
               type="single"
               value={filter}
               defaultValue="all"
-              onValueChange={(value) => {
-                const newParams = new URLSearchParams(searchParams.toString())
-                if (!value || value === 'all') {
-                  newParams.delete('filter')
-                } else {
-                  newParams.set('filter', value)
-                }
-                newParams.delete('page')
-                const query = newParams.toString()
-                push(query ? `${pathname}?${query}` : pathname)
-              }}
+              onValueChange={setFilter}
             >
               <ToggleGroupItem value="all" aria-label={t('filter.all.string')}>
                 {t('filter.all.string')}
@@ -91,6 +78,7 @@ const ListFilter: React.FC<ListFilterProps> = ({
             </ToggleGroup>
           </div>
         )}
+        {showFilters && <ListLabelFilter />}
 
         {!isMobile && (
           <ToggleGroup

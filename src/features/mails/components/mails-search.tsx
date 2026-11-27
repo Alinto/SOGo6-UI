@@ -36,9 +36,14 @@ import {
   type MouseEvent,
 } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
-import type { MailSearchFieldScope } from '../mails-types'
+import { useMailListLabels } from '../hooks/use-mail-list-labels'
+import type { MailSearchFieldScope, MailSearchParams } from '../mails-types'
 import { clearMailSearch, setMailSearch } from '../store/mail-search-slice'
 import { useGetFoldersQuery } from '../store/mails-api'
+import {
+  MAIL_LIST_LABEL_PARAM,
+  toMailListApiFilter,
+} from '../utils/client-mail-list-filter'
 import { folderPathFromParams } from '../utils/folder-path-from-params'
 import { normalizeFolderType } from '../utils/folder-type-helpers'
 import {
@@ -56,12 +61,23 @@ import {
   type SearchFormValues,
   type SimpleSearchField,
 } from '../utils/mail-search-form'
+import {
+  applyQuickFilterToSearch,
+  quickFilterToSearchParams,
+  searchParamsToQuickFilter,
+  type MailListQuickFilter,
+} from '../utils/quick-filter-search'
 import SearchFolders, { flattenFolders } from './search-folders'
 import SearchMoreOptions from './search-more-options'
 
 // Order in which the simple-search box picks the field it displays/reads
 // from when several scopes are selected at once.
 const READ_PRIORITY: SimpleSearchField[] = ['subject', 'from', 'to', 'text']
+
+/** Identifies the quick filters of the list (URL `filter=` and `label=`). */
+function toQuickFilterKey(filter: string | undefined, labels: string[]) {
+  return `${filter ?? ''}|${labels.join('\n')}`
+}
 
 export function MailsSearch() {
   const formT = useTranslations('FORM_COMMONS')
@@ -82,17 +98,87 @@ export function MailsSearch() {
   // page the previous view was on — keep the URL's `page` param from
   // stranding the user on an empty/truncated page (same convention as
   // ListFilter's filter changes).
-  const resetPageParam = () => {
-    if (!searchParams.has('page')) return
+  // With `dropQuickFilters`, the quick filters (`filter=`, `label=`) are also
+  // removed, as their criteria are then carried by the search itself, except
+  // `keepLabels` (labels the search cannot express).
+  const resetPageParam = (
+    dropQuickFilters = false,
+    keepLabels: string[] = []
+  ) => {
     const newParams = new URLSearchParams(searchParams.toString())
     newParams.delete('page')
+    if (dropQuickFilters) {
+      newParams.delete('filter')
+      newParams.delete(MAIL_LIST_LABEL_PARAM)
+      keepLabels.forEach((label) =>
+        newParams.append(MAIL_LIST_LABEL_PARAM, label)
+      )
+    }
     const query = newParams.toString()
+    if (query === searchParams.toString()) return
+    push(query ? `${pathname}?${query}` : pathname)
+  }
+
+  // Sets the quick filters of the mail list (same URL handling as ListFilter
+  // and ListLabelFilter: other params kept, back to the first page).
+  const applyQuickFilter = ({ filter, labels }: MailListQuickFilter) => {
+    const newParams = new URLSearchParams(searchParams.toString())
+    newParams.delete('filter')
+    newParams.delete(MAIL_LIST_LABEL_PARAM)
+    newParams.delete('page')
+    if (filter) newParams.set('filter', filter)
+    labels.forEach((label) => newParams.append(MAIL_LIST_LABEL_PARAM, label))
+    const query = newParams.toString()
+    const current = searchParams.toString()
+    if (query === current) return
     push(query ? `${pathname}?${query}` : pathname)
   }
 
   const mailSearch = useAppSelector((state) => state.mailSearch)
   const isSearchActiveForAccount =
     mailSearch.isActive && mailSearch.accountId === accountId
+
+  // The quick filters of the list (read, unread, important, attachments,
+  // labels) are shown in the bar as `key:value` tokens (e.g. `is:read
+  // label:Work`), so the user sees what filters the list and can edit it like
+  // any query. Without a search, the bar shows them alone; during a search,
+  // they narrow the search itself (see useFolderMessages) and the bar shows
+  // the resulting search.
+  const isOnAdvancedSearchRoute =
+    currentFolderPath === ADVANCED_SEARCH_ROUTE_SEGMENT
+  const quickFilter = toMailListApiFilter(searchParams.get('filter'))
+  const quickFilterLabels = useMailListLabels()
+  const quickFilterKey = toQuickFilterKey(quickFilter, quickFilterLabels)
+  const quickFilterText = useMemo(() => {
+    if (isOnAdvancedSearchRoute) return ''
+    const params = quickFilterToSearchParams(quickFilter, quickFilterLabels)
+    return params ? mailSearchParamsToQueryText(params) : ''
+  }, [isOnAdvancedSearchRoute, quickFilter, quickFilterLabels])
+  const showsQuickFilter = !isSearchActiveForAccount && quickFilterText !== ''
+  const quickFilteredSearch = useMemo(
+    () =>
+      applyQuickFilterToSearch(
+        mailSearch.params ?? {},
+        quickFilter,
+        quickFilterLabels
+      ),
+    [mailSearch.params, quickFilter, quickFilterLabels]
+  )
+  // Labels of the quick filter the active search cannot express: they are
+  // not part of the bar's query, so they stay in the URL when it is submitted.
+  const keptQuickLabels = isSearchActiveForAccount
+    ? quickFilteredSearch.clientLabels
+    : []
+
+  // Advanced search route of `params`, keeping the given quick filter labels.
+  const advancedSearchPath = (params: MailSearchParams, labels: string[]) => {
+    const path = buildAdvancedSearchPath(accountId, params)
+    if (labels.length === 0) return path
+    const extra = new URLSearchParams(
+      labels.map((label) => [MAIL_LIST_LABEL_PARAM, label])
+    )
+    return `${path}${path.includes('?') ? '&' : '?'}${extra.toString()}`
+  }
 
   const [advancedOpen, setAdvancedOpen] = useState(false)
   // The top bar switches from the simple (field-scope-driven) input to an
@@ -104,6 +190,9 @@ export function MailsSearch() {
   const [advancedQueryText, setAdvancedQueryText] = useState('')
   const simplePrefilledRef = useRef(false)
   const advancedPrefilledRef = useRef(false)
+  // Quick filters the bar was last prefilled with during a search: the bar
+  // is prefilled again when they change.
+  const prefilledQuickKeyRef = useRef<string | null>(null)
 
   // The simple search bar and the advanced search modal are deliberately
   // decoupled: each owns its own form and can set the active mail search on
@@ -118,18 +207,32 @@ export function MailsSearch() {
   })
 
   useEffect(() => {
-    if (isSearchActiveForAccount && !simplePrefilledRef.current) {
-      const params = mailSearch.params ?? {}
-      if (isSimpleBarCompatible(params)) {
-        setBarMode('simple')
-        simpleForm.reset(mailSearchParamsToFormValues(params))
-      } else {
-        setBarMode('advanced')
-        setAdvancedQueryText(mailSearchParamsToQueryText(params))
-      }
-      simplePrefilledRef.current = true
+    if (!isSearchActiveForAccount) return
+    if (
+      simplePrefilledRef.current &&
+      prefilledQuickKeyRef.current === quickFilterKey
+    ) {
+      return
     }
-  }, [isSearchActiveForAccount, mailSearch.params, simpleForm])
+    const params = mailSearch.params ?? {}
+    if (!quickFilteredSearch.applied && isSimpleBarCompatible(params)) {
+      setBarMode('simple')
+      simpleForm.reset(mailSearchParamsToFormValues(params))
+    } else {
+      setBarMode('advanced')
+      setAdvancedQueryText(
+        mailSearchParamsToQueryText(quickFilteredSearch.params)
+      )
+    }
+    simplePrefilledRef.current = true
+    prefilledQuickKeyRef.current = quickFilterKey
+  }, [
+    isSearchActiveForAccount,
+    mailSearch.params,
+    quickFilteredSearch,
+    quickFilterKey,
+    simpleForm,
+  ])
 
   // Re-synced on every open (see `closeAdvancedModal` resetting the ref on
   // close) rather than once per search-activation lifecycle — otherwise
@@ -142,23 +245,46 @@ export function MailsSearch() {
     // advanced form to express (bcc, attachments, dates, labels, etc.) —
     // a search that came from the simple bar (e.g. typing "tutu" writes it
     // to subject/from under the hood) must stay local to the simple bar
-    // and not leak into the advanced modal's fields.
-    if (isSearchActiveForAccount && !isSimpleBarCompatible(params)) {
-      advancedForm.reset(mailSearchParamsToFormValues(params))
+    // and not leak into the advanced modal's fields. The quick filters are
+    // included: submitting the modal replaces the URL that holds them.
+    if (
+      isSearchActiveForAccount &&
+      (quickFilteredSearch.applied || !isSimpleBarCompatible(params))
+    ) {
+      advancedForm.reset(
+        mailSearchParamsToFormValues(quickFilteredSearch.params)
+      )
     } else if (
       currentFolderPath &&
       currentFolderPath !== ADVANCED_SEARCH_ROUTE_SEGMENT
     ) {
       // No advanced search to restore — default the folder scope to
       // whichever folder the user is currently browsing instead of the
-      // form's hardcoded INBOX default.
-      advancedForm.setValue('folder', currentFolderPath)
+      // form's hardcoded INBOX default, with the quick filters shown in the
+      // bar.
+      const quickParams = showsQuickFilter
+        ? quickFilterToSearchParams(quickFilter, quickFilterLabels)
+        : null
+      if (quickParams) {
+        advancedForm.reset(
+          mailSearchParamsToFormValues({
+            ...quickParams,
+            folders: [currentFolderPath],
+          })
+        )
+      } else {
+        advancedForm.setValue('folder', currentFolderPath)
+      }
     }
     advancedPrefilledRef.current = true
   }, [
     advancedOpen,
     isSearchActiveForAccount,
     mailSearch.params,
+    quickFilteredSearch,
+    showsQuickFilter,
+    quickFilter,
+    quickFilterLabels,
     advancedForm,
     currentFolderPath,
   ])
@@ -172,8 +298,10 @@ export function MailsSearch() {
       advancedForm.reset(defaultSearchFormValues)
       simplePrefilledRef.current = false
       advancedPrefilledRef.current = false
-      setBarMode('simple')
-      setAdvancedQueryText('')
+      prefilledQuickKeyRef.current = null
+      // Re-run on each quick filter change, so the bar follows the buttons.
+      setBarMode(quickFilterText ? 'advanced' : 'simple')
+      setAdvancedQueryText(quickFilterText)
     }
   }, [
     isSearchActiveForAccount,
@@ -182,6 +310,7 @@ export function MailsSearch() {
     mailSearch.isActive,
     mailSearch.accountId,
     accountId,
+    quickFilterText,
   ])
 
   const { data: folders } = useGetFoldersQuery({ accountId })
@@ -294,8 +423,6 @@ export function MailsSearch() {
     // them is enough, unlike the advanced modal's default AND semantics. It
     // also always searches the folder currently open in the mail list,
     // unlike the advanced modal which lets the user pick any folder/scope.
-    const isOnAdvancedSearchRoute =
-      currentFolderPath === ADVANCED_SEARCH_ROUTE_SEGMENT
     // The advanced-search route is a pseudo-folder, not a real one to search
     // in — this is reachable when a simple-bar-compatible advanced search is
     // reloaded/opened fresh (see isSimpleBarCompatible), which prefills the
@@ -318,7 +445,7 @@ export function MailsSearch() {
       })
     )
     if (isOnAdvancedSearchRoute) {
-      push(buildAdvancedSearchPath(accountId, params))
+      push(advancedSearchPath(params, keptQuickLabels))
     } else {
       resetPageParam()
     }
@@ -336,7 +463,41 @@ export function MailsSearch() {
       folder: baseFolder,
     })
     const params = buildMailSearchParams(values)
+
+    // Outside a search, a query the quick filters can express (e.g. the
+    // shown `is:read` edited into `is:unread label:Work`) stays a quick
+    // filter: the list buttons follow it, and an emptied bar removes them.
+    if (
+      !isSearchActiveForAccount &&
+      currentFolderPath &&
+      !isOnAdvancedSearchRoute
+    ) {
+      const nextQuickFilter = searchParamsToQuickFilter(
+        params,
+        currentFolderPath
+      )
+      if (nextQuickFilter) {
+        const nextText = mailSearchParamsToQueryText(
+          quickFilterToSearchParams(
+            nextQuickFilter.filter,
+            nextQuickFilter.labels
+          ) ?? {}
+        )
+        setBarMode(nextText ? 'advanced' : 'simple')
+        setAdvancedQueryText(nextText)
+        applyQuickFilter(nextQuickFilter)
+        return
+      }
+    }
+
+    // The quick filters shown in the bar are now part of the search: keeping
+    // them in the URL would filter its results again, even once removed from
+    // the query.
+    const dropQuickFilters = isSearchActiveForAccount || showsQuickFilter
     simplePrefilledRef.current = true
+    prefilledQuickKeyRef.current = dropQuickFilters
+      ? toQuickFilterKey(undefined, keptQuickLabels)
+      : quickFilterKey
     setAdvancedQueryText(mailSearchParamsToQueryText(params))
     dispatch(
       setMailSearch({
@@ -345,7 +506,13 @@ export function MailsSearch() {
         folder: currentFolderPath,
       })
     )
-    resetPageParam()
+    if (isOnAdvancedSearchRoute) {
+      // The route's URL is the search: without a new one,
+      // useSyncAdvancedSearchFromUrl would restore the previous search.
+      push(advancedSearchPath(params, keptQuickLabels))
+    } else {
+      resetPageParam(dropQuickFilters, keptQuickLabels)
+    }
   }
 
   const handleInputKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -374,6 +541,9 @@ export function MailsSearch() {
   const handleAdvancedSubmit = (values: SearchFormValues) => {
     const params = buildMailSearchParams(values)
     simplePrefilledRef.current = true
+    // The modal was prefilled with the quick filters (see above): the new
+    // URL only keeps the labels the search could not express.
+    prefilledQuickKeyRef.current = toQuickFilterKey(undefined, keptQuickLabels)
     setBarMode('advanced')
     setAdvancedQueryText(mailSearchParamsToQueryText(params))
     dispatch(
@@ -383,7 +553,7 @@ export function MailsSearch() {
         folder: ADVANCED_SEARCH_ROUTE_SEGMENT,
       })
     )
-    push(buildAdvancedSearchPath(accountId, params))
+    push(advancedSearchPath(params, keptQuickLabels))
     closeAdvancedModal(false)
   }
 
@@ -393,13 +563,20 @@ export function MailsSearch() {
     dispatch(clearMailSearch())
     simplePrefilledRef.current = false
     advancedPrefilledRef.current = false
+    prefilledQuickKeyRef.current = null
     setBarMode('simple')
     setAdvancedQueryText('')
     // Clearing from the advanced-search route has nowhere else to fall back
     // to (it's not a real folder) — return to the inbox, like other exits
     // from a virtual/removed location do (see folder-messages-error-fallback).
-    if (currentFolderPath === ADVANCED_SEARCH_ROUTE_SEGMENT) {
+    if (isOnAdvancedSearchRoute) {
       push(`/u/${accountId}/INBOX`)
+    } else if (
+      showsQuickFilter ||
+      (isSearchActiveForAccount && quickFilteredSearch.applied)
+    ) {
+      // The bar shows the quick filters: clearing it removes them.
+      applyQuickFilter({ labels: [] })
     }
   }
 
@@ -434,7 +611,7 @@ export function MailsSearch() {
               onChange={(e) => handleQueryInputChange(e.target.value)}
               onKeyDown={handleInputKeyDown}
             />
-            {isSearchActiveForAccount && (
+            {(isSearchActiveForAccount || showsQuickFilter) && (
               <button
                 type="button"
                 onClick={handleClearButtonClick}

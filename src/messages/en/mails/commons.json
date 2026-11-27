@@ -78,8 +78,8 @@
                         "string": "Remove {name} tag"
                     },
                     "search_by_tag": {
-                        "string": "Search for {name} tag",
-                        "description": "Aria label for clicking a label/tag in the mail display view, which opens advanced search filtered by that label"
+                        "string": "Filter the list by the {name} tag",
+                        "description": "Aria label for clicking a label/tag in the mail display view, which selects that label in the quick label filter of the mail list"
                     },
                     "create": {
                         "string": "Create"

@@ -20,16 +20,24 @@ import { useAppDispatch, useAppSelector } from '@/lib/redux/hooks'
 import { nanoid } from '@reduxjs/toolkit'
 import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useMemo, useRef } from 'react'
-import { toMailListApiFilter } from '../utils/client-mail-list-filter'
+import {
+  MAIL_LIST_LABEL_PARAM,
+  toMailListApiFilter,
+} from '../utils/client-mail-list-filter'
 import { isMailDetailPath } from '../utils/mail-detail-navigation'
 import { ADVANCED_SEARCH_ROUTE_SEGMENT } from '../utils/mail-search-form'
 import {
+  applyQuickFilterToSearch,
   toQuickFilterSearchBody,
   toQuickFilterSearchParams,
 } from '../utils/quick-filter-search'
 import { useCurrentFolder } from './use-current-folder'
+import { useMailListLabels } from './use-mail-list-labels'
 
-const EXCLUDED_PARAMS = ['filter']
+const EXCLUDED_PARAMS = ['filter', MAIL_LIST_LABEL_PARAM]
+
+/** Stable empty label list (no client label filtering). */
+const NO_LABELS: string[] = []
 
 const MIN_REFRESH_FEEDBACK_MS = 300
 
@@ -163,15 +171,25 @@ export function useFolderMessages({
   const searchSort =
     SORT_PARAM_MAP[searchParams.get('sort') ?? ''] ?? DEFAULT_SEARCH_SORT
 
-  // Quick filter (read, unread…): the folder list route ignores it, so the
-  // filtered list is fetched from the search route, restricted to this folder.
+  // Quick filters (read, unread…, labels): the folder list route ignores
+  // them, so the filtered list is fetched from the search route, restricted
+  // to this folder.
   const quickFilter = toMailListApiFilter(searchParams.get('filter'))
+  const quickFilterLabels = useMailListLabels()
   const quickFilterBody = useMemo(
     () =>
-      quickFilter && !isSearchActive && !isAdvancedSearchRoute
-        ? toQuickFilterSearchBody(quickFilter, folder)
+      (quickFilter || quickFilterLabels.length > 0) &&
+      !isSearchActive &&
+      !isAdvancedSearchRoute
+        ? toQuickFilterSearchBody(quickFilter, folder, quickFilterLabels)
         : null,
-    [quickFilter, isSearchActive, isAdvancedSearchRoute, folder]
+    [
+      quickFilter,
+      quickFilterLabels,
+      isSearchActive,
+      isAdvancedSearchRoute,
+      folder,
+    ]
   )
 
   const skipFolderList =
@@ -186,10 +204,25 @@ export function useFolderMessages({
     { skip: skipFolderList || quickFilterBody !== null }
   )
 
+  // During a search, the quick filters narrow the search itself (every page
+  // of its results); labels it cannot express stay filtered on the client.
+  const quickFilteredSearch = useMemo(
+    () =>
+      applyQuickFilterToSearch(
+        mailSearch.params ?? {},
+        quickFilter,
+        quickFilterLabels
+      ),
+    [mailSearch.params, quickFilter, quickFilterLabels]
+  )
+  const clientLabels = isSearchActive
+    ? quickFilteredSearch.clientLabels
+    : NO_LABELS
+
   const searchQueryResult = useSearchMailsQuery(
     {
       accountId: resolvedAccountId,
-      body: mailSearch.params ?? {},
+      body: quickFilteredSearch.params,
       // The search sorts every match before paging, so the chosen sort must
       // be sent; without one, keep the folder list's newest-first order.
       params: {
@@ -300,6 +333,8 @@ export function useFolderMessages({
     params,
     isVirtualFolder: isVirtual,
     isSearchActive,
+    /** Labels of the quick filter to apply on the loaded search results. */
+    clientLabels,
     isUserFetching,
     isRefreshing: isManualRefresh,
     refresh,

@@ -237,8 +237,9 @@ describe('Classic Page', () => {
       })
     })
 
-    // Search results cannot be filtered by the server: the page filters them.
-    it('filters search results on the client', async () => {
+    // During a search, the quick filter narrows the search itself (every
+    // page of its results): the page shows the results as they come.
+    it('sends the quick filter with the search rather than filtering its results', async () => {
       const searchParams = new URLSearchParams()
       searchParams.set('filter', 'unread')
       mockUseSearchParams.mockReturnValue(searchParams)
@@ -284,8 +285,14 @@ describe('Classic Page', () => {
       })
       render(<Page />)
       await waitFor(() => {
-        expect(screen.getByTestId('items-count')).toHaveTextContent('1')
+        expect(screen.getByTestId('items-count')).toHaveTextContent('2')
       })
+      expect(mockUseSearchMailsQuery).toHaveBeenCalledWith(
+        expect.objectContaining({
+          body: expect.objectContaining({ is_read: false }),
+        }),
+        expect.anything()
+      )
     })
 
     it('handles array folder param', () => {
