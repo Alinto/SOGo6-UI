@@ -21,6 +21,7 @@ import {
 } from '../utils/mail-search-form'
 import {
   mergeLabelOptions,
+  tagColor,
   toSearchableMailTags,
 } from '../utils/searchable-mail-tags'
 
@@ -59,6 +60,7 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
   accountId,
 }) => {
   const t = useTranslations('MAILS_COMMONS')
+  const tCategories = useTranslations('US_MAIL_CATEGORY_LABELS')
   const { allCategories } = useMailCategoryPicker(open)
   const { data: mailboxTags } = useGetMailboxTagsQuery(
     { accountId: accountId ?? '' },
@@ -96,11 +98,14 @@ const SearchMoreOptions: React.FC<SearchMoreOptionsProps> = ({
 
   const labelOptions = useMemo(
     () =>
-      mergeLabelOptions(
-        allCategories.map((category) => category.name),
-        toSearchableMailTags(mailboxTags)
-      ).map((name) => ({ value: name, label: name })),
-    [allCategories, mailboxTags]
+      mergeLabelOptions(allCategories, toSearchableMailTags(mailboxTags)).map(
+        (tag) => ({
+          value: tag.name,
+          label: tag.is_default ? tCategories(`labels.${tag.name}`) : tag.name,
+          color: tagColor(tag),
+        })
+      ),
+    [allCategories, mailboxTags, tCategories]
   )
 
   const operatorOptions = [

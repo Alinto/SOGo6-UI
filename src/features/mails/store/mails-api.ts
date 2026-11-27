@@ -36,6 +36,7 @@ import {
   buildRightsFromPermissions,
   getActiveAdvancedCodes,
 } from '../utils/permission-mapping'
+import type { MailboxTag } from '../utils/searchable-mail-tags'
 import { sortImapFoldersTree } from '../utils/sort-folders'
 import { refreshFolderUnseenCount } from './folder-tree-cache'
 import {
@@ -406,10 +407,10 @@ const injectedEndpoints = apiSlice.injectEndpoints({
         normalizeImapFolder(response.data),
     }),
 
-    /** Distinct IMAP flags/keywords used on the mails of a mailbox. */
-    getMailboxTags: builder.query<string[], { accountId: string }>({
+    /** Tags (name, color, default flag) used on the mails of a mailbox. */
+    getMailboxTags: builder.query<MailboxTag[], { accountId: string }>({
       query: mailboxTagsQuery,
-      transformResponse: (response: BackendResponse<string[]>) =>
+      transformResponse: (response: BackendResponse<MailboxTag[]>) =>
         response.data ?? [],
     }),
 

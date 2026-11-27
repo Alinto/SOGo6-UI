@@ -315,9 +315,9 @@ function stripHtml(html: string | undefined): string {
 
 /**
  * Mirrors `buildMailSearchParams`'s criteria semantics: subject/from/to/bcc/
- * text are combined with `operator` (default AND); everything else below is
- * a plain AND filter on top, regardless of `operator`. Within one address
- * field, any of its values may match.
+ * text/labels are combined with `operator` (default AND); everything else
+ * below is a plain AND filter on top, regardless of `operator`. Within one
+ * address field, any of its values may match.
  */
 function messageMatchesCriteria(
   message: ImapMessagesList,
@@ -351,6 +351,13 @@ function messageMatchesCriteria(
           [text]
         )
     )
+  }
+
+  // One check per label: AND needs every label, OR at least one of them.
+  if (params.labels && params.labels.length > 0) {
+    const flags = new Set((message.flags || []).map((f) => f.toLowerCase()))
+    for (const label of params.labels)
+      checks.push(flags.has(label.toLowerCase()))
   }
 
   if (checks.length === 0) return true
@@ -397,10 +404,6 @@ function messageMatchesFilters(
     return false
   }
   if (params.is_flagged && !message.flagged) return false
-  if (params.labels && params.labels.length > 0) {
-    const flags = message.flags || []
-    if (!params.labels.every((label) => flags.includes(label))) return false
-  }
   if (params.size && !messageMatchesSize(message, params.size)) return false
   const { start, end } = params.date_range || {}
   if (start || end) {

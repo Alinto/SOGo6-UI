@@ -94,6 +94,16 @@
       },
       "attachments": {
         "string": "Attachments"
+      },
+      "labels": {
+        "label": {
+          "string": "Labels",
+          "context": "Button of the mail list toolbar opening the label quick filter (mails having every chosen label)."
+        },
+        "clear": {
+          "string": "Clear labels",
+          "context": "Button of the mail list label quick filter removing every chosen label."
+        }
       }
     },
     "layout": {

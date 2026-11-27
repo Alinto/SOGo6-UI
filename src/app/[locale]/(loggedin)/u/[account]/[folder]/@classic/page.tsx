@@ -5,6 +5,7 @@ import MessagesList from '@/features/mails/components/list'
 import ListSkeleton from '@/features/mails/components/skeletons/list-loading-skeleton'
 import { VirtualFolderEmptyState } from '@/features/mails/components/virtual-folder-empty-state'
 import { useFolderMessages } from '@/features/mails/hooks/use-folder-messages'
+import { useMailListLabels } from '@/features/mails/hooks/use-mail-list-labels'
 import { getClientFilteredMails } from '@/features/mails/utils/client-mail-list-filter'
 import { folderPathFromParams } from '@/features/mails/utils/folder-path-from-params'
 import CachedDataIndicator from '@/features/offline/components/cached-data-indicator'
@@ -31,6 +32,7 @@ const Page: React.FC = () => {
   )
   const searchParams = useSearchParams()
   const activeFilter = searchParams.get('filter') ?? 'all'
+  const activeLabels = useMailListLabels()
 
   const {
     data,
@@ -43,6 +45,7 @@ const Page: React.FC = () => {
     isVirtualFolder,
     isSearchActive,
     currentPage,
+    clientLabels,
   } = useFolderMessages({
     folder: folderPath,
     accountId: accountString,
@@ -71,11 +74,12 @@ const Page: React.FC = () => {
   })
 
   // The server filters folder lists; only search results are filtered here.
-  const clientFilter = isSearchActive ? activeFilter : 'all'
+  // During a search the quick filters narrow the search itself (see
+  // useFolderMessages): only the labels it cannot express are left here.
 
   const filteredMails = React.useMemo(
-    () => getClientFilteredMails(data?.mails ?? [], clientFilter),
-    [data, clientFilter]
+    () => getClientFilteredMails(data?.mails ?? [], 'all', clientLabels),
+    [data, clientLabels]
   )
 
   const listVisibilityClass =
@@ -94,7 +98,11 @@ const Page: React.FC = () => {
   }
 
   if (isShowingCache && cachedMails) {
-    const offlineFiltered = getClientFilteredMails(cachedMails, activeFilter)
+    const offlineFiltered = getClientFilteredMails(
+      cachedMails,
+      activeFilter,
+      activeLabels
+    )
     return (
       <div
         className={`${listVisibilityClass} h-full min-h-0 w-full min-w-0 flex-1 flex-col overflow-hidden`}

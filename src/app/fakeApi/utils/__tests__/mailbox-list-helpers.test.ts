@@ -113,6 +113,19 @@ describe('buildMailSearchResponse', () => {
     ).toEqual(['drafts_002', 'inbox_001'])
   })
 
+  it('combines the labels with the operator', () => {
+    const labels = ['Work', 'Friends']
+    expect(ids({ labels, folders: ['all'] })).toEqual(['inbox_003'])
+    expect(ids({ labels, operator: 'OR', folders: ['all'] }).sort()).toEqual([
+      'inbox_002',
+      'inbox_003',
+    ])
+    // The status filters stay a plain AND on top of the labels.
+    expect(
+      ids({ labels, operator: 'OR', is_read: true, folders: ['all'] })
+    ).toEqual(['inbox_003'])
+  })
+
   it('paginates the results', () => {
     const result = search({ from: ['reports@sogo.org'] }, 'page=2&page_size=20')
 

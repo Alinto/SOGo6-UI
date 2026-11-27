@@ -47,6 +47,7 @@ jest.mock('@/features/mails/hooks/use-mail-batch-actions', () => ({
 
 jest.mock('@/features/mails/hooks/use-folder-messages', () => ({
   useFolderMessages: jest.fn(() => ({
+    clientLabels: [],
     data: {
       mails: [
         { id: '1', subject: 'Test', seen: false, flagged: false },
@@ -295,6 +296,13 @@ jest.mock('@/features/mails/components/sidebars/fast-access/context', () => ({
   useFastAccess: () => mockUseFastAccess(),
 }))
 
+jest.mock('../list-label-filter', () => ({
+  __esModule: true,
+  default: ({ compact }: { compact?: boolean }) => (
+    <div data-testid="list-label-filter" data-compact={String(!!compact)} />
+  ),
+}))
+
 jest.mock('../list-filter-dropdown', () => ({
   __esModule: true,
   default: ({ className }: { className?: string }) => (
@@ -478,6 +486,10 @@ describe('ListToolbar', () => {
     it('shows compact filters on two lines', () => {
       render(<ListToolbar />)
       expect(screen.getByTestId('list-filter-dropdown')).toBeInTheDocument()
+      expect(screen.getByTestId('list-label-filter')).toHaveAttribute(
+        'data-compact',
+        'true'
+      )
       // Only its layout toggle remains visible.
       expect(screen.getByTestId('list-filter')).toHaveAttribute(
         'data-show-filters',
@@ -490,6 +502,8 @@ describe('ListToolbar', () => {
       expect(
         screen.queryByTestId('list-filter-dropdown')
       ).not.toBeInTheDocument()
+      // The label filter sits in ListFilter, next to the toggle buttons.
+      expect(screen.queryByTestId('list-label-filter')).not.toBeInTheDocument()
       expect(screen.getByTestId('list-filter')).toHaveAttribute(
         'data-show-filters',
         'true'

@@ -1,13 +1,11 @@
 'use client'
 
 import MailLabelBadge from '@/features/mails/components/mail/mail-label-badge'
-import { clearMailSearch } from '@/features/mails/store/mail-search-slice'
+import { useMailListLabelFilter } from '@/features/mails/hooks/use-mail-list-label-filter'
 import { useMailActionMutation } from '@/features/mails/store/mails-api'
-import { buildAdvancedSearchPath } from '@/features/mails/utils/mail-search-form'
 import { matchMailLabels } from '@/features/mails/utils/match-mail-labels'
 import { useGetUserPreferencesQuery } from '@/features/user-settings/store/user-preferences-api'
-import { useRouter } from '@/lib/i18n/navigation'
-import { useAppDispatch } from '@/lib/redux/hooks'
+import { usePathname } from '@/lib/i18n/navigation'
 import { useTranslations } from 'next-intl'
 import { useMemo } from 'react'
 
@@ -16,6 +14,9 @@ export type MailSubjectLabelsProps = {
   folder: string
   mailId: string
   flags?: string[]
+  /** Whether the mail list is shown next to the mail (classic / split
+   *  layout): a label click then keeps the mail open. */
+  listVisible?: boolean
 }
 
 export default function MailSubjectLabels({
@@ -23,13 +24,14 @@ export default function MailSubjectLabels({
   folder,
   mailId,
   flags = [],
+  listVisible = false,
 }: MailSubjectLabelsProps) {
   const t = useTranslations('MAILS_COMMONS.mail_display.action-bar')
   const tCategories = useTranslations('US_MAIL_CATEGORY_LABELS')
   const { data } = useGetUserPreferencesQuery()
   const [mailAction] = useMailActionMutation()
-  const router = useRouter()
-  const dispatch = useAppDispatch()
+  const pathname = usePathname()
+  const { select: selectLabel } = useMailListLabelFilter()
 
   const categories = useMemo(
     () => data?.data.USER_MAIL_CATEGORY_SETTINGS?.SOGO_U_MAIL_CATEGORIES ?? [],
@@ -53,12 +55,22 @@ export default function MailSubjectLabels({
     })
   }
 
+  // Selects the label in the quick label filter of the list, next to the
+  // labels and other quick filters already chosen (a match:any search
+  // becomes a match:all one, see useMailListLabelFilter). With the list
+  // beside the mail, the mail stays open (it has the label, so it stays
+  // listed); otherwise the click goes back to the list it was opened from.
   const handleLabelClick = (name: string) => {
-    // Any simple/advanced search already active (e.g. the one this mail was
-    // opened from) must not linger — the label click starts a fresh search,
-    // not a refinement of the previous one.
-    dispatch(clearMailSearch())
-    router.push(buildAdvancedSearchPath(accountId, { labels: [name] }))
+    const mailSegment = pathname.endsWith(`/${encodeURIComponent(mailId)}`)
+      ? `/${encodeURIComponent(mailId)}`
+      : pathname.endsWith(`/${mailId}`)
+        ? `/${mailId}`
+        : ''
+    const path =
+      listVisible || !mailSegment
+        ? pathname
+        : pathname.slice(0, -mailSegment.length)
+    selectLabel(name, path)
   }
 
   return (

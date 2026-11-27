@@ -7,6 +7,13 @@ import ListFilterDropdown from '../list-filter-dropdown'
 
 jest.mock('next/navigation', () => ({
   useSearchParams: jest.fn(),
+  useParams: () => ({ account: '0', folder: 'INBOX' }),
+}))
+
+jest.mock('@/lib/redux/hooks', () => ({
+  useAppDispatch: () => jest.fn(),
+  useAppSelector: (fn: (s: any) => unknown) =>
+    fn({ mailSearch: { isActive: false, accountId: null, params: null } }),
 }))
 
 jest.mock('@/lib/i18n/navigation', () => ({

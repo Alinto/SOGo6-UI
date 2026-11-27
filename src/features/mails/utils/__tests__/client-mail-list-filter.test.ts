@@ -1,6 +1,7 @@
 import type { ImapMessagesList } from '@/features/mails/mails-types'
 import {
   getClientFilteredMails,
+  getMailListLabels,
   toMailListApiFilter,
 } from '@/features/mails/utils/client-mail-list-filter'
 
@@ -70,6 +71,50 @@ describe('getClientFilteredMails', () => {
     it('treats unknown filter as all', () => {
       expect(getClientFilteredMails(mails, 'unknown')).toEqual(mails)
     })
+  })
+
+  describe('labels', () => {
+    const labelled = [
+      makeMail({ id: '1', seen: false, flags: ['Work', 'toto'] }),
+      makeMail({ id: '2', seen: true, flags: ['toto', 'WORK', '\\Seen'] }),
+      makeMail({ id: '3', seen: false, flags: ['Work'] }),
+      makeMail({ id: '4', seen: false }),
+    ]
+    const ids = (list: ImapMessagesList[]) => list.map((m) => m.id)
+
+    it('keeps the mails having every label, case-insensitively', () => {
+      expect(
+        ids(getClientFilteredMails(labelled, 'all', ['work', 'TOTO']))
+      ).toEqual(['1', '2'])
+    })
+
+    it('combines the labels with the status filter', () => {
+      expect(
+        ids(getClientFilteredMails(labelled, 'unread', ['Work', 'toto']))
+      ).toEqual(['1'])
+    })
+
+    it('does not filter on labels without labels', () => {
+      expect(getClientFilteredMails(labelled, 'all', [])).toEqual(labelled)
+    })
+  })
+})
+
+describe('getMailListLabels', () => {
+  it('reads the repeated label params, trimmed and deduped', () => {
+    const params = new URLSearchParams(
+      'label=Work&label=%20toto%20&label=&label=Work&filter=unread'
+    )
+    expect(getMailListLabels(params)).toEqual(['Work', 'toto'])
+  })
+
+  it('dedupes labels case-insensitively, keeping the first spelling', () => {
+    const params = new URLSearchParams('label=Work&label=work&label=WORK')
+    expect(getMailListLabels(params)).toEqual(['Work'])
+  })
+
+  it('returns no labels without label param', () => {
+    expect(getMailListLabels(new URLSearchParams('filter=read'))).toEqual([])
   })
 })
 
